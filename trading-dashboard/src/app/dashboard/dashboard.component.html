@@ -46,13 +46,44 @@
         </article>
       </section> -->
 
-      <div class="calendar-wrapper">
-        <mwl-calendar-month-view
-          [viewDate]="viewDate"
-          [events]="events"
-          (dayClicked)="onDayClicked($event.day.date)">
-        </mwl-calendar-month-view>
-      </div>
+<!-- app.component.html -->
+<div class="container">
+  <div class="upload-section">
+    <h2 class="title">Upload Your Excel File</h2>
+    <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".xlsx, .xls" />
+    <label for="fileInput" class="file-label">
+      <span class="material-icons">cloud_upload</span> Choose an Excel File
+    </label>
+    <button (click)="onUpload()">Upload</button>
+  </div>
 
+  <!-- Display uploaded Excel Data -->
+  <div *ngIf="tableData.length > 0" class="table-container">
+    <h3>Excel Data</h3>
+    <table class="excel-table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of tableData[0]">{{ column }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of tableData.slice(1)">
+          <td *ngFor="let cell of row">{{ cell }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+    <div class="calendar-wrapper">
+      <mwl-calendar-month-view
+        [viewDate]="viewDate"
+        [events]="events"
+        (dayClicked)="onDayClicked($event.day.date)">
+      </mwl-calendar-month-view>
     </div>
+
+</div>
   
