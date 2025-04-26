@@ -1,0 +1,58 @@
+<div class="dashboard">
+    <h1>Dashboard</h1>
+  
+    <!-- <section class="dashboard-container">
+        <article class="dashboard-content">
+          <section class="stats-container">
+            <div class="primary-stats">
+              <article class="stat-card" *ngFor="let i of [1, 2, 3, 4, 5, 6]">
+                <h3 class="stat-label">Stat Label</h3>
+                <p class="stat-value">--</p>
+              </article>
+            </div>
+          </section>
+          <section class="calendar-container">
+            <header class="calendar-header">
+              <button class="nav-button">Previous</button>
+              <h2 class="month-title">Month Year</h2>
+              <button class="nav-button">Next</button>
+            </header>
+            <div class="calendar-grid">
+              <ng-container
+                *ngFor="
+                  let day of ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                "
+              >
+                <div class="weekday-header">{{ day }}</div>
+              </ng-container>
+              <ng-container
+                *ngFor="
+                  let i of [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+                  ]
+                "
+              >
+                <article class="calendar-day">
+                  <span class="day-number">{{ i }}</span>
+                  <div class="day-content">
+                    <p class="profit-amount">--</p>
+                    <p class="trades-count">-- trades</p>
+                  </div>
+                </article>
+              </ng-container>
+            </div>
+          </section>
+        </article>
+      </section> -->
+
+      <div class="calendar-wrapper">
+        <mwl-calendar-month-view
+          [viewDate]="viewDate"
+          [events]="events"
+          (dayClicked)="onDayClicked($event.day.date)">
+        </mwl-calendar-month-view>
+      </div>
+
+    </div>
+  
