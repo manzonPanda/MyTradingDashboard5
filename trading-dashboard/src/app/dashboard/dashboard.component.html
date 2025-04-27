@@ -57,6 +57,10 @@
     <button (click)="onUpload()">Upload</button>
   </div>
 
+  <div class="paste-area" (paste)="onPaste($event)">
+    <p>Paste your Excel table here!</p>
+  </div>
+  
   <!-- Display uploaded Excel Data -->
   <div *ngIf="tableData.length > 0" class="table-container">
     <h3>Excel Data</h3>

@@ -4,6 +4,8 @@ import { MatCardModule  } from '@angular/material/card';
 import { CommonModule } from "@angular/common";
 import { CalendarModule } from 'angular-calendar';
 import * as XLSX from 'xlsx';
+import { Firestore, collection, addDoc, setDoc, doc } from '@angular/fire/firestore';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -22,6 +24,8 @@ export class DashboardComponent {
   events = [];
   tableData: any[] = [];
   rawData: any[] = [];
+
+  constructor(private firestore: Firestore) {}
 
   onDayClicked(date: Date) {
     alert('Clicked: ' + date.toDateString());
@@ -108,6 +112,21 @@ onPaste(event: ClipboardEvent): void {
   onUpload(): void {
     // For example, upload the parsed data to Firebase or your server
     console.log('Uploading data...', this.tableData);
+    const collectionRef = collection(this.firestore, 'trades');
+    this.tableData.forEach(async (row) => {
+      try {
+        const documentId = row[0];
+        const docRef = doc(collectionRef, documentId);
+        await setDoc(docRef, {
+          rowData: row
+        });
+      
+        console.log('Row uploaded successfully');
+      } catch (error) {
+        console.error('Error uploading row: ', error);
+      }
+    });
+
   }
 
 }
