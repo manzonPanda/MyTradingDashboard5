@@ -60,7 +60,18 @@
   <div class="paste-area" (paste)="onPaste($event)">
     <p>Paste your Excel table here!</p>
   </div>
-  
+
+  <div id="testTable" class="table-container"> 
+    <table>
+      <tr *ngFor="let row of tableData">
+        <td>{{ row.id }}</td> 
+        <td>{{ row.rowData?.column2 }}</td> 
+        <td>{{ row.rowData?.column3 }}</td> 
+        <!-- Adjust based on your fields -->
+      </tr>
+    </table>
+  </div>
+ 
   <!-- Display uploaded Excel Data -->
   <div *ngIf="tableData.length > 0" class="table-container">
     <h3>Excel Data</h3>
@@ -79,7 +90,7 @@
   </div>
 </div>
 
-
+<button (click)="addTradesToCalendar()">Add Event</button> 
 
     <div class="calendar-wrapper">
       <mwl-calendar-month-view
