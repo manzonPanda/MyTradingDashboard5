@@ -30,6 +30,7 @@ export class DashboardComponent {
 
   ngOnInit() {
     this.loadTradesRealtime(); // Start listening immediately
+    this.loadTrades();
   }
   
   
@@ -160,6 +161,7 @@ onPaste(event: ClipboardEvent): void {
     }); 
 
     this.tableData = rows;
+    console.log(this.tableData)
   }
 
   onFileSelected(event: any): void {
@@ -253,5 +255,13 @@ onPaste(event: ClipboardEvent): void {
     });
   }
 
+  async loadTrades() {
+    const tradesCollection = collection(this.firestore, 'trades');
+    const querySnapshot = await getDocs(tradesCollection);
+    // console.log(querySnapshot)
+    // console.log(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+    this.tableData = querySnapshot.docs.map(doc => doc.data()['rowData']);
+    console.log(this.tableData)
+  }
   
 }
