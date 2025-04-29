@@ -22,7 +22,7 @@ import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from 
 export class DashboardComponent {
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
-  
+  locale: string = 'en';
   tableData: any[] = [];
   rawData: any[] = [];
 
@@ -51,13 +51,50 @@ export class DashboardComponent {
               primary: type.toLowerCase() === 'buy' ? '#1e90ff' : '#ad2121', // blue for buy, red for sell
               secondary: '#FAE3E3'
             },
-            allDay: true
+            allDay: true,
+            meta: {
+              position: row[1],
+              symbol: row[2],
+              type: row[3],
+              volume: parseFloat(row[4]),
+              openPrice: parseFloat(row[5]),
+              stopLoss: parseFloat(row[6]),
+              takeProfit: parseFloat(row[7]),
+              closeTime: new Date(row[8].replace(' ', 'T')),
+              closePrice: parseFloat(row[9]),
+              commission: parseFloat(row[10]),
+              swap: parseFloat(row[11]),
+              profit: parseFloat(row[12]),
+            }
           }
         ];
+      
       }
     });
   }
 
+  countWins(events: any[]): number {
+    return events.filter(event => event.meta?.profit > 0).length;
+  }
+  
+  countLosses(events: any[]): number {
+    return events.filter(event => event.meta?.profit < 0).length;
+  }
+  
+  totalProfit(events: any[]): number {
+    console.log(events);
+    return events
+      .filter(event => event.meta?.profit > 0)
+      .reduce((sum, event) => sum + (event.meta?.profit || 0), 0)
+      .toFixed(2);
+  }
+  
+  totalLoss(events: any[]): number {
+    return events
+      .filter(event => event.meta?.profit < 0)
+      .reduce((sum, event) => sum + (event.meta?.profit || 0), 0)
+      .toFixed(2);
+  }
   parseTradeDate(dateStr: string): Date | null {
     // MT5 format is like "2025.03.25 09:10:25"
     const parts = dateStr.split(' ');
@@ -77,7 +114,7 @@ export class DashboardComponent {
       parseInt(timeParts[2])   // Seconds
     );
   }
-  
+
   onDayClicked(date: Date) {
     alert('Clicked: ' + date.toDateString());
   }
@@ -103,9 +140,24 @@ onPaste(event: ClipboardEvent): void {
     // Alternatively, for CSV: const rows = data.split('\n').map(row => row.split(','));
     const rows = data
     .split('\n')
-    .map((row: string) => row.trim())
+    .map((row: string) => row.trim()) 
     .filter((row: string) => row.length > 0) // Remove empty lines
-    .map((row: string) => row.split('\t').filter((cell: string) => cell.trim() !== '')); // Remove empty cells
+    .map((row: string) => {
+      const cells = row.split('\t');
+      
+      // Define which columns should be numbers
+      const numberColumns = [4, 5, 6, 7, 9, 10, 11, 12]; 
+      // Indices for: Volume, Price, S/L, T/P, Close Price, Commission, Swap, Profit
+
+      // Loop and convert specific columns
+      numberColumns.forEach(index => {
+        if (cells[index] !== undefined) {
+          cells[index] = cells[index].replace(/\s+/g, ''); // Remove spaces & parse to number
+        }
+      });
+
+      return cells;
+    }); 
 
     this.tableData = rows;
   }
