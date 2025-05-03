@@ -74,7 +74,7 @@
  
   <!-- Display uploaded Excel Data -->
   <div class="table-container">
-    <table class="excel-table">
+    <table class="excel-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
       <thead>
         <tr>
           <!-- <th *ngFor="let column of tableData[0]">{{ column }}</th> -->
@@ -91,6 +91,7 @@
            <th>Commission</th>
            <th>Swap</th>
            <th>Profit</th>
+           <th>Net Profit</th>
         </tr>
       </thead>
       <tbody>

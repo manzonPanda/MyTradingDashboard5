@@ -1,4 +1,4 @@
-import { Component, importProvidersFrom } from '@angular/core';
+import { Component, importProvidersFrom, OnDestroy, OnInit   } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { CommonModule } from "@angular/common";
@@ -6,6 +6,11 @@ import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-ca
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
 import { addMonths, subMonths } from 'date-fns';
+declare var $: any;
+import { DataTablesModule, } from 'angular-datatables';
+import { Subject } from 'rxjs';
+import * as DataTables from 'datatables.net';
+import 'datatables.net'; // Ensure DataTables functionality is available
 
 @Component({
   selector: 'app-dashboard',
@@ -14,25 +19,57 @@ import { addMonths, subMonths } from 'date-fns';
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
-    CalendarModule
+    CalendarModule,
+    DataTablesModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
+
 export class DashboardComponent {
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
   locale: string = 'en';
   tableData: any[] = [];
   rawData: any[] = [];
+  dtOptions: any = {}; // Use 'any' or type the object more specifically later
+  dtTrigger: Subject<any> = new Subject<any>();
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore) {
+
+  }
 
   async ngOnInit() {
+    this.dtOptions = {
+      destroy: true, 
+      paging: true,
+      searching: true,
+      ordering: true,
+      pageLength: 10,
+      processing: true, // Show a loading spinner while data is being processed
+      responsive: true,
+			keys: true
+    };
+
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
     this.addTradesToCalendar();
-    console.log(this.events)
+    // console.log(this.events)
+
+    this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering
+
+  }
+
+  ngAfterViewInit() {
+    // $('#myTable').DataTable(); // Apply DataTables after view is ready
+  }
+
+  ngOnDestroy(): void {
+    this.dtTrigger.unsubscribe();
+     // Clean up the DataTable when the component is destroyed
+     if ($.fn.dataTable.isDataTable('#myTable')) {
+        $('#myTable').DataTable().destroy();
+     }
   }
   
   addMonth(date: Date): Date {
@@ -44,7 +81,7 @@ export class DashboardComponent {
   }
 
  addTradesToCalendar() {
-  console.log("tableData::"+this.tableData)
+  // console.log("tableData::"+this.tableData)
     this.tableData.forEach(row => {
       const tradeDateString = row[0]; // Column 0: the date string
       const symbol = row[2];           // Column 2: symbol
@@ -188,6 +225,9 @@ onPaste(event: ClipboardEvent): void {
           cells[index] = cells[index].replace(/\s+/g, ''); // Remove spaces & parse to number
         }
       });
+
+      //add 13th column-Net Profit
+      cells[13] = (parseFloat(cells[10]) + parseFloat(cells[12])).toFixed(2)
 
       return cells;
     }); 
