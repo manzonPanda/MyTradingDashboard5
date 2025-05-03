@@ -2,10 +2,10 @@ import { Component, importProvidersFrom } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { CommonModule } from "@angular/common";
-import { CalendarModule, CalendarEvent  } from 'angular-calendar';
+import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
-
+import { addMonths, subMonths } from 'date-fns';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,20 +28,30 @@ export class DashboardComponent {
 
   constructor(private firestore: Firestore) {}
 
-  ngOnInit() {
-    this.loadTradesRealtime(); // Start listening immediately
-    this.loadTrades();
+  async ngOnInit() {
+    // this.loadTradesRealtime(); // Start listening immediately
+    await this.loadTrades(); // Wait for trades to load
+    this.addTradesToCalendar();
+    console.log(this.events)
   }
   
+  addMonth(date: Date): Date {
+    return addMonths(date, 1);
+  }
   
-  addTradesToCalendar(): void {
+  subMonth(date: Date): Date {
+    return subMonths(date, 1);
+  }
+
+ addTradesToCalendar() {
+  console.log("tableData::"+this.tableData)
     this.tableData.forEach(row => {
       const tradeDateString = row[0]; // Column 0: the date string
       const symbol = row[2];           // Column 2: symbol
       const type = row[3];             // Column 3: buy/sell
   
       const tradeDate = this.parseTradeDate(tradeDateString);
-  
+      
       if (tradeDate) {
         this.events = [
           ...this.events,
@@ -72,6 +82,14 @@ export class DashboardComponent {
       
       }
     });
+  }
+
+  getPnLColor(day: CalendarMonthViewDay): string {
+    if (!day.events.length) return 'bg-white';
+    const pnl = day.events.reduce((sum, e) => sum + (e.meta?.profit || 0), 0);
+    if (pnl > 0) return 'bg-green-100';
+    if (pnl < 0) return 'bg-red-100';
+    return 'bg-gray-100';
   }
 
   countWins(events: any[]): number {
@@ -146,10 +164,24 @@ onPaste(event: ClipboardEvent): void {
     .map((row: string) => {
       const cells = row.split('\t');
       
-      // Define which columns should be numbers
-      const numberColumns = [4, 5, 6, 7, 9, 10, 11, 12]; 
-      // Indices for: Volume, Price, S/L, T/P, Close Price, Commission, Swap, Profit
+      // Add 5 hours to datetime strings at column 0 and 8
+      [0, 8].forEach(index => {
+        if (cells[index]) {
+          const [datePart, timePart] = cells[index].split(' ');
+          const [year, month, day] = datePart.split('.').map(Number);
+          const [hour, minute, second] = timePart.split(':').map(Number);
 
+          const dateObj = new Date(year, month - 1, day, hour, minute, second);
+          dateObj.setHours(dateObj.getHours() + 5);
+
+          const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}:${String(dateObj.getSeconds()).padStart(2, '0')}`;
+          cells[index] = formattedDate;
+        }
+      });
+
+      // Define which columns should be numbers
+      // Indices for: Volume, Price, S/L, T/P, Close Price, Commission, Swap, Profit
+      const numberColumns = [4, 5, 6, 7, 9, 10, 11, 12]; 
       // Loop and convert specific columns
       numberColumns.forEach(index => {
         if (cells[index] !== undefined) {
@@ -255,13 +287,18 @@ onPaste(event: ClipboardEvent): void {
     });
   }
 
-  async loadTrades() {
-    const tradesCollection = collection(this.firestore, 'trades');
-    const querySnapshot = await getDocs(tradesCollection);
-    // console.log(querySnapshot)
-    // console.log(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
-    this.tableData = querySnapshot.docs.map(doc => doc.data()['rowData']);
-    console.log(this.tableData)
+  loadTrades(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const tradesRef = collection(this.firestore, 'trades');
+      getDocs(tradesRef).then((querySnapshot) => {
+        this.tableData = querySnapshot.docs.map(doc => doc.data()['rowData']);
+        console.log(this.tableData)
+        resolve(); // Notify that loading is done
+      }).catch((error) => {
+        console.error('Error loading trades:', error);
+        reject(error);
+      });
+    });
   }
   
 }

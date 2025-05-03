@@ -117,3 +117,30 @@ input[type="file"] {
 //     padding: 8px;
 //   }
 // }
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-nav button {
+  padding: 6px 12px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calendar-nav button:hover {
+  background-color: #ddd;
+}
+
+.bg-green-100{
+  background-color: #d1fae5;
+}
+
+.bg-red-100{
+  background-color: #fee2e2;
+}

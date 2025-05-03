@@ -52,9 +52,9 @@
     <h2 class="title">Upload Your Excel File</h2>
     <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".xlsx, .xls" />
     <label for="fileInput" class="file-label">
-      <span class="material-icons">cloud_upload</span> Choose an Excel File
+      <span class="material-icons">file_present</span> Choose an Excel File
     </label>
-    <button (click)="onUpload()">Upload</button>
+    <button (click)="onUpload()" class="file-label"><span class="material-icons">cloud_upload</span>Upload</button>
   </div>
 
   <div class="paste-area" (paste)="onPaste($event)">
@@ -73,16 +73,28 @@
   </div>
  
   <!-- Display uploaded Excel Data -->
-  <div *ngIf="tableData.length > 0" class="table-container">
-    <h3>Excel Data</h3>
+  <div class="table-container">
     <table class="excel-table">
       <thead>
         <tr>
-          <th *ngFor="let column of tableData[0]">{{ column }}</th>
+          <!-- <th *ngFor="let column of tableData[0]">{{ column }}</th> -->
+           <th>Time Open</th>
+           <th>Position</th>
+           <th>Symbol</th>
+           <th>Type</th>
+           <th>Volume</th>
+           <th>Open Price</th>
+           <th>S/L</th>
+           <th>T/P</th>
+           <th>Time Close</th>
+           <th>Close Price</th>
+           <th>Commission</th>
+           <th>Swap</th>
+           <th>Profit</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of tableData.slice(1)">
+        <tr *ngFor="let row of tableData">
           <td *ngFor="let cell of row">{{ cell }}</td>
         </tr>
       </tbody>
@@ -90,44 +102,41 @@
   </div>
 </div>
 
-<button (click)="addTradesToCalendar()">Add Event</button> 
+<div class="calendar-nav">
+  <button (click)="viewDate = subMonth(viewDate)">Previous</button>
+  <h2>{{ viewDate | date: 'MMMM yyyy' }}</h2>
+  <button (click)="viewDate = addMonth(viewDate)">Next</button>
+</div>
 
     <div class="calendar-wrapper">
       <mwl-calendar-month-view
         [viewDate]="viewDate"
         [events]="events"
-        (dayClicked)="onDayClicked($event.day.date)"
-        [cellTemplate]="customCellTemplate">
+        [cellTemplate]="customTemplate">
       </mwl-calendar-month-view>
 
       <!-- Custom Template -->
-      <ng-template #customCellTemplate let-day="day">
-        <div class="cal-day-number">
-          {{ day.date | calendarDate:'monthViewDayNumber':locale }}
-        </div>
-      
-        <div class="cal-events-summary" *ngIf="day.events.length > 0">
-          <div>{{ day.events.length }} trades</div>
-      
-          <div>
-            {{ countWins(day.events) }} 
-            <span style="color: green;">W</span> :
-            {{ countLosses(day.events) }} 
-            <span style="color: red;">L</span>
+      <ng-template #customTemplate let-day="day">
+        <div class="h-full w-full p-1 rounded-xl"
+             [ngClass]="getPnLColor(day)">
+          <div class="font-semibold">
+            {{ day.date | date: 'd' }}
           </div>
-      
-          <div>
-            <span style="color: green;">
-              [+{{ totalProfit(day.events) }}]
-            </span> 
-            ||
-            <span style="color: red;">
-              [-{{ totalLoss(day.events) }}]
-            </span>
+          <div class="text-xs" *ngIf="day.events.length">
+            <div *ngFor="let event of day.events">
+              <div>
+                {{ event.meta.pnl | currency }}
+              </div>
+              <div>
+                {{ event.meta.profit }}
+              </div>
+              <div *ngIf="event.meta.rMultiple">
+                {{ event.meta.rMultiple }}R
+              </div>
+            </div>
           </div>
         </div>
       </ng-template>
-
     </div>
 
 </div>
