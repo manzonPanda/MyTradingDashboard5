@@ -45,7 +45,7 @@ export class DashboardComponent {
       paging: true,
       searching: true,
       ordering: true,
-      pageLength: 10,
+      pageLength: 25,
       processing: true, // Show a loading spinner while data is being processed
       responsive: true,
 			keys: true
@@ -56,7 +56,7 @@ export class DashboardComponent {
     this.addTradesToCalendar();
     // console.log(this.events)
 
-    this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering
+    // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering
 
   }
 
@@ -175,7 +175,7 @@ export class DashboardComponent {
     alert('Clicked: ' + date.toDateString());
   }
 
-onPaste(event: ClipboardEvent): void {
+async onPaste(event: ClipboardEvent): Promise<void> {
     const clipboardItems = event.clipboardData?.items;
     if (clipboardItems) {
       for (let i = 0; i < clipboardItems.length; i++) {
@@ -187,6 +187,8 @@ onPaste(event: ClipboardEvent): void {
           }
         }
       }
+      this.dtTrigger.next(null)
+      console.log("printing to DT")
     }
   }
 
@@ -211,7 +213,7 @@ onPaste(event: ClipboardEvent): void {
           const dateObj = new Date(year, month - 1, day, hour, minute, second);
           dateObj.setHours(dateObj.getHours() + 5);
 
-          const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}:${String(dateObj.getSeconds()).padStart(2, '0')}`;
+          const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
           cells[index] = formattedDate;
         }
       });
@@ -341,4 +343,17 @@ onPaste(event: ClipboardEvent): void {
     });
   }
   
+  copyColumns(index1: number, index2: number): void {
+    const combinedValues = this.tableData.map(row => {
+      return `${row[index1]}\t${row[index2]}`; // tab-separated
+    });
+    const textToCopy = combinedValues.join('\n');
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      alert('Two columns copied to clipboard!');
+    });
+  }
+  
+
 }
+
+
