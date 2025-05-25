@@ -1,6 +1,9 @@
 import { Component, importProvidersFrom, OnDestroy, OnInit   } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from "@angular/common";
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
@@ -21,6 +24,9 @@ import 'datatables.net'; // Ensure DataTables functionality is available
     CommonModule,
     CalendarModule,
     DataTablesModule,
+    MatProgressBarModule,
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -34,6 +40,11 @@ export class DashboardComponent {
   rawData: any[] = [];
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
+  //uploading progress bar
+  uploadProgress: number = 0;
+  isUploading: boolean = false;
+  showProgressBar = false;
+  hideProgressBar = false;
 
   constructor(private firestore: Firestore) {
 
@@ -187,6 +198,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           }
         }
       }
+      //If you're refreshing data multiple times (e.g., after upload or load), don't unsubscribe and reuse the old Subject. Instead, recreate it:
+      this.dtTrigger.unsubscribe();
+      this.dtTrigger = new Subject();
       this.dtTrigger.next(null)
       console.log("printing to DT")
     }
@@ -293,26 +307,42 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   // Optional: Implement file upload to a server or Firebase
-  onUpload(): void {
-    // For example, upload the parsed data to Firebase or your server
-    console.log('Uploading data...', this.tableData);
-    const collectionRef = collection(this.firestore, 'trades');
-    this.tableData.forEach(async (row) => {
-      try {
-        const documentId = row[0];
-        const docRef = doc(collectionRef, documentId);
-        await setDoc(docRef, {
-          rowData: row
-        });
-      
-        console.log('Row uploaded successfully');
-      } catch (error) {
-        console.error('Error uploading row: ', error);
-      }
-    });
+onUpload(): void {
+  console.log('Uploading data...', this.tableData);
+  const collectionRef = collection(this.firestore, 'trades');
 
-  }
+  this.showProgressBar = true;
+  this.hideProgressBar = false;
+  this.isUploading = true;
+  this.uploadProgress = 0;
 
+  const total = this.tableData.length;
+  let uploaded = 0;
+
+  this.tableData.forEach(async (row) => {
+    try {
+      const documentId = row[0];
+      const docRef = doc(collectionRef, documentId);
+      await setDoc(docRef, {
+        rowData: row
+      });
+      uploaded++;
+      this.uploadProgress = Math.round((uploaded / total) * 100);
+    } catch (error) {
+      console.error('Error uploading row: ', error);
+    }
+
+    if (uploaded === total) {
+      setTimeout(() => {
+        this.isUploading = false;
+        this.hideProgressBar = true; // Triggers CSS fade-out
+        this.showProgressBar = false;
+        this.uploadProgress = 0;
+      }, 2000); // Wait for CSS transition
+    }
+  });
+}
+  
   loadTradesRealtime() {
     const collectionRef = collection(this.firestore, 'trades');
     onSnapshot(collectionRef, (querySnapshot) => {

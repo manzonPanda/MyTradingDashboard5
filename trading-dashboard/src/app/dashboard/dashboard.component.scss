@@ -143,3 +143,20 @@ input[type="file"] {
 .bg-red-100{
   background-color: #fee2e2;
 }
+
+.custom-progress-bar .mat-progress-bar-fill::after{
+  height: 50px !important;
+  border-radius: 16px !important;
+  margin-top: 50px !important;
+  background-color: #5800fc !important;
+ 
+}
+.custom-progress-bar {
+  transition: opacity 2s !important; /* slow fade (2 seconds) */
+  opacity: 1 !important;
+  height: 4px; /* Optional: keep slim progress bar */
+}
+
+.custom-progress-bar.hidden {
+  opacity: 0;
+}

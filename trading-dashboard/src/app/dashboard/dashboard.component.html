@@ -50,6 +50,12 @@
 <div class="container">
   <div class="upload-section">
     <h2 class="title">Upload Your Excel File</h2>
+      <mat-card style="background-color: white;" *ngIf="isUploading" >
+        <mat-progress-bar mode="determinate" [value]="uploadProgress"  class="custom-progress-bar" [ngClass]="{ 'hidden': hideProgressBar }">
+          
+        </mat-progress-bar>
+        <p>Uploading Trades: {{ uploadProgress }}%</p>
+    </mat-card>
     <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".xlsx, .xls" />
     <label for="fileInput" class="file-label">
       <span class="material-icons">file_present</span> Choose an Excel File
@@ -79,16 +85,16 @@
       <thead>
         <tr>
           <!-- <th *ngFor="let column of tableData[0]">{{ column }}</th> -->
-           <th>Time Open</th>
+           <th>Open Date</th>
            <th>Position</th>
            <th>Symbol</th>
            <th>Type</th>
            <th>Volume</th>
-           <th>Open Price</th>
+           <th>Entry</th>
            <th>S/L</th>
            <th>T/P</th>
-           <th>Time Close</th>
-           <th>Close Price</th>
+           <th>Close Date</th>
+           <th>Exit</th>
            <th>Commission</th>
            <th>Swap</th>
            <th>Profit</th>
