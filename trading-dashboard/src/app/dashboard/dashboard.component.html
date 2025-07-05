@@ -49,7 +49,7 @@
 <!-- app.component.html -->
 <div class="container">
   <div class="upload-section">
-    <h2 class="title">Upload Your Excel File</h2>
+    <h2 class="title">Upload MT5 report</h2>
       <mat-card style="background-color: white;" *ngIf="isUploading" >
         <mat-progress-bar mode="determinate" [value]="uploadProgress"  class="custom-progress-bar" [ngClass]="{ 'hidden': hideProgressBar }">
           
@@ -61,6 +61,28 @@
       <span class="material-icons">file_present</span> Choose an Excel File
     </label>
     <button (click)="onUpload()" class="file-label"><span class="material-icons">cloud_upload</span>Upload</button>
+    <br>
+    <button (click)="checkAndCreateRelationId()" class="file-label">Create ActivityLog</button>
+     <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Date range</mat-label>
+      <mat-date-range-input [rangePicker]="rangePicker">
+        <input matStartDate placeholder="Start date" [(ngModel)]="startDate">
+        <input matEndDate placeholder="End date" [(ngModel)]="endDate">
+      </mat-date-range-input>
+      <mat-datepicker-toggle matSuffix [for]="rangePicker"></mat-datepicker-toggle>
+      <mat-date-range-picker #rangePicker></mat-date-range-picker>
+
+      <mat-progress-spinner
+        *ngIf="isLoading"
+        mode="indeterminate"
+        diameter="30">
+      </mat-progress-spinner>
+    </mat-form-field>
+
+    <p>From: {{ startDate | date }} to {{ endDate | date }}</p>
+
+
   </div>
 
   <div class="paste-area" (paste)="onPaste($event)">

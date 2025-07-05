@@ -14,6 +14,22 @@ import { DataTablesModule, } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import * as DataTables from 'datatables.net';
 import 'datatables.net'; // Ensure DataTables functionality is available
+import { provideHttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatNativeDateModule } from '@angular/material/core'; // for default JS Date support
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { firstValueFrom } from 'rxjs';
+
+interface Relation {
+  relationName: string;
+  relationId: string;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -26,12 +42,21 @@ import 'datatables.net'; // Ensure DataTables functionality is available
     DataTablesModule,
     MatProgressBarModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    FormsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatNativeDateModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 
+
+// @Injectable({ providedIn: 'root' })
 export class DashboardComponent {
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
@@ -45,8 +70,12 @@ export class DashboardComponent {
   isUploading: boolean = false;
   showProgressBar = false;
   hideProgressBar = false;
+  startDate: Date | null = null;
+  endDate: Date | null = null;
+  isLoading = false;
+  relations: Relation[] = [];
 
-  constructor(private firestore: Firestore) {
+  constructor(private firestore: Firestore,private http: HttpClient) {
 
   }
 
@@ -227,7 +256,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           const dateObj = new Date(year, month - 1, day, hour, minute, second);
           dateObj.setHours(dateObj.getHours() + 5);
 
-          const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+          const formattedDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
           cells[index] = formattedDate;
         }
       });
@@ -383,6 +412,159 @@ onUpload(): void {
     });
   }
   
+  getAllPagesFromDB(){ 
+    const formattedStartDate = this.startDate
+      ? `${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}`
+      : '';
+    const formattedEndDate = this.endDate
+      ? `${this.endDate.getFullYear()}-${String(this.endDate.getMonth() + 1).padStart(2, '0')}-${String(this.endDate.getDate()).padStart(2, '0')}`
+      : '';
+
+    const body = {
+      "filter": {
+        "and": [
+          {
+            "property": "Date",
+            "date": {
+              "on_or_after": formattedStartDate
+            }
+          },
+          {
+            "property": "Date",
+            "date": {
+              "on_or_before": formattedEndDate
+            }
+          }
+        ]
+      }
+    }
+    this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+    .subscribe({
+      next: async (res:any) => {
+        console.log(res)
+        for (const page of res.results) {
+          console.log(page.id)
+          // const body = {
+          //   "properties": {
+          //     "Activity log": {
+          //       "relation": [
+          //         {
+          //           "id": "22688a31-7d99-8167-b921-fb1703c158a4"
+          //         }
+          //       ]
+          //     }
+          //   }
+          // }
+            // try {
+            //   const res: any = await firstValueFrom(
+            //     this.http.post("http://localhost:3000/api/getRelationName", body)
+            //   );
+
+            //   if (res.results.length > 0) {
+            //     console.log("RelationName already exists for", date);
+            //     this.relations.push({ relationName: date, relationId: res.results[0].id })
+            //   } else {
+            //     console.log('done checking:', date);
+            //     await this.createRelationId(date); // make this async if needed
+            //   }
+            // } catch (error) {
+            //   this.isLoading = false;
+            //   console.error('Error checking relation for', date, error);
+            // }
+        }
+      },
+      error: (err) => {
+        console.error('Error:', err)
+      }
+    });
+  }
+
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async checkAndCreateRelationId(){
+    if(!this.endDate){
+      return
+    }
+    this.isLoading = true;
+    const dateRange: string[] = [];
+    for (
+      let d = new Date(this.startDate ?? '');
+      d <= (this.endDate ?? '');
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dayOfWeek = d.getDay();
+      // Skip weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        continue;
+      }
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const year = d.getFullYear();
+      dateRange.push(`${month}-${day}-${year}`);
+    }
+    
+    for (const date of dateRange) {
+       const body = {
+          "filter": {
+            "property": "Name",
+            "title": {
+              "equals": date
+            }
+          }
+        }
+        try {
+          const res: any = await firstValueFrom(
+            this.http.post("http://localhost:3000/api/getRelationName", body)
+          );
+
+          if (res.results.length > 0) {
+            console.log("RelationName already exists for", date);
+            this.relations.push({ relationName: date, relationId: res.results[0].id })
+          } else {
+            console.log('done checking:', date);
+            await this.createRelationId(date); // make this async if needed
+          }
+          
+          // await this.delay(300); // optional
+        } catch (error) {
+          this.isLoading = false;
+          console.error('Error checking relation for', date, error);
+        }
+    }
+    this.isLoading = false;
+    console.log('All dates checked');
+    // console.log(this.relations)
+    this.getAllPagesFromDB() //Patching relationIds to ActivityLog
+  }
+
+  async createRelationId(dateName:string): Promise<any>{
+    const body = {
+      "parent": {
+        "database_id": "5e00bcb25c3d4276b1de54de3576894a"
+      },
+      "properties": {
+        "Name": {
+          "title": [
+            {
+              "text": {
+                "content": dateName
+              }
+            }
+          ]
+        }
+      }
+    }
+    const res: any = await firstValueFrom(
+      this.http.post("http://localhost:3000/api/createRelationId", body)
+    );
+    if (res) {
+      this.relations.push({ relationName: dateName, relationId: res.id })
+      console.log("created successful:"+dateName);
+    } 
+
+  }
 
 }
 
