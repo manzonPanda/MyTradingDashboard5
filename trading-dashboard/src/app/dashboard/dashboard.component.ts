@@ -31,6 +31,11 @@ interface Relation {
   relationId: string;
 }
 
+interface Trades {
+  tradeDate: string;
+  tradeId: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -72,8 +77,12 @@ export class DashboardComponent {
   hideProgressBar = false;
   startDate: Date | null = null;
   endDate: Date | null = null;
-  isLoading = false;
+  isLoadingChecking = false;
+  isLoadingPatching = false;
+  progressChecking = 0;
+  progressPatching = 0;
   relations: Relation[] = [];
+  trades: Trades[] = [];
 
   constructor(private firestore: Firestore,private http: HttpClient) {
 
@@ -412,13 +421,15 @@ onUpload(): void {
     });
   }
   
-  getAllPagesFromDB(){ 
+  async getAllPagesFromDB(){ 
     const formattedStartDate = this.startDate
       ? `${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}`
       : '';
     const formattedEndDate = this.endDate
       ? `${this.endDate.getFullYear()}-${String(this.endDate.getMonth() + 1).padStart(2, '0')}-${String(this.endDate.getDate()).padStart(2, '0')}`
       : '';
+    this.isLoadingPatching = true;
+    this.progressPatching = 0;
 
     const body = {
       "filter": {
@@ -441,37 +452,54 @@ onUpload(): void {
     this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
     .subscribe({
       next: async (res:any) => {
-        console.log(res)
-        for (const page of res.results) {
-          console.log(page.id)
-          // const body = {
-          //   "properties": {
-          //     "Activity log": {
-          //       "relation": [
-          //         {
-          //           "id": "22688a31-7d99-8167-b921-fb1703c158a4"
-          //         }
-          //       ]
-          //     }
-          //   }
-          // }
-            // try {
-            //   const res: any = await firstValueFrom(
-            //     this.http.post("http://localhost:3000/api/getRelationName", body)
-            //   );
+        // console.log(res)
+        this.trades = [];
+        res.results.map((prop: any) => {
+          const d = new Date(prop.properties.Date.date.start);
+           this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
+                              tradeId: prop.id })
+        });
+        const total = this.trades.length;
+        let completed = 0;
+      // console.log(this.trades)
+      // return
 
-            //   if (res.results.length > 0) {
-            //     console.log("RelationName already exists for", date);
-            //     this.relations.push({ relationName: date, relationId: res.results[0].id })
-            //   } else {
-            //     console.log('done checking:', date);
-            //     await this.createRelationId(date); // make this async if needed
-            //   }
-            // } catch (error) {
-            //   this.isLoading = false;
-            //   console.error('Error checking relation for', date, error);
-            // }
+        for (const trade of this.trades) {
+          // console.log(trade)
+          let relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
+          const body = {
+            "payload": {
+              "properties": {
+                "Activity log": {
+                  "relation": [
+                    {
+                      "id": relationId
+                    }
+                  ]
+                }
+              }
+            },
+            "url":trade.tradeId
+          }
+          // console.log(body)
+          try {
+            const res: any = await firstValueFrom(
+              this.http.patch("http://localhost:3000/api/patchRelationIdToTrade", body) //Patching
+            );
+            if (res) {
+              console.log("Patching successful: "+trade.tradeDate)
+            }else{
+              console.log("Patching failed: "+trade.tradeDate)
+            }
+            completed++;
+            this.progressPatching = Math.floor((completed / total) * 100);
+
+          } catch (error) {
+            console.error('Error patching:', error);
+          }
         }
+        this.isLoadingPatching = false;
+        this.isLoadingChecking = false;
       },
       error: (err) => {
         console.error('Error:', err)
@@ -487,7 +515,10 @@ onUpload(): void {
     if(!this.endDate){
       return
     }
-    this.isLoading = true;
+    this.isLoadingChecking = true;
+    this.isLoadingPatching = true;
+    this.progressChecking = 0;
+    this.progressPatching = 0;
     const dateRange: string[] = [];
     for (
       let d = new Date(this.startDate ?? '');
@@ -504,7 +535,9 @@ onUpload(): void {
       const year = d.getFullYear();
       dateRange.push(`${month}-${day}-${year}`);
     }
-    
+    const total = dateRange.length;
+    let completed = 0;
+
     for (const date of dateRange) {
        const body = {
           "filter": {
@@ -526,15 +559,16 @@ onUpload(): void {
             console.log('done checking:', date);
             await this.createRelationId(date); // make this async if needed
           }
+          completed++;
+          this.progressChecking = Math.floor((completed / total) * 100);
           
           // await this.delay(300); // optional
-        } catch (error) {
-          this.isLoading = false;
+        } catch (error) {         
           console.error('Error checking relation for', date, error);
         }
     }
-    this.isLoading = false;
     console.log('All dates checked');
+   
     // console.log(this.relations)
     this.getAllPagesFromDB() //Patching relationIds to ActivityLog
   }
@@ -560,6 +594,7 @@ onUpload(): void {
       this.http.post("http://localhost:3000/api/createRelationId", body)
     );
     if (res) {
+      this.relations = []
       this.relations.push({ relationName: dateName, relationId: res.id })
       console.log("created successful:"+dateName);
     } 
