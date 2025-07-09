@@ -201,7 +201,7 @@ input[type="file"] {
 
 /* Status colors */
 .matched {
-  background-color: #28d17e;
+  background-color: #00b35a;
 }
 
 .unmatched {
@@ -231,3 +231,18 @@ input[type="file"] {
   }
 }
 
+.notion-button {
+  background-color: #838383;
+  color: white;
+  border: none;
+  margin: 4px 4px 4px 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notion-button:hover {
+  background-color: #00b35a;
+}

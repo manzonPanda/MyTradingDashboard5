@@ -142,7 +142,17 @@
       <tbody>
         <tr *ngFor="let row of tableData">
           <td>{{ row.openDate }}</td>
-          <td>{{ row.tradeNotion }}</td>
+          <td>
+            <ng-container *ngIf="row.status === 'Unmatched' && row.tradeNotion?.length">
+                <button
+                  *ngFor="let tradeNotion of row.tradeNotion"
+                  class="notion-button"
+                  (click)="chooseUnmatchedTrade(tradeNotion)"
+                  style="margin-right: 4px;"
+                >
+                  {{ tradeNotion.tradeDate }}
+                </button>
+            </ng-container></td>
           <td><span [ngClass]="{
               'status-pill matched fade-pulse': row.status === 'Matched',
               'status-pill unmatched fade-pulse': row.status === 'Unmatched'

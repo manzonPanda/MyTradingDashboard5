@@ -38,7 +38,7 @@ interface Trades {
 
 interface Table {
   openDate: string;
-  tradeNotion: string;
+  tradeNotion: Trades[];
   status: string;
   position: string;
   symbol: string;
@@ -311,7 +311,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     // this.tableData = rows;
     this.tableData = rows.map(row => ({
       openDate: row[0],
-      tradeNotion: row[1],
+      tradeNotion: [],
       status: row[2],
       position: row[3],
       symbol: row[4],
@@ -642,55 +642,107 @@ onUpload(): void {
 
   async compareToNotion(){
     //for every rows in table, get the notion trades page using OpenData (as a uniqueID)
-for (const row of this.tableData) {
-   const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
-  const [datePart, timePart] = originalDateStr.split(' ');
-  const [day, month, year] = datePart.split('.').map(Number);
-  const [hour, minute] = timePart.split(':').map(Number);
+    for (const row of this.tableData) {
+      const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
+      const [datePart, timePart] = originalDateStr.split(' ');
+      const [day, month, year] = datePart.split('.').map(Number);
+      const [hour, minute] = timePart.split(':').map(Number);
 
-  // Create the date in local time (assumes you are in GMT+8 like Philippines)
-  const date = new Date(year, month - 1, day, hour, minute);
+      // Create the date in local time (assumes you are in GMT+8 like Philippines)
+      const date = new Date(year, month - 1, day, hour, minute);
 
-  // Manually format to ISO with +08:00 timezone
+      const isoDate = this.formatToNotionDate(date,"yyyyddmm");;
+      const body = {
+        "filter": {
+          "property": "Date",  // exact name of the Date property in Notion
+          "date": {
+            "equals": isoDate
+          }
+        }
+      }
+      const res: any = await firstValueFrom(
+        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+      );
+      if (res.results && res.results.length > 0) {
+        // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
+        row.status = "Matched"
+      }else{
+        row.status = "Unmatched"
+        // console.log('No Matched found for: '+isoDate, error);
+          const tradesForUnmatched = await this.getTradesUnmatched(isoDate)
+          row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
+            trade
+          );
+      }    
+    }
+
+  }
+
+// Helper function to format the date; Manually format to ISO with +08:00 timezone
+ formatToNotionDate(date: Date,dateFormat:String): string {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   const hh = String(date.getHours()).padStart(2, '0');
   const min = String(date.getMinutes()).padStart(2, '0');
+  
+  return (dateFormat === "yyyymmdd")
+  ? `${yyyy}-${mm}-${dd}T${hh}:${min}:00+08:00`
+  : `${yyyy}-${dd}-${mm}T${hh}:${min}:00+08:00`;
+}
 
-  const isoDate = `${yyyy}-${dd}-${mm}T${hh}:${min}:00+08:00`;
-  console.log(isoDate)
-
-  try {
+  async getTradesUnmatched(isoDate:any): Promise<any>{
+    const targetTime = new Date(isoDate); //"2025-07-04T15:37:00+08:00"
+    // Subtract 10 minutes
+    const from = new Date(targetTime.getTime() - 10 * 60 * 1000);
+    // Add 30 minutes
+    const to = new Date(targetTime.getTime() + 30 * 60 * 1000);
+    const fromISO = this.formatToNotionDate(from,"yyyymmdd");
+    const toISO = this.formatToNotionDate(to,"yyyymmdd");
+   
     const body = {
       "filter": {
-        "property": "Date",  // exact name of the Date property in Notion
-        "date": {
-          "equals": isoDate
-        }
+        "and": [
+          {
+            "property": "Date",
+            "date": {
+              "on_or_after": fromISO
+            }
+          },
+          {
+            "property": "Date",
+            "date": {
+              "on_or_before": toISO
+            }
+          }
+        ]
       }
     }
     const res: any = await firstValueFrom(
-    this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
-  );
-  if (res) {
-    console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
-    row.status = "Matched"
-  }else{
-    console.log("Not found ")
-  }
+      this.http.post("http://localhost:3000/api/getAllPagesFromDB", body));
 
-} catch (error) {
-  row.status = "Unmatched"
-  console.log('No Matched found for: '+isoDate, error);
-}
- 
-}
-
+    const tradesFoundForUnmatched:Trades[] = []
+     if (res.results && res.results.length > 0) {
+        res.results.map((prop: any) => {
+          const d = new Date(prop.properties.Date.date.start);
+          const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+          tradesFoundForUnmatched.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}.${d.getFullYear()} ${hh}:${min}`, 
+          tradeId: prop.id })
+        });
+        console.log(tradesFoundForUnmatched)
+      }else{
+        console.log("Not tradesFoundForUnmatched.")
+      }
+      return tradesFoundForUnmatched
   }
 
   populateData(){
     
+  }
+
+  chooseUnmatchedTrade(tradeNotion: Trades){
+    console.log(tradeNotion)
   }
 
 }
