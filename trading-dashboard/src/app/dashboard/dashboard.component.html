@@ -91,7 +91,9 @@
         </div>
       </div>
     </mat-form-field>
-    <button (click)="checkAndCreateRelationId()" class="file-label">Create ActivityLog</button>
+    <button (click)="checkAndCreateRelationId()" class="file-label">Patch ActivityLog</button>
+    <button (click)="compareToNotion()" class="file-label">Compare to Notion</button>
+    <button (click)="populateData()" class="file-label">Populate data</button>
 
 
   </div>
@@ -100,25 +102,28 @@
     <p>Paste your Excel table here!</p>
   </div>
 
-  <div id="testTable" class="table-container"> 
+  <!-- <div id="testTable" class="table-container"> 
     <table>
       <tr *ngFor="let row of tableData">
         <td>{{ row.id }}</td> 
         <td>{{ row.rowData?.column2 }}</td> 
         <td>{{ row.rowData?.column3 }}</td> 
-        <!-- Adjust based on your fields -->
+
       </tr>
     </table>
-  </div>
+  </div> -->
  
-  <button (click)="copyColumns(12,13)">Copy Net Profit</button>
+  <!-- <button (click)="copyColumns(12,13)">Copy Net Profit</button> -->
   <!-- Display uploaded Excel Data -->
   <div class="table-container">
     <table class="excel-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
       <thead>
         <tr>
           <!-- <th *ngFor="let column of tableData[0]">{{ column }}</th> -->
+           <!-- [class.hidden]="!showNotionData" class="notion-data" -->
            <th>Open Date</th>
+           <th class="notion-data">Trades (Notion)</th>
+           <th class="notion-data">Status</th>
            <th>Position</th>
            <th>Symbol</th>
            <th>Type</th>
@@ -136,7 +141,26 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of tableData">
-          <td *ngFor="let cell of row">{{ cell }}</td>
+          <td>{{ row.openDate }}</td>
+          <td>{{ row.tradeNotion }}</td>
+          <td><span [ngClass]="{
+              'status-pill matched fade-pulse': row.status === 'Matched',
+              'status-pill unmatched fade-pulse': row.status === 'Unmatched'
+            }"
+            >{{ row.status }} </span></td>
+          <td>{{ row.position }}</td>
+          <td>{{ row.symbol }}</td>
+          <td>{{ row.type }}</td>
+          <td>{{ row.volume }}</td>
+          <td>{{ row.entry }}</td>
+          <td>{{ row.sL }}</td>
+          <td>{{ row.tP }}</td>
+          <td>{{ row.closeDate }}</td>
+          <td>{{ row.exit }}</td>
+          <td>{{ row.commission }}</td>
+          <td>{{ row.swap }}</td>
+          <td>{{ row.profit }}</td>
+          <td>{{ row.netProfit }}</td>
         </tr>
       </tbody>
     </table>

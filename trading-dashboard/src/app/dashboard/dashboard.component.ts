@@ -36,6 +36,25 @@ interface Trades {
   tradeId: string;
 }
 
+interface Table {
+  openDate: string;
+  tradeNotion: string;
+  status: string;
+  position: string;
+  symbol: string;
+  type: string;
+  volume: string;
+  entry: string;
+  sL: string;
+  tP: string;
+  closeDate: string;
+  exit: string;
+  commission: string;
+  swap: string;
+  profit: string;
+  netProfit: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -66,7 +85,7 @@ export class DashboardComponent {
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
   locale: string = 'en';
-  tableData: any[] = [];
+  tableData: Table[] = [];
   rawData: any[] = [];
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
@@ -83,7 +102,7 @@ export class DashboardComponent {
   progressPatching = 0;
   relations: Relation[] = [];
   trades: Trades[] = [];
-
+  showNotionData = false;
   constructor(private firestore: Firestore,private http: HttpClient) {
 
   }
@@ -103,9 +122,8 @@ export class DashboardComponent {
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
     this.addTradesToCalendar();
-    // console.log(this.events)
 
-    // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering
+    // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering | Enable DataTable feature
 
   }
 
@@ -132,9 +150,9 @@ export class DashboardComponent {
  addTradesToCalendar() {
   // console.log("tableData::"+this.tableData)
     this.tableData.forEach(row => {
-      const tradeDateString = row[0]; // Column 0: the date string
-      const symbol = row[2];           // Column 2: symbol
-      const type = row[3];             // Column 3: buy/sell
+      const tradeDateString = row.openDate; // Column 0: the date string
+      const symbol = row.symbol;           // Column 2: symbol
+      const type = row.position;             // Column 3: buy/sell
   
       const tradeDate = this.parseTradeDate(tradeDateString);
       
@@ -150,18 +168,18 @@ export class DashboardComponent {
             },
             allDay: true,
             meta: {
-              position: row[1],
-              symbol: row[2],
-              type: row[3],
-              volume: parseFloat(row[4]),
-              openPrice: parseFloat(row[5]),
-              stopLoss: parseFloat(row[6]),
-              takeProfit: parseFloat(row[7]),
-              closeTime: new Date(row[8].replace(' ', 'T')),
-              closePrice: parseFloat(row[9]),
-              commission: parseFloat(row[10]),
-              swap: parseFloat(row[11]),
-              profit: parseFloat(row[12]),
+              position: row.position,
+              symbol: row.symbol,
+              type: row.type,
+              volume: parseFloat(row.volume),
+              openPrice: parseFloat(row.entry),
+              stopLoss: parseFloat(row.sL),
+              takeProfit: parseFloat(row.tP),
+              closeTime: new Date(row.closeDate.replace(' ', 'T')),
+              closePrice: parseFloat(row.exit),
+              commission: parseFloat(row.commission),
+              swap: parseFloat(row.swap),
+              profit: parseFloat(row.profit),
             }
           }
         ];
@@ -283,11 +301,32 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       //add 13th column-Net Profit
       cells[13] = (parseFloat(cells[10]) + parseFloat(cells[12])).toFixed(2)
 
+      // ✅ Insert null at position 1 and 2 (for displaying notion data later)
+      cells.splice(1, 0, "");   // Insert at index 1
+      cells.splice(2, 0, ""); // Insert at index 2 (after symbol)
       return cells;
     }); 
 
-    this.tableData = rows;
-    console.log(this.tableData)
+    console.log(rows)
+    // this.tableData = rows;
+    this.tableData = rows.map(row => ({
+      openDate: row[0],
+      tradeNotion: row[1],
+      status: row[2],
+      position: row[3],
+      symbol: row[4],
+      type: row[5],
+      volume: row[6],
+      entry: row[3],
+      sL: row[4],
+      tP: row[5],
+      closeDate: row[6],
+      exit: row[3],
+      commission: row[4],
+      swap: row[5],
+      profit: row[6],
+      netProfit: row[6]
+    } as Table)); //The 'as Table' makes sure it matches the interface
   }
 
   onFileSelected(event: any): void {
@@ -359,7 +398,7 @@ onUpload(): void {
 
   this.tableData.forEach(async (row) => {
     try {
-      const documentId = row[0];
+      const documentId = row.openDate;
       const docRef = doc(collectionRef, documentId);
       await setDoc(docRef, {
         rowData: row
@@ -412,13 +451,13 @@ onUpload(): void {
   }
   
   copyColumns(index1: number, index2: number): void {
-    const combinedValues = this.tableData.map(row => {
-      return `${row[index1]}\t${row[index2]}`; // tab-separated
-    });
-    const textToCopy = combinedValues.join('\n');
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      alert('Two columns copied to clipboard!');
-    });
+    // const combinedValues = this.tableData.map(row => {
+    //   return `${row[index1]}\t${row[index2]}`; // tab-separated
+    // });
+    // const textToCopy = combinedValues.join('\n');
+    // navigator.clipboard.writeText(textToCopy).then(() => {
+    //   alert('Two columns copied to clipboard!');
+    // });
   }
   
   async getAllPagesFromDB(){ 
@@ -599,6 +638,59 @@ onUpload(): void {
       console.log("created successful:"+dateName);
     } 
 
+  }
+
+  async compareToNotion(){
+    //for every rows in table, get the notion trades page using OpenData (as a uniqueID)
+for (const row of this.tableData) {
+   const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
+  const [datePart, timePart] = originalDateStr.split(' ');
+  const [day, month, year] = datePart.split('.').map(Number);
+  const [hour, minute] = timePart.split(':').map(Number);
+
+  // Create the date in local time (assumes you are in GMT+8 like Philippines)
+  const date = new Date(year, month - 1, day, hour, minute);
+
+  // Manually format to ISO with +08:00 timezone
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+
+  const isoDate = `${yyyy}-${dd}-${mm}T${hh}:${min}:00+08:00`;
+  console.log(isoDate)
+
+  try {
+    const body = {
+      "filter": {
+        "property": "Date",  // exact name of the Date property in Notion
+        "date": {
+          "equals": isoDate
+        }
+      }
+    }
+    const res: any = await firstValueFrom(
+    this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+  );
+  if (res) {
+    console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
+    row.status = "Matched"
+  }else{
+    console.log("Not found ")
+  }
+
+} catch (error) {
+  row.status = "Unmatched"
+  console.log('No Matched found for: '+isoDate, error);
+}
+ 
+}
+
+  }
+
+  populateData(){
+    
   }
 
 }

@@ -68,4 +68,28 @@ app.post('/api/getAllPagesFromDB', async (req, res) => {
   }
 });
 
+app.patch('/api/patchRelationIdToTrade', async (req, res) => {
+  try {
+    // const url = "https://api.notion.com/v1/pages/" + req.url
+    const pageId = req.body.url;
+    const payload = req.body.payload;
+    const response = await axios.patch(
+      `https://api.notion.com/v1/pages/${pageId}`,
+      req.body.payload,
+      {
+        headers: {
+          Authorization: `Bearer ${NOTION_TOKEN}`,
+          'Notion-Version': NOTION_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    res.json(response.data);
+  } catch (err) {
+    res.status(err.response?.status || 500).json(err.response?.data || { error: 'Unknown error' });
+  }
+});
+
+
+
 app.listen(3000, () => console.log('✅ Server running at http://localhost:3000'));
