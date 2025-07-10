@@ -103,7 +103,8 @@ export class DashboardComponent {
   relations: Relation[] = [];
   trades: Trades[] = [];
   showNotionData = false;
-  selectedTradeId: string | null = null;
+  // selectedTradeId: string | null = null;
+  selectedTradeId: { [position: string]: string | null } = {};
 
 
   constructor(private firestore: Firestore,private http: HttpClient) {
@@ -744,20 +745,21 @@ onUpload(): void {
     
   }
 
-  chooseUnmatchedTrade(tradeNotion: Trades){
+  chooseUnmatchedTrade(tradeNotion: Trades, row: Table){
+      const pos = row.position;
     // console.log(tradeNotion)
      const targetRow = this.tableData.find(row =>
         row.tradeNotion?.some(trade => trade.tradeId === tradeNotion.tradeId)
       );
       console.log(targetRow)
       // Toggle: if clicked again, deselect
-      if (this.selectedTradeId === tradeNotion.tradeId) { //change the button color of the trade chosen
-        this.selectedTradeId = null;
+      if (this.selectedTradeId[pos] === tradeNotion.tradeId) { //change the button color of the trade chosen
+        this.selectedTradeId[pos] = null;
       } else {
-        this.selectedTradeId = tradeNotion.tradeId;
+        this.selectedTradeId[pos] = tradeNotion.tradeId;
       }
       if (targetRow) {
-        if( (targetRow.status == "Unmatched" && this.selectedTradeId === tradeNotion.tradeId) || (targetRow.status == "Matched" && this.selectedTradeId === tradeNotion.tradeId) ){
+        if( (targetRow.status == "Unmatched" && this.selectedTradeId[pos] === tradeNotion.tradeId) || (targetRow.status == "Matched" && this.selectedTradeId[pos] === tradeNotion.tradeId) ){
           targetRow.status = "Matched" 
           // this.selectedTradeId = tradeNotion.tradeId;
         }else{
@@ -767,6 +769,14 @@ onUpload(): void {
       } else {
         console.warn("No matching row found for tradeId:", targetRow);
       }
+      /////////////////////////////
+      // if (this.selectedTradeId[pos] === tradeNotion.tradeId) {
+      //   this.selectedTradeId[pos] = null; // toggle off
+      // } else {
+      //   this.selectedTradeId[pos] = tradeNotion.tradeId; // select
+      // }
+
+
   }
 
 }

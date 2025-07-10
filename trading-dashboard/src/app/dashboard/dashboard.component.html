@@ -147,8 +147,8 @@
                 <button
                   *ngFor="let tradeNotion of row.tradeNotion"
                   class="notion-button fade-pulse"
-                  [ngClass]="{ 'selected-button': selectedTradeId === tradeNotion.tradeId }"
-                  (click)="chooseUnmatchedTrade(tradeNotion)"
+                  [ngClass]="{ 'selected-button': selectedTradeId[row.position] === tradeNotion.tradeId }"
+                  (click)="chooseUnmatchedTrade(tradeNotion,row)"
                   style="margin-right: 4px;"
                 >
                   {{ tradeNotion.tradeDate }}
