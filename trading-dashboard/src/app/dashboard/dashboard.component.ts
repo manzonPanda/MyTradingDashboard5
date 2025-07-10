@@ -103,6 +103,9 @@ export class DashboardComponent {
   relations: Relation[] = [];
   trades: Trades[] = [];
   showNotionData = false;
+  selectedTradeId: string | null = null;
+
+
   constructor(private firestore: Firestore,private http: HttpClient) {
 
   }
@@ -645,13 +648,12 @@ onUpload(): void {
     for (const row of this.tableData) {
       const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
       const [datePart, timePart] = originalDateStr.split(' ');
-      const [day, month, year] = datePart.split('.').map(Number);
+      const [month, day, year] = datePart.split('.').map(Number);
       const [hour, minute] = timePart.split(':').map(Number);
 
       // Create the date in local time (assumes you are in GMT+8 like Philippines)
       const date = new Date(year, month - 1, day, hour, minute);
-
-      const isoDate = this.formatToNotionDate(date,"yyyyddmm");;
+      const isoDate = this.formatToNotionDate(date,"yyyymmdd");;
       const body = {
         "filter": {
           "property": "Date",  // exact name of the Date property in Notion
@@ -692,6 +694,7 @@ onUpload(): void {
 }
 
   async getTradesUnmatched(isoDate:any): Promise<any>{
+    console.log(isoDate)
     const targetTime = new Date(isoDate); //"2025-07-04T15:37:00+08:00"
     // Subtract 10 minutes
     const from = new Date(targetTime.getTime() - 10 * 60 * 1000);
@@ -726,7 +729,7 @@ onUpload(): void {
         res.results.map((prop: any) => {
           const d = new Date(prop.properties.Date.date.start);
           const hh = String(d.getHours()).padStart(2, '0');
-            const min = String(d.getMinutes()).padStart(2, '0');
+          const min = String(d.getMinutes()).padStart(2, '0');
           tradesFoundForUnmatched.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}.${d.getFullYear()} ${hh}:${min}`, 
           tradeId: prop.id })
         });
@@ -742,7 +745,28 @@ onUpload(): void {
   }
 
   chooseUnmatchedTrade(tradeNotion: Trades){
-    console.log(tradeNotion)
+    // console.log(tradeNotion)
+     const targetRow = this.tableData.find(row =>
+        row.tradeNotion?.some(trade => trade.tradeId === tradeNotion.tradeId)
+      );
+      console.log(targetRow)
+      // Toggle: if clicked again, deselect
+      if (this.selectedTradeId === tradeNotion.tradeId) { //change the button color of the trade chosen
+        this.selectedTradeId = null;
+      } else {
+        this.selectedTradeId = tradeNotion.tradeId;
+      }
+      if (targetRow) {
+        if( (targetRow.status == "Unmatched" && this.selectedTradeId === tradeNotion.tradeId) || (targetRow.status == "Matched" && this.selectedTradeId === tradeNotion.tradeId) ){
+          targetRow.status = "Matched" 
+          // this.selectedTradeId = tradeNotion.tradeId;
+        }else{
+          targetRow.status = "Unmatched"
+          // this.selectedTradeId = null;
+        }
+      } else {
+        console.warn("No matching row found for tradeId:", targetRow);
+      }
   }
 
 }

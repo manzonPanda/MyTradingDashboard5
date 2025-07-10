@@ -243,6 +243,10 @@ input[type="file"] {
   transition: background-color 0.2s ease;
 }
 
+.selected-button {
+  background-color: #00b35a; /* Highlighted blue */
+  color: white;
+}
 .notion-button:hover {
   background-color: #00b35a;
 }
