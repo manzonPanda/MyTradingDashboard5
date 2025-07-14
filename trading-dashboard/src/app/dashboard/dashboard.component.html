@@ -140,18 +140,18 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of tableData">
+        <tr *ngFor="let row of tableData;let i = index">
           <td>{{ row.openDate }}</td>
           <td>
             <ng-container >
                 <button
-                  *ngFor="let tradeNotion of row.tradeNotion"
+                  *ngFor="let trade  of row.tradeNotion"
                   class="notion-button fade-pulse"
-                  [ngClass]="{ 'selected-button': selectedTradeId[row.position] === tradeNotion.tradeId }"
-                  (click)="chooseUnmatchedTrade(tradeNotion,row)"
+                  [ngClass]="{ 'selected-button': selectedTradeId[i] === trade .tradeId }"
+                  (click)="chooseUnmatchedTrade(trade ,row,i)"
                   style="margin-right: 4px;"
                 >
-                  {{ tradeNotion.tradeDate }}
+                  {{ trade .tradeDate }}
                 </button>
             </ng-container></td>
           <td><span class="status-pill" [ngClass]="{

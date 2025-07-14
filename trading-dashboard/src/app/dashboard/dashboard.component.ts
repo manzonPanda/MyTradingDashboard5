@@ -745,39 +745,17 @@ onUpload(): void {
     
   }
 
-  chooseUnmatchedTrade(tradeNotion: Trades, row: Table){
-      const pos = row.position;
-    // console.log(tradeNotion)
-     const targetRow = this.tableData.find(row =>
-        row.tradeNotion?.some(trade => trade.tradeId === tradeNotion.tradeId)
-      );
-      console.log(targetRow)
-      // Toggle: if clicked again, deselect
-      if (this.selectedTradeId[pos] === tradeNotion.tradeId) { //change the button color of the trade chosen
-        this.selectedTradeId[pos] = null;
-      } else {
-        this.selectedTradeId[pos] = tradeNotion.tradeId;
-      }
-      if (targetRow) {
-        if( (targetRow.status == "Unmatched" && this.selectedTradeId[pos] === tradeNotion.tradeId) || (targetRow.status == "Matched" && this.selectedTradeId[pos] === tradeNotion.tradeId) ){
-          targetRow.status = "Matched" 
-          // this.selectedTradeId = tradeNotion.tradeId;
-        }else{
-          targetRow.status = "Unmatched"
-          // this.selectedTradeId = null;
-        }
-      } else {
-        console.warn("No matching row found for tradeId:", targetRow);
-      }
-      /////////////////////////////
-      // if (this.selectedTradeId[pos] === tradeNotion.tradeId) {
-      //   this.selectedTradeId[pos] = null; // toggle off
-      // } else {
-      //   this.selectedTradeId[pos] = tradeNotion.tradeId; // select
-      // }
-
-
+  chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
+  // Toggle the selected button for this row
+  if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
+    this.selectedTradeId[rowIndex] = null;
+    row.status = "Unmatched"; // Unselecting = revert to unmatched
+  } else {
+    this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
+    row.status = "Matched"; // Selecting = mark as matched
   }
+}
+
 
 }
 
