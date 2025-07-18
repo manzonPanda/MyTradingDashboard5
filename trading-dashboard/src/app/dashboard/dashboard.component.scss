@@ -244,9 +244,24 @@ input[type="file"] {
 }
 
 .selected-button {
-  background-color: #00b35a; /* Highlighted blue */
+  background-color: #00b35a; 
   color: white;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .notion-button:hover {
   background-color: #00b35a;
+}
+.matched-trade {
+  background-color: #00b35a;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.revert-button{
+  background-color: #f54260;
+}
+.revert-button:hover{
+  background-color: rgb(233, 22, 22);
+   transition: background-color 0.3s ease;
 }

@@ -321,15 +321,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       symbol: row[4],
       type: row[5],
       volume: row[6],
-      entry: row[3],
-      sL: row[4],
-      tP: row[5],
-      closeDate: row[6],
-      exit: row[3],
-      commission: row[4],
-      swap: row[5],
-      profit: row[6],
-      netProfit: row[6]
+      entry: row[7],
+      sL: row[8],
+      tP: row[9],
+      closeDate: row[10],
+      exit: row[11],
+      commission: row[12],
+      swap: row[13],
+      profit: row[14],
+      netProfit: row[15]
     } as Table)); //The 'as Table' makes sure it matches the interface
   }
 
@@ -645,7 +645,7 @@ onUpload(): void {
   }
 
   async compareToNotion(){
-    //for every rows in table, get the notion trades page using OpenData (as a uniqueID)
+    //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
     for (const row of this.tableData) {
       const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
       const [datePart, timePart] = originalDateStr.split(' ');
@@ -668,6 +668,8 @@ onUpload(): void {
       );
       if (res.results && res.results.length > 0) {
         // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
+        // console.log("Matched found:",res.results[0].id)
+        row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
         row.status = "Matched"
       }else{
         row.status = "Unmatched"
@@ -742,21 +744,30 @@ onUpload(): void {
   }
 
   populateData(){
-    
+      console.log(this.tableData)
   }
 
   chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
-  // Toggle the selected button for this row
-  if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
-    this.selectedTradeId[rowIndex] = null;
-    row.status = "Unmatched"; // Unselecting = revert to unmatched
-  } else {
-    this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
-    row.status = "Matched"; // Selecting = mark as matched
+    // Toggle the selected button for this row
+    if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
+      this.selectedTradeId[rowIndex] = null;
+      row.status = "Unmatched"; // Unselecting = revert to unmatched
+    } else {
+      this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
+      row.status = "Matched"; // Selecting = mark as matched
+    }
+    localStorage.setItem(rowIndex.toString(), JSON.stringify(row.tradeNotion));
+    row.tradeNotion = [{tradeDate: tradeNotion.tradeDate, tradeId: tradeNotion.tradeId},{tradeDate: "", tradeId: ""}];
   }
+
+  revertTradeNotion(row: Table, rowIndex: number) {
+    // Revert the tradeNotion to an empty array
+    row.tradeNotion = [];
+    this.selectedTradeId[rowIndex] = null; // Reset the selected trade ID for this row
+    row.status = "Unmatched"; // Set status back to unmatched
+    row.tradeNotion = localStorage.getItem(rowIndex.toString()) ? JSON.parse(localStorage.getItem(rowIndex.toString()) || '[]') : [];
+    localStorage.removeItem(rowIndex.toString()); // Clear local storage if needed
+  }
+
 }
-
-
-}
-
 

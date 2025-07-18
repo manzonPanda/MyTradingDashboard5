@@ -143,17 +143,33 @@
         <tr *ngFor="let row of tableData;let i = index">
           <td>{{ row.openDate }}</td>
           <td>
-            <ng-container >
-                <button
-                  *ngFor="let trade  of row.tradeNotion"
-                  class="notion-button fade-pulse"
-                  [ngClass]="{ 'selected-button': selectedTradeId[i] === trade .tradeId }"
-                  (click)="chooseUnmatchedTrade(trade ,row,i)"
-                  style="margin-right: 4px;"
-                >
-                  {{ trade .tradeDate }}
-                </button>
-            </ng-container></td>
+            <ng-container>
+  <button
+    *ngFor="let trade of row.tradeNotion"
+    class="notion-button fade-pulse"
+    [ngClass]="{
+      'selected-button': selectedTradeId[i] === trade.tradeId,
+      'matched-trade': !trade.tradeDate && trade.tradeId,
+      'revert-button': !trade.tradeDate && !trade.tradeId
+    }"
+    (click)="trade.tradeDate ? chooseUnmatchedTrade(trade, row, i) : (!trade.tradeId ? revertTradeNotion(row,i) : null)"
+    [disabled]="!trade.tradeDate && trade.tradeId"
+    
+  >
+    <ng-container *ngIf="trade.tradeDate; else showReload">
+      {{ trade.tradeDate }}
+    </ng-container>
+    <ng-template #showReload>
+      <ng-container *ngIf="!trade.tradeId && !trade.tradeDate" >
+        <i class="material-icons" style="vertical-align: middle;">refresh</i>
+      </ng-container>
+      <ng-container *ngIf="trade.tradeId && !trade.tradeDate">
+        {{ trade.tradeId }}
+      </ng-container>
+    </ng-template>
+  </button>
+</ng-container>
+</td>
           <td><span class="status-pill" [ngClass]="{
               'matched fade-pulse': row.status === 'Matched',
               'unmatched fade-pulse': row.status === 'Unmatched'
