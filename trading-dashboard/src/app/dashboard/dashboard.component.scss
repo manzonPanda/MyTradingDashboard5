@@ -96,7 +96,7 @@ input[type="file"] {
 }
 
 .excel-table .notion-data {
-  background-color: #0004ff;
+  background-color: #838383;
   color: white;
   font-weight: bold;
 }
@@ -171,21 +171,32 @@ input[type="file"] {
   opacity: 0;
 }
 
-.spinner-container {
+/* COMPONENT CSS */
+.spinner-wrapper.large {
   position: relative;
-  width: 45px;
-  height: 45x;
+  width: 150px;
+  height: 150px;
+  text-align: center;
 }
 
 .spinner-text {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 11px;
+  transform: translate(-50%, -60%);
+  font-size: 25px;
   font-weight: bold;
-  color: #30bde0;
+  color: #00bcd4;
+  pointer-events: none;
 }
+
+.spinner-label {
+  font-size: 15px;
+  margin-top: 4px;
+  font-weight: normal;
+  color: #555;
+}
+
 
 .status-pill {
   display: inline-block;
@@ -265,3 +276,4 @@ input[type="file"] {
   background-color: rgb(233, 22, 22);
    transition: background-color 0.3s ease;
 }
+

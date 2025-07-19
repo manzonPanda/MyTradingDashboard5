@@ -70,33 +70,42 @@
       </mat-date-range-input>
       <mat-datepicker-toggle matSuffix [for]="rangePicker"></mat-datepicker-toggle>
       <mat-date-range-picker #rangePicker></mat-date-range-picker>
-      <div style="display: flex; gap: 20px; align-items: center;">
-        <div *ngIf="isLoadingChecking" class="spinner-container">
-          <mat-progress-spinner
-            [value]="progressChecking"
-            mode="determinate"
-            diameter="45"
-            strokeWidth="5">
-          </mat-progress-spinner>
-          <div class="spinner-text">{{ progressChecking }}%</div>
-        </div>
-        <div *ngIf="isLoadingPatching" class="spinner-container">
-          <mat-progress-spinner
-            [value]="progressPatching"
-            mode="determinate"
-            diameter="45"
-            strokeWidth="5">
-          </mat-progress-spinner>
-          <div class="spinner-text">{{ progressPatching }}%</div>
-        </div>
-      </div>
+
     </mat-form-field>
     <button (click)="checkAndCreateRelationId()" class="file-label">Patch ActivityLog</button>
     <button (click)="compareToNotion()" class="file-label">Compare to Notion</button>
     <button (click)="populateData()" class="file-label">Populate data</button>
-
-
   </div>
+
+        <!-- COMPONENT HTML -->
+<div style="display: flex; gap: 30px; align-items: center;">
+  <div *ngIf="isLoadingChecking" class="spinner-wrapper large">
+    <mat-progress-spinner
+      [value]="progressChecking"
+      mode="determinate"
+      diameter="150"
+      strokeWidth="12">
+    </mat-progress-spinner>
+    <div class="spinner-text">
+      {{ progressChecking }}%
+      <div class="spinner-label">Checking</div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoadingPatching" class="spinner-wrapper large">
+    <mat-progress-spinner
+      [value]="progressPatching"
+      mode="determinate"
+      diameter="150"
+      strokeWidth="12">
+    </mat-progress-spinner>
+    <div class="spinner-text">
+      {{ progressPatching }}%
+      <div class="spinner-label">Patching</div>
+    </div>
+  </div>
+</div>
+
 
   <div class="paste-area" (paste)="onPaste($event)">
     <p>Paste your Excel table here!</p>

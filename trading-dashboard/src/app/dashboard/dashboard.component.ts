@@ -123,6 +123,7 @@ export class DashboardComponent {
 			keys: true
     };
 
+    localStorage.clear(); // Clear local storage on component initialization
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
     this.addTradesToCalendar();
@@ -464,12 +465,12 @@ onUpload(): void {
     // });
   }
   
-  async getAllPagesFromDB(){ 
-    const formattedStartDate = this.startDate
-      ? `${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}`
+  async getAllPagesFromDB(startDate:Date,endDate:Date){ 
+    const formattedStartDate = startDate
+      ? `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
       : '';
-    const formattedEndDate = this.endDate
-      ? `${this.endDate.getFullYear()}-${String(this.endDate.getMonth() + 1).padStart(2, '0')}-${String(this.endDate.getDate()).padStart(2, '0')}`
+    const formattedEndDate = endDate
+      ? `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
       : '';
     this.isLoadingPatching = true;
     this.progressPatching = 0;
@@ -499,16 +500,20 @@ onUpload(): void {
         this.trades = [];
         res.results.map((prop: any) => {
           const d = new Date(prop.properties.Date.date.start);
-           this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
-                              tradeId: prop.id })
+          const dayOfWeek = d.getDay();
+          // Skip weekends (0 = Sunday, 6 = Saturday)
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            // console.log(d)
+            // console.log(dayOfWeek)
+            this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
+            tradeId: prop.id });
+          }
         });
         const total = this.trades.length;
         let completed = 0;
-      // console.log(this.trades)
-      // return
 
         for (const trade of this.trades) {
-          // console.log(trade)
+          // console.log("trade",trade)
           let relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
           const body = {
             "payload": {
@@ -555,24 +560,18 @@ onUpload(): void {
   }
 
   async checkAndCreateRelationId(){
-    if(!this.endDate){
-      return
-    }
+    // if (!this.startDate || !this.endDate){  // Check if startDate or endDate is null{
+    //   return
+    // }
     this.isLoadingChecking = true;
     this.isLoadingPatching = true;
     this.progressChecking = 0;
     this.progressPatching = 0;
     const dateRange: string[] = [];
-    for (
-      let d = new Date(this.startDate ?? '');
-      d <= (this.endDate ?? '');
-      d.setDate(d.getDate() + 1)
-    ) {
-      const dayOfWeek = d.getDay();
-      // Skip weekends (0 = Sunday, 6 = Saturday)
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        continue;
-      }
+
+    //loop every trades in the table,format the date and save it to dateRange as MM-DD-YYYY
+    for ( let i=0; i<= this.tableData.length-1; i++){
+      let d = new Date(this.tableData[i].openDate ?? '');
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       const year = d.getFullYear();
@@ -580,8 +579,17 @@ onUpload(): void {
     }
     const total = dateRange.length;
     let completed = 0;
-
+    //loop every date in dateRange, check if relationName already exists in Notion, if not, create it
+    //however, to speed up the loop process, if the previous date is already done checking and if date already exists in this.relations, continue already to the next date
     for (const date of dateRange) {
+       // ✅ Skip if already exists
+        const alreadyProcessed = this.relations.some(rel => rel.relationName === date);
+        if (alreadyProcessed) {
+          completed++;
+          this.progressChecking = Math.floor((completed / total) * 100);
+          continue; // Skip to next date
+        }
+
        const body = {
           "filter": {
             "property": "Name",
@@ -594,14 +602,21 @@ onUpload(): void {
           const res: any = await firstValueFrom(
             this.http.post("http://localhost:3000/api/getRelationName", body)
           );
-
+          //To check if an object with the same relationName already exists in the this.relations array before pushing
           if (res.results.length > 0) {
-            console.log("RelationName already exists for", date);
-            this.relations.push({ relationName: date, relationId: res.results[0].id })
+            const exists = this.relations.some(
+              rel => rel.relationName === date && rel.relationId === res.results[0].id
+            );
+            if (!exists) {
+              this.relations.push({
+                relationName: date,
+                relationId: res.results[0].id
+              });
+            }
           } else {
-            console.log('done checking:', date);
             await this.createRelationId(date); // make this async if needed
           }
+          console.log('done checking:', date);
           completed++;
           this.progressChecking = Math.floor((completed / total) * 100);
           
@@ -612,8 +627,10 @@ onUpload(): void {
     }
     console.log('All dates checked');
    
-    // console.log(this.relations)
-    this.getAllPagesFromDB() //Patching relationIds to ActivityLog
+    console.log(this.relations)
+    const startDate = new Date(this.tableData[0].openDate ?? '')
+    const endDate = new Date(this.tableData[this.tableData.length-1].openDate ?? '')
+    this.getAllPagesFromDB(startDate,endDate) //Patching relationIds to ActivityLog
   }
 
   async createRelationId(dateName:string): Promise<any>{
@@ -637,7 +654,7 @@ onUpload(): void {
       this.http.post("http://localhost:3000/api/createRelationId", body)
     );
     if (res) {
-      this.relations = []
+      // this.relations = []
       this.relations.push({ relationName: dateName, relationId: res.id })
       console.log("created successful:"+dateName);
     } 
