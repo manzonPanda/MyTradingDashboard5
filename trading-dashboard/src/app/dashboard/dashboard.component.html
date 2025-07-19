@@ -62,7 +62,7 @@
     </label>
     <button (click)="onUpload()" class="file-label"><span class="material-icons">cloud_upload</span>Upload</button>
     <br>     
-    <mat-form-field appearance="fill">
+    <!-- <mat-form-field appearance="fill">
       <mat-label>Date range</mat-label>
       <mat-date-range-input [rangePicker]="rangePicker">
         <input matStartDate placeholder="Start date" [(ngModel)]="startDate">
@@ -71,7 +71,7 @@
       <mat-datepicker-toggle matSuffix [for]="rangePicker"></mat-datepicker-toggle>
       <mat-date-range-picker #rangePicker></mat-date-range-picker>
 
-    </mat-form-field>
+    </mat-form-field> -->
     <button (click)="checkAndCreateRelationId()" class="file-label">Patch ActivityLog</button>
     <button (click)="compareToNotion()" class="file-label">Compare to Notion</button>
     <button (click)="populateData()" class="file-label">Populate data</button>

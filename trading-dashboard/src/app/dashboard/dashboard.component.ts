@@ -760,10 +760,6 @@ onUpload(): void {
       return tradesFoundForUnmatched
   }
 
-  populateData(){
-      console.log(this.tableData)
-  }
-
   chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Toggle the selected button for this row
     if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
@@ -786,5 +782,45 @@ onUpload(): void {
     localStorage.removeItem(rowIndex.toString()); // Clear local storage if needed
   }
 
+  async populateData(){
+    console.log(this.tableData)
+    const allMatched = this.tableData.every(item => item.status === 'Matched'); //returns true only if every object in the array meets the condition.
+    if (allMatched) {
+      console.log('✅ All trades are matched.');
+      for (const trade of this.tableData) {
+          const percentPnLTemp = parseFloat(trade.netProfit) / 100;
+          const percentPnL = parseFloat(percentPnLTemp.toFixed(2)); // -0.23
+          const body = {
+            "payload": {
+              "properties": {
+                "PnL": {
+                  "number": trade.netProfit ? parseFloat(trade.netProfit) : "" // Ensure netProfit is a number
+                },
+                "%PnL": {
+                  "number": percentPnL
+                }
+              }
+            },
+            "url":trade.tradeNotion[0].tradeId // Use the first tradeId from tradeNotion
+          }
+
+          try {
+            const res: any = await firstValueFrom(
+              this.http.patch("http://localhost:3000/api/updatePropertiesToTrade", body)
+            );
+            if (res) {
+              console.log("Updating successful: ",res)
+            } 
+
+            // await this.delay(300); // optional
+          } catch (error) {         
+            console.error('Error checking relation for', error);
+          }
+      }
+
+    } else {
+      console.log('❌ Some trades are still unmatched.');
+    }
+  }
 }
 
