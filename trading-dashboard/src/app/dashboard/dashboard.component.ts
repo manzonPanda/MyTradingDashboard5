@@ -98,8 +98,16 @@ export class DashboardComponent {
   endDate: Date | null = null;
   isLoadingChecking = false;
   isLoadingPatching = false;
+  isLoadingComparing = false;
+  isLoadingPopulating = false;
+  checkingError = false;
+  patchingError = false;
+  comparingError = false;
+  populatingError = false;
   progressChecking = 0;
   progressPatching = 0;
+  progressComparing = 0;
+  progressPopulating = 0;
   relations: Relation[] = [];
   trades: Trades[] = [];
   showNotionData = false;
@@ -472,7 +480,7 @@ onUpload(): void {
     const formattedEndDate = endDate
       ? `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
       : '';
-    this.isLoadingPatching = true;
+    // this.isLoadingPatching = true;
     this.progressPatching = 0;
 
     const body = {
@@ -543,13 +551,15 @@ onUpload(): void {
             this.progressPatching = Math.floor((completed / total) * 100);
 
           } catch (error) {
-            console.error('Error patching:', error);
+            this.patchingError = true
+            console.error('Error patching:',trade, error);
           }
         }
-        this.isLoadingPatching = false;
-        this.isLoadingChecking = false;
+        // this.isLoadingPatching = false; //hide the progress for checking and patching, which should be located at the end of the process
+        // this.isLoadingChecking = false;
       },
       error: (err) => {
+        this.patchingError = true
         console.error('Error:', err)
       }
     });
@@ -565,8 +575,12 @@ onUpload(): void {
     // }
     this.isLoadingChecking = true;
     this.isLoadingPatching = true;
+    this.isLoadingComparing = true;
+    this.isLoadingPopulating = true;
     this.progressChecking = 0;
     this.progressPatching = 0;
+    this.progressComparing = 0;
+    this.progressPopulating = 0;
     const dateRange: string[] = [];
 
     //loop every trades in the table,format the date and save it to dateRange as MM-DD-YYYY
@@ -621,7 +635,8 @@ onUpload(): void {
           this.progressChecking = Math.floor((completed / total) * 100);
           
           // await this.delay(300); // optional
-        } catch (error) {         
+        } catch (error) {   
+          this.checkingError = true      
           console.error('Error checking relation for', date, error);
         }
     }
@@ -662,8 +677,11 @@ onUpload(): void {
   }
 
   async compareToNotion(){
-    //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
-    for (const row of this.tableData) {
+    //for progress bar comparing
+    const total = this.tableData.length;
+    let completed = 0;
+   
+    for (const row of this.tableData) {  //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
       const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
       const [datePart, timePart] = originalDateStr.split(' ');
       const [month, day, year] = datePart.split('.').map(Number);
@@ -680,22 +698,30 @@ onUpload(): void {
           }
         }
       }
-      const res: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
-      );
-      if (res.results && res.results.length > 0) {
-        // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
-        // console.log("Matched found:",res.results[0].id)
-        row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
-        row.status = "Matched"
-      }else{
-        row.status = "Unmatched"
-        // console.log('No Matched found for: '+isoDate, error);
-          const tradesForUnmatched = await this.getTradesUnmatched(isoDate)
-          row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
-            trade
-          );
-      }    
+      
+      try {
+        const res: any = await firstValueFrom(
+          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        );
+        if (res.results && res.results.length > 0) {
+          // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
+          // console.log("Matched found:",res.results[0].id)
+          row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
+          row.status = "Matched"
+        }else{
+          row.status = "Unmatched"
+          // console.log('No Matched found for: '+isoDate, error);
+            const tradesForUnmatched = await this.getTradesUnmatched(isoDate)
+            row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
+              trade
+            );
+        }
+        completed++;
+        this.progressComparing = Math.floor((completed / total) * 100);
+      } catch (error) {         
+        this.comparingError = true
+        console.error('Error comparing to Notion',row, error);
+      }
     }
 
   }
@@ -783,8 +809,11 @@ onUpload(): void {
   }
 
   async populateData(){
-    console.log(this.tableData)
-    const allMatched = this.tableData.every(item => item.status === 'Matched'); //returns true only if every object in the array meets the condition.
+    //for progress bar populating
+    const total = this.tableData.length;
+    let completed = 0;
+    //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
+    const allMatched = this.tableData.every(item => item.status === 'Matched'); 
     if (allMatched) {
       console.log('✅ All trades are matched.');
       for (const trade of this.tableData) {
@@ -811,10 +840,11 @@ onUpload(): void {
             if (res) {
               console.log("Updating successful: ",res)
             } 
-
-            // await this.delay(300); // optional
+            completed++;
+            this.progressPopulating = Math.floor((completed / total) * 100);
           } catch (error) {         
-            console.error('Error checking relation for', error);
+            this.populatingError = true
+            console.error('Error populating data for', error);
           }
       }
 

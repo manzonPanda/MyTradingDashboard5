@@ -84,9 +84,10 @@
       [value]="progressChecking"
       mode="determinate"
       diameter="150"
-      strokeWidth="12">
+      strokeWidth="12"
+      [ngClass]="{ 'error-spinner': checkingError }">
     </mat-progress-spinner>
-    <div class="spinner-text">
+    <div class="spinner-text" [ngClass]="{ 'error-text': checkingError }">
       {{ progressChecking }}%
       <div class="spinner-label">Checking</div>
     </div>
@@ -97,13 +98,43 @@
       [value]="progressPatching"
       mode="determinate"
       diameter="150"
-      strokeWidth="12">
+      strokeWidth="12"
+      [ngClass]="{ 'error-spinner': patchingError }">
     </mat-progress-spinner>
-    <div class="spinner-text">
+    <div class="spinner-text" [ngClass]="{ 'error-text': patchingError }">
       {{ progressPatching }}%
       <div class="spinner-label">Patching</div>
     </div>
   </div>
+
+  <div *ngIf="isLoadingComparing" class="spinner-wrapper large">
+    <mat-progress-spinner
+      [value]="progressComparing"
+      mode="determinate"
+      diameter="150"
+      strokeWidth="12"
+      [ngClass]="{ 'error-spinner': comparingError }">
+    </mat-progress-spinner>
+    <div class="spinner-text" [ngClass]="{ 'error-text': comparingError }">
+      {{ progressComparing }}%
+      <div class="spinner-label">Comparing</div>
+    </div>
+  </div>
+
+    <div *ngIf="isLoadingPopulating" class="spinner-wrapper large">
+    <mat-progress-spinner
+      [value]="progressPopulating"
+      mode="determinate"
+      diameter="150"
+      strokeWidth="12"
+      [ngClass]="{ 'error-spinner': populatingError }">
+    </mat-progress-spinner>
+    <div class="spinner-text" [ngClass]="{ 'error-text': populatingError }">
+      {{ progressPopulating }}%
+      <div class="spinner-label">Populating</div>
+    </div>
+  </div>
+
 </div>
 
 

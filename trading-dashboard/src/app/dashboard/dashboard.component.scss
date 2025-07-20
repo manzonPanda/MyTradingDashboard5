@@ -197,6 +197,15 @@ input[type="file"] {
   color: #555;
 }
 
+// :host ::ng-deep .error-spinner .mat-mdc-progress-spinner circle,
+:host ::ng-deep .error-spinner.mat-mdc-progress-spinner circle, .mat-spinner circle {
+  stroke: #e7250b !important;
+}
+
+.error-text {
+  color: #e7250b;
+}
+
 
 .status-pill {
   display: inline-block;
