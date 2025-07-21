@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@builder.io/angular": "^5.0.2",
     "angular-calendar": "^0.31.1",
     "angular-datatables": "^19.0.0",
     "axios": "^1.10.0",

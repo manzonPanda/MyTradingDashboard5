@@ -814,10 +814,11 @@ onUpload(): void {
     let completed = 0;
     //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
     const allMatched = this.tableData.every(item => item.status === 'Matched'); 
+    const propFirmAccountValue = 5000; //change this in the future to read the excel file
     if (allMatched) {
       console.log('✅ All trades are matched.');
       for (const trade of this.tableData) {
-          const percentPnLTemp = parseFloat(trade.netProfit) / 100;
+          const percentPnLTemp = (parseFloat(trade.netProfit) / propFirmAccountValue) * 100; // Assuming 5000 is the base value for PnL percentage calculation
           const percentPnL = parseFloat(percentPnLTemp.toFixed(2)); // -0.23
           const body = {
             "payload": {
