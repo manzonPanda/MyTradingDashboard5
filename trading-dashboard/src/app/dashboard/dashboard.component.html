@@ -1,274 +1,344 @@
-<div class="dashboard">
-    <h1>Dashboard</h1>
-  
-    <!-- <section class="dashboard-container">
-        <article class="dashboard-content">
-          <section class="stats-container">
-            <div class="primary-stats">
-              <article class="stat-card" *ngFor="let i of [1, 2, 3, 4, 5, 6]">
-                <h3 class="stat-label">Stat Label</h3>
-                <p class="stat-value">--</p>
-              </article>
+<div class="tradezella-dashboard">
+  <!-- Header Section -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">Trading Dashboard</h1>
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="onFileSelected($event)">
+          <mat-icon>cloud_upload</mat-icon>
+          Import Data
+        </button>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;" />
+      </div>
+    </div>
+  </header>
+
+  <!-- Key Metrics Cards -->
+  <section class="metrics-section">
+    <div class="metrics-grid">
+      <div class="metric-card profit-loss">
+        <div class="metric-header">
+          <h3 class="metric-title">Net P&L</h3>
+          <mat-icon class="metric-icon">trending_up</mat-icon>
+        </div>
+        <div class="metric-value positive">{{ calculateTotalPnL() | currency }}</div>
+        <div class="metric-change">+{{ calculatePnLChangePercent() }}%</div>
+      </div>
+
+      <div class="metric-card win-rate">
+        <div class="metric-header">
+          <h3 class="metric-title">Win Rate</h3>
+          <mat-icon class="metric-icon">donut_small</mat-icon>
+        </div>
+        <div class="metric-value">{{ calculateWinRate() }}%</div>
+        <div class="metric-subtitle">{{ getWinCount() }}/{{ getTotalTrades() }} trades</div>
+      </div>
+
+      <div class="metric-card average-win">
+        <div class="metric-header">
+          <h3 class="metric-title">Avg Win</h3>
+          <mat-icon class="metric-icon">add_circle</mat-icon>
+        </div>
+        <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
+        <div class="metric-subtitle">Per winning trade</div>
+      </div>
+
+      <div class="metric-card average-loss">
+        <div class="metric-header">
+          <h3 class="metric-title">Avg Loss</h3>
+          <mat-icon class="metric-icon">remove_circle</mat-icon>
+        </div>
+        <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
+        <div class="metric-subtitle">Per losing trade</div>
+      </div>
+
+      <div class="metric-card trade-expectancy">
+        <div class="metric-header">
+          <h3 class="metric-title">Expectancy</h3>
+          <mat-icon class="metric-icon">analytics</mat-icon>
+        </div>
+        <div class="metric-value">{{ calculateExpectancy() | currency }}</div>
+        <div class="metric-subtitle">Per trade</div>
+      </div>
+
+      <div class="metric-card total-trades">
+        <div class="metric-header">
+          <h3 class="metric-title">Total Trades</h3>
+          <mat-icon class="metric-icon">list_alt</mat-icon>
+        </div>
+        <div class="metric-value">{{ getTotalTrades() }}</div>
+        <div class="metric-subtitle">This period</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upload Section -->
+  <section class="upload-section">
+    <div class="upload-card">
+      <div class="upload-header">
+        <h2 class="section-title">Data Management</h2>
+      </div>
+      
+      <!-- Progress Indicators -->
+      <div class="progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
+        <div class="progress-grid">
+          <!-- Upload Progress -->
+          <div class="progress-item" *ngIf="isUploading">
+            <div class="progress-content">
+              <mat-progress-spinner
+                [value]="uploadProgress"
+                mode="determinate"
+                diameter="60"
+                strokeWidth="6">
+              </mat-progress-spinner>
+              <div class="progress-text">
+                <span class="progress-value">{{ uploadProgress }}%</span>
+                <span class="progress-label">Uploading</span>
+              </div>
             </div>
-          </section>
-          <section class="calendar-container">
-            <header class="calendar-header">
-              <button class="nav-button">Previous</button>
-              <h2 class="month-title">Month Year</h2>
-              <button class="nav-button">Next</button>
-            </header>
-            <div class="calendar-grid">
-              <ng-container
-                *ngFor="
-                  let day of ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                "
-              >
-                <div class="weekday-header">{{ day }}</div>
-              </ng-container>
-              <ng-container
-                *ngFor="
-                  let i of [
-                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-                  ]
-                "
-              >
-                <article class="calendar-day">
-                  <span class="day-number">{{ i }}</span>
-                  <div class="day-content">
-                    <p class="profit-amount">--</p>
-                    <p class="trades-count">-- trades</p>
-                  </div>
-                </article>
-              </ng-container>
-            </div>
-          </section>
-        </article>
-      </section> -->
-
-<!-- app.component.html -->
-<div class="container">
-  <div class="upload-section">
-    <h2 class="title">Upload MT5 report</h2>
-      <mat-card style="background-color: white;" *ngIf="isUploading" >
-        <mat-progress-bar mode="determinate" [value]="uploadProgress"  class="custom-progress-bar" [ngClass]="{ 'hidden': hideProgressBar }">
-          
-        </mat-progress-bar>
-        <p>Uploading Trades: {{ uploadProgress }}%</p>
-    </mat-card>
-    <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".xlsx, .xls" />
-    <label for="fileInput" class="file-label">
-      <span class="material-icons">file_present</span> Choose an Excel File
-    </label>
-    <button (click)="onUpload()" class="file-label"><span class="material-icons">cloud_upload</span>Upload</button>
-    <br>     
-    <!-- <mat-form-field appearance="fill">
-      <mat-label>Date range</mat-label>
-      <mat-date-range-input [rangePicker]="rangePicker">
-        <input matStartDate placeholder="Start date" [(ngModel)]="startDate">
-        <input matEndDate placeholder="End date" [(ngModel)]="endDate">
-      </mat-date-range-input>
-      <mat-datepicker-toggle matSuffix [for]="rangePicker"></mat-datepicker-toggle>
-      <mat-date-range-picker #rangePicker></mat-date-range-picker>
-
-    </mat-form-field> -->
-    <button (click)="checkAndCreateRelationId()" class="file-label"><p>Patch ActivityLog - Builder.io edit</p></button>
-    <button (click)="compareToNotion()" class="file-label">Compare to Notion</button>
-    <button (click)="populateData()" class="file-label">Populate data</button>
-  </div>
-
-        <!-- COMPONENT HTML -->
-<div style="display: flex; gap: 30px; align-items: center;">
-  <div *ngIf="isLoadingChecking" class="spinner-wrapper large">
-    <mat-progress-spinner
-      [value]="progressChecking"
-      mode="determinate"
-      diameter="150"
-      strokeWidth="12"
-      [ngClass]="{ 'error-spinner': checkingError }">
-    </mat-progress-spinner>
-    <div class="spinner-text" [ngClass]="{ 'error-text': checkingError }">
-      {{ progressChecking }}%
-      <div class="spinner-label">Checking</div>
-    </div>
-  </div>
-
-  <div *ngIf="isLoadingPatching" class="spinner-wrapper large">
-    <mat-progress-spinner
-      [value]="progressPatching"
-      mode="determinate"
-      diameter="150"
-      strokeWidth="12"
-      [ngClass]="{ 'error-spinner': patchingError }">
-    </mat-progress-spinner>
-    <div class="spinner-text" [ngClass]="{ 'error-text': patchingError }">
-      {{ progressPatching }}%
-      <div class="spinner-label">Patching</div>
-    </div>
-  </div>
-
-  <div *ngIf="isLoadingComparing" class="spinner-wrapper large">
-    <mat-progress-spinner
-      [value]="progressComparing"
-      mode="determinate"
-      diameter="150"
-      strokeWidth="12"
-      [ngClass]="{ 'error-spinner': comparingError }">
-    </mat-progress-spinner>
-    <div class="spinner-text" [ngClass]="{ 'error-text': comparingError }">
-      {{ progressComparing }}%
-      <div class="spinner-label">Comparing</div>
-    </div>
-  </div>
-
-    <div *ngIf="isLoadingPopulating" class="spinner-wrapper large">
-    <mat-progress-spinner
-      [value]="progressPopulating"
-      mode="determinate"
-      diameter="150"
-      strokeWidth="12"
-      [ngClass]="{ 'error-spinner': populatingError }">
-    </mat-progress-spinner>
-    <div class="spinner-text" [ngClass]="{ 'error-text': populatingError }">
-      {{ progressPopulating }}%
-      <div class="spinner-label">Populating</div>
-    </div>
-  </div>
-
-</div>
-
-
-  <div class="paste-area" (paste)="onPaste($event)">
-    <p>Paste your Excel table here!</p>
-  </div>
-
-  <!-- <div id="testTable" class="table-container"> 
-    <table>
-      <tr *ngFor="let row of tableData">
-        <td>{{ row.id }}</td> 
-        <td>{{ row.rowData?.column2 }}</td> 
-        <td>{{ row.rowData?.column3 }}</td> 
-
-      </tr>
-    </table>
-  </div> -->
- 
-  <!-- <button (click)="copyColumns(12,13)">Copy Net Profit</button> -->
-  <!-- Display uploaded Excel Data -->
-  <div class="table-container">
-    <table class="excel-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
-      <thead>
-        <tr>
-          <!-- <th *ngFor="let column of tableData[0]">{{ column }}</th> -->
-           <!-- [class.hidden]="!showNotionData" class="notion-data" -->
-           <th>Open Date</th>
-           <th class="notion-data">Trades (Notion)</th>
-           <th class="notion-data">Status</th>
-           <th>Position</th>
-           <th>Symbol</th>
-           <th>Type</th>
-           <th>Volume</th>
-           <th>Entry</th>
-           <th>S/L</th>
-           <th>T/P</th>
-           <th>Close Date</th>
-           <th>Exit</th>
-           <th>Commission</th>
-           <th>Swap</th>
-           <th>Profit</th>
-           <th>Net Profit</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of tableData;let i = index">
-          <td>{{ row.openDate }}</td>
-          <td>
-            <ng-container>
-  <button
-    *ngFor="let trade of row.tradeNotion"
-    class="notion-button fade-pulse"
-    [ngClass]="{
-      'selected-button': selectedTradeId[i] === trade.tradeId,
-      'matched-trade': !trade.tradeDate && trade.tradeId,
-      'revert-button': !trade.tradeDate && !trade.tradeId
-    }"
-    (click)="trade.tradeDate ? chooseUnmatchedTrade(trade, row, i) : (!trade.tradeId ? revertTradeNotion(row,i) : null)"
-    [disabled]="!trade.tradeDate && trade.tradeId"
-    
-  >
-    <ng-container *ngIf="trade.tradeDate; else showReload">
-      {{ trade.tradeDate }}
-    </ng-container>
-    <ng-template #showReload>
-      <ng-container *ngIf="!trade.tradeId && !trade.tradeDate" >
-        <i class="material-icons" style="vertical-align: middle;">refresh</i>
-      </ng-container>
-      <ng-container *ngIf="trade.tradeId && !trade.tradeDate">
-        {{ trade.tradeId }}
-      </ng-container>
-    </ng-template>
-  </button>
-</ng-container>
-</td>
-          <td><span class="status-pill" [ngClass]="{
-              'matched fade-pulse': row.status === 'Matched',
-              'unmatched fade-pulse': row.status === 'Unmatched'
-            }"
-            >{{ row.status }} </span></td>
-          <td>{{ row.position }}</td>
-          <td>{{ row.symbol }}</td>
-          <td>{{ row.type }}</td>
-          <td>{{ row.volume }}</td>
-          <td>{{ row.entry }}</td>
-          <td>{{ row.sL }}</td>
-          <td>{{ row.tP }}</td>
-          <td>{{ row.closeDate }}</td>
-          <td>{{ row.exit }}</td>
-          <td>{{ row.commission }}</td>
-          <td>{{ row.swap }}</td>
-          <td>{{ row.profit }}</td>
-          <td>{{ row.netProfit }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="calendar-nav">
-  <button (click)="viewDate = subMonth(viewDate)">Previous</button>
-  <h2>{{ viewDate | date: 'MMMM yyyy' }}</h2>
-  <button (click)="viewDate = addMonth(viewDate)">Next</button>
-</div>
-
-    <div class="calendar-wrapper">
-      <mwl-calendar-month-view
-        [viewDate]="viewDate"
-        [events]="events"
-        [cellTemplate]="customTemplate">
-      </mwl-calendar-month-view>
-
-      <!-- Custom Template -->
-      <ng-template #customTemplate let-day="day">
-        <div class="h-full w-full p-1 rounded-xl"
-             [ngClass]="getPnLColor(day)">
-          <div class="font-semibold">
-            {{ day.date | date: 'd' }}
           </div>
-          <div class="text-xs" *ngIf="day.events.length">
-            <div *ngFor="let event of day.events">
-              <div>
-                {{ event.meta.pnl | currency }}
+
+          <!-- Checking Progress -->
+          <div class="progress-item" *ngIf="isLoadingChecking">
+            <div class="progress-content">
+              <mat-progress-spinner
+                [value]="progressChecking"
+                mode="determinate"
+                diameter="60"
+                strokeWidth="6"
+                [ngClass]="{ 'error-spinner': checkingError }">
+              </mat-progress-spinner>
+              <div class="progress-text" [ngClass]="{ 'error-text': checkingError }">
+                <span class="progress-value">{{ progressChecking }}%</span>
+                <span class="progress-label">Checking</span>
               </div>
-              <div>
-                {{ event.meta.profit }}
+            </div>
+          </div>
+
+          <!-- Patching Progress -->
+          <div class="progress-item" *ngIf="isLoadingPatching">
+            <div class="progress-content">
+              <mat-progress-spinner
+                [value]="progressPatching"
+                mode="determinate"
+                diameter="60"
+                strokeWidth="6"
+                [ngClass]="{ 'error-spinner': patchingError }">
+              </mat-progress-spinner>
+              <div class="progress-text" [ngClass]="{ 'error-text': patchingError }">
+                <span class="progress-value">{{ progressPatching }}%</span>
+                <span class="progress-label">Patching</span>
               </div>
-              <div *ngIf="event.meta.rMultiple">
-                {{ event.meta.rMultiple }}R
+            </div>
+          </div>
+
+          <!-- Comparing Progress -->
+          <div class="progress-item" *ngIf="isLoadingComparing">
+            <div class="progress-content">
+              <mat-progress-spinner
+                [value]="progressComparing"
+                mode="determinate"
+                diameter="60"
+                strokeWidth="6"
+                [ngClass]="{ 'error-spinner': comparingError }">
+              </mat-progress-spinner>
+              <div class="progress-text" [ngClass]="{ 'error-text': comparingError }">
+                <span class="progress-value">{{ progressComparing }}%</span>
+                <span class="progress-label">Comparing</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Populating Progress -->
+          <div class="progress-item" *ngIf="isLoadingPopulating">
+            <div class="progress-content">
+              <mat-progress-spinner
+                [value]="progressPopulating"
+                mode="determinate"
+                diameter="60"
+                strokeWidth="6"
+                [ngClass]="{ 'error-spinner': populatingError }">
+              </mat-progress-spinner>
+              <div class="progress-text" [ngClass]="{ 'error-text': populatingError }">
+                <span class="progress-value">{{ progressPopulating }}%</span>
+                <span class="progress-label">Populating</span>
               </div>
             </div>
           </div>
         </div>
-      </ng-template>
-    </div>
+      </div>
 
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn-primary" (click)="fileInput.click()">
+          <mat-icon>file_upload</mat-icon>
+          Choose Excel File
+        </button>
+        <button class="btn-primary" (click)="onUpload()">
+          <mat-icon>cloud_upload</mat-icon>
+          Upload Data
+        </button>
+        <button class="btn-secondary" (click)="checkAndCreateRelationId()">
+          <mat-icon>build</mat-icon>
+          Patch Activity Log
+        </button>
+        <button class="btn-secondary" (click)="compareToNotion()">
+          <mat-icon>compare_arrows</mat-icon>
+          Compare to Notion
+        </button>
+        <button class="btn-secondary" (click)="populateData()">
+          <mat-icon>data_usage</mat-icon>
+          Populate Data
+        </button>
+      </div>
+
+      <!-- Paste Area -->
+      <div class="paste-area" (paste)="onPaste($event)">
+        <mat-icon>content_paste</mat-icon>
+        <p>Or paste your Excel table data here</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendar Section -->
+  <section class="calendar-section">
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <h2 class="section-title">Trading Calendar</h2>
+        <div class="calendar-nav">
+          <button class="nav-btn" (click)="viewDate = subMonth(viewDate)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <h3 class="month-title">{{ viewDate | date: 'MMMM yyyy' }}</h3>
+          <button class="nav-btn" (click)="viewDate = addMonth(viewDate)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="calendar-container">
+        <mwl-calendar-month-view
+          [viewDate]="viewDate"
+          [events]="events"
+          [cellTemplate]="customTemplate">
+        </mwl-calendar-month-view>
+
+        <ng-template #customTemplate let-day="day">
+          <div class="calendar-day" [ngClass]="getPnLColor(day)">
+            <div class="day-number">{{ day.date | date: 'd' }}</div>
+            <div class="day-content" *ngIf="day.events.length">
+              <div class="day-pnl">{{ calculateDayPnL(day.events) | currency:'USD':'symbol':'1.0-0' }}</div>
+              <div class="day-trades">{{ day.events.length }} trades</div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data Table Section -->
+  <section class="table-section">
+    <div class="table-card">
+      <div class="table-header">
+        <h2 class="section-title">Trade History</h2>
+        <div class="table-filters">
+          <button class="filter-btn" [class.active]="!showNotionData" (click)="showNotionData = false">
+            <mat-icon>visibility_off</mat-icon>
+            Hide Notion Data
+          </button>
+          <button class="filter-btn" [class.active]="showNotionData" (click)="showNotionData = true">
+            <mat-icon>visibility</mat-icon>
+            Show Notion Data
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="modern-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
+          <thead>
+            <tr>
+              <th class="col-date">Open Date</th>
+              <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
+              <th class="col-status" [class.hidden]="!showNotionData">Status</th>
+              <th class="col-position">Position</th>
+              <th class="col-symbol">Symbol</th>
+              <th class="col-type">Type</th>
+              <th class="col-volume">Volume</th>
+              <th class="col-price">Entry</th>
+              <th class="col-price">S/L</th>
+              <th class="col-price">T/P</th>
+              <th class="col-date">Close Date</th>
+              <th class="col-price">Exit</th>
+              <th class="col-amount">Commission</th>
+              <th class="col-amount">Swap</th>
+              <th class="col-amount">Profit</th>
+              <th class="col-amount">Net Profit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': parseFloat(row.netProfit) > 0, 'negative-row': parseFloat(row.netProfit) < 0 }">
+              <td class="col-date">{{ formatDate(row.openDate) }}</td>
+              
+              <td class="col-notion" [class.hidden]="!showNotionData">
+                <div class="notion-buttons">
+                  <button
+                    *ngFor="let trade of row.tradeNotion"
+                    class="notion-btn"
+                    [ngClass]="{
+                      'selected': selectedTradeId[i] === trade.tradeId,
+                      'matched': !trade.tradeDate && trade.tradeId,
+                      'revert': !trade.tradeDate && !trade.tradeId
+                    }"
+                    (click)="trade.tradeDate ? chooseUnmatchedTrade(trade, row, i) : (!trade.tradeId ? revertTradeNotion(row,i) : null)"
+                    [disabled]="!trade.tradeDate && trade.tradeId">
+                    
+                    <ng-container *ngIf="trade.tradeDate; else showReload">
+                      {{ trade.tradeDate }}
+                    </ng-container>
+                    <ng-template #showReload>
+                      <ng-container *ngIf="!trade.tradeId && !trade.tradeDate">
+                        <mat-icon>refresh</mat-icon>
+                      </ng-container>
+                      <ng-container *ngIf="trade.tradeId && !trade.tradeDate">
+                        {{ trade.tradeId }}
+                      </ng-container>
+                    </ng-template>
+                  </button>
+                </div>
+              </td>
+              
+              <td class="col-status" [class.hidden]="!showNotionData">
+                <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
+                  {{ row.status }}
+                </span>
+              </td>
+              
+              <td class="col-position">
+                <span class="position-badge" [ngClass]="row.position?.toLowerCase()">
+                  {{ row.position }}
+                </span>
+              </td>
+              
+              <td class="col-symbol">{{ row.symbol }}</td>
+              <td class="col-type">{{ row.type }}</td>
+              <td class="col-volume">{{ row.volume }}</td>
+              <td class="col-price">{{ row.entry | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-price">{{ row.sL | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-price">{{ row.tP | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-date">{{ formatDate(row.closeDate) }}</td>
+              <td class="col-price">{{ row.exit | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount">{{ row.commission | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount">{{ row.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount" [ngClass]="{ 'positive': parseFloat(row.profit) > 0, 'negative': parseFloat(row.profit) < 0 }">
+                {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-amount" [ngClass]="{ 'positive': parseFloat(row.netProfit) > 0, 'negative': parseFloat(row.netProfit) < 0 }">
+                {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </div>
