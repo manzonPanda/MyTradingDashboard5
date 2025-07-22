@@ -264,7 +264,10 @@
 
 // Button Styles
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-info,
+.btn-teal,
+.btn-orange {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -276,22 +279,25 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
-  
+
   mat-icon {
     font-size: 1.125rem;
     width: 1.125rem;
     height: 1.125rem;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--tf-shadow-md);
   }
 }
 
 .btn-primary {
   background: var(--tf-accent-primary);
   color: white;
-  
+
   &:hover {
     background: var(--tf-accent-secondary);
-    transform: translateY(-1px);
-    box-shadow: var(--tf-shadow-md);
   }
 }
 
@@ -299,11 +305,38 @@
   background: var(--tf-bg-tertiary);
   color: var(--tf-text-secondary);
   border: 1px solid var(--tf-border-primary);
-  
+
   &:hover {
     background: var(--tf-bg-hover);
     color: var(--tf-text-primary);
     border-color: var(--tf-border-secondary);
+  }
+}
+
+.btn-info {
+  background: var(--tf-accent-info);
+  color: white;
+
+  &:hover {
+    background: #2563eb;
+  }
+}
+
+.btn-teal {
+  background: var(--tf-accent-teal);
+  color: white;
+
+  &:hover {
+    background: #0d9488;
+  }
+}
+
+.btn-orange {
+  background: var(--tf-accent-orange);
+  color: white;
+
+  &:hover {
+    background: #ea580c;
   }
 }
 
