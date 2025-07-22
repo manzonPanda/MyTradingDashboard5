@@ -165,7 +165,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const dayPnL = this.calculateDayPnL(dayTrades);
       const winCount = dayTrades.filter(trade => parseFloat(trade.netProfit) > 0).length;
       const lossCount = dayTrades.filter(trade => parseFloat(trade.netProfit) < 0).length;
-      
+      const dailyPercentage = (dayPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+
       this.calendarDays.push({
         date: currentDay,
         isCurrentMonth: currentDay.getMonth() === month,
@@ -175,7 +176,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         tradeCount: dayTrades.length,
         winCount: winCount,
         lossCount: lossCount,
-        winRate: dayTrades.length > 0 ? (winCount / dayTrades.length) * 100 : 0
+        winRate: dayTrades.length > 0 ? (winCount / dayTrades.length) * 100 : 0,
+        dailyPercentage: dailyPercentage
       });
     }
 
