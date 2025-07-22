@@ -121,7 +121,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   currentDate: Date = new Date();
   calendarDays: CalendarDay[] = [];
   weekSummaries: WeekSummary[] = [];
-  
+
+  readonly PROP_FIRM_ACCOUNT_VALUE = 5000; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   ngOnInit() {
