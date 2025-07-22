@@ -92,8 +92,13 @@ interface WeekSummary {
                 <div class="day-pnl" [ngClass]="getDayPnLClass(day.pnl)">
                   {{ formatCurrency(day.pnl) }}
                 </div>
-                <div class="day-trades-count">{{ day.tradeCount }} trades</div>
-                <div class="day-win-rate">{{ day.winRate.toFixed(0) }}%</div>
+                <div class="day-trades-info">
+                  <span class="win-count">{{ day.winCount }}W</span>
+                  <span class="loss-count">{{ day.lossCount }}L</span>
+                </div>
+                <div class="day-percentage" [ngClass]="getDayPnLClass(day.pnl)">
+                  {{ formatPercentage(day.dailyPercentage) }}
+                </div>
               </div>
             </div>
           </div>
