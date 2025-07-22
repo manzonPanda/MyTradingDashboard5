@@ -203,16 +203,36 @@
           }
         }
 
-        .day-trades-count {
+        .day-trades-info {
+          display: flex;
+          gap: 0.5rem;
           font-size: 0.75rem;
-          color: var(--tf-text-muted);
           font-weight: 500;
+
+          .win-count {
+            color: var(--tf-positive);
+          }
+
+          .loss-count {
+            color: var(--tf-negative);
+          }
         }
 
-        .day-win-rate {
+        .day-percentage {
           font-size: 0.75rem;
-          color: var(--tf-text-secondary);
-          font-weight: 500;
+          font-weight: 600;
+
+          &.positive {
+            color: var(--tf-positive);
+          }
+
+          &.negative {
+            color: var(--tf-negative);
+          }
+
+          &.neutral {
+            color: var(--tf-text-muted);
+          }
         }
       }
     }
