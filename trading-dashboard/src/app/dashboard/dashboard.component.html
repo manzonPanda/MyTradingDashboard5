@@ -2,9 +2,11 @@
   <!-- Header Section -->
   <header class="dashboard-header">
     <div class="header-content">
-      <h1 class="dashboard-title">Trading Dashboard</h1>
+      <h1 class="dashboard-title">Jake Trading Dashboard</h1>
       <div class="header-actions">
+        <app-connection-status></app-connection-status>
         <button class="btn-info" (click)="onFileSelected($event)">
+          
           <mat-icon>cloud_upload</mat-icon>
           Import Data
         </button>
@@ -176,7 +178,7 @@
         </button>
         <button class="btn-primary" (click)="onUpload()">
           <mat-icon>cloud_upload</mat-icon>
-          Upload Data
+          Firebase (Upload)
         </button>
         <button class="btn-teal" (click)="checkAndCreateRelationId()">
           <mat-icon>build</mat-icon>
