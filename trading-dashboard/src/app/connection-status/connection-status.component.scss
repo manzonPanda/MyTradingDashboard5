@@ -1,0 +1,22 @@
+/* connection-status.component.scss */
+.dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: blink 1s infinite;
+}
+
+.online {
+  background-color: green;
+}
+
+.offline {
+  background-color: red;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.5;
+  }
+}

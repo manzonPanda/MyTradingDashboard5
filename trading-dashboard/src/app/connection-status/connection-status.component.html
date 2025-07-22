@@ -1,0 +1,7 @@
+<div
+  class="dot"
+  [ngClass]="{ online: isOnline, offline: !isOnline }"
+  [matTooltip]="isOnline ? 'Connected' : 'No Internet'"
+  matTooltipPosition="above"
+  [attr.title]="isOnline ? 'Connected' : 'No Internet'"></div>>
+</div>

@@ -25,6 +25,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatNativeDateModule } from '@angular/material/core'; // for default JS Date support
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { firstValueFrom } from 'rxjs';
+import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 
 interface Relation {
   relationName: string;
@@ -59,6 +60,7 @@ interface Table {
   selector: 'app-dashboard',
   standalone: true,
   imports: [
+    ConnectionStatusComponent,
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
