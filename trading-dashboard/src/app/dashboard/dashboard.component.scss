@@ -1,40 +1,43 @@
-// TradeZella-inspired Dashboard Styles
+// TradersFeed-inspired light theme Dashboard Styles
 :host {
-  --tz-bg-primary: #0f1419;
-  --tz-bg-secondary: #1a2332;
-  --tz-bg-tertiary: #243447;
-  --tz-bg-card: #1e2936;
-  --tz-bg-hover: #2a3a4d;
-  
-  --tz-text-primary: #ffffff;
-  --tz-text-secondary: #b8c5d3;
-  --tz-text-muted: #7a8896;
-  
-  --tz-accent-primary: #4f46e5;
-  --tz-accent-secondary: #7c3aed;
-  --tz-accent-success: #10b981;
-  --tz-accent-danger: #ef4444;
-  --tz-accent-warning: #f59e0b;
-  
-  --tz-border-primary: #334155;
-  --tz-border-secondary: #475569;
-  
-  --tz-positive: #10b981;
-  --tz-negative: #ef4444;
-  --tz-neutral: #6b7280;
-  
-  --tz-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --tz-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --tz-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --tz-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --tf-bg-primary: #ffffff;
+  --tf-bg-secondary: #f8fafc;
+  --tf-bg-tertiary: #f1f5f9;
+  --tf-bg-card: #ffffff;
+  --tf-bg-hover: #f1f5f9;
+
+  --tf-text-primary: #1e293b;
+  --tf-text-secondary: #64748b;
+  --tf-text-muted: #94a3b8;
+
+  --tf-accent-primary: #6b46c1;
+  --tf-accent-secondary: #8b5cf6;
+  --tf-accent-success: #10b981;
+  --tf-accent-danger: #ef4444;
+  --tf-accent-warning: #f59e0b;
+  --tf-accent-info: #3b82f6;
+  --tf-accent-teal: #14b8a6;
+  --tf-accent-orange: #f97316;
+
+  --tf-border-primary: #e2e8f0;
+  --tf-border-secondary: #cbd5e1;
+
+  --tf-positive: #10b981;
+  --tf-negative: #ef4444;
+  --tf-neutral: #6b7280;
+
+  --tf-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --tf-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --tf-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --tf-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .tradezella-dashboard {
   min-height: 100vh;
-  background: var(--tz-bg-primary);
-  color: var(--tz-text-primary);
+  background: var(--tf-bg-primary);
+  color: var(--tf-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  
+
   * {
     box-sizing: border-box;
   }
@@ -42,8 +45,8 @@
 
 // Header Styles
 .dashboard-header {
-  background: var(--tz-bg-secondary);
-  border-bottom: 1px solid var(--tz-border-primary);
+  background: var(--tf-bg-secondary);
+  border-bottom: 1px solid var(--tf-border-primary);
   padding: 1.5rem 2rem;
   position: sticky;
   top: 0;
@@ -61,7 +64,7 @@
     font-size: 1.875rem;
     font-weight: 700;
     margin: 0;
-    color: var(--tz-text-primary);
+    color: var(--tf-text-primary);
     letter-spacing: -0.025em;
   }
   
@@ -85,16 +88,16 @@
 }
 
 .metric-card {
-  background: var(--tz-bg-card);
+  background: var(--tf-bg-card);
   border-radius: 12px;
   padding: 1.5rem;
-  border: 1px solid var(--tz-border-primary);
+  border: 1px solid var(--tf-border-primary);
   transition: all 0.2s ease;
   
   &:hover {
-    border-color: var(--tz-border-secondary);
+    border-color: var(--tf-border-secondary);
     transform: translateY(-2px);
-    box-shadow: var(--tz-shadow-lg);
+    box-shadow: var(--tf-shadow-lg);
   }
   
   .metric-header {
@@ -107,14 +110,14 @@
   .metric-title {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--tz-text-secondary);
+    color: var(--tf-text-secondary);
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   
   .metric-icon {
-    color: var(--tz-text-muted);
+    color: var(--tf-text-muted);
     opacity: 0.7;
   }
   
@@ -122,26 +125,26 @@
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    color: var(--tz-text-primary);
+    color: var(--tf-text-primary);
     
     &.positive {
-      color: var(--tz-positive);
+      color: var(--tf-positive);
     }
     
     &.negative {
-      color: var(--tz-negative);
+      color: var(--tf-negative);
     }
   }
   
   .metric-change {
     font-size: 0.875rem;
-    color: var(--tz-positive);
+    color: var(--tf-positive);
     font-weight: 500;
   }
   
   .metric-subtitle {
     font-size: 0.875rem;
-    color: var(--tz-text-muted);
+    color: var(--tf-text-muted);
   }
 }
 
@@ -157,16 +160,16 @@
 .upload-card,
 .calendar-card,
 .table-card {
-  background: var(--tz-bg-card);
+  background: var(--tf-bg-card);
   border-radius: 12px;
-  border: 1px solid var(--tz-border-primary);
+  border: 1px solid var(--tf-border-primary);
   overflow: hidden;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--tz-text-primary);
+  color: var(--tf-text-primary);
   margin: 0;
 }
 
@@ -206,16 +209,16 @@
       .progress-value {
         font-size: 1rem;
         font-weight: 600;
-        color: var(--tz-accent-primary);
+        color: var(--tf-accent-primary);
         
         &.error-text {
-          color: var(--tz-negative);
+          color: var(--tf-negative);
         }
       }
       
       .progress-label {
         font-size: 0.75rem;
-        color: var(--tz-text-muted);
+        color: var(--tf-text-muted);
         display: block;
         margin-top: 0.25rem;
       }
@@ -230,18 +233,18 @@
   }
   
   .paste-area {
-    background: var(--tz-bg-tertiary);
-    border: 2px dashed var(--tz-border-secondary);
+    background: var(--tf-bg-tertiary);
+    border: 2px dashed var(--tf-border-secondary);
     border-radius: 8px;
     padding: 2rem;
     text-align: center;
-    color: var(--tz-text-secondary);
+    color: var(--tf-text-secondary);
     transition: all 0.2s ease;
     cursor: pointer;
     
     &:hover {
-      border-color: var(--tz-accent-primary);
-      background: var(--tz-bg-hover);
+      border-color: var(--tf-accent-primary);
+      background: var(--tf-bg-hover);
     }
     
     mat-icon {
@@ -282,25 +285,25 @@
 }
 
 .btn-primary {
-  background: var(--tz-accent-primary);
+  background: var(--tf-accent-primary);
   color: white;
   
   &:hover {
-    background: var(--tz-accent-secondary);
+    background: var(--tf-accent-secondary);
     transform: translateY(-1px);
-    box-shadow: var(--tz-shadow-md);
+    box-shadow: var(--tf-shadow-md);
   }
 }
 
 .btn-secondary {
-  background: var(--tz-bg-tertiary);
-  color: var(--tz-text-secondary);
-  border: 1px solid var(--tz-border-primary);
+  background: var(--tf-bg-tertiary);
+  color: var(--tf-text-secondary);
+  border: 1px solid var(--tf-border-primary);
   
   &:hover {
-    background: var(--tz-bg-hover);
-    color: var(--tz-text-primary);
-    border-color: var(--tz-border-secondary);
+    background: var(--tf-bg-hover);
+    color: var(--tf-text-primary);
+    border-color: var(--tf-border-secondary);
   }
 }
 
@@ -311,7 +314,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--tz-border-primary);
+    border-bottom: 1px solid var(--tf-border-primary);
     
     .calendar-nav {
       display: flex;
@@ -320,17 +323,17 @@
     }
     
     .nav-btn {
-      background: var(--tz-bg-tertiary);
-      border: 1px solid var(--tz-border-primary);
+      background: var(--tf-bg-tertiary);
+      border: 1px solid var(--tf-border-primary);
       border-radius: 6px;
       padding: 0.5rem;
-      color: var(--tz-text-secondary);
+      color: var(--tf-text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
       
       &:hover {
-        background: var(--tz-bg-hover);
-        color: var(--tz-text-primary);
+        background: var(--tf-bg-hover);
+        color: var(--tf-text-primary);
       }
       
       mat-icon {
@@ -343,7 +346,7 @@
     .month-title {
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--tz-text-primary);
+      color: var(--tf-text-primary);
       margin: 0;
       min-width: 200px;
       text-align: center;
@@ -362,7 +365,7 @@
       transition: all 0.2s ease;
       
       &:hover {
-        background: var(--tz-bg-hover);
+        background: var(--tf-bg-hover);
       }
       
       &.bg-green-100 {
@@ -377,7 +380,7 @@
       
       .day-number {
         font-weight: 600;
-        color: var(--tz-text-primary);
+        color: var(--tf-text-primary);
         margin-bottom: 0.25rem;
       }
       
@@ -389,16 +392,16 @@
           margin-bottom: 0.125rem;
           
           &.positive {
-            color: var(--tz-positive);
+            color: var(--tf-positive);
           }
           
           &.negative {
-            color: var(--tz-negative);
+            color: var(--tf-negative);
           }
         }
         
         .day-trades {
-          color: var(--tz-text-muted);
+          color: var(--tf-text-muted);
         }
       }
     }
@@ -412,7 +415,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--tz-border-primary);
+    border-bottom: 1px solid var(--tf-border-primary);
     
     .table-filters {
       display: flex;
@@ -420,11 +423,11 @@
     }
     
     .filter-btn {
-      background: var(--tz-bg-tertiary);
-      border: 1px solid var(--tz-border-primary);
+      background: var(--tf-bg-tertiary);
+      border: 1px solid var(--tf-border-primary);
       border-radius: 6px;
       padding: 0.5rem 1rem;
-      color: var(--tz-text-secondary);
+      color: var(--tf-text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -433,14 +436,14 @@
       font-size: 0.875rem;
       
       &:hover {
-        background: var(--tz-bg-hover);
-        color: var(--tz-text-primary);
+        background: var(--tf-bg-hover);
+        color: var(--tf-text-primary);
       }
       
       &.active {
-        background: var(--tz-accent-primary);
+        background: var(--tf-accent-primary);
         color: white;
-        border-color: var(--tz-accent-primary);
+        border-color: var(--tf-accent-primary);
       }
       
       mat-icon {
@@ -460,14 +463,14 @@
       font-size: 0.875rem;
       
       thead th {
-        background: var(--tz-bg-secondary);
-        color: var(--tz-text-secondary);
+        background: var(--tf-bg-secondary);
+        color: var(--tf-text-secondary);
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         padding: 1rem 0.75rem;
         text-align: left;
-        border-bottom: 1px solid var(--tz-border-primary);
+        border-bottom: 1px solid var(--tf-border-primary);
         white-space: nowrap;
         
         &.hidden {
@@ -477,35 +480,35 @@
       
       tbody tr {
         transition: all 0.2s ease;
-        border-bottom: 1px solid var(--tz-border-primary);
+        border-bottom: 1px solid var(--tf-border-primary);
         
         &:hover {
-          background: var(--tz-bg-hover);
+          background: var(--tf-bg-hover);
         }
         
         &.positive-row {
-          border-left: 3px solid var(--tz-positive);
+          border-left: 3px solid var(--tf-positive);
         }
         
         &.negative-row {
-          border-left: 3px solid var(--tz-negative);
+          border-left: 3px solid var(--tf-negative);
         }
         
         td {
           padding: 0.875rem 0.75rem;
-          color: var(--tz-text-primary);
+          color: var(--tf-text-primary);
           
           &.hidden {
             display: none;
           }
           
           &.positive {
-            color: var(--tz-positive);
+            color: var(--tf-positive);
             font-weight: 600;
           }
           
           &.negative {
-            color: var(--tz-negative);
+            color: var(--tf-negative);
             font-weight: 600;
           }
         }
@@ -574,13 +577,13 @@
   
   &.matched {
     background: rgba(16, 185, 129, 0.1);
-    color: var(--tz-positive);
+    color: var(--tf-positive);
     border: 1px solid rgba(16, 185, 129, 0.2);
   }
   
   &.unmatched {
     background: rgba(239, 68, 68, 0.1);
-    color: var(--tz-negative);
+    color: var(--tf-negative);
     border: 1px solid rgba(239, 68, 68, 0.2);
   }
 }
@@ -596,13 +599,13 @@
   
   &.buy {
     background: rgba(16, 185, 129, 0.1);
-    color: var(--tz-positive);
+    color: var(--tf-positive);
     border: 1px solid rgba(16, 185, 129, 0.2);
   }
   
   &.sell {
     background: rgba(239, 68, 68, 0.1);
-    color: var(--tz-negative);
+    color: var(--tf-negative);
     border: 1px solid rgba(239, 68, 68, 0.2);
   }
 }
@@ -615,9 +618,9 @@
 }
 
 .notion-btn {
-  background: var(--tz-bg-tertiary);
-  color: var(--tz-text-secondary);
-  border: 1px solid var(--tz-border-primary);
+  background: var(--tf-bg-tertiary);
+  color: var(--tf-text-secondary);
+  border: 1px solid var(--tf-border-primary);
   border-radius: 6px;
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
@@ -628,27 +631,27 @@
   gap: 0.25rem;
   
   &:hover {
-    background: var(--tz-bg-hover);
-    color: var(--tz-text-primary);
+    background: var(--tf-bg-hover);
+    color: var(--tf-text-primary);
   }
   
   &.selected {
-    background: var(--tz-positive);
+    background: var(--tf-positive);
     color: white;
-    border-color: var(--tz-positive);
+    border-color: var(--tf-positive);
   }
   
   &.matched {
-    background: var(--tz-positive);
+    background: var(--tf-positive);
     color: white;
-    border-color: var(--tz-positive);
+    border-color: var(--tf-positive);
     cursor: not-allowed;
   }
   
   &.revert {
-    background: var(--tz-negative);
+    background: var(--tf-negative);
     color: white;
-    border-color: var(--tz-negative);
+    border-color: var(--tf-negative);
     
     &:hover {
       background: #dc2626;
@@ -728,14 +731,14 @@
   .mat-mdc-progress-spinner {
     .mdc-circular-progress__determinate-circle,
     .mdc-circular-progress__indeterminate-circle-graphic {
-      stroke: var(--tz-accent-primary);
+      stroke: var(--tf-accent-primary);
     }
   }
   
   .error-spinner {
     .mdc-circular-progress__determinate-circle,
     .mdc-circular-progress__indeterminate-circle-graphic {
-      stroke: var(--tz-negative) !important;
+      stroke: var(--tf-negative) !important;
     }
   }
 }
@@ -762,13 +765,13 @@
 }
 
 .positive {
-  color: var(--tz-positive) !important;
+  color: var(--tf-positive) !important;
 }
 
 .negative {
-  color: var(--tz-negative) !important;
+  color: var(--tf-negative) !important;
 }
 
 .neutral {
-  color: var(--tz-neutral) !important;
+  color: var(--tf-neutral) !important;
 }
