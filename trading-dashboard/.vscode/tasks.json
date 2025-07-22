@@ -37,6 +37,32 @@
           }
         }
       }
+    },
+    {
+      "label": "Start Frontend",
+      "type": "shell",
+      "command": "npm start",
+      "options": {
+        "cwd": "${workspaceFolder}/trading-dashboard"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "npm start",
+      "options": {
+        "cwd": "${workspaceFolder}/../notionproxyapi"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Start Both",
+      "dependsOn": ["Start Frontend", "Start Backend"],
+      "dependsOrder": "parallel"
     }
+
   ]
 }

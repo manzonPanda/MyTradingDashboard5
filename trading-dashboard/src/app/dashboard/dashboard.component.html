@@ -199,43 +199,7 @@
       </div>
     </div>
   </section>
-
-  <!-- Calendar Section -->
-  <section class="calendar-section">
-    <div class="calendar-card">
-      <div class="calendar-header">
-        <h2 class="section-title">Trading Calendar</h2>
-        <div class="calendar-nav">
-          <button class="nav-btn" (click)="viewDate = subMonth(viewDate)">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <h3 class="month-title">{{ viewDate | date: 'MMMM yyyy' }}</h3>
-          <button class="nav-btn" (click)="viewDate = addMonth(viewDate)">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <div class="calendar-container">
-        <mwl-calendar-month-view
-          [viewDate]="viewDate"
-          [events]="events"
-          [cellTemplate]="customTemplate">
-        </mwl-calendar-month-view>
-
-        <ng-template #customTemplate let-day="day">
-          <div class="calendar-day" [ngClass]="getPnLColor(day)">
-            <div class="day-number">{{ day.date | date: 'd' }}</div>
-            <div class="day-content" *ngIf="day.events.length">
-              <div class="day-pnl">{{ calculateDayPnL(day.events) | currency:'USD':'symbol':'1.0-0' }}</div>
-              <div class="day-trades">{{ day.events.length }} trades</div>
-            </div>
-          </div>
-        </ng-template>
-      </div>
-    </div>
-  </section>
-
+  
   <!-- Data Table Section -->
   <section class="table-section">
     <div class="table-card">
@@ -341,4 +305,42 @@
       </div>
     </div>
   </section>
+
+  <!-- Calendar Section -->
+  <section class="calendar-section">
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <h2 class="section-title">Trading Calendar</h2>
+        <div class="calendar-nav">
+          <button class="nav-btn" (click)="viewDate = subMonth(viewDate)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <h3 class="month-title">{{ viewDate | date: 'MMMM yyyy' }}</h3>
+          <button class="nav-btn" (click)="viewDate = addMonth(viewDate)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="calendar-container">
+        <mwl-calendar-month-view
+          [viewDate]="viewDate"
+          [events]="events"
+          [cellTemplate]="customTemplate">
+        </mwl-calendar-month-view>
+
+        <ng-template #customTemplate let-day="day">
+          <div class="calendar-day" [ngClass]="getPnLColor(day)">
+            <div class="day-number">{{ day.date | date: 'd' }}</div>
+            <div class="day-content" *ngIf="day.events.length">
+              <div class="day-pnl">{{ calculateDayPnL(day.events) | currency:'USD':'symbol':'1.0-0' }}</div>
+              <div class="day-trades">{{ day.events.length }} trades</div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </section>
+
+
 </div>
