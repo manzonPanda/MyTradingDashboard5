@@ -813,7 +813,7 @@ onUpload(): void {
     const total = this.tableData.length;
     let completed = 0;
     //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
-    const allMatched = this.tableData.every(item => item.status === 'Matched'); 
+    const allMatched = this.tableData.every(item => item.status === 'Matched');
     const propFirmAccountValue = 5000; //change this in the future to read the excel file
     if (allMatched) {
       console.log('✅ All trades are matched.');
@@ -840,10 +840,10 @@ onUpload(): void {
             );
             if (res) {
               console.log("Updating successful: ",res)
-            } 
+            }
             completed++;
             this.progressPopulating = Math.floor((completed / total) * 100);
-          } catch (error) {         
+          } catch (error) {
             this.populatingError = true
             console.error('Error populating data for', error);
           }
@@ -853,5 +853,141 @@ onUpload(): void {
       console.log('❌ Some trades are still unmatched.');
     }
   }
-}
 
+  // Trading Metrics Calculation Methods
+  calculateTotalPnL(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.reduce((total, trade) => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return total + netProfit;
+    }, 0);
+  }
+
+  calculatePnLChangePercent(): string {
+    // This would typically compare against previous period
+    // For now, we'll return a placeholder
+    return '0.00';
+  }
+
+  calculateWinRate(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0.00';
+    const winningTrades = this.getWinCount();
+    const totalTrades = this.getTotalTrades();
+    return totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : '0.00';
+  }
+
+  getWinCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    }).length;
+  }
+
+  getTotalTrades(): number {
+    return this.tableData ? this.tableData.length : 0;
+  }
+
+  calculateAvgWin(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    });
+
+    if (winningTrades.length === 0) return 0;
+
+    const totalWinAmount = winningTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalWinAmount / winningTrades.length;
+  }
+
+  calculateAvgLoss(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const losingTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    });
+
+    if (losingTrades.length === 0) return 0;
+
+    const totalLossAmount = losingTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalLossAmount / losingTrades.length;
+  }
+
+  calculateExpectancy(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const lossRate = 1 - winRate;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    return (winRate * avgWin) - (lossRate * avgLoss);
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      // Handle MM.DD.YYYY HH:mm format
+      const [datePart, timePart] = dateStr.split(' ');
+      if (!datePart) return dateStr;
+
+      const [month, day, year] = datePart.split('.');
+      if (month && day && year) {
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        if (timePart) {
+          const [hours, minutes] = timePart.split(':');
+          if (hours && minutes) {
+            date.setHours(parseInt(hours), parseInt(minutes));
+            return date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+        }
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error);
+    }
+    return dateStr;
+  }
+
+  calculateDayPnL(events: any[]): number {
+    if (!events || events.length === 0) return 0;
+    return events.reduce((sum, event) => {
+      return sum + (event.meta?.profit || 0);
+    }, 0);
+  }
+
+  // Template helper methods
+  isPositiveValue(value: string | number): boolean {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num > 0;
+  }
+
+  isNegativeValue(value: string | number): boolean {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num < 0;
+  }
+
+  getStatusClass(status: string): string {
+    return status ? status.toLowerCase() : '';
+  }
+
+  getPositionClass(position: string): string {
+    return position ? position.toLowerCase() : '';
+  }
+}
