@@ -276,7 +276,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': parseFloat(row.netProfit) > 0, 'negative-row': parseFloat(row.netProfit) < 0 }">
+            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': isPositiveValue(row.netProfit), 'negative-row': isNegativeValue(row.netProfit) }">
               <td class="col-date">{{ formatDate(row.openDate) }}</td>
               
               <td class="col-notion" [class.hidden]="!showNotionData">
@@ -308,13 +308,13 @@
               </td>
               
               <td class="col-status" [class.hidden]="!showNotionData">
-                <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
+                <span class="status-badge" [ngClass]="getStatusClass(row.status)">
                   {{ row.status }}
                 </span>
               </td>
-              
+
               <td class="col-position">
-                <span class="position-badge" [ngClass]="row.position?.toLowerCase()">
+                <span class="position-badge" [ngClass]="getPositionClass(row.position)">
                   {{ row.position }}
                 </span>
               </td>
@@ -329,10 +329,10 @@
               <td class="col-price">{{ row.exit | currency:'USD':'symbol':'1.2-2' }}</td>
               <td class="col-amount">{{ row.commission | currency:'USD':'symbol':'1.2-2' }}</td>
               <td class="col-amount">{{ row.swap | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount" [ngClass]="{ 'positive': parseFloat(row.profit) > 0, 'negative': parseFloat(row.profit) < 0 }">
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
                 {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
               </td>
-              <td class="col-amount" [ngClass]="{ 'positive': parseFloat(row.netProfit) > 0, 'negative': parseFloat(row.netProfit) < 0 }">
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
                 {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
               </td>
             </tr>
