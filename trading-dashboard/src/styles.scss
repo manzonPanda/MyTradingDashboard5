@@ -1,4 +1,4 @@
-/* Global styles for TradeZella-inspired dashboard */
+/* Global styles for TradersFeed-inspired light theme dashboard */
 
 // Reset and base styles
 *, *::before, *::after {
@@ -10,17 +10,17 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  background-color: #0f1419;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #1f2937;
   overflow-x: hidden;
 }
 
-// Ensure the Angular Material theme works with dark mode
+// Ensure the Angular Material theme works with light mode
 body.mat-typography {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
-// Angular Material overrides for dark theme compatibility
+// Angular Material overrides for light theme compatibility
 .mat-mdc-button, .mat-mdc-outlined-button, .mat-mdc-raised-button {
   font-family: inherit;
 }
@@ -36,34 +36,34 @@ body.mat-typography {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a2332;
+  background: #f3f4f6;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #d1d5db;
   border-radius: 4px;
-  
+
   &:hover {
-    background: #475569;
+    background: #9ca3af;
   }
 }
 
 // Firefox scrollbar styling
 html {
   scrollbar-width: thin;
-  scrollbar-color: #334155 #1a2332;
+  scrollbar-color: #d1d5db #f3f4f6;
 }
 
 // Focus ring styling
 *:focus {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid #6b46c1;
   outline-offset: 2px;
 }
 
-// Ensure no white background bleeding through
+// Ensure clean light background
 app-root {
   display: block;
   min-height: 100vh;
-  background-color: #0f1419;
+  background-color: #ffffff;
 }
