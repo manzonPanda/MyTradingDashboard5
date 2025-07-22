@@ -971,4 +971,23 @@ onUpload(): void {
       return sum + (event.meta?.profit || 0);
     }, 0);
   }
+
+  // Template helper methods
+  isPositiveValue(value: string | number): boolean {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num > 0;
+  }
+
+  isNegativeValue(value: string | number): boolean {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num < 0;
+  }
+
+  getStatusClass(status: string): string {
+    return status ? status.toLowerCase() : '';
+  }
+
+  getPositionClass(position: string): string {
+    return position ? position.toLowerCase() : '';
+  }
 }
