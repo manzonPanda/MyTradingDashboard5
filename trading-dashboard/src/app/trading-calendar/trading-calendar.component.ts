@@ -32,6 +32,7 @@ interface CalendarDay {
   winCount: number;
   lossCount: number;
   winRate: number;
+  dailyPercentage: number;
 }
 
 interface WeekSummary {
