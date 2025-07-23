@@ -995,6 +995,11 @@ onUpload(): void {
     return position ? position.toLowerCase() : '';
   }
 
+  // Utility method for templates
+  parseFloat(value: string): number {
+    return parseFloat(value) || 0;
+  }
+
   // Advanced Trading Analytics Methods
 
   // Risk Management KPIs
