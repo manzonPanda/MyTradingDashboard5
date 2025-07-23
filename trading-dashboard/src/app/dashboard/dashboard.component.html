@@ -74,6 +74,241 @@
     </div>
   </section>
 
+  <!-- 🚀 ADVANCED PERFORMANCE ANALYTICS - HERO SECTION -->
+  <section class="hero-analytics-section">
+    <div class="analytics-hero-header">
+      <div class="hero-title-section">
+        <h2 class="hero-title">
+          <mat-icon class="hero-icon">psychology</mat-icon>
+          Trading Performance Intelligence
+        </h2>
+        <p class="hero-subtitle">AI-powered insights to identify what's causing your losses and how to fix them</p>
+      </div>
+      <div class="hero-status-indicator">
+        <div class="pulse-indicator"></div>
+        <span class="status-text">Live Analysis</span>
+      </div>
+    </div>
+
+    <!-- Critical Alerts Banner -->
+    <div class="critical-alerts-banner" *ngIf="getPerformanceInsights().some(i => i.severity === 'critical')">
+      <mat-icon class="alert-icon">warning</mat-icon>
+      <span class="alert-text">Critical Trading Issues Detected - Review Insights Below</span>
+      <mat-icon class="alert-action">trending_down</mat-icon>
+    </div>
+
+    <div class="analytics-grid-enhanced">
+      <!-- Trading Psychology Dashboard -->
+      <div class="psychology-dashboard-card">
+        <div class="card-header-enhanced">
+          <div class="header-content">
+            <mat-icon class="header-icon psychology">psychology</mat-icon>
+            <div class="header-text">
+              <h3 class="card-title">Trading Psychology</h3>
+              <p class="card-subtitle">Emotional patterns affecting your performance</p>
+            </div>
+          </div>
+          <div class="severity-indicator high-risk" *ngIf="getRevengeTradingScore() > 20 || getOvertradingScore() > 30">
+            <mat-icon>error</mat-icon>
+          </div>
+        </div>
+        <div class="psychology-metrics-enhanced">
+          <div class="psychology-indicator-enhanced">
+            <div class="indicator-header">
+              <span class="indicator-label">😤 Revenge Trading</span>
+              <span class="indicator-score" [ngClass]="getRevengeTradingClass()">{{ getRevengeTradingScore().toFixed(1) }}%</span>
+            </div>
+            <div class="progress-bar-enhanced">
+              <div class="progress-fill" [style.width]="getRevengeTradingScore() + '%'" [ngClass]="getRevengeTradingClass()"></div>
+            </div>
+            <div class="indicator-insight" *ngIf="getRevengeTradingScore() > 20">
+              🚨 High revenge trading detected! You're increasing position sizes after losses.
+            </div>
+          </div>
+
+          <div class="psychology-indicator-enhanced">
+            <div class="indicator-header">
+              <span class="indicator-label">📈 Overtrading Risk</span>
+              <span class="indicator-score" [ngClass]="getOvertradingClass()">{{ getOvertradingScore().toFixed(1) }}%</span>
+            </div>
+            <div class="progress-bar-enhanced">
+              <div class="progress-fill" [style.width]="getOvertradingScore() + '%'" [ngClass]="getOvertradingClass()"></div>
+            </div>
+            <div class="indicator-insight" *ngIf="getOvertradingScore() > 30">
+              ⚠️ Overtrading pattern found! You have too many high-volume trading days.
+            </div>
+          </div>
+
+          <div class="psychology-indicator-enhanced">
+            <div class="indicator-header">
+              <span class="indicator-label">😰 FOMO Trading</span>
+              <span class="indicator-score" [ngClass]="getFOMOClass()">{{ getFOMOScore().toFixed(1) }}%</span>
+            </div>
+            <div class="progress-bar-enhanced">
+              <div class="progress-fill" [style.width]="getFOMOScore() + '%'" [ngClass]="getFOMOClass()"></div>
+            </div>
+            <div class="indicator-insight" *ngIf="getFOMOScore() > 15">
+              💭 FOMO detected! You're making quick trades after consecutive wins.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Management Dashboard -->
+      <div class="risk-dashboard-card">
+        <div class="card-header-enhanced">
+          <div class="header-content">
+            <mat-icon class="header-icon risk">shield</mat-icon>
+            <div class="header-text">
+              <h3 class="card-title">Risk Management</h3>
+              <p class="card-subtitle">Account protection metrics</p>
+            </div>
+          </div>
+          <div class="risk-score-circle">
+            <div class="circle-content">
+              <span class="score-number">{{ getMaxDrawdownPercent() }}</span>
+              <span class="score-label">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="risk-metrics-enhanced">
+          <div class="risk-metric-card">
+            <div class="metric-icon-wrapper negative">
+              <mat-icon>trending_down</mat-icon>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Max Drawdown</span>
+              <span class="metric-value negative">{{ getMaxDrawdown() | currency }}</span>
+              <span class="metric-impact">{{ getMaxDrawdownPercent() }}% of account</span>
+            </div>
+          </div>
+
+          <div class="risk-metric-card">
+            <div class="metric-icon-wrapper" [ngClass]="{ 'positive': getCurrentDrawdown() >= 0, 'negative': getCurrentDrawdown() < 0 }">
+              <mat-icon>{{ getCurrentDrawdown() >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Current Drawdown</span>
+              <span class="metric-value" [ngClass]="{ 'positive': getCurrentDrawdown() >= 0, 'negative': getCurrentDrawdown() < 0 }">{{ getCurrentDrawdown() | currency }}</span>
+              <span class="metric-impact">{{ getCurrentDrawdown() >= 0 ? 'In profit zone' : 'Below peak' }}</span>
+            </div>
+          </div>
+
+          <div class="risk-metric-card">
+            <div class="metric-icon-wrapper" [ngClass]="{ 'positive': parseFloat(getRiskRewardRatio()) > 1.5, 'warning': parseFloat(getRiskRewardRatio()) <= 1.5 }">
+              <mat-icon>balance</mat-icon>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Risk/Reward Ratio</span>
+              <span class="metric-value">1:{{ getRiskRewardRatio() }}</span>
+              <span class="metric-impact">{{ parseFloat(getRiskRewardRatio()) > 1.5 ? 'Good ratio' : 'Improve R:R' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Heatmap Visualization -->
+      <div class="heatmap-visualization-card">
+        <div class="card-header-enhanced">
+          <div class="header-content">
+            <mat-icon class="header-icon heatmap">grid_view</mat-icon>
+            <div class="header-text">
+              <h3 class="card-title">30-Day Performance Heatmap</h3>
+              <p class="card-subtitle">Daily P&L patterns and streaks</p>
+            </div>
+          </div>
+        </div>
+        <div class="heatmap-container-enhanced">
+          <div class="heatmap-grid-enhanced">
+            <div class="heatmap-cell-enhanced"
+                 *ngFor="let cell of getPerformanceHeatmap(); let i = index"
+                 [ngClass]="cell.class"
+                 [title]="cell.tooltip"
+                 [style.animation-delay]="(i * 50) + 'ms'">
+              <div class="cell-inner">
+                <span class="cell-amount" *ngIf="cell.value !== 0">{{ cell.value | currency:'USD':'symbol':'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="heatmap-legend-enhanced">
+            <div class="legend-title">Daily P&L Scale</div>
+            <div class="legend-scale">
+              <div class="legend-item negative-extreme">-$50+</div>
+              <div class="legend-item negative-high">-$25</div>
+              <div class="legend-item neutral">$0</div>
+              <div class="legend-item positive-high">+$25</div>
+              <div class="legend-item positive-extreme">+$50+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discipline & Execution Metrics -->
+      <div class="discipline-metrics-card">
+        <div class="card-header-enhanced">
+          <div class="header-content">
+            <mat-icon class="header-icon discipline">rule</mat-icon>
+            <div class="header-text">
+              <h3 class="card-title">Trading Discipline</h3>
+              <p class="card-subtitle">Execution and rule adherence</p>
+            </div>
+          </div>
+        </div>
+        <div class="discipline-metrics-grid">
+          <div class="discipline-metric">
+            <div class="discipline-circle" [ngClass]="getStopLossAdherenceClass()">
+              <span class="discipline-percentage">{{ getStopLossAdherence().toFixed(0) }}%</span>
+            </div>
+            <div class="discipline-label">Stop Loss Adherence</div>
+          </div>
+          <div class="discipline-metric">
+            <div class="discipline-circle" [ngClass]="getTakeProfitDisciplineClass()">
+              <span class="discipline-percentage">{{ getTakeProfitDiscipline().toFixed(0) }}%</span>
+            </div>
+            <div class="discipline-label">Take Profit Discipline</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consecutive Trades Streak Analysis -->
+      <div class="streak-analysis-card">
+        <div class="card-header-enhanced">
+          <div class="header-content">
+            <mat-icon class="header-icon streak">timeline</mat-icon>
+            <div class="header-text">
+              <h3 class="card-title">Streak Analysis</h3>
+              <p class="card-subtitle">Winning & losing patterns</p>
+            </div>
+          </div>
+        </div>
+        <div class="streak-metrics-enhanced">
+          <div class="streak-stat-enhanced positive">
+            <div class="streak-icon">
+              <mat-icon>emoji_events</mat-icon>
+            </div>
+            <div class="streak-content">
+              <span class="streak-number">{{ getMaxConsecutiveWins() }}</span>
+              <span class="streak-label">Max Win Streak</span>
+            </div>
+          </div>
+          <div class="streak-stat-enhanced negative">
+            <div class="streak-icon">
+              <mat-icon>error_outline</mat-icon>
+            </div>
+            <div class="streak-content">
+              <span class="streak-number">{{ getMaxConsecutiveLosses() }}</span>
+              <span class="streak-label">Max Loss Streak</span>
+            </div>
+          </div>
+          <div class="current-streak-display" [ngClass]="getCurrentStreakClass()">
+            <span class="current-streak-label">Current Streak</span>
+            <span class="current-streak-value">{{ getCurrentStreak() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Upload Section -->
   <section class="upload-section">
     <div class="upload-card">
@@ -308,198 +543,7 @@
     </div>
   </section>
 
-  <!-- Performance Analytics Section -->
-  <section class="analytics-section">
-    <div class="analytics-grid">
-      <!-- Performance Charts -->
-      <div class="chart-card performance-chart">
-        <div class="chart-header">
-          <h3 class="chart-title">Equity Curve</h3>
-          <mat-icon class="chart-icon">trending_up</mat-icon>
-        </div>
-        <div class="chart-container">
-          <canvas #equityChart width="400" height="200"></canvas>
-        </div>
-      </div>
 
-      <!-- Risk Management KPIs -->
-      <div class="risk-kpis-card">
-        <div class="chart-header">
-          <h3 class="chart-title">Risk Management</h3>
-          <mat-icon class="chart-icon">shield</mat-icon>
-        </div>
-        <div class="risk-metrics">
-          <div class="risk-metric">
-            <span class="risk-label">Max Drawdown</span>
-            <span class="risk-value negative">{{ getMaxDrawdown() | currency }}</span>
-            <span class="risk-percentage">({{ getMaxDrawdownPercent() }}%)</span>
-          </div>
-          <div class="risk-metric">
-            <span class="risk-label">Current Drawdown</span>
-            <span class="risk-value" [ngClass]="{ 'negative': getCurrentDrawdown() < 0, 'positive': getCurrentDrawdown() >= 0 }">{{ getCurrentDrawdown() | currency }}</span>
-          </div>
-          <div class="risk-metric">
-            <span class="risk-label">Risk/Reward Ratio</span>
-            <span class="risk-value">{{ getRiskRewardRatio() }}</span>
-          </div>
-          <div class="risk-metric">
-            <span class="risk-label">Profit Factor</span>
-            <span class="risk-value" [ngClass]="{ 'positive': parseFloat(getProfitFactor()) > 1, 'negative': parseFloat(getProfitFactor()) <= 1 }">{{ getProfitFactor() }}</span>
-          </div>
-          <div class="risk-metric">
-            <span class="risk-label">Avg Risk per Trade</span>
-            <span class="risk-value">{{ getAvgRiskPerTrade() | currency }}</span>
-          </div>
-          <div class="risk-metric">
-            <span class="risk-label">Kelly Criterion</span>
-            <span class="risk-value">{{ getKellyCriterion() }}%</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Trading Psychology Indicators -->
-      <div class="psychology-card">
-        <div class="chart-header">
-          <h3 class="chart-title">Psychology Analysis</h3>
-          <mat-icon class="chart-icon">psychology</mat-icon>
-        </div>
-        <div class="psychology-metrics">
-          <div class="psychology-section">
-            <h4>Emotional Trading Patterns</h4>
-            <div class="psychology-indicator">
-              <span class="indicator-label">Revenge Trading Score</span>
-              <div class="indicator-bar">
-                <div class="bar-fill" [style.width]="getRevengeTradingScore() + '%'" [ngClass]="getRevengeTradingClass()"></div>
-              </div>
-              <span class="indicator-value">{{ getRevengeTradingScore() }}%</span>
-            </div>
-            <div class="psychology-indicator">
-              <span class="indicator-label">Overtrading Tendency</span>
-              <div class="indicator-bar">
-                <div class="bar-fill" [style.width]="getOvertradingScore() + '%'" [ngClass]="getOvertradingClass()"></div>
-              </div>
-              <span class="indicator-value">{{ getOvertradingScore() }}%</span>
-            </div>
-            <div class="psychology-indicator">
-              <span class="indicator-label">FOMO Trading</span>
-              <div class="indicator-bar">
-                <div class="bar-fill" [style.width]="getFOMOScore() + '%'" [ngClass]="getFOMOClass()"></div>
-              </div>
-              <span class="indicator-value">{{ getFOMOScore() }}%</span>
-            </div>
-          </div>
-
-          <div class="psychology-section">
-            <h4>Discipline Metrics</h4>
-            <div class="psychology-indicator">
-              <span class="indicator-label">Stop Loss Adherence</span>
-              <div class="indicator-bar">
-                <div class="bar-fill" [style.width]="getStopLossAdherence() + '%'" [ngClass]="getStopLossAdherenceClass()"></div>
-              </div>
-              <span class="indicator-value">{{ getStopLossAdherence() }}%</span>
-            </div>
-            <div class="psychology-indicator">
-              <span class="indicator-label">Take Profit Discipline</span>
-              <div class="indicator-bar">
-                <div class="bar-fill" [style.width]="getTakeProfitDiscipline() + '%'" [ngClass]="getTakeProfitDisciplineClass()"></div>
-              </div>
-              <span class="indicator-value">{{ getTakeProfitDiscipline() }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Time-based Performance -->
-      <div class="time-performance-card">
-        <div class="chart-header">
-          <h3 class="chart-title">Time-based Analysis</h3>
-          <mat-icon class="chart-icon">schedule</mat-icon>
-        </div>
-        <div class="time-analysis">
-          <div class="time-section">
-            <h4>Best/Worst Trading Days</h4>
-            <div class="day-performance">
-              <div class="day-stat best-day">
-                <span class="day-label">Best Day</span>
-                <span class="day-name">{{ getBestTradingDay().day }}</span>
-                <span class="day-pnl positive">{{ getBestTradingDay().avgPnL | currency }}</span>
-              </div>
-              <div class="day-stat worst-day">
-                <span class="day-label">Worst Day</span>
-                <span class="day-name">{{ getWorstTradingDay().day }}</span>
-                <span class="day-pnl negative">{{ getWorstTradingDay().avgPnL | currency }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="time-section">
-            <h4>Trading Session Performance</h4>
-            <div class="session-grid">
-              <div class="session-stat" *ngFor="let session of getTradingSessionStats()">
-                <span class="session-label">{{ session.name }}</span>
-                <span class="session-pnl" [ngClass]="{ 'positive': session.avgPnL > 0, 'negative': session.avgPnL < 0 }">{{ session.avgPnL | currency }}</span>
-                <span class="session-trades">{{ session.tradeCount }} trades</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Consecutive Trades Analysis -->
-      <div class="consecutive-analysis-card">
-        <div class="chart-header">
-          <h3 class="chart-title">Consecutive Trades</h3>
-          <mat-icon class="chart-icon">timeline</mat-icon>
-        </div>
-        <div class="consecutive-stats">
-          <div class="consecutive-metric">
-            <span class="consecutive-label">Max Consecutive Wins</span>
-            <span class="consecutive-value positive">{{ getMaxConsecutiveWins() }}</span>
-          </div>
-          <div class="consecutive-metric">
-            <span class="consecutive-label">Max Consecutive Losses</span>
-            <span class="consecutive-value negative">{{ getMaxConsecutiveLosses() }}</span>
-          </div>
-          <div class="consecutive-metric">
-            <span class="consecutive-label">Current Streak</span>
-            <span class="consecutive-value" [ngClass]="getCurrentStreakClass()">{{ getCurrentStreak() }}</span>
-          </div>
-          <div class="consecutive-metric">
-            <span class="consecutive-label">Avg Recovery Time</span>
-            <span class="consecutive-value">{{ getAvgRecoveryTime() }} trades</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Performance Heatmap -->
-      <div class="heatmap-card">
-        <div class="chart-header">
-          <h3 class="chart-title">Performance Heatmap</h3>
-          <mat-icon class="chart-icon">grid_view</mat-icon>
-        </div>
-        <div class="heatmap-container">
-          <div class="heatmap-grid">
-            <div class="heatmap-cell"
-                 *ngFor="let cell of getPerformanceHeatmap()"
-                 [ngClass]="cell.class"
-                 [title]="cell.tooltip">
-              <span class="cell-value">{{ cell.value | currency:'USD':'symbol':'1.0-0' }}</span>
-            </div>
-          </div>
-          <div class="heatmap-legend">
-            <span class="legend-label">Daily P&L:</span>
-            <div class="legend-colors">
-              <span class="legend-item negative-high">-$50+</span>
-              <span class="legend-item negative-med">-$25</span>
-              <span class="legend-item neutral">$0</span>
-              <span class="legend-item positive-med">+$25</span>
-              <span class="legend-item positive-high">+$50+</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- Insights and Recommendations -->
   <section class="insights-section">
