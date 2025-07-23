@@ -1012,6 +1012,11 @@
           background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
           color: var(--tf-accent-warning);
         }
+
+        &.insights {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
+          color: var(--tf-accent-warning);
+        }
       }
 
       .header-text {
