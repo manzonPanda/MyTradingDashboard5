@@ -80,7 +80,7 @@ interface Table {
     MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss']
 })
 
 
