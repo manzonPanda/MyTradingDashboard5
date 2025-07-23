@@ -306,6 +306,43 @@
           </div>
         </div>
       </div>
+
+      <!-- 🔍 Performance Insights & AI Recommendations -->
+      <div class="insights-analytics-card">
+        <div class="card-header-enhanced">
+          <div class="header-content">
+            <mat-icon class="header-icon insights">lightbulb</mat-icon>
+            <div class="header-text">
+              <h3 class="card-title">AI Performance Insights</h3>
+              <p class="card-subtitle">Automated analysis of your trading patterns</p>
+            </div>
+          </div>
+          <div class="insights-status">
+            <span class="insights-count">{{ getPerformanceInsights().length }}</span>
+            <span class="insights-label">Issues Found</span>
+          </div>
+        </div>
+        <div class="insights-grid-enhanced">
+          <div class="insight-card-enhanced" *ngFor="let category of getPerformanceInsights()" [ngClass]="'severity-' + category.severity">
+            <div class="insight-header">
+              <div class="severity-badge" [ngClass]="category.severity">
+                <mat-icon>{{ category.severity === 'critical' ? 'error' : category.severity === 'warning' ? 'warning' : 'check_circle' }}</mat-icon>
+              </div>
+              <h4 class="insight-title">{{ category.title }}</h4>
+            </div>
+            <p class="insight-description">{{ category.description }}</p>
+            <div class="recommendations-enhanced">
+              <h5 class="recommendations-title">📋 Action Items:</h5>
+              <ul class="recommendation-list">
+                <li class="recommendation-item" *ngFor="let recommendation of category.recommendations">
+                  <mat-icon class="rec-icon">check_circle_outline</mat-icon>
+                  <span>{{ recommendation }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
