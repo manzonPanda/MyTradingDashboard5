@@ -80,7 +80,7 @@ interface Table {
     MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss']
 })
 
 
@@ -993,5 +993,593 @@ onUpload(): void {
 
   getPositionClass(position: string): string {
     return position ? position.toLowerCase() : '';
+  }
+
+  // Utility method for templates
+  parseFloat(value: string): number {
+    return parseFloat(value) || 0;
+  }
+
+  // Helper method to check if there are critical insights
+  hasCriticalInsights(): boolean {
+    return this.getPerformanceInsights().some(insight => insight.severity === 'critical');
+  }
+
+  // Advanced Trading Analytics Methods
+
+  // Risk Management KPIs
+  getMaxDrawdown(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let runningBalance = 0;
+    let peak = 0;
+    let maxDrawdown = 0;
+
+    this.tableData.forEach(trade => {
+      const tradeProfit = parseFloat(trade.netProfit) || 0;
+      runningBalance += tradeProfit;
+
+      if (runningBalance > peak) {
+        peak = runningBalance;
+      }
+
+      const drawdown = peak - runningBalance;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
+    });
+
+    return -maxDrawdown;
+  }
+
+  getMaxDrawdownPercent(): string {
+    const maxDrawdown = Math.abs(this.getMaxDrawdown());
+    const initialBalance = 5000; // Prop firm account value
+    return ((maxDrawdown / initialBalance) * 100).toFixed(2);
+  }
+
+  getCurrentDrawdown(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let runningBalance = 0;
+    let peak = 0;
+
+    this.tableData.forEach(trade => {
+      const tradeProfit = parseFloat(trade.netProfit) || 0;
+      runningBalance += tradeProfit;
+
+      if (runningBalance > peak) {
+        peak = runningBalance;
+      }
+    });
+
+    return runningBalance - peak;
+  }
+
+  getRiskRewardRatio(): string {
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    if (avgLoss === 0) return '0.00';
+    return (avgWin / avgLoss).toFixed(2);
+  }
+
+  getProfitFactor(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0.00';
+
+    const totalWins = this.tableData
+      .filter(trade => parseFloat(trade.netProfit) > 0)
+      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
+
+    const totalLosses = Math.abs(this.tableData
+      .filter(trade => parseFloat(trade.netProfit) < 0)
+      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0));
+
+    if (totalLosses === 0) return totalWins > 0 ? '∞' : '0.00';
+    return (totalWins / totalLosses).toFixed(2);
+  }
+
+  getAvgRiskPerTrade(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const totalRisk = this.tableData.reduce((sum, trade) => {
+      const entry = parseFloat(trade.entry) || 0;
+      const stopLoss = parseFloat(trade.sL) || 0;
+      const volume = parseFloat(trade.volume) || 0;
+
+      if (entry && stopLoss && volume) {
+        const riskPerUnit = Math.abs(entry - stopLoss);
+        return sum + (riskPerUnit * volume);
+      }
+      return sum;
+    }, 0);
+
+    return totalRisk / this.tableData.length;
+  }
+
+  getKellyCriterion(): string {
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    if (avgLoss === 0) return '0.00';
+
+    const kelly = winRate - ((1 - winRate) / (avgWin / avgLoss));
+    return (kelly * 100).toFixed(2);
+  }
+
+  // Trading Psychology Indicators
+  getRevengeTradingScore(): number {
+    if (!this.tableData || this.tableData.length < 2) return 0;
+
+    let revengeTradeCount = 0;
+
+    for (let i = 1; i < this.tableData.length; i++) {
+      const prevTrade = parseFloat(this.tableData[i-1].netProfit) || 0;
+      const currentTrade = parseFloat(this.tableData[i].netProfit) || 0;
+      const currentVolume = parseFloat(this.tableData[i].volume) || 0;
+      const prevVolume = parseFloat(this.tableData[i-1].volume) || 0;
+
+      // Check if previous trade was a loss and current trade has increased volume
+      if (prevTrade < 0 && currentVolume > prevVolume * 1.5) {
+        revengeTradeCount++;
+      }
+    }
+
+    return Math.min(100, (revengeTradeCount / (this.tableData.length - 1)) * 100);
+  }
+
+  getRevengeTradingClass(): string {
+    const score = this.getRevengeTradingScore();
+    if (score > 30) return 'high-risk';
+    if (score > 15) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getOvertradingScore(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    // Group trades by day
+    const tradesByDay: { [key: string]: number } = {};
+
+    this.tableData.forEach(trade => {
+      const date = trade.openDate.split(' ')[0]; // Get date part only
+      tradesByDay[date] = (tradesByDay[date] || 0) + 1;
+    });
+
+    const dailyTradeCounts = Object.values(tradesByDay);
+    const avgTradesPerDay = dailyTradeCounts.reduce((sum, count) => sum + count, 0) / dailyTradeCounts.length;
+
+    // Calculate days with excessive trading (more than 2x average)
+    const excessiveTradingDays = dailyTradeCounts.filter(count => count > avgTradesPerDay * 2).length;
+
+    return Math.min(100, (excessiveTradingDays / dailyTradeCounts.length) * 100);
+  }
+
+  getOvertradingClass(): string {
+    const score = this.getOvertradingScore();
+    if (score > 40) return 'high-risk';
+    if (score > 20) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getFOMOScore(): number {
+    if (!this.tableData || this.tableData.length < 3) return 0;
+
+    let fomoTradeCount = 0;
+
+    for (let i = 2; i < this.tableData.length; i++) {
+      const trade1 = parseFloat(this.tableData[i-2].netProfit) || 0;
+      const trade2 = parseFloat(this.tableData[i-1].netProfit) || 0;
+      const currentTrade = parseFloat(this.tableData[i].netProfit) || 0;
+
+      // FOMO: Two consecutive wins followed by a quick loss
+      if (trade1 > 0 && trade2 > 0 && currentTrade < 0) {
+        const timeDiff = this.getTimeDifferenceBetweenTrades(i-1, i);
+        if (timeDiff < 30) { // Less than 30 minutes
+          fomoTradeCount++;
+        }
+      }
+    }
+
+    return Math.min(100, (fomoTradeCount / (this.tableData.length - 2)) * 100);
+  }
+
+  getFOMOClass(): string {
+    const score = this.getFOMOScore();
+    if (score > 25) return 'high-risk';
+    if (score > 10) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getStopLossAdherence(): number {
+    if (!this.tableData || this.tableData.length === 0) return 100;
+
+    const tradesWithSL = this.tableData.filter(trade => {
+      const sl = parseFloat(trade.sL);
+      return sl && sl > 0;
+    });
+
+    if (tradesWithSL.length === 0) return 0;
+
+    const adherentTrades = tradesWithSL.filter(trade => {
+      const entry = parseFloat(trade.entry);
+      const exit = parseFloat(trade.exit);
+      const sl = parseFloat(trade.sL);
+      const profit = parseFloat(trade.netProfit);
+
+      // If it's a loss, check if exit price is close to SL
+      if (profit < 0) {
+        const position = trade.position.toLowerCase();
+        if (position === 'buy') {
+          return exit <= sl * 1.05; // 5% tolerance
+        } else {
+          return exit >= sl * 0.95; // 5% tolerance
+        }
+      }
+      return true; // Winning trades are considered adherent
+    });
+
+    return (adherentTrades.length / tradesWithSL.length) * 100;
+  }
+
+  getStopLossAdherenceClass(): string {
+    const score = this.getStopLossAdherence();
+    if (score > 80) return 'high-discipline';
+    if (score > 60) return 'medium-discipline';
+    return 'low-discipline';
+  }
+
+  getTakeProfitDiscipline(): number {
+    if (!this.tableData || this.tableData.length === 0) return 100;
+
+    const winningTrades = this.tableData.filter(trade => parseFloat(trade.netProfit) > 0);
+
+    if (winningTrades.length === 0) return 0;
+
+    const disciplinedTrades = winningTrades.filter(trade => {
+      const entry = parseFloat(trade.entry);
+      const exit = parseFloat(trade.exit);
+      const tp = parseFloat(trade.tP);
+
+      if (!tp || tp === 0) return false;
+
+      const position = trade.position.toLowerCase();
+      if (position === 'buy') {
+        return exit >= tp * 0.95; // Took profit close to target
+      } else {
+        return exit <= tp * 1.05; // Took profit close to target
+      }
+    });
+
+    return (disciplinedTrades.length / winningTrades.length) * 100;
+  }
+
+  getTakeProfitDisciplineClass(): string {
+    const score = this.getTakeProfitDiscipline();
+    if (score > 70) return 'high-discipline';
+    if (score > 50) return 'medium-discipline';
+    return 'low-discipline';
+  }
+
+  // Time-based Analysis
+  getBestTradingDay(): { day: string, avgPnL: number } {
+    const dayStats = this.getDayOfWeekStats();
+    if (dayStats.length === 0) return { day: 'N/A', avgPnL: 0 };
+    const bestDay = dayStats.reduce((best, current) =>
+      current.avgPnL > best.avgPnL ? current : best
+    );
+    return { day: bestDay.day, avgPnL: bestDay.avgPnL };
+  }
+
+  getWorstTradingDay(): { day: string, avgPnL: number } {
+    const dayStats = this.getDayOfWeekStats();
+    if (dayStats.length === 0) return { day: 'N/A', avgPnL: 0 };
+    const worstDay = dayStats.reduce((worst, current) =>
+      current.avgPnL < worst.avgPnL ? current : worst
+    );
+    return { day: worstDay.day, avgPnL: worstDay.avgPnL };
+  }
+
+  getDayOfWeekStats(): { day: string, avgPnL: number, tradeCount: number }[] {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayStats: { [key: number]: { totalPnL: number, count: number } } = {};
+
+    this.tableData.forEach(trade => {
+      const date = this.parseTradeDate(trade.openDate);
+      if (date) {
+        const dayOfWeek = date.getDay();
+        const pnl = parseFloat(trade.netProfit) || 0;
+
+        if (!dayStats[dayOfWeek]) {
+          dayStats[dayOfWeek] = { totalPnL: 0, count: 0 };
+        }
+
+        dayStats[dayOfWeek].totalPnL += pnl;
+        dayStats[dayOfWeek].count++;
+      }
+    });
+
+    return Object.keys(dayStats).map(dayIndex => {
+      const index = parseInt(dayIndex);
+      const stats = dayStats[index];
+      return {
+        day: dayNames[index],
+        avgPnL: stats.totalPnL / stats.count,
+        tradeCount: stats.count
+      };
+    });
+  }
+
+  getTradingSessionStats(): { name: string, avgPnL: number, tradeCount: number }[] {
+    const sessions = [
+      { name: 'Asian', start: 0, end: 8 },
+      { name: 'London', start: 8, end: 16 },
+      { name: 'New York', start: 16, end: 24 }
+    ];
+
+    const sessionStats = sessions.map(session => {
+      const sessionTrades = this.tableData.filter(trade => {
+        const date = this.parseTradeDate(trade.openDate);
+        if (date) {
+          const hour = date.getHours();
+          return hour >= session.start && hour < session.end;
+        }
+        return false;
+      });
+
+      const totalPnL = sessionTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
+      const avgPnL = sessionTrades.length > 0 ? totalPnL / sessionTrades.length : 0;
+
+      return {
+        name: session.name,
+        avgPnL,
+        tradeCount: sessionTrades.length
+      };
+    });
+
+    return sessionStats;
+  }
+
+  // Consecutive Trades Analysis
+  getMaxConsecutiveWins(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let maxWins = 0;
+    let currentWins = 0;
+
+    this.tableData.forEach(trade => {
+      const profit = parseFloat(trade.netProfit) || 0;
+      if (profit > 0) {
+        currentWins++;
+        maxWins = Math.max(maxWins, currentWins);
+      } else {
+        currentWins = 0;
+      }
+    });
+
+    return maxWins;
+  }
+
+  getMaxConsecutiveLosses(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let maxLosses = 0;
+    let currentLosses = 0;
+
+    this.tableData.forEach(trade => {
+      const profit = parseFloat(trade.netProfit) || 0;
+      if (profit < 0) {
+        currentLosses++;
+        maxLosses = Math.max(maxLosses, currentLosses);
+      } else {
+        currentLosses = 0;
+      }
+    });
+
+    return maxLosses;
+  }
+
+  getCurrentStreak(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0';
+
+    let streak = 0;
+    let isWinStreak = false;
+
+    for (let i = this.tableData.length - 1; i >= 0; i--) {
+      const profit = parseFloat(this.tableData[i].netProfit) || 0;
+
+      if (i === this.tableData.length - 1) {
+        isWinStreak = profit > 0;
+        streak = 1;
+      } else {
+        if ((isWinStreak && profit > 0) || (!isWinStreak && profit < 0)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    return `${streak} ${isWinStreak ? 'W' : 'L'}`;
+  }
+
+  getCurrentStreakClass(): string {
+    const streak = this.getCurrentStreak();
+    if (streak.includes('W')) return 'positive';
+    if (streak.includes('L')) {
+      const count = parseInt(streak.split(' ')[0]);
+      return count > 3 ? 'high-risk' : 'negative';
+    }
+    return 'neutral';
+  }
+
+  getAvgRecoveryTime(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const recoveryTimes: number[] = [];
+    let lossStreak = 0;
+
+    this.tableData.forEach(trade => {
+      const profit = parseFloat(trade.netProfit) || 0;
+
+      if (profit < 0) {
+        lossStreak++;
+      } else if (lossStreak > 0) {
+        recoveryTimes.push(lossStreak);
+        lossStreak = 0;
+      }
+    });
+
+    return recoveryTimes.length > 0 ?
+      recoveryTimes.reduce((sum, time) => sum + time, 0) / recoveryTimes.length : 0;
+  }
+
+  // Performance Heatmap
+  getPerformanceHeatmap(): { value: number, class: string, tooltip: string }[] {
+    const last30Days: { value: number, class: string, tooltip: string }[] = [];
+    const today = new Date();
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      const dayTrades = this.tableData.filter(trade => {
+        const tradeDate = this.parseTradeDate(trade.openDate);
+        return tradeDate && tradeDate.toDateString() === date.toDateString();
+      });
+
+      const dayPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
+
+      let cellClass = 'neutral';
+      if (dayPnL > 50) cellClass = 'positive-high';
+      else if (dayPnL > 25) cellClass = 'positive-med';
+      else if (dayPnL > 0) cellClass = 'positive-low';
+      else if (dayPnL < -50) cellClass = 'negative-high';
+      else if (dayPnL < -25) cellClass = 'negative-med';
+      else if (dayPnL < 0) cellClass = 'negative-low';
+
+      last30Days.push({
+        value: dayPnL,
+        class: cellClass,
+        tooltip: `${date.toLocaleDateString()}: ${dayTrades.length} trades, ${dayPnL.toFixed(2)} P&L`
+      });
+    }
+
+    return last30Days;
+  }
+
+  // Performance Insights
+  getPerformanceInsights(): { title: string, description: string, recommendations: string[], severity: string }[] {
+    const insights: { title: string, description: string, recommendations: string[], severity: string }[] = [];
+
+    // Win Rate Analysis
+    const winRate = parseFloat(this.calculateWinRate());
+    if (winRate < 40) {
+      insights.push({
+        title: '🎯 Low Win Rate Detected',
+        description: `Your win rate of ${winRate.toFixed(1)}% is below the typical 40-60% range for successful traders.`,
+        recommendations: [
+          'Review your entry criteria - you may be entering trades with poor setups',
+          'Consider tightening your trade selection process',
+          'Focus on high-probability setups only',
+          'Backtest your strategy to validate its effectiveness'
+        ],
+        severity: 'critical'
+      });
+    }
+
+    // Risk/Reward Analysis
+    const rrRatio = parseFloat(this.getRiskRewardRatio());
+    if (rrRatio < 1.5) {
+      insights.push({
+        title: '⚖️ Poor Risk/Reward Ratio',
+        description: `Your risk/reward ratio of ${rrRatio} means you're risking too much for too little reward.`,
+        recommendations: [
+          'Aim for at least 1:2 risk/reward ratio on trades',
+          'Let your winners run longer before taking profit',
+          'Consider wider take profit targets',
+          'Review if you\'re cutting winners too early'
+        ],
+        severity: 'warning'
+      });
+    }
+
+    // Revenge Trading
+    const revengeScore = this.getRevengeTradingScore();
+    if (revengeScore > 20) {
+      insights.push({
+        title: '😤 Revenge Trading Pattern',
+        description: `${revengeScore.toFixed(1)}% of your trades show signs of revenge trading after losses.`,
+        recommendations: [
+          'Take a break after a losing trade to reset emotionally',
+          'Set a maximum daily loss limit and stick to it',
+          'Keep a trading journal to identify emotional triggers',
+          'Never increase position size after a loss'
+        ],
+        severity: 'critical'
+      });
+    }
+
+    // Overtrading
+    const overtradingScore = this.getOvertradingScore();
+    if (overtradingScore > 30) {
+      insights.push({
+        title: '📈 Overtrading Detected',
+        description: `You have excessive trading days suggesting overtrading behavior.`,
+        recommendations: [
+          'Set a maximum number of trades per day (e.g., 3-5 trades)',
+          'Focus on quality over quantity',
+          'Wait for high-probability setups only',
+          'Take time to analyze the market before entering'
+        ],
+        severity: 'warning'
+      });
+    }
+
+    // Drawdown Analysis
+    const maxDrawdown = Math.abs(this.getMaxDrawdown());
+    if (maxDrawdown > 1000) {
+      insights.push({
+        title: '📉 High Drawdown Risk',
+        description: `Your maximum drawdown of $${maxDrawdown.toFixed(2)} indicates high risk exposure.`,
+        recommendations: [
+          'Reduce position sizes to limit account risk',
+          'Implement stricter stop losses',
+          'Never risk more than 1-2% of account per trade',
+          'Consider a period of paper trading to rebuild confidence'
+        ],
+        severity: 'critical'
+      });
+    }
+
+    // Positive insights
+    if (insights.length === 0) {
+      insights.push({
+        title: '✅ Good Trading Performance',
+        description: 'Your trading shows good discipline and risk management.',
+        recommendations: [
+          'Continue following your current strategy',
+          'Consider gradually increasing position sizes',
+          'Document what\'s working well in your trading journal',
+          'Stay consistent with your approach'
+        ],
+        severity: 'success'
+      });
+    }
+
+    return insights;
+  }
+
+  // Helper Methods
+  private getTimeDifferenceBetweenTrades(index1: number, index2: number): number {
+    if (!this.tableData[index1] || !this.tableData[index2]) return 0;
+
+    const date1 = this.parseTradeDate(this.tableData[index1].openDate);
+    const date2 = this.parseTradeDate(this.tableData[index2].openDate);
+
+    if (!date1 || !date2) return 0;
+
+    return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60); // difference in minutes
   }
 }
