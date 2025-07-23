@@ -582,24 +582,7 @@
 
 
 
-  <!-- Insights and Recommendations -->
-  <section class="insights-section">
-    <div class="insights-card">
-      <div class="insights-header">
-        <h2 class="section-title">Performance Insights & Areas for Improvement</h2>
-        <mat-icon class="insights-icon">lightbulb</mat-icon>
-      </div>
-      <div class="insights-content">
-        <div class="insight-category" *ngFor="let category of getPerformanceInsights()">
-          <h3 class="category-title" [ngClass]="category.severity">{{ category.title }}</h3>
-          <p class="category-description">{{ category.description }}</p>
-          <ul class="recommendations">
-            <li *ngFor="let recommendation of category.recommendations">{{ recommendation }}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
+
 
   <!-- Trading Calendar Section -->
   <section class="calendar-section">
