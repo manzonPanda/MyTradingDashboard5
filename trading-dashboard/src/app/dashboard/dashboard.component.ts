@@ -26,6 +26,7 @@ import { MatNativeDateModule } from '@angular/material/core'; // for default JS 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
+import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 
 interface Relation {
   relationName: string;
@@ -61,6 +62,7 @@ interface Table {
   standalone: true,
   imports: [
     ConnectionStatusComponent,
+    TradingCalendarComponent,
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
