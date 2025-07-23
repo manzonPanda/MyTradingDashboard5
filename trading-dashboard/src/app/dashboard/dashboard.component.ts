@@ -1000,6 +1000,11 @@ onUpload(): void {
     return parseFloat(value) || 0;
   }
 
+  // Helper method to check if there are critical insights
+  hasCriticalInsights(): boolean {
+    return this.getPerformanceInsights().some(insight => insight.severity === 'critical');
+  }
+
   // Advanced Trading Analytics Methods
 
   // Risk Management KPIs
