@@ -91,7 +91,7 @@
     </div>
 
     <!-- Critical Alerts Banner -->
-    <div class="critical-alerts-banner" *ngIf="getPerformanceInsights().some(i => i.severity === 'critical')">
+    <div class="critical-alerts-banner" *ngIf="hasCriticalInsights()">
       <mat-icon class="alert-icon">warning</mat-icon>
       <span class="alert-text">Critical Trading Issues Detected - Review Insights Below</span>
       <mat-icon class="alert-action">trending_down</mat-icon>
