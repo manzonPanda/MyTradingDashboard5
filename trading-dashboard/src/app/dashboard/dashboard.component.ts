@@ -858,6 +858,13 @@ onUpload(): void {
     }
   }
 
+  async getMt5API(){
+    const res: any = await firstValueFrom(
+      this.http.get("http://localhost:5000/api/open_trades")
+    );
+    console.log("Getting MT5 API data...",res);
+
+  }
   // Trading Metrics Calculation Methods
   calculateTotalPnL(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;

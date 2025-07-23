@@ -5,11 +5,11 @@
       <h1 class="dashboard-title">Jake Trading Dashboard</h1>
       <div class="header-actions">
         <app-connection-status></app-connection-status>
-        <button class="btn-info" (click)="onFileSelected($event)">
-          
+        <button class="btn-info" (click)="getMt5API()"> MT5 api </button>
+        <!-- <button class="btn-info" (click)="onFileSelected($event)">
           <mat-icon>cloud_upload</mat-icon>
           Import Data
-        </button>
+        </button> -->
         <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;" />
       </div>
     </div>
@@ -446,7 +446,7 @@
       <div class="action-buttons">
         <button class="btn-info" (click)="fileInput.click()">
           <mat-icon>file_upload</mat-icon>
-          Choose Excel File
+          Import MT5 report
         </button>
         <button class="btn-primary" (click)="onUpload()">
           <mat-icon>cloud_upload</mat-icon>
