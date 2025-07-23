@@ -344,7 +344,7 @@
           </div>
           <div class="risk-metric">
             <span class="risk-label">Profit Factor</span>
-            <span class="risk-value" [ngClass]="{ 'positive': getProfitFactor() > 1, 'negative': getProfitFactor() <= 1 }">{{ getProfitFactor() }}</span>
+            <span class="risk-value" [ngClass]="{ 'positive': parseFloat(getProfitFactor()) > 1, 'negative': parseFloat(getProfitFactor()) <= 1 }">{{ getProfitFactor() }}</span>
           </div>
           <div class="risk-metric">
             <span class="risk-label">Avg Risk per Trade</span>
