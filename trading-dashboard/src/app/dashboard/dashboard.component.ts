@@ -1438,15 +1438,52 @@ onUpload(): void {
   // Performance Heatmap
   getPerformanceHeatmap(): { value: number, class: string, tooltip: string }[] {
     const last30Days: { value: number, class: string, tooltip: string }[] = [];
-    const today = new Date();
+
+    // Debug: log table data info
+    console.log('Total trades in tableData:', this.tableData.length);
+    if (this.tableData.length > 0) {
+      console.log('First trade date:', this.tableData[0].openDate);
+      console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);
+    }
+
+    // Instead of using today's date, let's use the date range from the actual trades
+    if (!this.tableData || this.tableData.length === 0) {
+      // If no trades, show empty heatmap for last 30 days
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        last30Days.push({
+          value: 0,
+          class: 'neutral',
+          tooltip: `${date.toLocaleDateString()}: 0 trades, 0.00 P&L`
+        });
+      }
+      return last30Days;
+    }
+
+    // Find the date range of the trades
+    const tradeDates = this.tableData.map(trade => this.parseTradeDate(trade.openDate)).filter(date => date !== null) as Date[];
+    const minDate = new Date(Math.min(...tradeDates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...tradeDates.map(d => d.getTime())));
+
+    console.log('Trade date range:', minDate.toDateString(), 'to', maxDate.toDateString());
+
+    // Use the actual trade date range to show the last 30 days from the most recent trade
+    const endDate = maxDate;
 
     for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
+      const date = new Date(endDate);
       date.setDate(date.getDate() - i);
 
       const dayTrades = this.tableData.filter(trade => {
         const tradeDate = this.parseTradeDate(trade.openDate);
-        return tradeDate && tradeDate.toDateString() === date.toDateString();
+        if (!tradeDate) return false;
+
+        // Compare just the date part (year, month, day)
+        return tradeDate.getFullYear() === date.getFullYear() &&
+               tradeDate.getMonth() === date.getMonth() &&
+               tradeDate.getDate() === date.getDate();
       });
 
       const dayPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
@@ -1458,6 +1495,8 @@ onUpload(): void {
       else if (dayPnL < -50) cellClass = 'negative-high';
       else if (dayPnL < -25) cellClass = 'negative-med';
       else if (dayPnL < 0) cellClass = 'negative-low';
+
+      console.log(`Date: ${date.toLocaleDateString()}, Trades: ${dayTrades.length}, P&L: ${dayPnL.toFixed(2)}, Class: ${cellClass}`);
 
       last30Days.push({
         value: dayPnL,
