@@ -686,77 +686,108 @@
               'negative-row': data.pnl < 0,
               'neutral-row': data.pnl === 0
             }">
-              <td class="col-id">{{ data.uniqueID }}</td>
-              <td class="col-action">{{ data.action }}</td>
-              <td class="col-date">{{ formatNotionDate(data.date) }}</td>
-              <td class="col-account">
+              <td *ngIf="columnVisibility.id" class="col-id">{{ data.uniqueID }}</td>
+              <td *ngIf="columnVisibility.action" class="col-action">{{ data.action }}</td>
+              <td *ngIf="columnVisibility.date" class="col-date">{{ formatNotionDate(data.date) }}</td>
+              <td *ngIf="columnVisibility.account" class="col-account">
                 <div class="multi-select-container">
                   <span *ngFor="let account of data.account" class="account-badge">
                     {{ account }}
                   </span>
                 </div>
               </td>
-              <td class="col-status">
+              <td *ngIf="columnVisibility.status" class="col-status">
                 <span class="status-badge" [ngClass]="getStatusClass(data.status)">
                   {{ data.status }}
                 </span>
               </td>
-              <td class="col-buysell">
+              <td *ngIf="columnVisibility.buySell" class="col-buysell">
                 <span class="position-badge" [ngClass]="getPositionClass(data.buySell)">
                   {{ data.buySell }}
                 </span>
               </td>
-              <td class="col-instrument">{{ data.instrument }}</td>
-              <td class="col-strategy">{{ data.strategy }}</td>
-              <td class="col-lots">{{ data.lots | number:'1.2-2' }}</td>
-              <td class="col-pips">{{ data.pips | number:'1.0-0' }}</td>
-              <td class="col-pnl" [ngClass]="{
+              <td *ngIf="columnVisibility.instrument" class="col-instrument">{{ data.instrument }}</td>
+              <td *ngIf="columnVisibility.strategy" class="col-strategy">{{ data.strategy }}</td>
+              <td *ngIf="columnVisibility.lots" class="col-lots">{{ data.lots | number:'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.pips" class="col-pips">{{ data.pips | number:'1.0-0' }}</td>
+              <td *ngIf="columnVisibility.pnl" class="col-pnl" [ngClass]="{
                 'positive': data.pnl > 0,
                 'negative': data.pnl < 0,
                 'neutral': data.pnl === 0
               }">
                 {{ data.pnl | currency:'USD':'symbol':'1.2-2' }}
               </td>
-              <td class="col-percent" [ngClass]="{
+              <td *ngIf="columnVisibility.percentPnL" class="col-percent" [ngClass]="{
                 'positive': data.percentPnL > 0,
                 'negative': data.percentPnL < 0,
                 'neutral': data.percentPnL === 0
               }">
                 {{ data.percentPnL | number:'1.2-2' }}%
               </td>
-              <td class="col-commission">{{ data.commission | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-swap">{{ data.swap | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-ideal-rrr">{{ data.idealRRR }}</td>
-              <td class="col-ideal-sl">{{ data.idealSL }}</td>
-              <td class="col-model-check">
+              <td *ngIf="columnVisibility.commission" class="col-commission">{{ data.commission | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.swap" class="col-swap">{{ data.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">{{ data.idealRRR }}</td>
+              <td *ngIf="columnVisibility.idealSL" class="col-ideal-sl">{{ data.idealSL }}</td>
+              <td *ngIf="columnVisibility.modelCheck" class="col-model-check">
                 <div class="multi-select-container">
                   <span *ngFor="let model of data.modelCheck" class="model-badge">
                     {{ model }}
                   </span>
                 </div>
               </td>
-              <td class="col-rules-violated">
+              <td *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">
                 <div class="multi-select-container">
                   <span *ngFor="let rule of data.rulesViolated" class="violation-badge">
                     {{ rule }}
                   </span>
                 </div>
               </td>
-              <td class="col-reversal">
+              <td *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">
                 <mat-icon [ngClass]="data.oneToOneReversal ? 'positive' : 'neutral'">
                   {{ data.oneToOneReversal ? 'check_circle' : 'radio_button_unchecked' }}
                 </mat-icon>
               </td>
-              <td class="col-reviewed">
+              <td *ngIf="columnVisibility.reviewed" class="col-reviewed">
                 <mat-icon [ngClass]="data.reviewed ? 'positive' : 'neutral'">
                   {{ data.reviewed ? 'check_circle' : 'radio_button_unchecked' }}
                 </mat-icon>
               </td>
-              <td class="col-reflection">
+              <td *ngIf="columnVisibility.dailyReflection" class="col-reflection">
                 <div class="reflection-content" [title]="data.dailyReflection || ''">
                   {{ (data.dailyReflection || '') | slice:0:100 }}{{ (data.dailyReflection || '').length > 100 ? '...' : '' }}
                 </div>
               </td>
+              <td *ngIf="columnVisibility.weeklyRetrospective" class="col-weekly">
+                <div class="retrospective-content" [title]="data.weeklyRetrospective || ''">
+                  {{ (data.weeklyRetrospective || '') | slice:0:100 }}{{ (data.weeklyRetrospective || '').length > 100 ? '...' : '' }}
+                </div>
+              </td>
+              <td *ngIf="columnVisibility.modelForm" class="col-model-form">
+                <div class="multi-select-container">
+                  <span *ngFor="let form of data.modelForm" class="model-badge">
+                    {{ form }}
+                  </span>
+                </div>
+              </td>
+              <td *ngIf="columnVisibility.screenshots" class="col-screenshots">
+                <div class="files-container">
+                  <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
+                    📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
+                  </span>
+                </div>
+              </td>
+              <td *ngIf="columnVisibility.outcome" class="col-outcome">
+                <div class="files-container">
+                  <span *ngFor="let file of data.outcome" class="file-badge" [title]="file">
+                    📁 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
+                  </span>
+                </div>
+              </td>
+              <td *ngIf="columnVisibility.held" class="col-held">{{ data.held }}</td>
+              <td *ngIf="columnVisibility.percentPnLCalc" class="col-percent-calc">{{ data.percentPnLCalc }}</td>
+              <td *ngIf="columnVisibility.divergenceValue" class="col-divergence">{{ data.divergenceValue | number:'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.formula" class="col-formula">{{ data.formula | number:'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.emptySelect" class="col-empty">{{ data.emptySelect }}</td>
             </tr>
           </tbody>
         </table>
