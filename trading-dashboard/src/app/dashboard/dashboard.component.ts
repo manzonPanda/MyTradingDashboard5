@@ -915,7 +915,7 @@ onUpload(): void {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
-    console.log('🔄 Starting to load Notion performance data...');
+    console.log('�� Starting to load Notion performance data...');
 
     try {
       // Test if backend is accessible first
@@ -981,29 +981,55 @@ onUpload(): void {
   }
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
-    return results.map(page => {
-      const properties = page.properties;
+    console.log('🔄 Parsing Notion response. Results count:', results?.length || 0);
 
-      return {
-        id: page.id,
-        account: this.getNotionProperty(properties, 'Account', 'select') || 'Unknown',
-        date: this.getNotionProperty(properties, 'Date', 'date') || '',
-        pnl: this.getNotionProperty(properties, 'PnL', 'number') || 0,
-        percentPnl: this.getNotionProperty(properties, '%PnL', 'number') || 0,
-        dailyReflection: this.getNotionProperty(properties, 'Daily Reflection 📆', 'rich_text') || '',
-        tradeCount: this.getNotionProperty(properties, 'Trade Count', 'number') || 0,
-        winRate: this.getNotionProperty(properties, 'Win Rate', 'number') || 0,
-        bestTrade: this.getNotionProperty(properties, 'Best Trade', 'number') || 0,
-        worstTrade: this.getNotionProperty(properties, 'Worst Trade', 'number') || 0,
-        avgWin: this.getNotionProperty(properties, 'Avg Win', 'number') || 0,
-        avgLoss: this.getNotionProperty(properties, 'Avg Loss', 'number') || 0,
-        riskReward: this.getNotionProperty(properties, 'Risk:Reward', 'number') || 0,
-        maxDrawdown: this.getNotionProperty(properties, 'Max Drawdown', 'number') || 0,
-        emotion: this.getNotionProperty(properties, 'Emotion', 'select') || '',
-        lessons: this.getNotionProperty(properties, 'Lessons Learned', 'rich_text') || '',
-        improvements: this.getNotionProperty(properties, 'Areas for Improvement', 'rich_text') || ''
-      };
-    });
+    if (!Array.isArray(results)) {
+      console.error('❌ Results is not an array:', results);
+      return [];
+    }
+
+    return results.map((page, index) => {
+      try {
+        console.log(`📄 Processing page ${index + 1}:`, page);
+
+        const properties = page.properties;
+        if (!properties) {
+          console.warn(`⚠️ Page ${index + 1} has no properties`);
+          return null;
+        }
+
+        console.log(`📊 Page ${index + 1} properties:`, Object.keys(properties));
+
+        const parsedData = {
+          id: page.id || `unknown-${index}`,
+          account: this.getNotionProperty(properties, 'Account', 'select') || 'Unknown',
+          date: this.getNotionProperty(properties, 'Date', 'date') || '',
+          pnl: this.getNotionProperty(properties, 'PnL', 'number') || 0,
+          percentPnl: this.getNotionProperty(properties, '%PnL', 'number') || 0,
+          dailyReflection: this.getNotionProperty(properties, 'Daily Reflection 📆', 'rich_text') ||
+                          this.getNotionProperty(properties, 'Daily Reflection', 'rich_text') || '',
+          tradeCount: this.getNotionProperty(properties, 'Trade Count', 'number') || 0,
+          winRate: this.getNotionProperty(properties, 'Win Rate', 'number') || 0,
+          bestTrade: this.getNotionProperty(properties, 'Best Trade', 'number') || 0,
+          worstTrade: this.getNotionProperty(properties, 'Worst Trade', 'number') || 0,
+          avgWin: this.getNotionProperty(properties, 'Avg Win', 'number') || 0,
+          avgLoss: this.getNotionProperty(properties, 'Avg Loss', 'number') || 0,
+          riskReward: this.getNotionProperty(properties, 'Risk:Reward', 'number') ||
+                     this.getNotionProperty(properties, 'Risk Reward', 'number') || 0,
+          maxDrawdown: this.getNotionProperty(properties, 'Max Drawdown', 'number') || 0,
+          emotion: this.getNotionProperty(properties, 'Emotion', 'select') || '',
+          lessons: this.getNotionProperty(properties, 'Lessons Learned', 'rich_text') || '',
+          improvements: this.getNotionProperty(properties, 'Areas for Improvement', 'rich_text') || ''
+        };
+
+        console.log(`✅ Parsed page ${index + 1}:`, parsedData);
+        return parsedData;
+
+      } catch (error) {
+        console.error(`❌ Error parsing page ${index + 1}:`, error);
+        return null;
+      }
+    }).filter(item => item !== null) as NotionPerformanceData[];
   }
 
   private getNotionProperty(properties: any, propertyName: string, type: string): any {
