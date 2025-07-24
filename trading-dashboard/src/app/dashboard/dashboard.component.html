@@ -597,10 +597,45 @@
             <mat-icon>network_check</mat-icon>
             Test Backend
           </button>
+          <button class="action-btn columns-btn" (click)="toggleColumnSelector()">
+            <mat-icon>view_column</mat-icon>
+            {{ showColumnSelector ? 'Hide Columns' : 'Show Columns' }}
+          </button>
           <button class="action-btn help-btn" (click)="checkBackendInstructions()">
             <mat-icon>help_outline</mat-icon>
             Setup Help
           </button>
+        </div>
+      </div>
+
+      <!-- Column Visibility Controls -->
+      <div class="column-selector" *ngIf="showColumnSelector">
+        <div class="column-selector-header">
+          <h3>Choose Columns to Display</h3>
+          <div class="column-selector-actions">
+            <button class="btn-sm btn-secondary" (click)="showDefaultColumns()">
+              <mat-icon>restore</mat-icon>
+              Default
+            </button>
+            <button class="btn-sm btn-secondary" (click)="hideAllColumns()">
+              <mat-icon>visibility_off</mat-icon>
+              Hide All
+            </button>
+            <button class="btn-sm btn-secondary" (click)="showAllColumns()">
+              <mat-icon>visibility</mat-icon>
+              Show All
+            </button>
+          </div>
+        </div>
+        <div class="column-selector-grid">
+          <div *ngFor="let column of availableColumns" class="column-checkbox">
+            <mat-slide-toggle
+              [checked]="column.visible"
+              (change)="toggleColumnVisibility(column.key)"
+              [color]="'primary'">
+              {{ column.label }}
+            </mat-slide-toggle>
+          </div>
         </div>
       </div>
 
