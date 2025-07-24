@@ -933,13 +933,12 @@ onUpload(): void {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
-    console.log('🔄 Starting to load Notion performance data...');
+    console.log('🔄 Starting to load ALL Notion performance data with pagination...');
 
     try {
       // Check if backend is running first
       console.log('🔍 Checking backend availability...');
 
-      // First, let's see if the backend is running by checking a simpler endpoint
       const backendRunning = await this.isBackendRunning();
 
       if (!backendRunning) {
@@ -948,34 +947,76 @@ onUpload(): void {
         return;
       }
 
-      // Use the exact API request format you provided - empty JSON object
-      const body = {}; // Empty JSON object as per your sample request
+      // Collect all results using pagination
+      let allResults: any[] = [];
+      let hasMore = true;
+      let startCursor: string | null = null;
+      let pageCount = 0;
 
-      console.log('📤 Sending request to get ALL your Notion database data...');
-      console.log('📤 Request body (empty as specified):', body);
+      console.log('📤 Starting pagination to get ALL entries from your Notion database...');
       console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
 
-      // Use the proxy endpoint that matches your database ID exactly
-      const proxyResponse: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
-      );
+      while (hasMore) {
+        pageCount++;
 
-      console.log('📥 Received your complete Notion database response:', proxyResponse);
+        // Build request body for pagination
+        const body: any = {};
+        if (startCursor) {
+          body.start_cursor = startCursor;
+        }
 
-      if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
-        console.log('✅ Found', proxyResponse.results.length, 'pages in your Notion database! Processing...');
+        console.log(`📤 Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
 
+        // Use the proxy endpoint that matches your database ID exactly
+        const proxyResponse: any = await firstValueFrom(
+          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        );
+
+        console.log(`📥 Page ${pageCount} response:`, {
+          results_count: proxyResponse?.results?.length || 0,
+          has_more: proxyResponse?.has_more,
+          next_cursor: proxyResponse?.next_cursor ? `${proxyResponse.next_cursor.substring(0, 20)}...` : null
+        });
+
+        if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
+          // Add results from this page to our collection
+          allResults = allResults.concat(proxyResponse.results);
+          console.log(`✅ Page ${pageCount}: Added ${proxyResponse.results.length} entries. Total so far: ${allResults.length}`);
+
+          // Check if there are more pages
+          hasMore = proxyResponse.has_more === true;
+          startCursor = proxyResponse.next_cursor || null;
+
+          if (hasMore && startCursor) {
+            console.log(`🔄 More data available, fetching next page...`);
+          } else {
+            console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
+          }
+        } else {
+          console.log(`📭 Page ${pageCount}: No results found, ending pagination`);
+          hasMore = false;
+        }
+
+        // Safety check to prevent infinite loops
+        if (pageCount > 50) {
+          console.warn('⚠️ Stopped pagination after 50 pages to prevent infinite loop');
+          break;
+        }
+      }
+
+      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+
+      if (allResults.length > 0) {
         // Show first page structure for debugging
-        console.log('📝 First page structure:', proxyResponse.results[0]);
-        console.log('📝 Properties available:', Object.keys(proxyResponse.results[0].properties || {}));
+        console.log('📝 First entry structure:', allResults[0]);
+        console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
 
-        this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
-        console.log('✅ Your Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
+        this.notionPerformanceData = this.parseNotionResponse(allResults);
+        console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
         console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
         this.USE_MOCK_DATA = false;
       } else {
-        console.warn('⚠️ No results found in your Notion database');
-        console.warn('⚠️ Response structure:', proxyResponse);
+        console.warn('⚠️ No results found in your Notion database after pagination');
         this.notionPerformanceData = [];
         this.USE_MOCK_DATA = false;
       }
@@ -986,7 +1027,7 @@ onUpload(): void {
       }, 100);
 
     } catch (error: any) {
-      console.error('❌ Error loading your Notion data:');
+      console.error('❌ Error during paginated loading of your Notion data:');
       console.error('Full error object:', error);
       console.error('Error name:', error.name);
       console.error('Error message:', error.message);
@@ -1007,7 +1048,7 @@ onUpload(): void {
 
     } finally {
       this.isLoadingNotionData = false;
-      console.log('🏁 Finished loading your Notion data');
+      console.log('🏁 Finished loading your complete Notion data');
     }
   }
 
