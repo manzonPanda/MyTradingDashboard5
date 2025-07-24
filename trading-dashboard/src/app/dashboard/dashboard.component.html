@@ -580,6 +580,123 @@
     </div>
   </section>
 
+  <!-- Notion Performance Intelligence Section -->
+  <section class="table-section notion-performance-section">
+    <div class="section-container">
+      <div class="table-header">
+        <h2 class="section-title">
+          <mat-icon class="section-icon">psychology</mat-icon>
+          Performance Intelligence
+        </h2>
+        <div class="table-actions">
+          <button class="action-btn refresh-btn" (click)="refreshNotionData()" [disabled]="isLoadingNotionData">
+            <mat-icon [class.spinning]="isLoadingNotionData">refresh</mat-icon>
+            Refresh Data
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container notion-table-container">
+        <div class="loading-overlay" *ngIf="isLoadingNotionData">
+          <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+          <span class="loading-text">Loading performance data...</span>
+        </div>
+
+        <table class="modern-table notion-performance-table" id="notionTable" datatable [dtOptions]="dtOptionsNotion" [dtTrigger]="dtTriggerNotion">
+          <thead>
+            <tr>
+              <th class="col-account">Account</th>
+              <th class="col-date">Date</th>
+              <th class="col-pnl">P&L</th>
+              <th class="col-percent">% P&L</th>
+              <th class="col-trades">Trades</th>
+              <th class="col-winrate">Win Rate</th>
+              <th class="col-amount">Best Trade</th>
+              <th class="col-amount">Worst Trade</th>
+              <th class="col-amount">Avg Win</th>
+              <th class="col-amount">Avg Loss</th>
+              <th class="col-ratio">R:R</th>
+              <th class="col-amount">Max DD</th>
+              <th class="col-emotion">Emotion</th>
+              <th class="col-reflection">Daily Reflection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let data of notionPerformanceData" [ngClass]="{
+              'positive-row': data.pnl > 0,
+              'negative-row': data.pnl < 0,
+              'neutral-row': data.pnl === 0
+            }">
+              <td class="col-account">
+                <span class="account-badge">{{ data.account }}</span>
+              </td>
+              <td class="col-date">{{ formatNotionDate(data.date) }}</td>
+              <td class="col-pnl" [ngClass]="{
+                'positive': data.pnl > 0,
+                'negative': data.pnl < 0,
+                'neutral': data.pnl === 0
+              }">
+                {{ data.pnl | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-percent" [ngClass]="{
+                'positive': data.percentPnl > 0,
+                'negative': data.percentPnl < 0,
+                'neutral': data.percentPnl === 0
+              }">
+                {{ data.percentPnl | number:'1.2-2' }}%
+              </td>
+              <td class="col-trades">{{ data.tradeCount }}</td>
+              <td class="col-winrate">
+                <div class="winrate-container">
+                  <span class="winrate-text">{{ data.winRate | number:'1.1-1' }}%</span>
+                  <div class="winrate-bar">
+                    <div class="winrate-fill" [style.width]="data.winRate + '%'" [ngClass]="{
+                      'high-winrate': data.winRate >= 70,
+                      'medium-winrate': data.winRate >= 50 && data.winRate < 70,
+                      'low-winrate': data.winRate < 50
+                    }"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="col-amount positive">{{ data.bestTrade | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount negative">{{ data.worstTrade | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount positive">{{ data.avgWin | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount negative">{{ data.avgLoss | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-ratio" [ngClass]="{
+                'positive': data.riskReward >= 2,
+                'warning': data.riskReward >= 1 && data.riskReward < 2,
+                'negative': data.riskReward < 1
+              }">
+                1:{{ data.riskReward | number:'1.1-1' }}
+              </td>
+              <td class="col-amount negative">{{ data.maxDrawdown | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-emotion">
+                <span class="emotion-badge" [ngClass]="getEmotionClass(data.emotion)">
+                  {{ data.emotion }}
+                </span>
+              </td>
+              <td class="col-reflection">
+                <div class="reflection-content" [title]="data.dailyReflection">
+                  {{ data.dailyReflection | slice:0:100 }}{{ data.dailyReflection?.length > 100 ? '...' : '' }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="!isLoadingNotionData && notionPerformanceData.length === 0">
+          <mat-icon class="empty-icon">psychology</mat-icon>
+          <h3>No Performance Data Found</h3>
+          <p>Connect your Notion database to see trading performance insights.</p>
+          <button class="btn-primary" (click)="refreshNotionData()">
+            <mat-icon>refresh</mat-icon>
+            Load Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
 
 
 
