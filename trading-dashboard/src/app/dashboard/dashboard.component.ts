@@ -1177,7 +1177,7 @@ onUpload(): void {
       // Try a simple POST request to see if backend endpoint is responding
       console.log('🔍 Quick check if backend is responding...');
 
-      const quickTestBody = { page_size: 1 };
+      const quickTestBody = {}; // Empty body as per your specification
 
       await firstValueFrom(
         this.http.post('http://localhost:3000/api/getAllPagesFromDB', quickTestBody, {
@@ -1185,7 +1185,7 @@ onUpload(): void {
         })
       );
 
-      console.log('✅ Backend is responding to POST requests');
+      console.log('✅ Backend is responding to POST requests with empty body');
       return true;
 
     } catch (error: any) {
