@@ -694,12 +694,19 @@
 
         <div class="empty-state" *ngIf="!isLoadingNotionData && notionPerformanceData.length === 0">
           <mat-icon class="empty-icon">psychology</mat-icon>
-          <h3>No Performance Data Found</h3>
-          <p>Connect your Notion database to see trading performance insights.</p>
-          <button class="btn-primary" (click)="refreshNotionData()">
-            <mat-icon>refresh</mat-icon>
-            Load Data
-          </button>
+          <h3>No Performance Data Available</h3>
+          <p *ngIf="!USE_MOCK_DATA">Connect your Notion database to see trading performance insights. Start the backend server or try the demo data.</p>
+          <p *ngIf="USE_MOCK_DATA">Demo data could not be loaded. Please try refreshing.</p>
+          <div class="empty-actions">
+            <button class="btn-primary" (click)="refreshNotionData()">
+              <mat-icon>refresh</mat-icon>
+              Load Data
+            </button>
+            <button class="btn-secondary" (click)="USE_MOCK_DATA = true; refreshNotionData()">
+              <mat-icon>science</mat-icon>
+              Try Demo Data
+            </button>
+          </div>
         </div>
       </div>
     </div>
