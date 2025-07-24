@@ -948,21 +948,21 @@ onUpload(): void {
         return;
       }
 
-      const body = {
-        page_size: 100,
-        sorts: [
-          {
-            property: "Date",
-            direction: "descending"
-          }
-        ]
-      };
+      // Use the exact API request format you provided
+      const body = {}; // Empty JSON object as per your requirement
 
-      console.log('📤 Sending request to get your Notion database data...');
+      console.log('📤 Sending request to your Notion database with empty body as specified...');
+      console.log('📤 Request body:', body);
 
-      // Try the same endpoint that's already working for your trading data
+      // Use direct Notion query endpoint for your specific database
       const proxyResponse: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        this.http.post('https://api.notion.com/v1/databases/ef10ac6f79524ea49e4bc0997e0ee704/query', body, {
+          headers: {
+            'Authorization': 'Bearer YOUR_NOTION_TOKEN', // This should be handled by your proxy
+            'Content-Type': 'application/json',
+            'Notion-Version': '2022-06-28'
+          }
+        })
       );
 
       console.log('📥 Received your Notion database response:', proxyResponse);
@@ -991,11 +991,30 @@ onUpload(): void {
       console.error('Error status:', error.status);
 
       if (error.status === 0) {
-        console.error('🔌 Connection failed - backend server may not be running');
+        console.error('�� Connection failed - CORS or network issue');
       }
 
-      // Show empty state instead of mock data
-      this.notionPerformanceData = [];
+      // Fallback: Try using the proxy server instead
+      try {
+        console.log('🔄 Trying proxy server as fallback...');
+        const proxyBody = {
+          database_id: 'ef10ac6f79524ea49e4bc0997e0ee704',
+          page_size: 100
+        };
+
+        const proxyResponse: any = await firstValueFrom(
+          this.http.post('http://localhost:3000/api/notion-query', proxyBody)
+        );
+
+        if (proxyResponse && proxyResponse.results) {
+          this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
+          console.log('✅ Proxy fallback successful:', this.notionPerformanceData);
+        }
+      } catch (proxyError) {
+        console.error('❌ Proxy fallback also failed:', proxyError);
+        this.notionPerformanceData = [];
+      }
+
       this.USE_MOCK_DATA = false;
 
       // Still trigger DataTable rendering
@@ -2051,7 +2070,7 @@ onUpload(): void {
     const overtradingScore = this.getOvertradingScore();
     if (overtradingScore > 30) {
       insights.push({
-        title: '📈 Overtrading Detected',
+        title: '�� Overtrading Detected',
         description: `You have excessive trading days suggesting overtrading behavior.`,
         recommendations: [
           'Set a maximum number of trades per day (e.g., 3-5 trades)',
