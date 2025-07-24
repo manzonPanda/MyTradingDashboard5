@@ -680,8 +680,8 @@
                 </span>
               </td>
               <td class="col-reflection">
-                <div class="reflection-content" [title]="data.dailyReflection">
-                  {{ data.dailyReflection | slice:0:100 }}{{ data.dailyReflection?.length > 100 ? '...' : '' }}
+                <div class="reflection-content" [title]="data.dailyReflection || ''">
+                  {{ (data.dailyReflection || '') | slice:0:100 }}{{ (data.dailyReflection || '').length > 100 ? '...' : '' }}
                 </div>
               </td>
             </tr>
