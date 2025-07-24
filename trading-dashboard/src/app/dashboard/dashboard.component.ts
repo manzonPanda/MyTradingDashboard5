@@ -922,65 +922,79 @@ onUpload(): void {
     console.log('🔄 Starting to load Notion performance data...');
 
     try {
-      // Test if backend is accessible first
-      const backendReachable = await this.testBackendConnection();
-      if (!backendReachable) {
-        throw new Error('Backend server is not reachable. Please make sure the Notion proxy server is running on http://localhost:3000');
+      // Check if we're in a cloud environment (not localhost)
+      const isCloudEnvironment = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+      if (isCloudEnvironment) {
+        console.log('☁️ Cloud environment detected. Using mock data for demonstration.');
+        this.USE_MOCK_DATA = true;
       }
 
-      const body = {
-        page_size: 100,
-        sorts: [
-          {
-            property: "Date",
-            direction: "descending"
-          }
-        ]
-      };
-
-      console.log('📤 Sending request to backend with body:', body);
-
-      const proxyResponse: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body).pipe(
-          // Add timeout and better error handling
-        )
-      );
-
-      console.log('📥 Received response from backend:', proxyResponse);
-
-      if (proxyResponse && proxyResponse.results) {
-        this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
-        console.log('✅ Parsed Notion Performance Data:', this.notionPerformanceData);
-
-        // Trigger DataTable rendering
-        setTimeout(() => {
-          this.dtTriggerNotion.next(null);
-        }, 100);
+      if (this.USE_MOCK_DATA) {
+        // Use mock data for demonstration
+        console.log('🎭 Loading mock data...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading time
+        this.notionPerformanceData = this.generateMockNotionData();
+        console.log('✅ Mock data loaded:', this.notionPerformanceData);
       } else {
-        console.warn('⚠️ No results found in response');
-        this.notionPerformanceData = [];
+        // Try to connect to real backend
+        console.log('🔗 Attempting to connect to backend...');
+        const backendReachable = await this.testBackendConnection();
+
+        if (!backendReachable) {
+          console.log('⚠️ Backend not reachable. Falling back to mock data...');
+          this.USE_MOCK_DATA = true;
+          this.notionPerformanceData = this.generateMockNotionData();
+        } else {
+          // Load real data from backend
+          const body = {
+            page_size: 100,
+            sorts: [
+              {
+                property: "Date",
+                direction: "descending"
+              }
+            ]
+          };
+
+          console.log('📤 Sending request to backend with body:', body);
+
+          const proxyResponse: any = await firstValueFrom(
+            this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, body)
+          );
+
+          console.log('📥 Received response from backend:', proxyResponse);
+
+          if (proxyResponse && proxyResponse.results) {
+            this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
+            console.log('✅ Real Notion data loaded:', this.notionPerformanceData);
+          } else {
+            console.warn('⚠️ No results found in response. Using mock data...');
+            this.notionPerformanceData = this.generateMockNotionData();
+          }
+        }
       }
+
+      // Trigger DataTable rendering
+      setTimeout(() => {
+        this.dtTriggerNotion.next(null);
+      }, 100);
 
     } catch (error: any) {
       console.error('❌ Error loading Notion performance data:');
       console.error('Full error object:', error);
       console.error('Error name:', error.name);
       console.error('Error message:', error.message);
-      console.error('Error status:', error.status);
-      console.error('Error statusText:', error.statusText);
-      console.error('Error url:', error.url);
 
-      if (error.error) {
-        console.error('Error response body:', error.error);
-      }
+      // Fallback to mock data
+      console.log('🎭 Falling back to mock data due to error...');
+      this.notionPerformanceData = this.generateMockNotionData();
 
-      // Check if it's a connection error
-      if (error.status === 0) {
-        console.error('🔌 Backend connection failed - is the Notion proxy server running on localhost:3000?');
-      }
+      // Still trigger DataTable rendering
+      setTimeout(() => {
+        this.dtTriggerNotion.next(null);
+      }, 100);
 
-      // Set empty state
-      this.notionPerformanceData = [];
     } finally {
       this.isLoadingNotionData = false;
       console.log('🏁 Finished loading Notion performance data');
