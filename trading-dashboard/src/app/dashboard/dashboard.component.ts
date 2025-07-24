@@ -933,11 +933,11 @@ onUpload(): void {
         ]
       };
 
-      const response: any = await firstValueFrom(
-        this.http.post("https://api.notion.com/v1/databases/ef10ac6f79524ea49e4bc0997e0ee704/query", body, { headers })
+      // Try through proxy first (using the existing backend)
+      const proxyResponse: any = await firstValueFrom(
+        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
       );
-
-      this.notionPerformanceData = this.parseNotionResponse(response.results);
+      this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
       console.log('Notion Performance Data:', this.notionPerformanceData);
 
       // Trigger DataTable rendering
@@ -947,18 +947,8 @@ onUpload(): void {
 
     } catch (error) {
       console.error('Error loading Notion performance data:', error);
-      // If direct API call fails, try through proxy
-      try {
-        const proxyResponse: any = await firstValueFrom(
-          this.http.get("http://localhost:3000/api/getAllPagesFromDB")
-        );
-        this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
-        setTimeout(() => {
-          this.dtTriggerNotion.next(null);
-        }, 100);
-      } catch (proxyError) {
-        console.error('Error loading Notion data through proxy:', proxyError);
-      }
+      // If proxy fails, show empty state
+      this.notionPerformanceData = [];
     } finally {
       this.isLoadingNotionData = false;
     }
