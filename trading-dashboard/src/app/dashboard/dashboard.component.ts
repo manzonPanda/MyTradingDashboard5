@@ -1150,6 +1150,33 @@ onUpload(): void {
     this.loadNotionPerformanceData();
   }
 
+  async isBackendRunning(): Promise<boolean> {
+    try {
+      // Try a simple request to see if any backend endpoint is responding
+      console.log('🔍 Quick check if backend is responding...');
+
+      await firstValueFrom(
+        this.http.get('http://localhost:3000/api/getAllPagesFromDB', {
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+      );
+
+      console.log('✅ Backend is responding');
+      return true;
+
+    } catch (error: any) {
+      console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
+
+      // If it's a 405 (Method Not Allowed), the server is running but expects POST
+      if (error.status === 405) {
+        console.log('✅ Backend is running (GET not allowed, but server is up)');
+        return true;
+      }
+
+      return false;
+    }
+  }
+
   checkBackendInstructions(): void {
     const instructions = `
 🔧 How to start the Notion backend server:
@@ -1233,7 +1260,7 @@ onUpload(): void {
         console.error('- Post error statusText:', postError.statusText);
 
         // Provide detailed error message
-        let errorMessage = '��� Backend connection failed!\n\n';
+        let errorMessage = '❌ Backend connection failed!\n\n';
 
         const status = getError.status || postError.status;
 
