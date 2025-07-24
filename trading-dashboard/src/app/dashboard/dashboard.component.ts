@@ -1073,6 +1073,20 @@ onUpload(): void {
     this.loadNotionPerformanceData();
   }
 
+  async testBackendConnection(): Promise<boolean> {
+    try {
+      console.log('🔍 Testing backend connection...');
+      const response = await firstValueFrom(
+        this.http.get("http://localhost:3000/api/getAllPagesFromDB")
+      );
+      console.log('✅ Backend is reachable');
+      return true;
+    } catch (error) {
+      console.error('❌ Backend connection test failed:', error);
+      return false;
+    }
+  }
+
   formatNotionDate(dateStr: string): string {
     if (!dateStr) return '';
     try {
