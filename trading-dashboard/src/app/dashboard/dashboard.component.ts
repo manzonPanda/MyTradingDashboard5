@@ -922,8 +922,18 @@ onUpload(): void {
     console.log('🔄 Starting to load Notion performance data...');
 
     try {
-      // Try to load data from your existing backend endpoint that's already working
-      // Since I can see you have trading data loaded (P&L $77.19), the backend must be accessible
+      // Check if backend is running first
+      console.log('🔍 Checking backend availability...');
+
+      // First, let's see if the backend is running by checking a simpler endpoint
+      const backendRunning = await this.isBackendRunning();
+
+      if (!backendRunning) {
+        console.warn('⚠️ Backend is not running or not accessible');
+        this.notionPerformanceData = [];
+        return;
+      }
+
       const body = {
         page_size: 100,
         sorts: [
@@ -1223,7 +1233,7 @@ onUpload(): void {
         console.error('- Post error statusText:', postError.statusText);
 
         // Provide detailed error message
-        let errorMessage = '❌ Backend connection failed!\n\n';
+        let errorMessage = '��� Backend connection failed!\n\n';
 
         const status = getError.status || postError.status;
 
