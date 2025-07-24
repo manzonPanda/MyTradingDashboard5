@@ -59,22 +59,36 @@ interface Table {
 
 interface NotionPerformanceData {
   id: string;
-  account: string;
-  date: string;
-  pnl: number;
-  percentPnl: number;
-  dailyReflection: string;
-  tradeCount: number;
-  winRate: number;
-  bestTrade: number;
-  worstTrade: number;
-  avgWin: number;
-  avgLoss: number;
-  riskReward: number;
-  maxDrawdown: number;
-  emotion: string;
-  lessons: string;
-  improvements: string;
+  action: string; // title
+  date: string; // date
+  idealRRR: string; // select
+  buySell: string; // select
+  modelCheck: string[]; // multi_select
+  status: string; // status
+  percentPnL: number; // number
+  weeklyRetrospective: string; // rich_text
+  account: string[]; // multi_select
+  strategy: string; // select
+  oneToOneReversal: boolean; // checkbox
+  screenshots: string[]; // files
+  modelForm: string[]; // multi_select
+  idealSL: string; // select
+  reviewed: boolean; // checkbox
+  uniqueID: number; // unique_id
+  commission: number; // number
+  outcome: string[]; // files
+  held: string; // formula
+  instrument: string; // select
+  pnl: number; // number
+  percentPnLCalc: string; // formula
+  dailyReflection: string; // rich_text
+  lots: number; // number
+  divergenceValue: number; // number
+  pips: number; // number
+  formula: number; // formula
+  rulesViolated: string[]; // multi_select
+  emptySelect: string; // select (empty name)
+  swap: number; // number
 }
 
 @Component({
@@ -944,7 +958,7 @@ onUpload(): void {
         ]
       };
 
-      console.log('��� Sending request to get your Notion database data...');
+      console.log('📤 Sending request to get your Notion database data...');
 
       // Try the same endpoint that's already working for your trading data
       const proxyResponse: any = await firstValueFrom(
