@@ -193,9 +193,13 @@ export class DashboardComponent {
 
   ngOnDestroy(): void {
     this.dtTrigger.unsubscribe();
-     // Clean up the DataTable when the component is destroyed
+    this.dtTriggerNotion.unsubscribe();
+     // Clean up the DataTables when the component is destroyed
      if ($.fn.dataTable.isDataTable('#myTable')) {
         $('#myTable').DataTable().destroy();
+     }
+     if ($.fn.dataTable.isDataTable('#notionTable')) {
+        $('#notionTable').DataTable().destroy();
      }
   }
   
