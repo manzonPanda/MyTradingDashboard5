@@ -917,12 +917,6 @@ onUpload(): void {
     this.isLoadingNotionData = true;
 
     try {
-      const headers = new HttpHeaders({
-        'Authorization': 'Bearer secret_7FmF0JKCX0DYQ5OTHfOTnOBKtaJYJJpHHsJLBQ6fI1U', // Replace with your actual Notion token
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      });
-
       const body = {
         page_size: 100,
         sorts: [
