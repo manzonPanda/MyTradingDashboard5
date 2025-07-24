@@ -315,40 +315,101 @@
         font-family: 'Monaco', 'Menlo', monospace;
       }
 
-      .col-emotion {
+      // Multi-select containers
+      .multi-select-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+      }
+
+      .model-badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        background: linear-gradient(135deg, var(--tf-accent-info), #3b82f6);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        box-shadow: var(--tf-shadow-sm);
+      }
+
+      .violation-badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        background: linear-gradient(135deg, var(--tf-negative), #dc2626);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        box-shadow: var(--tf-shadow-sm);
+      }
+
+      // Column specific styling
+      .col-id {
+        min-width: 60px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--tf-accent-primary);
+      }
+
+      .col-action {
+        min-width: 150px;
+        font-weight: 600;
+      }
+
+      .col-buysell {
+        min-width: 80px;
+        text-align: center;
+      }
+
+      .col-instrument {
         min-width: 100px;
+        font-weight: 600;
+        color: var(--tf-text-primary);
+      }
 
-        .emotion-badge {
-          display: inline-block;
-          padding: 0.25rem 0.75rem;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-transform: capitalize;
-          border: 1px solid;
+      .col-strategy {
+        min-width: 100px;
+      }
 
-          &.emotion-positive {
-            background: rgba(16, 185, 129, 0.1);
+      .col-lots {
+        min-width: 80px;
+        text-align: right;
+        font-family: 'Monaco', 'Menlo', monospace;
+      }
+
+      .col-pips {
+        min-width: 60px;
+        text-align: right;
+        font-family: 'Monaco', 'Menlo', monospace;
+      }
+
+      .col-ideal-rrr,
+      .col-ideal-sl {
+        min-width: 80px;
+        text-align: center;
+        font-family: 'Monaco', 'Menlo', monospace;
+      }
+
+      .col-model-check,
+      .col-rules-violated {
+        min-width: 120px;
+      }
+
+      .col-reversal,
+      .col-reviewed {
+        min-width: 60px;
+        text-align: center;
+
+        mat-icon {
+          font-size: 1.2rem;
+
+          &.positive {
             color: var(--tf-positive);
-            border-color: rgba(16, 185, 129, 0.3);
           }
 
-          &.emotion-negative {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--tf-negative);
-            border-color: rgba(239, 68, 68, 0.3);
-          }
-
-          &.emotion-warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--tf-accent-warning);
-            border-color: rgba(245, 158, 11, 0.3);
-          }
-
-          &.emotion-neutral {
-            background: var(--tf-bg-tertiary);
+          &.neutral {
             color: var(--tf-text-muted);
-            border-color: var(--tf-border-primary);
           }
         }
       }
