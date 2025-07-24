@@ -694,17 +694,21 @@
 
         <div class="empty-state" *ngIf="!isLoadingNotionData && notionPerformanceData.length === 0">
           <mat-icon class="empty-icon">psychology</mat-icon>
-          <h3>No Performance Data Available</h3>
-          <p *ngIf="!USE_MOCK_DATA">Connect your Notion database to see trading performance insights. Start the backend server or try the demo data.</p>
-          <p *ngIf="USE_MOCK_DATA">Demo data could not be loaded. Please try refreshing.</p>
+          <h3>No Performance Data Found</h3>
+          <p>Unable to load data from your Notion database. Make sure:</p>
+          <ul style="text-align: left; max-width: 400px; margin: 1rem auto;">
+            <li>The Notion proxy server is running on localhost:3000</li>
+            <li>Your Notion database ID is correctly configured</li>
+            <li>The database has trading performance data</li>
+          </ul>
           <div class="empty-actions">
             <button class="btn-primary" (click)="refreshNotionData()">
               <mat-icon>refresh</mat-icon>
-              Load Data
+              Retry Connection
             </button>
-            <button class="btn-secondary" (click)="USE_MOCK_DATA = true; refreshNotionData()">
-              <mat-icon>science</mat-icon>
-              Try Demo Data
+            <button class="btn-secondary" (click)="testBackendConnection()">
+              <mat-icon>network_check</mat-icon>
+              Test Backend
             </button>
           </div>
         </div>
