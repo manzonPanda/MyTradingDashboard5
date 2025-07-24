@@ -210,7 +210,7 @@ export class DashboardComponent {
     { key: 'swap', label: 'Swap', visible: true },
     { key: 'idealRRR', label: 'Ideal RRR', visible: true },
     { key: 'idealSL', label: 'Ideal SL', visible: true },
-    { key: 'modelCheck', label: 'Model✔', visible: true },
+    { key: 'modelCheck', label: 'Model���', visible: true },
     { key: 'rulesViolated', label: 'Rules Violated 🛑', visible: true },
     { key: 'oneToOneReversal', label: '1:1 Reversal', visible: true },
     { key: 'reviewed', label: 'Reviewed', visible: true },
@@ -282,13 +282,29 @@ export class DashboardComponent {
   ngOnDestroy(): void {
     this.dtTrigger.unsubscribe();
     this.dtTriggerNotion.unsubscribe();
-     // Clean up the DataTables when the component is destroyed
-     if ($.fn.dataTable.isDataTable('#myTable')) {
-        $('#myTable').DataTable().destroy();
-     }
-     if ($.fn.dataTable.isDataTable('#notionTable')) {
-        $('#notionTable').DataTable().destroy();
-     }
+
+    // Safely clean up the DataTables when the component is destroyed
+    try {
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const myTable = $('#myTable').DataTable();
+        if (myTable && typeof myTable.destroy === 'function') {
+          myTable.destroy(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying myTable:', error);
+    }
+
+    try {
+      if ($.fn.dataTable.isDataTable('#notionTable')) {
+        const notionTable = $('#notionTable').DataTable();
+        if (notionTable && typeof notionTable.destroy === 'function') {
+          notionTable.destroy(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying notionTable:', error);
+    }
   }
   
   addMonth(date: Date): Date {
@@ -1292,13 +1308,8 @@ onUpload(): void {
       column.visible = this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
     }
 
-    // Force DataTable to re-render
-    if ($.fn.dataTable.isDataTable('#notionTable')) {
-      $('#notionTable').DataTable().destroy();
-    }
-    setTimeout(() => {
-      this.dtTriggerNotion.next(null);
-    }, 100);
+    // Safely refresh DataTable
+    this.safelyRefreshDataTable();
   }
 
   toggleColumnSelector(): void {
@@ -1315,7 +1326,7 @@ onUpload(): void {
       const column = this.availableColumns.find(col => col.key === key);
       if (column) column.visible = false;
     });
-    this.refreshDataTable();
+    this.safelyRefreshDataTable();
   }
 
   showAllColumns(): void {
@@ -1324,7 +1335,7 @@ onUpload(): void {
       const column = this.availableColumns.find(col => col.key === key);
       if (column) column.visible = true;
     });
-    this.refreshDataTable();
+    this.safelyRefreshDataTable();
   }
 
   showDefaultColumns(): void {
@@ -1367,16 +1378,49 @@ onUpload(): void {
       col.visible = this.columnVisibility[col.key as keyof typeof this.columnVisibility];
     });
 
-    this.refreshDataTable();
+    this.safelyRefreshDataTable();
   }
 
   private refreshDataTable(): void {
-    if ($.fn.dataTable.isDataTable('#notionTable')) {
-      $('#notionTable').DataTable().destroy();
+    this.safelyRefreshDataTable();
+  }
+
+  private safelyRefreshDataTable(): void {
+    try {
+      // Check if the table element exists
+      const tableElement = document.getElementById('notionTable');
+      if (!tableElement) {
+        console.warn('Table element not found, skipping DataTable refresh');
+        return;
+      }
+
+      // Check if DataTable is initialized and destroy it safely
+      if ($.fn.dataTable.isDataTable('#notionTable')) {
+        const table = $('#notionTable').DataTable();
+        if (table && typeof table.destroy === 'function') {
+          table.destroy(true); // true = remove from DOM completely
+        }
+      }
+
+      // Clear any existing DataTable data
+      $('#notionTable').empty();
+
+      // Wait for DOM cleanup, then reinitialize
+      setTimeout(() => {
+        // Double-check the element still exists after timeout
+        const tableElementAfter = document.getElementById('notionTable');
+        if (tableElementAfter) {
+          this.dtTriggerNotion.next(null);
+        }
+      }, 150);
+
+    } catch (error) {
+      console.error('Error refreshing DataTable:', error);
+      // Fallback: just trigger re-render without destroying
+      setTimeout(() => {
+        this.dtTriggerNotion.next(null);
+      }, 100);
     }
-    setTimeout(() => {
-      this.dtTriggerNotion.next(null);
-    }, 100);
   }
 
   async isBackendRunning(): Promise<boolean> {
