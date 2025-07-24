@@ -402,9 +402,18 @@
         color: var(--tf-text-secondary);
       }
 
-      .btn-primary {
-        background: var(--tf-accent-primary);
-        color: white;
+      .empty-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: 8px;
@@ -413,9 +422,29 @@
         transition: all 0.3s ease;
 
         &:hover {
-          background: var(--tf-accent-secondary);
           transform: translateY(-2px);
           box-shadow: var(--tf-shadow-md);
+        }
+      }
+
+      .btn-primary {
+        background: var(--tf-accent-primary);
+        color: white;
+
+        &:hover {
+          background: var(--tf-accent-secondary);
+        }
+      }
+
+      .btn-secondary {
+        background: var(--tf-bg-tertiary);
+        color: var(--tf-text-secondary);
+        border: 1px solid var(--tf-border-primary);
+
+        &:hover {
+          background: var(--tf-bg-hover);
+          color: var(--tf-text-primary);
+          border-color: var(--tf-border-secondary);
         }
       }
     }
