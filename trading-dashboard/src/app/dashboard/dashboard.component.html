@@ -648,27 +648,36 @@
         <table class="modern-table notion-performance-table" id="notionTable" datatable [dtOptions]="dtOptionsNotion" [dtTrigger]="dtTriggerNotion">
           <thead>
             <tr>
-              <th class="col-id">ID</th>
-              <th class="col-action">Action</th>
-              <th class="col-date">Date</th>
-              <th class="col-account">Account</th>
-              <th class="col-status">Status</th>
-              <th class="col-buysell">Buy/Sell</th>
-              <th class="col-instrument">Instrument</th>
-              <th class="col-strategy">Strategy</th>
-              <th class="col-lots">Lots</th>
-              <th class="col-pips">Pips</th>
-              <th class="col-pnl">PnL</th>
-              <th class="col-percent">% PnL</th>
-              <th class="col-commission">Commission</th>
-              <th class="col-swap">Swap</th>
-              <th class="col-ideal-rrr">Ideal RRR</th>
-              <th class="col-ideal-sl">Ideal SL</th>
-              <th class="col-model-check">Model✔</th>
-              <th class="col-rules-violated">Rules Violated 🛑</th>
-              <th class="col-reversal">1:1 Reversal</th>
-              <th class="col-reviewed">Reviewed</th>
-              <th class="col-reflection">Daily Reflection</th>
+              <th *ngIf="columnVisibility.id" class="col-id">ID</th>
+              <th *ngIf="columnVisibility.action" class="col-action">Action</th>
+              <th *ngIf="columnVisibility.date" class="col-date">Date</th>
+              <th *ngIf="columnVisibility.account" class="col-account">Account</th>
+              <th *ngIf="columnVisibility.status" class="col-status">Status</th>
+              <th *ngIf="columnVisibility.buySell" class="col-buysell">Buy/Sell</th>
+              <th *ngIf="columnVisibility.instrument" class="col-instrument">Instrument</th>
+              <th *ngIf="columnVisibility.strategy" class="col-strategy">Strategy</th>
+              <th *ngIf="columnVisibility.lots" class="col-lots">Lots</th>
+              <th *ngIf="columnVisibility.pips" class="col-pips">Pips</th>
+              <th *ngIf="columnVisibility.pnl" class="col-pnl">PnL</th>
+              <th *ngIf="columnVisibility.percentPnL" class="col-percent">% PnL</th>
+              <th *ngIf="columnVisibility.commission" class="col-commission">Commission</th>
+              <th *ngIf="columnVisibility.swap" class="col-swap">Swap</th>
+              <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
+              <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
+              <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
+              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated 🛑</th>
+              <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
+              <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
+              <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
+              <th *ngIf="columnVisibility.weeklyRetrospective" class="col-weekly">Weekly Retrospective</th>
+              <th *ngIf="columnVisibility.modelForm" class="col-model-form">Model Form</th>
+              <th *ngIf="columnVisibility.screenshots" class="col-screenshots">Screenshots</th>
+              <th *ngIf="columnVisibility.outcome" class="col-outcome">Outcome</th>
+              <th *ngIf="columnVisibility.held" class="col-held">Held🕕</th>
+              <th *ngIf="columnVisibility.percentPnLCalc" class="col-percent-calc">%PnL-Calc</th>
+              <th *ngIf="columnVisibility.divergenceValue" class="col-divergence">Divergence Value</th>
+              <th *ngIf="columnVisibility.formula" class="col-formula">Formula</th>
+              <th *ngIf="columnVisibility.emptySelect" class="col-empty">Empty Select</th>
             </tr>
           </thead>
           <tbody>
