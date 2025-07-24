@@ -151,7 +151,7 @@ export class DashboardComponent {
 
   async ngOnInit() {
     this.dtOptions = {
-      destroy: true, 
+      destroy: true,
       paging: true,
       searching: true,
       ordering: true,
@@ -161,10 +161,27 @@ export class DashboardComponent {
 			keys: true
     };
 
+    this.dtOptionsNotion = {
+      destroy: true,
+      paging: true,
+      searching: true,
+      ordering: true,
+      pageLength: 15,
+      processing: true,
+      responsive: true,
+      keys: true,
+      order: [[1, 'desc']], // Sort by date descending by default
+      columnDefs: [
+        { targets: [2, 3, 5, 6, 7, 8, 9, 10], className: 'text-center' }, // Center align numeric columns
+        { targets: [2, 5, 6, 7, 8, 9, 10], type: 'num' } // Specify numeric sorting
+      ]
+    };
+
     localStorage.clear(); // Clear local storage on component initialization
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
     this.addTradesToCalendar();
+    await this.loadNotionPerformanceData(); // Load Notion performance data
 
     // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering | Enable DataTable feature
 
