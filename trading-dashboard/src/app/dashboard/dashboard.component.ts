@@ -944,7 +944,7 @@ onUpload(): void {
         ]
       };
 
-      console.log('📤 Sending request to get your Notion database data...');
+      console.log('��� Sending request to get your Notion database data...');
 
       // Try the same endpoint that's already working for your trading data
       const proxyResponse: any = await firstValueFrom(
@@ -1152,25 +1152,33 @@ onUpload(): void {
 
   async isBackendRunning(): Promise<boolean> {
     try {
-      // Try a simple request to see if any backend endpoint is responding
+      // Try a simple POST request to see if backend endpoint is responding
       console.log('🔍 Quick check if backend is responding...');
 
+      const quickTestBody = { page_size: 1 };
+
       await firstValueFrom(
-        this.http.get('http://localhost:3000/api/getAllPagesFromDB', {
+        this.http.post('http://localhost:3000/api/getAllPagesFromDB', quickTestBody, {
           headers: { 'Cache-Control': 'no-cache' }
         })
       );
 
-      console.log('✅ Backend is responding');
+      console.log('✅ Backend is responding to POST requests');
       return true;
 
     } catch (error: any) {
       console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
 
-      // If it's a 405 (Method Not Allowed), the server is running but expects POST
-      if (error.status === 405) {
-        console.log('✅ Backend is running (GET not allowed, but server is up)');
-        return true;
+      // If it's a 404 with GET, but we're using POST now, so any response means server is up
+      if (error.status === 404) {
+        console.log('❌ Backend endpoint not found');
+        return false;
+      }
+
+      // If it's any other error but not connection error, server might be running
+      if (error.status && error.status !== 0) {
+        console.log('⚠️ Backend is running but has issues with the API');
+        return true; // Server is running, just has issues
       }
 
       return false;
@@ -2023,7 +2031,7 @@ onUpload(): void {
     const overtradingScore = this.getOvertradingScore();
     if (overtradingScore > 30) {
       insights.push({
-        title: '�� Overtrading Detected',
+        title: '📈 Overtrading Detected',
         description: `You have excessive trading days suggesting overtrading behavior.`,
         recommendations: [
           'Set a maximum number of trades per day (e.g., 3-5 trades)',
