@@ -57,6 +57,40 @@ interface Table {
   netProfit: string;
 }
 
+interface NotionPerformanceData {
+  id: string;
+  action: string; // title
+  date: string; // date
+  idealRRR: string; // select
+  buySell: string; // select
+  modelCheck: string[]; // multi_select
+  status: string; // status
+  percentPnL: number; // number
+  weeklyRetrospective: string; // rich_text
+  account: string[]; // multi_select
+  strategy: string; // select
+  oneToOneReversal: boolean; // checkbox
+  screenshots: string[]; // files
+  modelForm: string[]; // multi_select
+  idealSL: string; // select
+  reviewed: boolean; // checkbox
+  uniqueID: number; // unique_id
+  commission: number; // number
+  outcome: string[]; // files
+  held: string; // formula
+  instrument: string; // select
+  pnl: number; // number
+  percentPnLCalc: string; // formula
+  dailyReflection: string; // rich_text
+  lots: number; // number
+  divergenceValue: number; // number
+  pips: number; // number
+  formula: number; // formula
+  rulesViolated: string[]; // multi_select
+  emptySelect: string; // select (empty name)
+  swap: number; // number
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -80,7 +114,7 @@ interface Table {
     MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss']
 })
 
 
@@ -118,6 +152,87 @@ export class DashboardComponent {
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
 
+  // Notion Performance Intelligence properties
+  notionPerformanceData: NotionPerformanceData[] = [];
+  dtOptionsNotion: any = {};
+  dtTriggerNotion: Subject<any> = new Subject<any>();
+  isLoadingNotionData = false;
+
+  // Column visibility controls
+  columnVisibility = {
+    id: true,
+    action: true,
+    date: true,
+    account: true,
+    status: true,
+    buySell: true,
+    instrument: true,
+    strategy: true,
+    lots: true,
+    pips: true,
+    pnl: true,
+    percentPnL: true,
+    commission: true,
+    swap: true,
+    idealRRR: true,
+    idealSL: true,
+    modelCheck: true,
+    rulesViolated: true,
+    oneToOneReversal: true,
+    reviewed: true,
+    dailyReflection: true,
+    weeklyRetrospective: true,
+    modelForm: false,
+    screenshots: false,
+    outcome: false,
+    held: false,
+    percentPnLCalc: false,
+    divergenceValue: false,
+    formula: false,
+    emptySelect: false
+  };
+
+  // Available columns for selection
+  availableColumns = [
+    { key: 'id', label: 'ID', visible: true },
+    { key: 'action', label: 'Action', visible: true },
+    { key: 'date', label: 'Date', visible: true },
+    { key: 'account', label: 'Account', visible: true },
+    { key: 'status', label: 'Status', visible: true },
+    { key: 'buySell', label: 'Buy/Sell', visible: true },
+    { key: 'instrument', label: 'Instrument', visible: true },
+    { key: 'strategy', label: 'Strategy', visible: true },
+    { key: 'lots', label: 'Lots', visible: true },
+    { key: 'pips', label: 'Pips', visible: true },
+    { key: 'pnl', label: 'PnL', visible: true },
+    { key: 'percentPnL', label: '% PnL', visible: true },
+    { key: 'commission', label: 'Commission', visible: true },
+    { key: 'swap', label: 'Swap', visible: true },
+    { key: 'idealRRR', label: 'Ideal RRR', visible: true },
+    { key: 'idealSL', label: 'Ideal SL', visible: true },
+    { key: 'modelCheck', label: 'Model✔', visible: true },
+    { key: 'rulesViolated', label: 'Rules Violated 🛑', visible: true },
+    { key: 'oneToOneReversal', label: '1:1 Reversal', visible: true },
+    { key: 'reviewed', label: 'Reviewed', visible: true },
+    { key: 'dailyReflection', label: 'Daily Reflection', visible: true },
+    { key: 'weeklyRetrospective', label: 'Weekly Retrospective', visible: true },
+    { key: 'modelForm', label: 'Model Form', visible: false },
+    { key: 'screenshots', label: 'Screenshots', visible: false },
+    { key: 'outcome', label: 'Outcome', visible: false },
+    { key: 'held', label: 'Held🕕', visible: false },
+    { key: 'percentPnLCalc', label: '%PnL-Calc', visible: false },
+    { key: 'divergenceValue', label: 'Divergence Value', visible: false },
+    { key: 'formula', label: 'Formula', visible: false },
+    { key: 'emptySelect', label: 'Empty Select', visible: false }
+  ];
+
+  showColumnSelector = false;
+  private isRefreshingTable = false;
+
+  // Backend configuration
+  private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
+  USE_MOCK_DATA = false;
+
 
   constructor(private firestore: Firestore,private http: HttpClient) {
 
@@ -125,7 +240,7 @@ export class DashboardComponent {
 
   async ngOnInit() {
     this.dtOptions = {
-      destroy: true, 
+      destroy: true,
       paging: true,
       searching: true,
       ordering: true,
@@ -135,10 +250,27 @@ export class DashboardComponent {
 			keys: true
     };
 
+    this.dtOptionsNotion = {
+      destroy: true,
+      paging: true,
+      searching: true,
+      ordering: true,
+      pageLength: 15,
+      processing: true,
+      responsive: true,
+      keys: true,
+      order: [[1, 'desc']], // Sort by date descending by default
+      columnDefs: [
+        { targets: [2, 3, 5, 6, 7, 8, 9, 10], className: 'text-center' }, // Center align numeric columns
+        { targets: [2, 5, 6, 7, 8, 9, 10], type: 'num' } // Specify numeric sorting
+      ]
+    };
+
     localStorage.clear(); // Clear local storage on component initialization
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
     this.addTradesToCalendar();
+    await this.loadNotionPerformanceData(); // Load Notion performance data
 
     // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering | Enable DataTable feature
 
@@ -150,10 +282,46 @@ export class DashboardComponent {
 
   ngOnDestroy(): void {
     this.dtTrigger.unsubscribe();
-     // Clean up the DataTable when the component is destroyed
-     if ($.fn.dataTable.isDataTable('#myTable')) {
-        $('#myTable').DataTable().destroy();
-     }
+    this.dtTriggerNotion.unsubscribe();
+
+    // Safely clean up the DataTables when the component is destroyed
+    try {
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const myTable = $('#myTable').DataTable();
+        if (myTable && typeof myTable.destroy === 'function') {
+          myTable.destroy(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying myTable:', error);
+    }
+
+    try {
+      if ($.fn.dataTable.isDataTable('#notionTable')) {
+        const notionTable = $('#notionTable').DataTable();
+        if (notionTable && typeof notionTable.destroy === 'function') {
+          notionTable.destroy(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying notionTable:', error);
+    }
+  }
+
+  private triggerDataTableRender(): void {
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        const tableElement = document.getElementById('notionTable');
+        if (tableElement && this.notionPerformanceData.length > 0) {
+          this.dtTriggerNotion.next(null);
+        } else {
+          console.warn('Table element not found or no data available for DataTable rendering');
+        }
+      } catch (error) {
+        console.error('Error triggering DataTable render:', error);
+      }
+    }, 150);
   }
   
   addMonth(date: Date): Date {
@@ -865,6 +1033,597 @@ onUpload(): void {
     console.log("Getting MT5 API data...",res);
 
   }
+
+  async loadNotionPerformanceData(): Promise<void> {
+    this.isLoadingNotionData = true;
+    console.log('🔄 Starting to load ALL Notion performance data with pagination...');
+
+    try {
+      // Check if backend is running first
+      console.log('🔍 Checking backend availability...');
+
+      const backendRunning = await this.isBackendRunning();
+
+      if (!backendRunning) {
+        console.warn('⚠️ Backend is not running or not accessible');
+        this.notionPerformanceData = [];
+        return;
+      }
+
+      // Collect all results using pagination
+      let allResults: any[] = [];
+      let hasMore = true;
+      let startCursor: string | null = null;
+      let pageCount = 0;
+
+      console.log('📤 Starting pagination to get ALL entries from your Notion database...');
+      console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
+
+      while (hasMore) {
+        pageCount++;
+
+        // Build request body for pagination
+        const body: any = {};
+        if (startCursor) {
+          body.start_cursor = startCursor;
+        }
+
+        console.log(`📤 Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
+
+        // Use the proxy endpoint that matches your database ID exactly
+        const proxyResponse: any = await firstValueFrom(
+          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        );
+
+        console.log(`📥 Page ${pageCount} response:`, {
+          results_count: proxyResponse?.results?.length || 0,
+          has_more: proxyResponse?.has_more,
+          next_cursor: proxyResponse?.next_cursor ? `${proxyResponse.next_cursor.substring(0, 20)}...` : null
+        });
+
+        if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
+          // Add results from this page to our collection
+          allResults = allResults.concat(proxyResponse.results);
+          console.log(`✅ Page ${pageCount}: Added ${proxyResponse.results.length} entries. Total so far: ${allResults.length}`);
+
+          // Check if there are more pages
+          hasMore = proxyResponse.has_more === true;
+          startCursor = proxyResponse.next_cursor || null;
+
+          if (hasMore && startCursor) {
+            console.log(`🔄 More data available, fetching next page...`);
+          } else {
+            console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
+          }
+        } else {
+          console.log(`📭 Page ${pageCount}: No results found, ending pagination`);
+          hasMore = false;
+        }
+
+        // Safety check to prevent infinite loops
+        if (pageCount > 50) {
+          console.warn('⚠️ Stopped pagination after 50 pages to prevent infinite loop');
+          break;
+        }
+      }
+
+      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+
+      if (allResults.length > 0) {
+        // Show first page structure for debugging
+        console.log('📝 First entry structure:', allResults[0]);
+        console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
+
+        this.notionPerformanceData = this.parseNotionResponse(allResults);
+        console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
+        console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
+        this.USE_MOCK_DATA = false;
+      } else {
+        console.warn('⚠️ No results found in your Notion database after pagination');
+        this.notionPerformanceData = [];
+        this.USE_MOCK_DATA = false;
+      }
+
+      // Trigger DataTable rendering safely
+      this.triggerDataTableRender();
+
+    } catch (error: any) {
+      console.error('❌ Error during paginated loading of your Notion data:');
+      console.error('Full error object:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error status:', error.status);
+
+      if (error.status === 0) {
+        console.error('🔌 Connection failed - backend server may not be running');
+      }
+
+      // Show empty state instead of mock data
+      this.notionPerformanceData = [];
+      this.USE_MOCK_DATA = false;
+
+      // Still trigger DataTable rendering safely
+      this.triggerDataTableRender();
+
+    } finally {
+      this.isLoadingNotionData = false;
+      console.log('🏁 Finished loading your complete Notion data');
+    }
+  }
+
+  private parseNotionResponse(results: any[]): NotionPerformanceData[] {
+    console.log('🔄 Parsing your Notion response. Results count:', results?.length || 0);
+
+    if (!Array.isArray(results)) {
+      console.error('❌ Results is not an array:', results);
+      return [];
+    }
+
+    if (results.length === 0) {
+      console.log('📭 No pages found in your Notion database');
+      return [];
+    }
+
+    // First, let's see what properties you actually have in your database
+    const firstPage = results[0];
+    if (firstPage && firstPage.properties) {
+      console.log('📋 Your Notion database properties:', Object.keys(firstPage.properties));
+
+      // Show the structure of each property type
+      Object.keys(firstPage.properties).forEach(key => {
+        const prop = firstPage.properties[key];
+        console.log(`   - ${key}: ${prop.type}`, prop);
+      });
+    }
+
+    return results.map((page, index) => {
+      try {
+        const properties = page.properties;
+        if (!properties) {
+          console.warn(`⚠️ Page ${index + 1} has no properties`);
+          return null;
+        }
+
+        // Extract data based on your exact Notion database properties
+        const parsedData: NotionPerformanceData = {
+          id: page.id || `page-${index}`,
+
+          // Extract each property exactly as it appears in your database
+          action: this.getNotionProperty(properties, 'Action', 'title') || '',
+          date: this.getNotionProperty(properties, 'Date', 'date') || '',
+          idealRRR: this.getNotionProperty(properties, 'Ideal RRR', 'select') || '',
+          buySell: this.getNotionProperty(properties, 'Buy/Sell', 'select') || '',
+          modelCheck: this.getNotionProperty(properties, 'Model✔', 'multi_select') || [],
+          status: this.getNotionProperty(properties, 'Status', 'status') || '',
+          percentPnL: this.getNotionProperty(properties, '%PnL', 'number') || 0,
+          weeklyRetrospective: this.getNotionProperty(properties, 'Weekly Retrospective', 'rich_text') || '',
+          account: this.getNotionProperty(properties, 'Account', 'multi_select') || [],
+          strategy: this.getNotionProperty(properties, 'Strategy', 'select') || '',
+          oneToOneReversal: this.getNotionProperty(properties, '1:1 Reversal', 'checkbox') || false,
+          screenshots: this.getNotionProperty(properties, 'Screenshots', 'files') || [],
+          modelForm: this.getNotionProperty(properties, 'Model form', 'multi_select') || [],
+          idealSL: this.getNotionProperty(properties, 'Ideal SL', 'select') || '',
+          reviewed: this.getNotionProperty(properties, 'Reviewed', 'checkbox') || false,
+          uniqueID: this.getNotionProperty(properties, 'ID', 'unique_id') || 0,
+          commission: this.getNotionProperty(properties, 'Commission', 'number') || 0,
+          outcome: this.getNotionProperty(properties, 'Outcome', 'files') || [],
+          held: this.getNotionProperty(properties, 'Held🕕', 'formula') || '',
+          instrument: this.getNotionProperty(properties, 'Instrument', 'select') || '',
+          pnl: this.getNotionProperty(properties, 'PnL', 'number') || 0,
+          percentPnLCalc: this.getNotionProperty(properties, '%PnL-Calc', 'formula') || '',
+          dailyReflection: this.getNotionProperty(properties, 'Daily Reflection ', 'rich_text') || '',
+          lots: this.getNotionProperty(properties, 'Lots', 'number') || 0,
+          divergenceValue: this.getNotionProperty(properties, 'Divergence value', 'number') || 0,
+          pips: this.getNotionProperty(properties, 'Pips', 'number') || 0,
+          formula: this.getNotionProperty(properties, 'Formula', 'formula') || 0,
+          rulesViolated: this.getNotionProperty(properties, 'Rules violated 🛑', 'multi_select') || [],
+          emptySelect: this.getNotionProperty(properties, '', 'select') || '',
+          swap: this.getNotionProperty(properties, 'swap', 'number') || 0
+        };
+
+        console.log(`✅ Parsed your data page ${index + 1}:`, parsedData);
+        return parsedData;
+
+      } catch (error) {
+        console.error(`❌ Error parsing page ${index + 1}:`, error);
+        return null;
+      }
+    }).filter(item => item !== null) as NotionPerformanceData[];
+  }
+
+  private getNotionProperty(properties: any, propertyName: string, type: string): any {
+    try {
+      const property = properties[propertyName];
+      if (!property) {
+        console.log(`🔍 Property "${propertyName}" not found. Available properties:`, Object.keys(properties));
+        return null;
+      }
+
+      console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+
+      switch (type) {
+        case 'select':
+          return property.select?.name || '';
+
+        case 'multi_select':
+          if (Array.isArray(property.multi_select)) {
+            return property.multi_select.map((item: any) => item.name || '');
+          }
+          return [];
+
+        case 'status':
+          return property.status?.name || '';
+
+        case 'date':
+          return property.date?.start || '';
+
+        case 'number':
+          return property.number !== undefined ? property.number : 0;
+
+        case 'rich_text':
+          if (Array.isArray(property.rich_text)) {
+            return property.rich_text.map((text: any) => text.plain_text || '').join('') || '';
+          }
+          return '';
+
+        case 'title':
+          if (Array.isArray(property.title)) {
+            return property.title.map((text: any) => text.plain_text || '').join('') || '';
+          }
+          return '';
+
+        case 'checkbox':
+          return property.checkbox === true;
+
+        case 'unique_id':
+          return property.unique_id?.number || 0;
+
+        case 'formula':
+          if (property.formula?.type === 'string') {
+            return property.formula.string || '';
+          } else if (property.formula?.type === 'number') {
+            return property.formula.number || 0;
+          }
+          return property.formula?.string || property.formula?.number || '';
+
+        case 'files':
+          if (Array.isArray(property.files)) {
+            return property.files.map((file: any) => file.name || '');
+          }
+          return [];
+
+        case 'relation':
+          if (Array.isArray(property.relation)) {
+            return property.relation.map((rel: any) => rel.id || '');
+          }
+          return [];
+
+        default:
+          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
+          return null;
+      }
+    } catch (error) {
+      console.error(`❌ Error getting property "${propertyName}":`, error);
+      return null;
+    }
+  }
+
+  refreshNotionData(): void {
+    this.loadNotionPerformanceData();
+  }
+
+  toggleColumnVisibility(columnKey: string): void {
+    // Prevent rapid toggles that could cause issues
+    if (this.isRefreshingTable) {
+      console.warn('Table is currently refreshing, please wait...');
+      return;
+    }
+
+    this.columnVisibility[columnKey as keyof typeof this.columnVisibility] = !this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+
+    // Update available columns array
+    const column = this.availableColumns.find(col => col.key === columnKey);
+    if (column) {
+      column.visible = this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+    }
+
+    // Safely refresh DataTable
+    this.safelyRefreshDataTable();
+  }
+
+  toggleColumnSelector(): void {
+    this.showColumnSelector = !this.showColumnSelector;
+  }
+
+  getVisibleColumns(): any[] {
+    return this.availableColumns.filter(col => col.visible);
+  }
+
+  hideAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = false;
+      const column = this.availableColumns.find(col => col.key === key);
+      if (column) column.visible = false;
+    });
+    this.safelyRefreshDataTable();
+  }
+
+  showAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = true;
+      const column = this.availableColumns.find(col => col.key === key);
+      if (column) column.visible = true;
+    });
+    this.safelyRefreshDataTable();
+  }
+
+  showDefaultColumns(): void {
+    // Reset to default visibility
+    this.columnVisibility = {
+      id: true,
+      action: true,
+      date: true,
+      account: true,
+      status: true,
+      buySell: true,
+      instrument: true,
+      strategy: true,
+      lots: true,
+      pips: true,
+      pnl: true,
+      percentPnL: true,
+      commission: true,
+      swap: true,
+      idealRRR: true,
+      idealSL: true,
+      modelCheck: true,
+      rulesViolated: true,
+      oneToOneReversal: true,
+      reviewed: true,
+      dailyReflection: true,
+      weeklyRetrospective: true,
+      modelForm: false,
+      screenshots: false,
+      outcome: false,
+      held: false,
+      percentPnLCalc: false,
+      divergenceValue: false,
+      formula: false,
+      emptySelect: false
+    };
+
+    // Update available columns
+    this.availableColumns.forEach(col => {
+      col.visible = this.columnVisibility[col.key as keyof typeof this.columnVisibility];
+    });
+
+    this.safelyRefreshDataTable();
+  }
+
+  private refreshDataTable(): void {
+    this.safelyRefreshDataTable();
+  }
+
+  private safelyRefreshDataTable(): void {
+    if (this.isRefreshingTable) {
+      return; // Prevent multiple simultaneous refreshes
+    }
+
+    this.isRefreshingTable = true;
+
+    try {
+      // Check if the table element exists
+      const tableElement = document.getElementById('notionTable');
+      if (!tableElement) {
+        console.warn('Table element not found, skipping DataTable refresh');
+        this.isRefreshingTable = false;
+        return;
+      }
+
+      // Check if DataTable is initialized and destroy it safely
+      if ($.fn.dataTable.isDataTable('#notionTable')) {
+        const table = $('#notionTable').DataTable();
+        if (table && typeof table.destroy === 'function') {
+          table.destroy(true); // true = remove from DOM completely
+        }
+      }
+
+      // Clear any existing DataTable data
+      $('#notionTable').empty();
+
+      // Wait for DOM cleanup, then reinitialize
+      setTimeout(() => {
+        try {
+          // Double-check the element still exists after timeout
+          const tableElementAfter = document.getElementById('notionTable');
+          if (tableElementAfter) {
+            this.dtTriggerNotion.next(null);
+          }
+        } finally {
+          this.isRefreshingTable = false;
+        }
+      }, 200);
+
+    } catch (error) {
+      console.error('Error refreshing DataTable:', error);
+      // Fallback: just trigger re-render without destroying
+      setTimeout(() => {
+        try {
+          this.dtTriggerNotion.next(null);
+        } finally {
+          this.isRefreshingTable = false;
+        }
+      }, 100);
+    }
+  }
+
+  async isBackendRunning(): Promise<boolean> {
+    try {
+      // Try a simple POST request to see if backend endpoint is responding
+      console.log('🔍 Quick check if backend is responding...');
+
+      const quickTestBody = {}; // Empty body as per your specification
+
+      await firstValueFrom(
+        this.http.post('http://localhost:3000/api/getAllPagesFromDB', quickTestBody, {
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+      );
+
+      console.log('✅ Backend is responding to POST requests with empty body');
+      return true;
+
+    } catch (error: any) {
+      console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
+
+      // If it's a 404 with GET, but we're using POST now, so any response means server is up
+      if (error.status === 404) {
+        console.log('❌ Backend endpoint not found');
+        return false;
+      }
+
+      // If it's any other error but not connection error, server might be running
+      if (error.status && error.status !== 0) {
+        console.log('⚠️ Backend is running but has issues with the API');
+        return true; // Server is running, just has issues
+      }
+
+      return false;
+    }
+  }
+
+  checkBackendInstructions(): void {
+    const instructions = `
+🔧 How to start the Notion backend server:
+
+1. Open a new terminal window/tab
+2. Navigate to the backend directory:
+   cd NotionProxyApi
+
+3. Install dependencies (if first time):
+   npm install
+
+4. Start the development server:
+   npm run dev
+
+5. You should see this message:
+   "✅ Server running at http://localhost:3000"
+
+6. Then click "Test Backend" to verify the connection
+
+📁 Project Structure:
+- Your project has both frontend (trading-dashboard) and backend (NotionProxyApi)
+- The backend serves as a proxy to your Notion database
+- The frontend connects to localhost:3000 to get your Notion data
+
+💡 Troubleshooting:
+- Make sure you're in the NotionProxyApi folder when running npm run dev
+- Check that port 3000 is not already in use
+- Verify your Notion API token is configured in the backend
+`;
+
+    alert(instructions);
+  }
+
+  async testBackendConnection(): Promise<boolean> {
+    console.log('🔍 Testing backend connection...');
+    console.log('Backend URL:', this.BACKEND_URL);
+
+    try {
+      console.log('Testing POST request to /api/getAllPagesFromDB with empty body...');
+
+      // Use the exact API request format you provided - empty JSON object
+      const testBody = {}; // Empty body as per your sample request
+
+      const testResponse = await firstValueFrom(
+        this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, testBody)
+      );
+
+      console.log('✅ Backend POST request successful:', testResponse);
+
+      // Check if we got actual data
+      if (testResponse && (testResponse as any).results) {
+        const resultCount = (testResponse as any).results.length;
+        alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
+      } else {
+        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+      }
+
+      return true;
+
+    } catch (error: any) {
+      console.error('❌ Backend connection test failed:');
+      console.error('- Error object:', error);
+      console.error('- Error name:', error.name);
+      console.error('- Error message:', error.message);
+      console.error('- Error status:', error.status);
+      console.error('- Error statusText:', error.statusText);
+      console.error('- Error url:', error.url);
+
+      if (error.error) {
+        console.error('- Error response body:', error.error);
+      }
+
+      // Provide detailed error message based on status
+      let errorMessage = '❌ Backend connection failed!\n\n';
+
+      if (error.status === 0 || error.status === undefined) {
+        errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
+        errorMessage += 'The backend server is not running.\n\n';
+        errorMessage += 'To start the backend server:\n';
+        errorMessage += '1. Open a new terminal window\n';
+        errorMessage += '2. Navigate to: cd NotionProxyApi\n';
+        errorMessage += '3. Run: npm run dev\n\n';
+        errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
+      } else if (error.status === 404) {
+        errorMessage += '🔍 API Endpoint Not Found\n\n';
+        errorMessage += 'The server is running but the API route is missing.\n';
+        errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
+      } else if (error.status === 401 || error.status === 403) {
+        errorMessage += '🔐 Authentication Error\n\n';
+        errorMessage += 'The Notion API token might be invalid or missing.\n';
+        errorMessage += 'Check your Notion API token in the backend configuration.';
+      } else if (error.status >= 500) {
+        errorMessage += '💥 Server Error\n\n';
+        errorMessage += `Status: ${error.status}\n`;
+        errorMessage += `Message: ${error.message}\n\n`;
+        errorMessage += 'The server encountered an internal error.\n';
+        errorMessage += 'Check the backend server console for detailed error messages.';
+      } else {
+        errorMessage += `🚨 HTTP Error: ${error.status}\n\n`;
+        errorMessage += `Message: ${error.message}\n`;
+        errorMessage += `URL: ${error.url}\n\n`;
+        errorMessage += 'Check the backend server logs for more details.';
+      }
+
+      alert(errorMessage);
+      return false;
+    }
+  }
+
+
+
+  formatNotionDate(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return dateStr;
+    }
+  }
+
+  getEmotionClass(emotion: string): string {
+    const emotionLower = emotion?.toLowerCase() || '';
+    if (emotionLower.includes('confident') || emotionLower.includes('disciplined')) return 'emotion-positive';
+    if (emotionLower.includes('frustrated') || emotionLower.includes('angry')) return 'emotion-negative';
+    if (emotionLower.includes('nervous') || emotionLower.includes('anxious')) return 'emotion-warning';
+    return 'emotion-neutral';
+  }
   // Trading Metrics Calculation Methods
   calculateTotalPnL(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
@@ -1445,15 +2204,52 @@ onUpload(): void {
   // Performance Heatmap
   getPerformanceHeatmap(): { value: number, class: string, tooltip: string }[] {
     const last30Days: { value: number, class: string, tooltip: string }[] = [];
-    const today = new Date();
+
+    // Debug: log table data info
+    console.log('Total trades in tableData:', this.tableData.length);
+    if (this.tableData.length > 0) {
+      console.log('First trade date:', this.tableData[0].openDate);
+      console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);
+    }
+
+    // Instead of using today's date, let's use the date range from the actual trades
+    if (!this.tableData || this.tableData.length === 0) {
+      // If no trades, show empty heatmap for last 30 days
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        last30Days.push({
+          value: 0,
+          class: 'neutral',
+          tooltip: `${date.toLocaleDateString()}: 0 trades, 0.00 P&L`
+        });
+      }
+      return last30Days;
+    }
+
+    // Find the date range of the trades
+    const tradeDates = this.tableData.map(trade => this.parseTradeDate(trade.openDate)).filter(date => date !== null) as Date[];
+    const minDate = new Date(Math.min(...tradeDates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...tradeDates.map(d => d.getTime())));
+
+    console.log('Trade date range:', minDate.toDateString(), 'to', maxDate.toDateString());
+
+    // Use the actual trade date range to show the last 30 days from the most recent trade
+    const endDate = maxDate;
 
     for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
+      const date = new Date(endDate);
       date.setDate(date.getDate() - i);
 
       const dayTrades = this.tableData.filter(trade => {
         const tradeDate = this.parseTradeDate(trade.openDate);
-        return tradeDate && tradeDate.toDateString() === date.toDateString();
+        if (!tradeDate) return false;
+
+        // Compare just the date part (year, month, day)
+        return tradeDate.getFullYear() === date.getFullYear() &&
+               tradeDate.getMonth() === date.getMonth() &&
+               tradeDate.getDate() === date.getDate();
       });
 
       const dayPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
@@ -1465,6 +2261,8 @@ onUpload(): void {
       else if (dayPnL < -50) cellClass = 'negative-high';
       else if (dayPnL < -25) cellClass = 'negative-med';
       else if (dayPnL < 0) cellClass = 'negative-low';
+
+      console.log(`Date: ${date.toLocaleDateString()}, Trades: ${dayTrades.length}, P&L: ${dayPnL.toFixed(2)}, Class: ${cellClass}`);
 
       last30Days.push({
         value: dayPnL,
