@@ -919,7 +919,10 @@ onUpload(): void {
 
     try {
       // Test if backend is accessible first
-      console.log('🔍 Testing backend connection...');
+      const backendReachable = await this.testBackendConnection();
+      if (!backendReachable) {
+        throw new Error('Backend server is not reachable. Please make sure the Notion proxy server is running on http://localhost:3000');
+      }
 
       const body = {
         page_size: 100,
