@@ -57,6 +57,26 @@ interface Table {
   netProfit: string;
 }
 
+interface NotionPerformanceData {
+  id: string;
+  account: string;
+  date: string;
+  pnl: number;
+  percentPnl: number;
+  dailyReflection: string;
+  tradeCount: number;
+  winRate: number;
+  bestTrade: number;
+  worstTrade: number;
+  avgWin: number;
+  avgLoss: number;
+  riskReward: number;
+  maxDrawdown: number;
+  emotion: string;
+  lessons: string;
+  improvements: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
