@@ -478,7 +478,7 @@
   <section class="table-section">
     <div class="table-card">
       <div class="table-header">
-        <h2 class="section-title">Trade History</h2>
+        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]</h2>
         <div class="table-filters">
           <button class="filter-btn" [class.active]="!showNotionData" (click)="showNotionData = false">
             <mat-icon>visibility_off</mat-icon>
@@ -580,13 +580,23 @@
     </div>
   </section>
 
-  <!-- Notion Performance Intelligence Section -->
+
+  <!-- Trading Calendar Section -->
+  <section class="calendar-section">
+    <app-trading-calendar
+      [tableData]="tableData"
+      [viewDate]="viewDate">
+    </app-trading-calendar>
+  </section>
+
+
+    <!--  Overall Trading History Section -->
   <section class="table-section notion-performance-section">
     <div class="section-container">
       <div class="table-header">
         <h2 class="section-title">
           <mat-icon class="section-icon">psychology</mat-icon>
-          Performance Intelligence
+          Overall Trading History
         </h2>
         <div class="table-actions">
           <button class="action-btn refresh-btn" (click)="refreshNotionData()" [disabled]="isLoadingNotionData">
@@ -815,18 +825,5 @@
       </div>
     </div>
   </section>
-
-
-
-
-
-  <!-- Trading Calendar Section -->
-  <section class="calendar-section">
-    <app-trading-calendar
-      [tableData]="tableData"
-      [viewDate]="viewDate">
-    </app-trading-calendar>
-  </section>
-
 
 </div>
