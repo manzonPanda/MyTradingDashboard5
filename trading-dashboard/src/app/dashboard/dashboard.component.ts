@@ -306,6 +306,22 @@ export class DashboardComponent {
       console.warn('Error destroying notionTable:', error);
     }
   }
+
+  private triggerDataTableRender(): void {
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        const tableElement = document.getElementById('notionTable');
+        if (tableElement && this.notionPerformanceData.length > 0) {
+          this.dtTriggerNotion.next(null);
+        } else {
+          console.warn('Table element not found or no data available for DataTable rendering');
+        }
+      } catch (error) {
+        console.error('Error triggering DataTable render:', error);
+      }
+    }, 150);
+  }
   
   addMonth(date: Date): Date {
     return addMonths(date, 1);
@@ -1803,7 +1819,7 @@ onUpload(): void {
       .filter(trade => parseFloat(trade.netProfit) < 0)
       .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0));
 
-    if (totalLosses === 0) return totalWins > 0 ? '��' : '0.00';
+    if (totalLosses === 0) return totalWins > 0 ? '∞' : '0.00';
     return (totalWins / totalLosses).toFixed(2);
   }
 
