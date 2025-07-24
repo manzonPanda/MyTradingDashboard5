@@ -210,7 +210,7 @@ export class DashboardComponent {
     { key: 'swap', label: 'Swap', visible: true },
     { key: 'idealRRR', label: 'Ideal RRR', visible: true },
     { key: 'idealSL', label: 'Ideal SL', visible: true },
-    { key: 'modelCheck', label: 'Model���', visible: true },
+    { key: 'modelCheck', label: 'Model✔', visible: true },
     { key: 'rulesViolated', label: 'Rules Violated 🛑', visible: true },
     { key: 'oneToOneReversal', label: '1:1 Reversal', visible: true },
     { key: 'reviewed', label: 'Reviewed', visible: true },
@@ -1107,10 +1107,8 @@ onUpload(): void {
         this.USE_MOCK_DATA = false;
       }
 
-      // Trigger DataTable rendering
-      setTimeout(() => {
-        this.dtTriggerNotion.next(null);
-      }, 100);
+      // Trigger DataTable rendering safely
+      this.triggerDataTableRender();
 
     } catch (error: any) {
       console.error('❌ Error during paginated loading of your Notion data:');
@@ -1127,10 +1125,8 @@ onUpload(): void {
       this.notionPerformanceData = [];
       this.USE_MOCK_DATA = false;
 
-      // Still trigger DataTable rendering
-      setTimeout(() => {
-        this.dtTriggerNotion.next(null);
-      }, 100);
+      // Still trigger DataTable rendering safely
+      this.triggerDataTableRender();
 
     } finally {
       this.isLoadingNotionData = false;
@@ -1807,7 +1803,7 @@ onUpload(): void {
       .filter(trade => parseFloat(trade.netProfit) < 0)
       .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0));
 
-    if (totalLosses === 0) return totalWins > 0 ? '∞' : '0.00';
+    if (totalLosses === 0) return totalWins > 0 ? '��' : '0.00';
     return (totalWins / totalLosses).toFixed(2);
   }
 
