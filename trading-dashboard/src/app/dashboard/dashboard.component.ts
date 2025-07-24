@@ -915,7 +915,7 @@ onUpload(): void {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
-    console.log('�� Starting to load Notion performance data...');
+    console.log('🔄 Starting to load Notion performance data...');
 
     try {
       // Test if backend is accessible first
@@ -1033,22 +1033,39 @@ onUpload(): void {
   }
 
   private getNotionProperty(properties: any, propertyName: string, type: string): any {
-    const property = properties[propertyName];
-    if (!property) return null;
-
-    switch (type) {
-      case 'select':
-        return property.select?.name || null;
-      case 'date':
-        return property.date?.start || null;
-      case 'number':
-        return property.number || 0;
-      case 'rich_text':
-        return property.rich_text?.map((text: any) => text.plain_text).join('') || '';
-      case 'title':
-        return property.title?.map((text: any) => text.plain_text).join('') || '';
-      default:
+    try {
+      const property = properties[propertyName];
+      if (!property) {
+        console.log(`🔍 Property "${propertyName}" not found. Available properties:`, Object.keys(properties));
         return null;
+      }
+
+      console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+
+      switch (type) {
+        case 'select':
+          return property.select?.name || null;
+        case 'date':
+          return property.date?.start || null;
+        case 'number':
+          return property.number !== undefined ? property.number : 0;
+        case 'rich_text':
+          if (Array.isArray(property.rich_text)) {
+            return property.rich_text.map((text: any) => text.plain_text || '').join('') || '';
+          }
+          return '';
+        case 'title':
+          if (Array.isArray(property.title)) {
+            return property.title.map((text: any) => text.plain_text || '').join('') || '';
+          }
+          return '';
+        default:
+          console.warn(`⚠️ Unknown property type: ${type}`);
+          return null;
+      }
+    } catch (error) {
+      console.error(`❌ Error getting property "${propertyName}":`, error);
+      return null;
     }
   }
 
