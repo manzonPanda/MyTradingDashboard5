@@ -1142,7 +1142,7 @@ onUpload(): void {
 
   async testBackendConnection(): Promise<boolean> {
     try {
-      console.log('🔍 Testing backend connection...');
+      console.log('🔍 Testing backend connection to:', this.BACKEND_URL);
       const response = await firstValueFrom(
         this.http.get(`${this.BACKEND_URL}/api/getAllPagesFromDB`)
       );
@@ -1150,18 +1150,38 @@ onUpload(): void {
       alert('✅ Backend connection successful! Your Notion proxy server is running.');
       return true;
     } catch (error: any) {
-      console.error('❌ Backend connection test failed:', error);
+      console.error('❌ Backend connection test failed - Full error object:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error status:', error.status);
+      console.error('Error statusText:', error.statusText);
+      console.error('Error url:', error.url);
+      console.error('Error headers:', error.headers);
+
+      if (error.error) {
+        console.error('Error response body:', error.error);
+      }
 
       let errorMessage = '❌ Backend connection failed!\n\n';
 
-      if (error.status === 0) {
-        errorMessage += 'Connection refused - the server is not running.\n';
-        errorMessage += 'Please start the Notion proxy server:\n';
-        errorMessage += '1. cd NotionProxyApi\n';
-        errorMessage += '2. npm run dev';
-      } else {
+      if (error.status === 0 || error.status === undefined) {
+        errorMessage += 'Connection refused - the server is not running.\n\n';
+        errorMessage += 'To fix this:\n';
+        errorMessage += '1. Open a terminal\n';
+        errorMessage += '2. cd NotionProxyApi\n';
+        errorMessage += '3. npm run dev\n\n';
+        errorMessage += 'The server should start at http://localhost:3000';
+      } else if (error.status === 404) {
+        errorMessage += 'API endpoint not found.\n';
+        errorMessage += 'The server is running but the API route might be wrong.';
+      } else if (error.status >= 500) {
+        errorMessage += 'Server error occurred.\n';
         errorMessage += `Status: ${error.status}\n`;
-        errorMessage += `Message: ${error.message}`;
+        errorMessage += `Message: ${error.message || error.statusText}`;
+      } else {
+        errorMessage += `HTTP Error: ${error.status}\n`;
+        errorMessage += `Message: ${error.message || error.statusText}\n`;
+        errorMessage += `URL: ${error.url}`;
       }
 
       alert(errorMessage);
