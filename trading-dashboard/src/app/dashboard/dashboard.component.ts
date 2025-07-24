@@ -1214,84 +1214,83 @@ onUpload(): void {
     console.log('🔍 Testing backend connection...');
     console.log('Backend URL:', this.BACKEND_URL);
 
-    // First, try a simple GET request to see if the server is running
     try {
-      console.log('Step 1: Testing basic server connectivity...');
+      console.log('Testing POST request to /api/getAllPagesFromDB...');
 
-      // Try to hit a GET endpoint first (the existing endpoint that might work)
+      // The API endpoint expects a POST request with a body
+      const testBody = {
+        page_size: 1, // Just get 1 page to test
+        sorts: [
+          {
+            property: "Date",
+            direction: "descending"
+          }
+        ]
+      };
+
       const testResponse = await firstValueFrom(
-        this.http.get(`${this.BACKEND_URL}/api/getAllPagesFromDB`).pipe(
-          // Add a timeout
-        )
+        this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, testBody)
       );
 
-      console.log('✅ Backend GET request successful:', testResponse);
-      alert('✅ Backend connection successful! Your Notion proxy server is running and responding.');
+      console.log('✅ Backend POST request successful:', testResponse);
+
+      // Check if we got actual data
+      if (testResponse && (testResponse as any).results) {
+        const resultCount = (testResponse as any).results.length;
+        alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.`);
+      } else {
+        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+      }
+
       return true;
 
-    } catch (getError: any) {
-      console.log('Step 2: GET request failed, trying to understand why...');
-      console.error('GET request error details:');
-      console.error('- Error object:', getError);
-      console.error('- Error name:', getError.name);
-      console.error('- Error message:', getError.message);
-      console.error('- Error status:', getError.status);
-      console.error('- Error statusText:', getError.statusText);
-      console.error('- Error url:', getError.url);
+    } catch (error: any) {
+      console.error('❌ Backend connection test failed:');
+      console.error('- Error object:', error);
+      console.error('- Error name:', error.name);
+      console.error('- Error message:', error.message);
+      console.error('- Error status:', error.status);
+      console.error('- Error statusText:', error.statusText);
+      console.error('- Error url:', error.url);
 
-      // Now try a POST request (which is what the API expects)
-      try {
-        console.log('Step 3: Trying POST request with empty body...');
-
-        const postResponse = await firstValueFrom(
-          this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, {})
-        );
-
-        console.log('✅ Backend POST request successful:', postResponse);
-        alert('✅ Backend connection successful via POST! Your Notion proxy server is running.');
-        return true;
-
-      } catch (postError: any) {
-        console.error('POST request also failed:');
-        console.error('- Post error object:', postError);
-        console.error('- Post error name:', postError.name);
-        console.error('- Post error message:', postError.message);
-        console.error('- Post error status:', postError.status);
-        console.error('- Post error statusText:', postError.statusText);
-
-        // Provide detailed error message
-        let errorMessage = '❌ Backend connection failed!\n\n';
-
-        const status = getError.status || postError.status;
-
-        if (status === 0 || status === undefined) {
-          errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
-          errorMessage += 'This usually means the backend server is not running.\n\n';
-          errorMessage += 'To start the backend server:\n';
-          errorMessage += '1. Open a new terminal window\n';
-          errorMessage += '2. Navigate to: cd NotionProxyApi\n';
-          errorMessage += '3. Run: npm run dev\n\n';
-          errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
-        } else if (status === 404) {
-          errorMessage += '🔍 Not Found Error: API endpoint not found\n\n';
-          errorMessage += 'The server is running but the API route is missing.\n';
-          errorMessage += 'Check that the backend has the /api/getAllPagesFromDB endpoint.';
-        } else if (status >= 500) {
-          errorMessage += '💥 Server Error: Internal server error\n\n';
-          errorMessage += `Status: ${status}\n`;
-          errorMessage += `Message: ${getError.message || postError.message}\n\n`;
-          errorMessage += 'The server is running but encountered an error.\n';
-          errorMessage += 'Check the server console for error details.';
-        } else {
-          errorMessage += `🚨 HTTP Error: ${status}\n\n`;
-          errorMessage += `Message: ${getError.message || postError.message}\n`;
-          errorMessage += `URL: ${getError.url || postError.url}\n\n`;
-          errorMessage += 'Unexpected error occurred.';
-        }
-
-        alert(errorMessage);
-        return false;
+      if (error.error) {
+        console.error('- Error response body:', error.error);
       }
+
+      // Provide detailed error message based on status
+      let errorMessage = '❌ Backend connection failed!\n\n';
+
+      if (error.status === 0 || error.status === undefined) {
+        errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
+        errorMessage += 'The backend server is not running.\n\n';
+        errorMessage += 'To start the backend server:\n';
+        errorMessage += '1. Open a new terminal window\n';
+        errorMessage += '2. Navigate to: cd NotionProxyApi\n';
+        errorMessage += '3. Run: npm run dev\n\n';
+        errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
+      } else if (error.status === 404) {
+        errorMessage += '🔍 API Endpoint Not Found\n\n';
+        errorMessage += 'The server is running but the API route is missing.\n';
+        errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
+      } else if (error.status === 401 || error.status === 403) {
+        errorMessage += '🔐 Authentication Error\n\n';
+        errorMessage += 'The Notion API token might be invalid or missing.\n';
+        errorMessage += 'Check your Notion API token in the backend configuration.';
+      } else if (error.status >= 500) {
+        errorMessage += '💥 Server Error\n\n';
+        errorMessage += `Status: ${error.status}\n`;
+        errorMessage += `Message: ${error.message}\n\n`;
+        errorMessage += 'The server encountered an internal error.\n';
+        errorMessage += 'Check the backend server console for detailed error messages.';
+      } else {
+        errorMessage += `🚨 HTTP Error: ${error.status}\n\n`;
+        errorMessage += `Message: ${error.message}\n`;
+        errorMessage += `URL: ${error.url}\n\n`;
+        errorMessage += 'Check the backend server logs for more details.';
+      }
+
+      alert(errorMessage);
+      return false;
     }
   }
 
@@ -2024,7 +2023,7 @@ onUpload(): void {
     const overtradingScore = this.getOvertradingScore();
     if (overtradingScore > 30) {
       insights.push({
-        title: '📈 Overtrading Detected',
+        title: '�� Overtrading Detected',
         description: `You have excessive trading days suggesting overtrading behavior.`,
         recommendations: [
           'Set a maximum number of trades per day (e.g., 3-5 trades)',
