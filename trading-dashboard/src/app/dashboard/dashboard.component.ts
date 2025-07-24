@@ -948,32 +948,34 @@ onUpload(): void {
         return;
       }
 
-      // Use the exact API request format you provided
-      const body = {}; // Empty JSON object as per your requirement
+      // Use the exact API request format you provided - empty JSON object
+      const body = {}; // Empty JSON object as per your sample request
 
-      console.log('📤 Sending request to your Notion database with empty body as specified...');
-      console.log('📤 Request body:', body);
+      console.log('📤 Sending request to get ALL your Notion database data...');
+      console.log('📤 Request body (empty as specified):', body);
+      console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
 
-      // Use direct Notion query endpoint for your specific database
+      // Use the proxy endpoint that matches your database ID exactly
       const proxyResponse: any = await firstValueFrom(
-        this.http.post('https://api.notion.com/v1/databases/ef10ac6f79524ea49e4bc0997e0ee704/query', body, {
-          headers: {
-            'Authorization': 'Bearer YOUR_NOTION_TOKEN', // This should be handled by your proxy
-            'Content-Type': 'application/json',
-            'Notion-Version': '2022-06-28'
-          }
-        })
+        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
       );
 
-      console.log('📥 Received your Notion database response:', proxyResponse);
+      console.log('📥 Received your complete Notion database response:', proxyResponse);
 
       if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
-        console.log('✅ Found Notion data! Processing...');
+        console.log('✅ Found', proxyResponse.results.length, 'pages in your Notion database! Processing...');
+
+        // Show first page structure for debugging
+        console.log('📝 First page structure:', proxyResponse.results[0]);
+        console.log('📝 Properties available:', Object.keys(proxyResponse.results[0].properties || {}));
+
         this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
-        console.log('✅ Your Notion data loaded:', this.notionPerformanceData);
+        console.log('✅ Your Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
+        console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
         this.USE_MOCK_DATA = false;
       } else {
         console.warn('⚠️ No results found in your Notion database');
+        console.warn('⚠️ Response structure:', proxyResponse);
         this.notionPerformanceData = [];
         this.USE_MOCK_DATA = false;
       }
@@ -991,30 +993,11 @@ onUpload(): void {
       console.error('Error status:', error.status);
 
       if (error.status === 0) {
-        console.error('�� Connection failed - CORS or network issue');
+        console.error('🔌 Connection failed - backend server may not be running');
       }
 
-      // Fallback: Try using the proxy server instead
-      try {
-        console.log('🔄 Trying proxy server as fallback...');
-        const proxyBody = {
-          database_id: 'ef10ac6f79524ea49e4bc0997e0ee704',
-          page_size: 100
-        };
-
-        const proxyResponse: any = await firstValueFrom(
-          this.http.post('http://localhost:3000/api/notion-query', proxyBody)
-        );
-
-        if (proxyResponse && proxyResponse.results) {
-          this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
-          console.log('✅ Proxy fallback successful:', this.notionPerformanceData);
-        }
-      } catch (proxyError) {
-        console.error('❌ Proxy fallback also failed:', proxyError);
-        this.notionPerformanceData = [];
-      }
-
+      // Show empty state instead of mock data
+      this.notionPerformanceData = [];
       this.USE_MOCK_DATA = false;
 
       // Still trigger DataTable rendering
@@ -2070,7 +2053,7 @@ onUpload(): void {
     const overtradingScore = this.getOvertradingScore();
     if (overtradingScore > 30) {
       insights.push({
-        title: '�� Overtrading Detected',
+        title: '📈 Overtrading Detected',
         description: `You have excessive trading days suggesting overtrading behavior.`,
         recommendations: [
           'Set a maximum number of trades per day (e.g., 3-5 trades)',
