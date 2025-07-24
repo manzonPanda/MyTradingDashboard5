@@ -940,7 +940,12 @@ onUpload(): void {
       }, 100);
 
     } catch (error) {
-      console.error('Error loading Notion performance data:', error);
+      console.error('Error loading Notion performance data:');
+      console.error('Error details:', error);
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Error status:', (error as any)?.status);
+      console.error('Error response:', (error as any)?.error);
+
       // If proxy fails, show empty state
       this.notionPerformanceData = [];
     } finally {
