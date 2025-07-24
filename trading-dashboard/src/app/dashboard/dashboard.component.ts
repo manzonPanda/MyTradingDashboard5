@@ -1101,23 +1101,63 @@ onUpload(): void {
 
       switch (type) {
         case 'select':
-          return property.select?.name || null;
+          return property.select?.name || '';
+
+        case 'multi_select':
+          if (Array.isArray(property.multi_select)) {
+            return property.multi_select.map((item: any) => item.name || '');
+          }
+          return [];
+
+        case 'status':
+          return property.status?.name || '';
+
         case 'date':
-          return property.date?.start || null;
+          return property.date?.start || '';
+
         case 'number':
           return property.number !== undefined ? property.number : 0;
+
         case 'rich_text':
           if (Array.isArray(property.rich_text)) {
             return property.rich_text.map((text: any) => text.plain_text || '').join('') || '';
           }
           return '';
+
         case 'title':
           if (Array.isArray(property.title)) {
             return property.title.map((text: any) => text.plain_text || '').join('') || '';
           }
           return '';
+
+        case 'checkbox':
+          return property.checkbox === true;
+
+        case 'unique_id':
+          return property.unique_id?.number || 0;
+
+        case 'formula':
+          if (property.formula?.type === 'string') {
+            return property.formula.string || '';
+          } else if (property.formula?.type === 'number') {
+            return property.formula.number || 0;
+          }
+          return property.formula?.string || property.formula?.number || '';
+
+        case 'files':
+          if (Array.isArray(property.files)) {
+            return property.files.map((file: any) => file.name || '');
+          }
+          return [];
+
+        case 'relation':
+          if (Array.isArray(property.relation)) {
+            return property.relation.map((rel: any) => rel.id || '');
+          }
+          return [];
+
         default:
-          console.warn(`⚠️ Unknown property type: ${type}`);
+          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
           return null;
       }
     } catch (error) {
