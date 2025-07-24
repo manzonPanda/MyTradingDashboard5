@@ -1042,75 +1042,41 @@ onUpload(): void {
           return null;
         }
 
-        // Dynamically extract data based on what properties you have
+        // Extract data based on your exact Notion database properties
         const parsedData: NotionPerformanceData = {
           id: page.id || `page-${index}`,
-          // Try common property names for each field
-          account: this.getNotionProperty(properties, 'Account', 'select') ||
-                  this.getNotionProperty(properties, 'Prop Firm', 'select') ||
-                  this.getNotionProperty(properties, 'Broker', 'select') || 'Unknown',
 
-          date: this.getNotionProperty(properties, 'Date', 'date') ||
-               this.getNotionProperty(properties, 'Trading Date', 'date') || '',
-
-          pnl: this.getNotionProperty(properties, 'PnL', 'number') ||
-              this.getNotionProperty(properties, 'P&L', 'number') ||
-              this.getNotionProperty(properties, 'Profit', 'number') ||
-              this.getNotionProperty(properties, 'Net Profit', 'number') || 0,
-
-          percentPnl: this.getNotionProperty(properties, '%PnL', 'number') ||
-                     this.getNotionProperty(properties, 'Percent PnL', 'number') ||
-                     this.getNotionProperty(properties, '% P&L', 'number') || 0,
-
-          dailyReflection: this.getNotionProperty(properties, 'Daily Reflection 📆', 'rich_text') ||
-                          this.getNotionProperty(properties, 'Daily Reflection', 'rich_text') ||
-                          this.getNotionProperty(properties, 'Reflection', 'rich_text') ||
-                          this.getNotionProperty(properties, 'Notes', 'rich_text') || '',
-
-          tradeCount: this.getNotionProperty(properties, 'Trade Count', 'number') ||
-                     this.getNotionProperty(properties, 'Trades', 'number') ||
-                     this.getNotionProperty(properties, 'Number of Trades', 'number') || 0,
-
-          winRate: this.getNotionProperty(properties, 'Win Rate', 'number') ||
-                  this.getNotionProperty(properties, 'Win %', 'number') ||
-                  this.getNotionProperty(properties, 'Success Rate', 'number') || 0,
-
-          bestTrade: this.getNotionProperty(properties, 'Best Trade', 'number') ||
-                    this.getNotionProperty(properties, 'Biggest Win', 'number') ||
-                    this.getNotionProperty(properties, 'Max Win', 'number') || 0,
-
-          worstTrade: this.getNotionProperty(properties, 'Worst Trade', 'number') ||
-                     this.getNotionProperty(properties, 'Biggest Loss', 'number') ||
-                     this.getNotionProperty(properties, 'Max Loss', 'number') || 0,
-
-          avgWin: this.getNotionProperty(properties, 'Avg Win', 'number') ||
-                 this.getNotionProperty(properties, 'Average Win', 'number') ||
-                 this.getNotionProperty(properties, 'Mean Win', 'number') || 0,
-
-          avgLoss: this.getNotionProperty(properties, 'Avg Loss', 'number') ||
-                  this.getNotionProperty(properties, 'Average Loss', 'number') ||
-                  this.getNotionProperty(properties, 'Mean Loss', 'number') || 0,
-
-          riskReward: this.getNotionProperty(properties, 'Risk:Reward', 'number') ||
-                     this.getNotionProperty(properties, 'Risk Reward', 'number') ||
-                     this.getNotionProperty(properties, 'R:R', 'number') ||
-                     this.getNotionProperty(properties, 'RR', 'number') || 0,
-
-          maxDrawdown: this.getNotionProperty(properties, 'Max Drawdown', 'number') ||
-                      this.getNotionProperty(properties, 'Drawdown', 'number') ||
-                      this.getNotionProperty(properties, 'Maximum Drawdown', 'number') || 0,
-
-          emotion: this.getNotionProperty(properties, 'Emotion', 'select') ||
-                  this.getNotionProperty(properties, 'Feeling', 'select') ||
-                  this.getNotionProperty(properties, 'Mood', 'select') || '',
-
-          lessons: this.getNotionProperty(properties, 'Lessons Learned', 'rich_text') ||
-                  this.getNotionProperty(properties, 'Lessons', 'rich_text') ||
-                  this.getNotionProperty(properties, 'Learning', 'rich_text') || '',
-
-          improvements: this.getNotionProperty(properties, 'Areas for Improvement', 'rich_text') ||
-                       this.getNotionProperty(properties, 'Improvements', 'rich_text') ||
-                       this.getNotionProperty(properties, 'To Improve', 'rich_text') || ''
+          // Extract each property exactly as it appears in your database
+          action: this.getNotionProperty(properties, 'Action', 'title') || '',
+          date: this.getNotionProperty(properties, 'Date', 'date') || '',
+          idealRRR: this.getNotionProperty(properties, 'Ideal RRR', 'select') || '',
+          buySell: this.getNotionProperty(properties, 'Buy/Sell', 'select') || '',
+          modelCheck: this.getNotionProperty(properties, 'Model✔', 'multi_select') || [],
+          status: this.getNotionProperty(properties, 'Status', 'status') || '',
+          percentPnL: this.getNotionProperty(properties, '%PnL', 'number') || 0,
+          weeklyRetrospective: this.getNotionProperty(properties, 'Weekly Retrospective', 'rich_text') || '',
+          account: this.getNotionProperty(properties, 'Account', 'multi_select') || [],
+          strategy: this.getNotionProperty(properties, 'Strategy', 'select') || '',
+          oneToOneReversal: this.getNotionProperty(properties, '1:1 Reversal', 'checkbox') || false,
+          screenshots: this.getNotionProperty(properties, 'Screenshots', 'files') || [],
+          modelForm: this.getNotionProperty(properties, 'Model form', 'multi_select') || [],
+          idealSL: this.getNotionProperty(properties, 'Ideal SL', 'select') || '',
+          reviewed: this.getNotionProperty(properties, 'Reviewed', 'checkbox') || false,
+          uniqueID: this.getNotionProperty(properties, 'ID', 'unique_id') || 0,
+          commission: this.getNotionProperty(properties, 'Commission', 'number') || 0,
+          outcome: this.getNotionProperty(properties, 'Outcome', 'files') || [],
+          held: this.getNotionProperty(properties, 'Held🕕', 'formula') || '',
+          instrument: this.getNotionProperty(properties, 'Instrument', 'select') || '',
+          pnl: this.getNotionProperty(properties, 'PnL', 'number') || 0,
+          percentPnLCalc: this.getNotionProperty(properties, '%PnL-Calc', 'formula') || '',
+          dailyReflection: this.getNotionProperty(properties, 'Daily Reflection ', 'rich_text') || '',
+          lots: this.getNotionProperty(properties, 'Lots', 'number') || 0,
+          divergenceValue: this.getNotionProperty(properties, 'Divergence value', 'number') || 0,
+          pips: this.getNotionProperty(properties, 'Pips', 'number') || 0,
+          formula: this.getNotionProperty(properties, 'Formula', 'formula') || 0,
+          rulesViolated: this.getNotionProperty(properties, 'Rules violated 🛑', 'multi_select') || [],
+          emptySelect: this.getNotionProperty(properties, '', 'select') || '',
+          swap: this.getNotionProperty(properties, 'swap', 'number') || 0
         };
 
         console.log(`✅ Parsed your data page ${index + 1}:`, parsedData);
