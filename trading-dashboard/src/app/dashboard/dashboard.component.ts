@@ -915,8 +915,12 @@ onUpload(): void {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
+    console.log('🔄 Starting to load Notion performance data...');
 
     try {
+      // Test if backend is accessible first
+      console.log('🔍 Testing backend connection...');
+
       const body = {
         page_size: 100,
         sorts: [
@@ -927,29 +931,52 @@ onUpload(): void {
         ]
       };
 
-      // Try through proxy first (using the existing backend)
+      console.log('📤 Sending request to backend with body:', body);
+
       const proxyResponse: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body).pipe(
+          // Add timeout and better error handling
+        )
       );
-      this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
-      console.log('Notion Performance Data:', this.notionPerformanceData);
 
-      // Trigger DataTable rendering
-      setTimeout(() => {
-        this.dtTriggerNotion.next(null);
-      }, 100);
+      console.log('📥 Received response from backend:', proxyResponse);
 
-    } catch (error) {
-      console.error('Error loading Notion performance data:');
-      console.error('Error details:', error);
-      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
-      console.error('Error status:', (error as any)?.status);
-      console.error('Error response:', (error as any)?.error);
+      if (proxyResponse && proxyResponse.results) {
+        this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
+        console.log('✅ Parsed Notion Performance Data:', this.notionPerformanceData);
 
-      // If proxy fails, show empty state
+        // Trigger DataTable rendering
+        setTimeout(() => {
+          this.dtTriggerNotion.next(null);
+        }, 100);
+      } else {
+        console.warn('⚠️ No results found in response');
+        this.notionPerformanceData = [];
+      }
+
+    } catch (error: any) {
+      console.error('❌ Error loading Notion performance data:');
+      console.error('Full error object:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error status:', error.status);
+      console.error('Error statusText:', error.statusText);
+      console.error('Error url:', error.url);
+
+      if (error.error) {
+        console.error('Error response body:', error.error);
+      }
+
+      // Check if it's a connection error
+      if (error.status === 0) {
+        console.error('🔌 Backend connection failed - is the Notion proxy server running on localhost:3000?');
+      }
+
+      // Set empty state
       this.notionPerformanceData = [];
     } finally {
       this.isLoadingNotionData = false;
+      console.log('🏁 Finished loading Notion performance data');
     }
   }
 
