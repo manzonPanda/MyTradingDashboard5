@@ -227,6 +227,7 @@ export class DashboardComponent {
   ];
 
   showColumnSelector = false;
+  private isRefreshingTable = false;
 
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
@@ -1312,6 +1313,12 @@ onUpload(): void {
   }
 
   toggleColumnVisibility(columnKey: string): void {
+    // Prevent rapid toggles that could cause issues
+    if (this.isRefreshingTable) {
+      console.warn('Table is currently refreshing, please wait...');
+      return;
+    }
+
     this.columnVisibility[columnKey as keyof typeof this.columnVisibility] = !this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
 
     // Update available columns array
@@ -1398,11 +1405,18 @@ onUpload(): void {
   }
 
   private safelyRefreshDataTable(): void {
+    if (this.isRefreshingTable) {
+      return; // Prevent multiple simultaneous refreshes
+    }
+
+    this.isRefreshingTable = true;
+
     try {
       // Check if the table element exists
       const tableElement = document.getElementById('notionTable');
       if (!tableElement) {
         console.warn('Table element not found, skipping DataTable refresh');
+        this.isRefreshingTable = false;
         return;
       }
 
@@ -1419,18 +1433,26 @@ onUpload(): void {
 
       // Wait for DOM cleanup, then reinitialize
       setTimeout(() => {
-        // Double-check the element still exists after timeout
-        const tableElementAfter = document.getElementById('notionTable');
-        if (tableElementAfter) {
-          this.dtTriggerNotion.next(null);
+        try {
+          // Double-check the element still exists after timeout
+          const tableElementAfter = document.getElementById('notionTable');
+          if (tableElementAfter) {
+            this.dtTriggerNotion.next(null);
+          }
+        } finally {
+          this.isRefreshingTable = false;
         }
-      }, 150);
+      }, 200);
 
     } catch (error) {
       console.error('Error refreshing DataTable:', error);
       // Fallback: just trigger re-render without destroying
       setTimeout(() => {
-        this.dtTriggerNotion.next(null);
+        try {
+          this.dtTriggerNotion.next(null);
+        } finally {
+          this.isRefreshingTable = false;
+        }
       }, 100);
     }
   }
