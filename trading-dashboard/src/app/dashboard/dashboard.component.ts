@@ -1245,18 +1245,10 @@ onUpload(): void {
     console.log('Backend URL:', this.BACKEND_URL);
 
     try {
-      console.log('Testing POST request to /api/getAllPagesFromDB...');
+      console.log('Testing POST request to /api/getAllPagesFromDB with empty body...');
 
-      // The API endpoint expects a POST request with a body
-      const testBody = {
-        page_size: 1, // Just get 1 page to test
-        sorts: [
-          {
-            property: "Date",
-            direction: "descending"
-          }
-        ]
-      };
+      // Use the exact API request format you provided - empty JSON object
+      const testBody = {}; // Empty body as per your sample request
 
       const testResponse = await firstValueFrom(
         this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, testBody)
@@ -1267,7 +1259,7 @@ onUpload(): void {
       // Check if we got actual data
       if (testResponse && (testResponse as any).results) {
         const resultCount = (testResponse as any).results.length;
-        alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.`);
+        alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
       } else {
         alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
       }
