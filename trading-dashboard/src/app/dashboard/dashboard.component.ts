@@ -1146,10 +1146,25 @@ onUpload(): void {
       const response = await firstValueFrom(
         this.http.get(`${this.BACKEND_URL}/api/getAllPagesFromDB`)
       );
-      console.log('✅ Backend is reachable');
+      console.log('✅ Backend is reachable:', response);
+      alert('✅ Backend connection successful! Your Notion proxy server is running.');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Backend connection test failed:', error);
+
+      let errorMessage = '❌ Backend connection failed!\n\n';
+
+      if (error.status === 0) {
+        errorMessage += 'Connection refused - the server is not running.\n';
+        errorMessage += 'Please start the Notion proxy server:\n';
+        errorMessage += '1. cd NotionProxyApi\n';
+        errorMessage += '2. npm run dev';
+      } else {
+        errorMessage += `Status: ${error.status}\n`;
+        errorMessage += `Message: ${error.message}`;
+      }
+
+      alert(errorMessage);
       return false;
     }
   }
