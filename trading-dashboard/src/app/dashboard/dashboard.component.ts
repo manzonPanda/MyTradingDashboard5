@@ -158,6 +158,76 @@ export class DashboardComponent {
   dtTriggerNotion: Subject<any> = new Subject<any>();
   isLoadingNotionData = false;
 
+  // Column visibility controls
+  columnVisibility = {
+    id: true,
+    action: true,
+    date: true,
+    account: true,
+    status: true,
+    buySell: true,
+    instrument: true,
+    strategy: true,
+    lots: true,
+    pips: true,
+    pnl: true,
+    percentPnL: true,
+    commission: true,
+    swap: true,
+    idealRRR: true,
+    idealSL: true,
+    modelCheck: true,
+    rulesViolated: true,
+    oneToOneReversal: true,
+    reviewed: true,
+    dailyReflection: true,
+    weeklyRetrospective: true,
+    modelForm: false,
+    screenshots: false,
+    outcome: false,
+    held: false,
+    percentPnLCalc: false,
+    divergenceValue: false,
+    formula: false,
+    emptySelect: false
+  };
+
+  // Available columns for selection
+  availableColumns = [
+    { key: 'id', label: 'ID', visible: true },
+    { key: 'action', label: 'Action', visible: true },
+    { key: 'date', label: 'Date', visible: true },
+    { key: 'account', label: 'Account', visible: true },
+    { key: 'status', label: 'Status', visible: true },
+    { key: 'buySell', label: 'Buy/Sell', visible: true },
+    { key: 'instrument', label: 'Instrument', visible: true },
+    { key: 'strategy', label: 'Strategy', visible: true },
+    { key: 'lots', label: 'Lots', visible: true },
+    { key: 'pips', label: 'Pips', visible: true },
+    { key: 'pnl', label: 'PnL', visible: true },
+    { key: 'percentPnL', label: '% PnL', visible: true },
+    { key: 'commission', label: 'Commission', visible: true },
+    { key: 'swap', label: 'Swap', visible: true },
+    { key: 'idealRRR', label: 'Ideal RRR', visible: true },
+    { key: 'idealSL', label: 'Ideal SL', visible: true },
+    { key: 'modelCheck', label: 'Model✔', visible: true },
+    { key: 'rulesViolated', label: 'Rules Violated 🛑', visible: true },
+    { key: 'oneToOneReversal', label: '1:1 Reversal', visible: true },
+    { key: 'reviewed', label: 'Reviewed', visible: true },
+    { key: 'dailyReflection', label: 'Daily Reflection', visible: true },
+    { key: 'weeklyRetrospective', label: 'Weekly Retrospective', visible: true },
+    { key: 'modelForm', label: 'Model Form', visible: false },
+    { key: 'screenshots', label: 'Screenshots', visible: false },
+    { key: 'outcome', label: 'Outcome', visible: false },
+    { key: 'held', label: 'Held🕕', visible: false },
+    { key: 'percentPnLCalc', label: '%PnL-Calc', visible: false },
+    { key: 'divergenceValue', label: 'Divergence Value', visible: false },
+    { key: 'formula', label: 'Formula', visible: false },
+    { key: 'emptySelect', label: 'Empty Select', visible: false }
+  ];
+
+  showColumnSelector = false;
+
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
   USE_MOCK_DATA = false;
@@ -1211,6 +1281,102 @@ onUpload(): void {
 
   refreshNotionData(): void {
     this.loadNotionPerformanceData();
+  }
+
+  toggleColumnVisibility(columnKey: string): void {
+    this.columnVisibility[columnKey as keyof typeof this.columnVisibility] = !this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+
+    // Update available columns array
+    const column = this.availableColumns.find(col => col.key === columnKey);
+    if (column) {
+      column.visible = this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+    }
+
+    // Force DataTable to re-render
+    if ($.fn.dataTable.isDataTable('#notionTable')) {
+      $('#notionTable').DataTable().destroy();
+    }
+    setTimeout(() => {
+      this.dtTriggerNotion.next(null);
+    }, 100);
+  }
+
+  toggleColumnSelector(): void {
+    this.showColumnSelector = !this.showColumnSelector;
+  }
+
+  getVisibleColumns(): any[] {
+    return this.availableColumns.filter(col => col.visible);
+  }
+
+  hideAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = false;
+      const column = this.availableColumns.find(col => col.key === key);
+      if (column) column.visible = false;
+    });
+    this.refreshDataTable();
+  }
+
+  showAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = true;
+      const column = this.availableColumns.find(col => col.key === key);
+      if (column) column.visible = true;
+    });
+    this.refreshDataTable();
+  }
+
+  showDefaultColumns(): void {
+    // Reset to default visibility
+    this.columnVisibility = {
+      id: true,
+      action: true,
+      date: true,
+      account: true,
+      status: true,
+      buySell: true,
+      instrument: true,
+      strategy: true,
+      lots: true,
+      pips: true,
+      pnl: true,
+      percentPnL: true,
+      commission: true,
+      swap: true,
+      idealRRR: true,
+      idealSL: true,
+      modelCheck: true,
+      rulesViolated: true,
+      oneToOneReversal: true,
+      reviewed: true,
+      dailyReflection: true,
+      weeklyRetrospective: true,
+      modelForm: false,
+      screenshots: false,
+      outcome: false,
+      held: false,
+      percentPnLCalc: false,
+      divergenceValue: false,
+      formula: false,
+      emptySelect: false
+    };
+
+    // Update available columns
+    this.availableColumns.forEach(col => {
+      col.visible = this.columnVisibility[col.key as keyof typeof this.columnVisibility];
+    });
+
+    this.refreshDataTable();
+  }
+
+  private refreshDataTable(): void {
+    if ($.fn.dataTable.isDataTable('#notionTable')) {
+      $('#notionTable').DataTable().destroy();
+    }
+    setTimeout(() => {
+      this.dtTriggerNotion.next(null);
+    }, 100);
   }
 
   async isBackendRunning(): Promise<boolean> {
