@@ -38,6 +38,38 @@
         font-size: 1.5rem;
         animation: pulse-glow 3s ease-in-out infinite;
       }
+
+      .demo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 1rem;
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        animation: demo-pulse 2s ease-in-out infinite;
+
+        mat-icon {
+          font-size: 1rem;
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+
+      @keyframes demo-pulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+        }
+      }
     }
 
     .table-actions {
