@@ -1140,6 +1140,39 @@ onUpload(): void {
     this.loadNotionPerformanceData();
   }
 
+  checkBackendInstructions(): void {
+    const instructions = `
+🔧 How to start the Notion backend server:
+
+1. Open a new terminal window/tab
+2. Navigate to the backend directory:
+   cd NotionProxyApi
+
+3. Install dependencies (if first time):
+   npm install
+
+4. Start the development server:
+   npm run dev
+
+5. You should see this message:
+   "✅ Server running at http://localhost:3000"
+
+6. Then click "Test Backend" to verify the connection
+
+📁 Project Structure:
+- Your project has both frontend (trading-dashboard) and backend (NotionProxyApi)
+- The backend serves as a proxy to your Notion database
+- The frontend connects to localhost:3000 to get your Notion data
+
+💡 Troubleshooting:
+- Make sure you're in the NotionProxyApi folder when running npm run dev
+- Check that port 3000 is not already in use
+- Verify your Notion API token is configured in the backend
+`;
+
+    alert(instructions);
+  }
+
   async testBackendConnection(): Promise<boolean> {
     console.log('🔍 Testing backend connection...');
     console.log('Backend URL:', this.BACKEND_URL);
