@@ -642,10 +642,30 @@
               'negative-row': data.pnl < 0,
               'neutral-row': data.pnl === 0
             }">
-              <td class="col-account">
-                <span class="account-badge">{{ data.account }}</span>
-              </td>
+              <td class="col-id">{{ data.uniqueID }}</td>
+              <td class="col-action">{{ data.action }}</td>
               <td class="col-date">{{ formatNotionDate(data.date) }}</td>
+              <td class="col-account">
+                <div class="multi-select-container">
+                  <span *ngFor="let account of data.account" class="account-badge">
+                    {{ account }}
+                  </span>
+                </div>
+              </td>
+              <td class="col-status">
+                <span class="status-badge" [ngClass]="getStatusClass(data.status)">
+                  {{ data.status }}
+                </span>
+              </td>
+              <td class="col-buysell">
+                <span class="position-badge" [ngClass]="getPositionClass(data.buySell)">
+                  {{ data.buySell }}
+                </span>
+              </td>
+              <td class="col-instrument">{{ data.instrument }}</td>
+              <td class="col-strategy">{{ data.strategy }}</td>
+              <td class="col-lots">{{ data.lots | number:'1.2-2' }}</td>
+              <td class="col-pips">{{ data.pips | number:'1.0-0' }}</td>
               <td class="col-pnl" [ngClass]="{
                 'positive': data.pnl > 0,
                 'negative': data.pnl < 0,
@@ -654,41 +674,39 @@
                 {{ data.pnl | currency:'USD':'symbol':'1.2-2' }}
               </td>
               <td class="col-percent" [ngClass]="{
-                'positive': data.percentPnl > 0,
-                'negative': data.percentPnl < 0,
-                'neutral': data.percentPnl === 0
+                'positive': data.percentPnL > 0,
+                'negative': data.percentPnL < 0,
+                'neutral': data.percentPnL === 0
               }">
-                {{ data.percentPnl | number:'1.2-2' }}%
+                {{ data.percentPnL | number:'1.2-2' }}%
               </td>
-              <td class="col-trades">{{ data.tradeCount }}</td>
-              <td class="col-winrate">
-                <div class="winrate-container">
-                  <span class="winrate-text">{{ data.winRate | number:'1.1-1' }}%</span>
-                  <div class="winrate-bar">
-                    <div class="winrate-fill" [style.width]="data.winRate + '%'" [ngClass]="{
-                      'high-winrate': data.winRate >= 70,
-                      'medium-winrate': data.winRate >= 50 && data.winRate < 70,
-                      'low-winrate': data.winRate < 50
-                    }"></div>
-                  </div>
+              <td class="col-commission">{{ data.commission | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-swap">{{ data.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-ideal-rrr">{{ data.idealRRR }}</td>
+              <td class="col-ideal-sl">{{ data.idealSL }}</td>
+              <td class="col-model-check">
+                <div class="multi-select-container">
+                  <span *ngFor="let model of data.modelCheck" class="model-badge">
+                    {{ model }}
+                  </span>
                 </div>
               </td>
-              <td class="col-amount positive">{{ data.bestTrade | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount negative">{{ data.worstTrade | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount positive">{{ data.avgWin | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount negative">{{ data.avgLoss | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-ratio" [ngClass]="{
-                'positive': data.riskReward >= 2,
-                'warning': data.riskReward >= 1 && data.riskReward < 2,
-                'negative': data.riskReward < 1
-              }">
-                1:{{ data.riskReward | number:'1.1-1' }}
+              <td class="col-rules-violated">
+                <div class="multi-select-container">
+                  <span *ngFor="let rule of data.rulesViolated" class="violation-badge">
+                    {{ rule }}
+                  </span>
+                </div>
               </td>
-              <td class="col-amount negative">{{ data.maxDrawdown | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-emotion">
-                <span class="emotion-badge" [ngClass]="getEmotionClass(data.emotion)">
-                  {{ data.emotion }}
-                </span>
+              <td class="col-reversal">
+                <mat-icon [ngClass]="data.oneToOneReversal ? 'positive' : 'neutral'">
+                  {{ data.oneToOneReversal ? 'check_circle' : 'radio_button_unchecked' }}
+                </mat-icon>
+              </td>
+              <td class="col-reviewed">
+                <mat-icon [ngClass]="data.reviewed ? 'positive' : 'neutral'">
+                  {{ data.reviewed ? 'check_circle' : 'radio_button_unchecked' }}
+                </mat-icon>
               </td>
               <td class="col-reflection">
                 <div class="reflection-content" [title]="data.dailyReflection || ''">
