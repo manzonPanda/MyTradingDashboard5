@@ -1084,7 +1084,7 @@ onUpload(): void {
     try {
       console.log('🔍 Testing backend connection...');
       const response = await firstValueFrom(
-        this.http.get("http://localhost:3000/api/getAllPagesFromDB")
+        this.http.get(`${this.BACKEND_URL}/api/getAllPagesFromDB`)
       );
       console.log('✅ Backend is reachable');
       return true;
@@ -1092,6 +1092,69 @@ onUpload(): void {
       console.error('❌ Backend connection test failed:', error);
       return false;
     }
+  }
+
+  generateMockNotionData(): NotionPerformanceData[] {
+    console.log('🎭 Generating mock Notion performance data...');
+
+    const mockData: NotionPerformanceData[] = [];
+    const accounts = ['Prop Firm A', 'Prop Firm B', 'Demo Account'];
+    const emotions = ['Confident', 'Disciplined', 'Nervous', 'Frustrated', 'Calm'];
+
+    // Generate 30 days of mock data
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+
+      // Skip weekends
+      if (date.getDay() === 0 || date.getDay() === 6) continue;
+
+      const account = accounts[Math.floor(Math.random() * accounts.length)];
+      const tradeCount = Math.floor(Math.random() * 8) + 1; // 1-8 trades per day
+      const winRate = 40 + Math.random() * 40; // 40-80% win rate
+      const pnl = (Math.random() - 0.4) * 500; // -200 to +300 range, slightly positive bias
+      const percentPnl = (pnl / 5000) * 100; // Assuming $5000 account
+
+      mockData.push({
+        id: `mock-${i}`,
+        account: account,
+        date: date.toISOString().split('T')[0],
+        pnl: Math.round(pnl * 100) / 100,
+        percentPnl: Math.round(percentPnl * 100) / 100,
+        tradeCount: tradeCount,
+        winRate: Math.round(winRate * 10) / 10,
+        bestTrade: Math.round((Math.random() * 150 + 50) * 100) / 100,
+        worstTrade: Math.round((-Math.random() * 100 - 20) * 100) / 100,
+        avgWin: Math.round((Math.random() * 80 + 40) * 100) / 100,
+        avgLoss: Math.round((-Math.random() * 60 - 20) * 100) / 100,
+        riskReward: Math.round((1 + Math.random() * 2) * 10) / 10, // 1.0 to 3.0
+        maxDrawdown: Math.round((-Math.random() * 200 - 50) * 100) / 100,
+        emotion: emotions[Math.floor(Math.random() * emotions.length)],
+        dailyReflection: this.generateMockReflection(),
+        lessons: 'Focus on risk management and patience',
+        improvements: 'Reduce position size during volatile markets'
+      });
+    }
+
+    // Sort by date descending
+    return mockData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  private generateMockReflection(): string {
+    const reflections = [
+      'Good discipline today. Stuck to my trading plan and managed risk well.',
+      'Market was choppy. Need to be more patient with entries.',
+      'Excellent trading session. High win rate and good R:R ratios.',
+      'Struggled with emotions after early loss. Need to work on mental game.',
+      'Solid day overall. Market conditions were favorable for my strategy.',
+      'Had to adjust strategy due to low volatility. Adaptation was key.',
+      'Revenge trading cost me. Must implement better loss limits.',
+      'Great execution on setups. Patience paid off with quality entries.',
+      'Mixed results today. Some good trades offset by poor exits.',
+      'Market trending strongly. Caught most of the move with good timing.'
+    ];
+
+    return reflections[Math.floor(Math.random() * reflections.length)];
   }
 
   formatNotionDate(dateStr: string): string {
