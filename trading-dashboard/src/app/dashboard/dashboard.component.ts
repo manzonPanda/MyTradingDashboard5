@@ -912,6 +912,129 @@ onUpload(): void {
     console.log("Getting MT5 API data...",res);
 
   }
+
+  async loadNotionPerformanceData(): Promise<void> {
+    this.isLoadingNotionData = true;
+
+    try {
+      const headers = new HttpHeaders({
+        'Authorization': 'Bearer secret_7FmF0JKCX0DYQ5OTHfOTnOBKtaJYJJpHHsJLBQ6fI1U', // Replace with your actual Notion token
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      });
+
+      const body = {
+        page_size: 100,
+        sorts: [
+          {
+            property: "Date",
+            direction: "descending"
+          }
+        ]
+      };
+
+      const response: any = await firstValueFrom(
+        this.http.post("https://api.notion.com/v1/databases/ef10ac6f79524ea49e4bc0997e0ee704/query", body, { headers })
+      );
+
+      this.notionPerformanceData = this.parseNotionResponse(response.results);
+      console.log('Notion Performance Data:', this.notionPerformanceData);
+
+      // Trigger DataTable rendering
+      setTimeout(() => {
+        this.dtTriggerNotion.next(null);
+      }, 100);
+
+    } catch (error) {
+      console.error('Error loading Notion performance data:', error);
+      // If direct API call fails, try through proxy
+      try {
+        const proxyResponse: any = await firstValueFrom(
+          this.http.get("http://localhost:3000/api/getAllPagesFromDB")
+        );
+        this.notionPerformanceData = this.parseNotionResponse(proxyResponse.results);
+        setTimeout(() => {
+          this.dtTriggerNotion.next(null);
+        }, 100);
+      } catch (proxyError) {
+        console.error('Error loading Notion data through proxy:', proxyError);
+      }
+    } finally {
+      this.isLoadingNotionData = false;
+    }
+  }
+
+  private parseNotionResponse(results: any[]): NotionPerformanceData[] {
+    return results.map(page => {
+      const properties = page.properties;
+
+      return {
+        id: page.id,
+        account: this.getNotionProperty(properties, 'Account', 'select') || 'Unknown',
+        date: this.getNotionProperty(properties, 'Date', 'date') || '',
+        pnl: this.getNotionProperty(properties, 'PnL', 'number') || 0,
+        percentPnl: this.getNotionProperty(properties, '%PnL', 'number') || 0,
+        dailyReflection: this.getNotionProperty(properties, 'Daily Reflection 📆', 'rich_text') || '',
+        tradeCount: this.getNotionProperty(properties, 'Trade Count', 'number') || 0,
+        winRate: this.getNotionProperty(properties, 'Win Rate', 'number') || 0,
+        bestTrade: this.getNotionProperty(properties, 'Best Trade', 'number') || 0,
+        worstTrade: this.getNotionProperty(properties, 'Worst Trade', 'number') || 0,
+        avgWin: this.getNotionProperty(properties, 'Avg Win', 'number') || 0,
+        avgLoss: this.getNotionProperty(properties, 'Avg Loss', 'number') || 0,
+        riskReward: this.getNotionProperty(properties, 'Risk:Reward', 'number') || 0,
+        maxDrawdown: this.getNotionProperty(properties, 'Max Drawdown', 'number') || 0,
+        emotion: this.getNotionProperty(properties, 'Emotion', 'select') || '',
+        lessons: this.getNotionProperty(properties, 'Lessons Learned', 'rich_text') || '',
+        improvements: this.getNotionProperty(properties, 'Areas for Improvement', 'rich_text') || ''
+      };
+    });
+  }
+
+  private getNotionProperty(properties: any, propertyName: string, type: string): any {
+    const property = properties[propertyName];
+    if (!property) return null;
+
+    switch (type) {
+      case 'select':
+        return property.select?.name || null;
+      case 'date':
+        return property.date?.start || null;
+      case 'number':
+        return property.number || 0;
+      case 'rich_text':
+        return property.rich_text?.map((text: any) => text.plain_text).join('') || '';
+      case 'title':
+        return property.title?.map((text: any) => text.plain_text).join('') || '';
+      default:
+        return null;
+    }
+  }
+
+  refreshNotionData(): void {
+    this.loadNotionPerformanceData();
+  }
+
+  formatNotionDate(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return dateStr;
+    }
+  }
+
+  getEmotionClass(emotion: string): string {
+    const emotionLower = emotion?.toLowerCase() || '';
+    if (emotionLower.includes('confident') || emotionLower.includes('disciplined')) return 'emotion-positive';
+    if (emotionLower.includes('frustrated') || emotionLower.includes('angry')) return 'emotion-negative';
+    if (emotionLower.includes('nervous') || emotionLower.includes('anxious')) return 'emotion-warning';
+    return 'emotion-neutral';
+  }
   // Trading Metrics Calculation Methods
   calculateTotalPnL(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
