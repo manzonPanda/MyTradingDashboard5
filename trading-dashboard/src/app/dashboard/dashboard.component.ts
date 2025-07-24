@@ -146,7 +146,7 @@ export class DashboardComponent {
 
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
-  private USE_MOCK_DATA = false;
+  USE_MOCK_DATA = false;
 
 
   constructor(private firestore: Firestore,private http: HttpClient) {
