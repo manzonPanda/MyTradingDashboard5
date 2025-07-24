@@ -138,6 +138,12 @@ export class DashboardComponent {
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
 
+  // Notion Performance Intelligence properties
+  notionPerformanceData: NotionPerformanceData[] = [];
+  dtOptionsNotion: any = {};
+  dtTriggerNotion: Subject<any> = new Subject<any>();
+  isLoadingNotionData = false;
+
 
   constructor(private firestore: Firestore,private http: HttpClient) {
 
