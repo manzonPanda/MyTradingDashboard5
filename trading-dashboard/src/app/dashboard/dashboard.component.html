@@ -229,7 +229,7 @@
               <div class="progress-fill" [style.width]="getRevengeTradingScore() + '%'" [ngClass]="getRevengeTradingClass()"></div>
             </div>
             <div class="indicator-insight" *ngIf="getRevengeTradingScore() > 20">
-              🚨 High revenge trading detected! You're increasing position sizes after losses.
+              �� High revenge trading detected! You're increasing position sizes after losses.
             </div>
           </div>
 
@@ -651,6 +651,19 @@
       </div>
 
       <div class="table-container notion-table-container">
+        <!-- Load Data Button -->
+        <div class="load-data-container" *ngIf="showLoadButton">
+          <div class="load-data-content">
+            <mat-icon class="load-icon">download</mat-icon>
+            <h3>Overall Trading History</h3>
+            <p>Click the button below to load your trading history data from Notion.</p>
+            <button class="load-data-btn" mat-raised-button color="primary" (click)="loadNotionDataWithButton()">
+              <mat-icon>play_arrow</mat-icon>
+              Load Trading Data
+            </button>
+          </div>
+        </div>
+
         <div class="loading-overlay" *ngIf="isLoadingNotionData">
           <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
           <span class="loading-text">Loading performance data...</span>
