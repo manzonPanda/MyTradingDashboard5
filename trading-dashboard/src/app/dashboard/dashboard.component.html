@@ -229,7 +229,7 @@
               <div class="progress-fill" [style.width]="getRevengeTradingScore() + '%'" [ngClass]="getRevengeTradingClass()"></div>
             </div>
             <div class="indicator-insight" *ngIf="getRevengeTradingScore() > 20">
-              �� High revenge trading detected! You're increasing position sizes after losses.
+              🚨 High revenge trading detected! You're increasing position sizes after losses.
             </div>
           </div>
 
@@ -669,7 +669,7 @@
           <span class="loading-text">Loading performance data...</span>
         </div>
 
-        <table class="modern-table notion-performance-table" id="notionTable" datatable [dtOptions]="dtOptionsNotion" [dtTrigger]="dtTriggerNotion">
+        <table class="modern-table notion-performance-table" id="notionTable" datatable [dtOptions]="dtOptionsNotion" [dtTrigger]="dtTriggerNotion" *ngIf="!showLoadButton">
           <thead>
             <tr>
               <th *ngIf="columnVisibility.id" class="col-id">ID</th>
