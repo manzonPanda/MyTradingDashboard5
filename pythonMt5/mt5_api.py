@@ -32,6 +32,19 @@ def watch_trades():
         # Get current open positions
         current_positions = {p.ticket: p for p in mt5.positions_get() or []}
 
+        # Emit price update for all current open trades
+        for ticket, pos in current_positions.items():
+            socketio.emit('price_update', {
+                "ticket": pos.ticket,
+                "symbol": pos.symbol,
+                "volume": pos.volume,
+                "type": pos.type,
+                "price_open": pos.price_open,
+                "price_current": pos.price_current,
+                "profit": pos.profit,
+                "time": pos.time
+            })
+
         # Detect new open positions
         for ticket, pos in current_positions.items():
             if ticket not in seen_tickets:
@@ -47,29 +60,30 @@ def watch_trades():
                     "tp": pos.tp,
                     "profit": pos.profit,
                     "time": pos.time,
-                    "pos":pos
+                    "object":pos
                 })
 
-        # Detect closed positions by comparing with last known positions
+        # Detect closed positions
         closed_tickets = set(last_positions.keys()) - set(current_positions.keys())
         for ticket in closed_tickets:
             closed_pos = last_positions[ticket]
-            print(f"🔴 CLOSED trade: {closed_pos.symbol} @ {closed_pos.price_open}, closed with P/L")
+            print(f"🔴 CLOSED trade: {closed_pos.symbol} @ {closed_pos.price_open}")
             socketio.emit('trade_closed', {
                 "ticket": closed_pos.ticket,
                 "symbol": closed_pos.symbol,
                 "volume": closed_pos.volume,
                 "type": closed_pos.type,
                 "price_open": closed_pos.price_open,
-                "price_close": closed_pos.price_current,  # not always accurate
+                "price_close": closed_pos.price_current,
                 "profit": closed_pos.profit,
-                "time": int(time.time())
+                "time": int(time.time()),
+                "object":closed_pos
             })
 
         # Update the last seen positions
         last_positions = current_positions.copy()
 
-        time.sleep(1)
+        time.sleep(5)
 
 
 
@@ -93,7 +107,8 @@ def get_open_trades():
             "sl": p.sl,
             "tp": p.tp,
             "profit": p.profit,
-            "time": p.time
+            "time": p.time,
+            "object":p
         })
     return jsonify(results)
 

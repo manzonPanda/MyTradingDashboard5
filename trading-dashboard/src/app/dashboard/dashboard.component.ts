@@ -262,6 +262,11 @@ export class DashboardComponent {
     socket.on("trade_closed", (data) => {
       console.warn("Trade closed:", data);
     });
+
+    socket.on('price_update', (data) => {
+      console.log("Live price update:", data);
+      // You can now update price + profit in the UI in real time
+    });
     this.dtOptions = {
       destroy: true,
       paging: true,
