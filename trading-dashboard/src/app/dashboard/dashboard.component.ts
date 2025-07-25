@@ -302,26 +302,16 @@ export class DashboardComponent {
       ]
     };
 
-    localStorage.clear(); // Clear local storage on component initialization
+    localStorage.clear();
 
-    console.log('🚀 Starting app initialization...');
-
-    // Load Firebase data first
     await this.loadTrades();
-    console.log('📊 Firebase data loaded, tableData length:', this.tableData.length);
-
-    // Load real MT5 data
     await this.loadMT5Data();
-    console.log('📊 After MT5 load, tableData length:', this.tableData.length);
-
-    // Add trades to calendar
     this.addTradesToCalendar();
 
-    // Initialize DataTable with current data
-    console.log('🎯 Final tableData before DataTable:', this.tableData);
-    this.dtTrigger.next(null);
-
-    // Don't load Notion data automatically - wait for user to click load button
+    // Initialize DataTable
+    setTimeout(() => {
+      this.dtTrigger.next(null);
+    }, 500);
 
   }
 
@@ -1079,7 +1069,6 @@ onUpload(): void {
     const res: any = await firstValueFrom(
       this.http.get("http://localhost:5000/api/open_trades")
     );
-    console.warn("Getting MT5 API data...",res);
     return res;
   }
 
@@ -1622,7 +1611,7 @@ onUpload(): void {
       let errorMessage = '❌ Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
-        errorMessage += '��� Connection Error: Cannot reach the server\n\n';
+        errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
         errorMessage += 'The backend server is not running.\n\n';
         errorMessage += 'To start the backend server:\n';
         errorMessage += '1. Open a new terminal window\n';
@@ -2442,16 +2431,11 @@ onUpload(): void {
     return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60); // difference in minutes
   }
 
-  // Load MT5 data and populate Active Account table
   async loadMT5Data(): Promise<void> {
     try {
-      console.log('🔄 Loading real MT5 data...');
       const response = await this.getMt5API();
-      console.log('📊 MT5 API response:', response);
 
       if (response && response.length > 0) {
-        console.log('✅ Processing', response.length, 'MT5 trades');
-
         const mt5Trades = response.map((trade: any) => {
           const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
             month: '2-digit',
@@ -2482,25 +2466,10 @@ onUpload(): void {
         });
 
         this.mt5LiveTrades = mt5Trades;
-
-        // Update table data with real MT5 trades
-        const existingFirebaseData = this.tableData.filter(trade =>
-          trade.status !== 'Open' && trade.status !== 'Closed'
-        );
-
-        this.tableData = [
-          ...this.mt5LiveTrades,
-          ...this.mt5HistoryTrades,
-          ...existingFirebaseData
-        ];
-
-        console.log('✅ MT5 data processed. Total tableData:', this.tableData.length);
-        console.log('✅ Live trades:', this.mt5LiveTrades.length);
-      } else {
-        console.log('⚠️ No MT5 trades received from API');
+        this.updateTableData();
       }
     } catch (error) {
-      console.error('❌ Error loading MT5 data:', error);
+      // Silent error handling
     }
   }
 
@@ -2508,15 +2477,9 @@ onUpload(): void {
 
 
 
-  // Add new MT5 trade when opened
   addMT5LiveTrade(tradeData: any): void {
-    console.log('➕ Adding new MT5 trade:', tradeData);
     const trade = tradeData.object || tradeData;
-
-    if (!trade) {
-      console.warn('⚠️ No trade object found in tradeData');
-      return;
-    }
+    if (!trade) return;
 
     const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
       month: '2-digit',
@@ -2545,39 +2508,14 @@ onUpload(): void {
       netProfit: trade.profit ? trade.profit.toString() : '0'
     };
 
-    // Check for duplicates using multiple criteria
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
-      t.symbol === newTrade.symbol &&
-      t.entry === newTrade.entry &&
-      t.openDate === newTrade.openDate
+      t.symbol === newTrade.symbol && t.entry === newTrade.entry
     );
 
     if (existingIndex === -1) {
-      console.log('➕ Adding new trade to arrays:', newTrade.symbol);
-
-      // Add to MT5 live trades at the beginning
       this.mt5LiveTrades.unshift(newTrade);
-
-      // Update main tableData array
-      const originalFirebaseData = this.tableData.filter(trade =>
-        trade.status !== 'Open' && trade.status !== 'Closed'
-      );
-
-      this.tableData = [
-        ...this.mt5LiveTrades,
-        ...this.mt5HistoryTrades,
-        ...originalFirebaseData
-      ];
-
-      console.log('✅ Updated tableData length:', this.tableData.length);
-      console.log('📊 New tableData:', this.tableData);
-
-      // Force DataTable to refresh and show new row
-      this.forceRefreshDataTable();
-
-      console.log('✅ New MT5 trade added to table:', newTrade.symbol);
-    } else {
-      console.log('⚠️ Trade already exists, skipping duplicate');
+      this.updateTableData();
+      this.refreshDataTable();
     }
   }
 
@@ -2612,127 +2550,49 @@ onUpload(): void {
     }
   }
 
-  // Update price for existing MT5 trade
   updateMT5TradePrice(priceData: any): void {
-    console.log('🔄 Updating price for trade:', priceData.symbol);
-
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
       trade.symbol === priceData.symbol &&
       parseFloat(trade.entry) === priceData.price_open
     );
 
     if (tradeIndex !== -1) {
-      const oldProfit = this.mt5LiveTrades[tradeIndex].profit;
-
       this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
       this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
       this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
-
-      console.log(`💰 Updated ${priceData.symbol}: ${oldProfit} → ${priceData.profit}`);
-
-      // Only update table data, don't refresh DataTable for price updates (too frequent)
       this.updateTableDataOnly();
-    } else {
-      console.warn('⚠️ Trade not found for price update:', priceData.symbol);
     }
   }
 
-  // Update table data without refreshing DataTable (for frequent price updates)
   updateTableDataOnly(): void {
     const originalFirebaseData = this.tableData.filter(trade =>
       trade.status !== 'Open' && trade.status !== 'Closed'
     );
-
-    this.tableData = [
-      ...this.mt5LiveTrades,
-      ...this.mt5HistoryTrades,
-      ...originalFirebaseData
-    ];
+    this.tableData = [...this.mt5LiveTrades, ...this.mt5HistoryTrades, ...originalFirebaseData];
   }
 
-  // Update the main table data with MT5 trades
-  updateMT5TableData(): void {
-    console.log('🔄 Updating table data...');
-    console.log('MT5 Live Trades:', this.mt5LiveTrades.length);
-    console.log('MT5 History Trades:', this.mt5HistoryTrades.length);
-
-    // Store original Firebase data (exclude MT5 data)
+  updateTableData(): void {
     const originalFirebaseData = this.tableData.filter(trade =>
       trade.status !== 'Open' && trade.status !== 'Closed'
     );
-
-    // Combine all data: MT5 live trades first, then history, then Firebase data
-    this.tableData = [
-      ...this.mt5LiveTrades,
-      ...this.mt5HistoryTrades,
-      ...originalFirebaseData
-    ];
-
-    console.log('Total table data:', this.tableData.length);
-    console.log('Table data content:', this.tableData);
-
-    // Don't refresh DataTable for updates, just trigger re-render
-    this.dtTrigger.next(null);
+    this.tableData = [...this.mt5LiveTrades, ...this.mt5HistoryTrades, ...originalFirebaseData];
   }
 
-  // Force refresh DataTable for new data
-  forceRefreshDataTable(): void {
+  refreshDataTable(): void {
     try {
-      console.log('🔄 Force refreshing DataTable for new trade...');
-
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        const table = $('#myTable').DataTable();
-        table.destroy();
-        console.log('✅ Destroyed existing DataTable');
+        $('#myTable').DataTable().destroy();
       }
-
-      // Clear table
       $('#myTable').empty();
-
-      // Recreate DataTable with new data
       setTimeout(() => {
-        console.log('🔄 Recreating DataTable with', this.tableData.length, 'rows');
         this.dtTrigger.unsubscribe();
         this.dtTrigger = new Subject();
         this.dtTrigger.next(null);
       }, 100);
-
     } catch (error) {
-      console.error('❌ Error force refreshing DataTable:', error);
+      // Silent error handling
     }
   }
 
-  // Refresh DataTable safely
-  refreshMT5DataTable(): void {
-    try {
-      console.log('🔄 Refreshing DataTable...');
 
-      // Destroy existing DataTable if it exists
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        const table = $('#myTable').DataTable();
-        if (table && typeof table.destroy === 'function') {
-          table.destroy(true);
-          console.log('✅ Destroyed existing DataTable');
-        }
-      }
-
-      // Clear the table element
-      $('#myTable').empty();
-
-      // Trigger new DataTable creation with a delay
-      setTimeout(() => {
-        if (this.tableData && this.tableData.length > 0) {
-          console.log('🔄 Triggering new DataTable with', this.tableData.length, 'rows');
-          // Create new Subject to avoid issues with previous subscriptions
-          this.dtTrigger.unsubscribe();
-          this.dtTrigger = new Subject();
-          this.dtTrigger.next(null);
-        } else {
-          console.warn('⚠️ No table data available for DataTable');
-        }
-      }, 200);
-    } catch (error) {
-      console.error('❌ Error refreshing MT5 DataTable:', error);
-    }
-  }
 }
