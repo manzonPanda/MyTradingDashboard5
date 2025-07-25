@@ -263,17 +263,17 @@ export class DashboardComponent {
   });
     socket.on("trade_opened", (data: any) => {
       console.warn("New trade opened:", data);
-      this.addNewLiveTrade(data);
+      this.addMT5LiveTrade(data);
     });
 
     socket.on("trade_closed", (data: any) => {
       console.warn("Trade closed:", data);
-      this.moveTradeToHistory(data);
+      this.closeMT5Trade(data);
     });
 
     socket.on('price_update', (data: any) => {
       console.log("Live price update:", data);
-      this.updateLiveTradePrice(data);
+      this.updateMT5TradePrice(data);
     });
     this.dtOptions = {
       destroy: true,
@@ -305,8 +305,7 @@ export class DashboardComponent {
     localStorage.clear(); // Clear local storage on component initialization
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
-    await this.loadMT5HistoryTrades(); // Load MT5 historical trades
-    await this.loadMT5LiveTrades(); // Load current open trades from MT5
+    await this.loadMT5Data(); // Load MT5 data
     this.addTradesToCalendar();
     // Don't load Notion data automatically - wait for user to click load button
 
