@@ -1336,6 +1336,11 @@ onUpload(): void {
     this.loadNotionPerformanceData();
   }
 
+  loadNotionDataWithButton(): void {
+    this.showLoadButton = false; // Hide the load button
+    this.loadNotionPerformanceData(); // Load the data
+  }
+
   toggleColumnVisibility(columnKey: string): void {
     // Prevent rapid toggles that could cause issues
     if (this.isRefreshingTable) {
