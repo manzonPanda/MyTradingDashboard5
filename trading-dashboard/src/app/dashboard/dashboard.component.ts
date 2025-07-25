@@ -163,6 +163,11 @@ export class DashboardComponent {
   isLoadingNotionData = false;
   showLoadButton = true; // Controls whether to show load button or table
 
+  // MT5 Live Trading properties
+  mt5LiveTrades: Table[] = []; // Live trades from MT5
+  mt5HistoryTrades: Table[] = []; // Historical trades from MT5
+  isLoadingMT5Data = false;
+
   // Column visibility controls
   columnVisibility = {
     id: true,
@@ -258,15 +263,17 @@ export class DashboardComponent {
   });
     socket.on("trade_opened", (data: any) => {
       console.warn("New trade opened:", data);
+      this.addNewLiveTrade(data);
     });
 
     socket.on("trade_closed", (data: any) => {
       console.warn("Trade closed:", data);
+      this.moveTradeToHistory(data);
     });
 
-    socket.on('price_update', (data) => {
+    socket.on('price_update', (data: any) => {
       console.log("Live price update:", data);
-      // You can now update price + profit in the UI in real time
+      this.updateLiveTradePrice(data);
     });
     this.dtOptions = {
       destroy: true,
@@ -298,6 +305,8 @@ export class DashboardComponent {
     localStorage.clear(); // Clear local storage on component initialization
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
+    await this.loadMT5HistoryTrades(); // Load MT5 historical trades
+    await this.loadMT5LiveTrades(); // Load current open trades from MT5
     this.addTradesToCalendar();
     // Don't load Notion data automatically - wait for user to click load button
 
