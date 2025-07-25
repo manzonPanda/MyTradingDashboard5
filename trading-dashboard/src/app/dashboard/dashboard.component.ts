@@ -1622,7 +1622,7 @@ onUpload(): void {
       let errorMessage = '❌ Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
-        errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
+        errorMessage += '��� Connection Error: Cannot reach the server\n\n';
         errorMessage += 'The backend server is not running.\n\n';
         errorMessage += 'To start the backend server:\n';
         errorMessage += '1. Open a new terminal window\n';
@@ -2553,8 +2553,28 @@ onUpload(): void {
     );
 
     if (existingIndex === -1) {
-      this.mt5LiveTrades.unshift(newTrade); // Add to beginning for newest first
-      this.updateMT5TableData();
+      console.log('➕ Adding new trade to arrays:', newTrade.symbol);
+
+      // Add to MT5 live trades at the beginning
+      this.mt5LiveTrades.unshift(newTrade);
+
+      // Update main tableData array
+      const originalFirebaseData = this.tableData.filter(trade =>
+        trade.status !== 'Open' && trade.status !== 'Closed'
+      );
+
+      this.tableData = [
+        ...this.mt5LiveTrades,
+        ...this.mt5HistoryTrades,
+        ...originalFirebaseData
+      ];
+
+      console.log('✅ Updated tableData length:', this.tableData.length);
+      console.log('📊 New tableData:', this.tableData);
+
+      // Force DataTable to refresh and show new row
+      this.forceRefreshDataTable();
+
       console.log('✅ New MT5 trade added to table:', newTrade.symbol);
     } else {
       console.log('⚠️ Trade already exists, skipping duplicate');
@@ -2653,6 +2673,33 @@ onUpload(): void {
 
     // Don't refresh DataTable for updates, just trigger re-render
     this.dtTrigger.next(null);
+  }
+
+  // Force refresh DataTable for new data
+  forceRefreshDataTable(): void {
+    try {
+      console.log('🔄 Force refreshing DataTable for new trade...');
+
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+        table.destroy();
+        console.log('✅ Destroyed existing DataTable');
+      }
+
+      // Clear table
+      $('#myTable').empty();
+
+      // Recreate DataTable with new data
+      setTimeout(() => {
+        console.log('🔄 Recreating DataTable with', this.tableData.length, 'rows');
+        this.dtTrigger.unsubscribe();
+        this.dtTrigger = new Subject();
+        this.dtTrigger.next(null);
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error force refreshing DataTable:', error);
+    }
   }
 
   // Refresh DataTable safely
