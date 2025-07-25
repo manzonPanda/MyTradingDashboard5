@@ -2467,11 +2467,66 @@ onUpload(): void {
         });
 
         this.mt5LiveTrades = mt5Trades;
+        // Also load MT5 history (for demo purposes, treating some as closed)
+        this.loadMT5History();
         this.updateMT5TableData();
         console.log('✅ MT5 data loaded:', mt5Trades.length, 'trades');
+      } else {
+        console.log('No MT5 data received, but keeping existing data in table');
       }
     } catch (error) {
       console.error('❌ Error loading MT5 data:', error);
+    }
+  }
+
+  // Load MT5 history (closed trades)
+  async loadMT5History(): Promise<void> {
+    try {
+      // For demo purposes, we'll create some historical trades
+      // In a real implementation, you'd call a different API endpoint
+      const historyTrades = [
+        {
+          openDate: '01.25.2025 10:30',
+          tradeNotion: [],
+          status: 'Closed',
+          position: 'Buy',
+          symbol: 'EURUSD',
+          type: 'Buy',
+          volume: '0.1',
+          entry: '1.0520',
+          sL: '1.0500',
+          tP: '1.0560',
+          closeDate: '01.25.2025 14:30',
+          exit: '1.0545',
+          commission: '0.50',
+          swap: '0.00',
+          profit: '25.00',
+          netProfit: '24.50'
+        },
+        {
+          openDate: '01.24.2025 15:45',
+          tradeNotion: [],
+          status: 'Closed',
+          position: 'Sell',
+          symbol: 'GBPUSD',
+          type: 'Sell',
+          volume: '0.2',
+          entry: '1.2450',
+          sL: '1.2480',
+          tP: '1.2400',
+          closeDate: '01.24.2025 18:20',
+          exit: '1.2420',
+          commission: '0.75',
+          swap: '0.00',
+          profit: '60.00',
+          netProfit: '59.25'
+        }
+      ] as Table[];
+
+      this.mt5HistoryTrades = historyTrades;
+      console.log('✅ MT5 history loaded:', historyTrades.length, 'historical trades');
+    } catch (error) {
+      console.error('❌ Error loading MT5 history:', error);
     }
   }
 
@@ -2479,6 +2534,11 @@ onUpload(): void {
   addMT5LiveTrade(tradeData: any): void {
     console.log('➕ Adding new MT5 trade:', tradeData);
     const trade = tradeData.object || tradeData;
+
+    if (!trade) {
+      console.warn('⚠️ No trade object found in tradeData');
+      return;
+    }
 
     const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
       month: '2-digit',
@@ -2507,14 +2567,19 @@ onUpload(): void {
       netProfit: trade.profit ? trade.profit.toString() : '0'
     };
 
+    // Check for duplicates using multiple criteria
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
-      t.symbol === newTrade.symbol && t.entry === newTrade.entry
+      t.symbol === newTrade.symbol &&
+      t.entry === newTrade.entry &&
+      t.openDate === newTrade.openDate
     );
 
     if (existingIndex === -1) {
-      this.mt5LiveTrades.push(newTrade);
+      this.mt5LiveTrades.unshift(newTrade); // Add to beginning for newest first
       this.updateMT5TableData();
-      console.log('✅ New MT5 trade added');
+      console.log('✅ New MT5 trade added to table:', newTrade.symbol);
+    } else {
+      console.log('⚠️ Trade already exists, skipping duplicate');
     }
   }
 
@@ -2551,50 +2616,95 @@ onUpload(): void {
 
   // Update price for existing MT5 trade
   updateMT5TradePrice(priceData: any): void {
+    console.log('🔄 Updating price for trade:', priceData.symbol);
+
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
       trade.symbol === priceData.symbol &&
       parseFloat(trade.entry) === priceData.price_open
     );
 
     if (tradeIndex !== -1) {
+      const oldProfit = this.mt5LiveTrades[tradeIndex].profit;
+
       this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
       this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
       this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
 
-      this.updateMT5TableData();
+      console.log(`💰 Updated ${priceData.symbol}: ${oldProfit} → ${priceData.profit}`);
+
+      // Only update table data, don't refresh DataTable for price updates (too frequent)
+      this.updateTableDataOnly();
+    } else {
+      console.warn('⚠️ Trade not found for price update:', priceData.symbol);
     }
   }
 
-  // Update the main table data with MT5 trades
-  updateMT5TableData(): void {
-    const originalData = this.tableData.filter(trade =>
+  // Update table data without refreshing DataTable (for frequent price updates)
+  updateTableDataOnly(): void {
+    const originalFirebaseData = this.tableData.filter(trade =>
       trade.status !== 'Open' && trade.status !== 'Closed'
     );
 
     this.tableData = [
       ...this.mt5LiveTrades,
       ...this.mt5HistoryTrades,
-      ...originalData
+      ...originalFirebaseData
+    ];
+  }
+
+  // Update the main table data with MT5 trades
+  updateMT5TableData(): void {
+    console.log('🔄 Updating table data...');
+    console.log('MT5 Live Trades:', this.mt5LiveTrades.length);
+    console.log('MT5 History Trades:', this.mt5HistoryTrades.length);
+
+    // Store original Firebase data (exclude MT5 data)
+    const originalFirebaseData = this.tableData.filter(trade =>
+      trade.status !== 'Open' && trade.status !== 'Closed'
+    );
+
+    // Combine all data: MT5 live trades first, then history, then Firebase data
+    this.tableData = [
+      ...this.mt5LiveTrades,
+      ...this.mt5HistoryTrades,
+      ...originalFirebaseData
     ];
 
+    console.log('Total table data:', this.tableData.length);
     this.refreshMT5DataTable();
   }
 
   // Refresh DataTable safely
   refreshMT5DataTable(): void {
     try {
+      console.log('🔄 Refreshing DataTable...');
+
+      // Destroy existing DataTable if it exists
       if ($.fn.dataTable.isDataTable('#myTable')) {
         const table = $('#myTable').DataTable();
         if (table && typeof table.destroy === 'function') {
           table.destroy(true);
+          console.log('✅ Destroyed existing DataTable');
         }
       }
 
+      // Clear the table element
+      $('#myTable').empty();
+
+      // Trigger new DataTable creation with a delay
       setTimeout(() => {
-        this.dtTrigger.next(null);
-      }, 100);
+        if (this.tableData && this.tableData.length > 0) {
+          console.log('🔄 Triggering new DataTable with', this.tableData.length, 'rows');
+          // Create new Subject to avoid issues with previous subscriptions
+          this.dtTrigger.unsubscribe();
+          this.dtTrigger = new Subject();
+          this.dtTrigger.next(null);
+        } else {
+          console.warn('⚠️ No table data available for DataTable');
+        }
+      }, 200);
     } catch (error) {
-      console.warn('Error refreshing MT5 DataTable:', error);
+      console.error('❌ Error refreshing MT5 DataTable:', error);
     }
   }
 }
