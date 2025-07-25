@@ -304,19 +304,22 @@ export class DashboardComponent {
 
     localStorage.clear(); // Clear local storage on component initialization
 
-    // Initialize with demo data first to ensure table has content
-    this.initializeDemoData();
+    console.log('🚀 Starting app initialization...');
 
-    // Load data
-    await this.loadTrades(); // Wait for trades to load
-    await this.loadMT5Data(); // Load MT5 data
+    // Load Firebase data first
+    await this.loadTrades();
+    console.log('📊 Firebase data loaded, tableData length:', this.tableData.length);
+
+    // Load real MT5 data
+    await this.loadMT5Data();
+    console.log('📊 After MT5 load, tableData length:', this.tableData.length);
+
+    // Add trades to calendar
     this.addTradesToCalendar();
 
-    // Initialize DataTable after data is loaded
-    setTimeout(() => {
-      console.log('🎯 Initializing DataTable with', this.tableData.length, 'rows');
-      this.dtTrigger.next(null);
-    }, 1000);
+    // Initialize DataTable with current data
+    console.log('🎯 Final tableData before DataTable:', this.tableData);
+    this.dtTrigger.next(null);
 
     // Don't load Notion data automatically - wait for user to click load button
 
@@ -1345,7 +1348,7 @@ onUpload(): void {
           return [];
 
         default:
-          console.warn(`��️ Unknown property type: ${type} for property: ${propertyName}`);
+          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
           return null;
       }
     } catch (error) {
@@ -2442,10 +2445,13 @@ onUpload(): void {
   // Load MT5 data and populate Active Account table
   async loadMT5Data(): Promise<void> {
     try {
-      console.log('🔄 Loading MT5 data...');
+      console.log('🔄 Loading real MT5 data...');
       const response = await this.getMt5API();
+      console.log('📊 MT5 API response:', response);
 
       if (response && response.length > 0) {
+        console.log('✅ Processing', response.length, 'MT5 trades');
+
         const mt5Trades = response.map((trade: any) => {
           const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
             month: '2-digit',
@@ -2476,96 +2482,31 @@ onUpload(): void {
         });
 
         this.mt5LiveTrades = mt5Trades;
-        // Also load MT5 history (for demo purposes, treating some as closed)
-        this.loadMT5History();
-        this.updateMT5TableData();
-        console.log('✅ MT5 data loaded:', mt5Trades.length, 'trades');
+
+        // Update table data with real MT5 trades
+        const existingFirebaseData = this.tableData.filter(trade =>
+          trade.status !== 'Open' && trade.status !== 'Closed'
+        );
+
+        this.tableData = [
+          ...this.mt5LiveTrades,
+          ...this.mt5HistoryTrades,
+          ...existingFirebaseData
+        ];
+
+        console.log('✅ MT5 data processed. Total tableData:', this.tableData.length);
+        console.log('✅ Live trades:', this.mt5LiveTrades.length);
       } else {
-        console.log('No MT5 data received, but keeping existing data in table');
+        console.log('⚠️ No MT5 trades received from API');
       }
     } catch (error) {
       console.error('❌ Error loading MT5 data:', error);
     }
   }
 
-  // Initialize demo data to ensure table has content
-  initializeDemoData(): void {
-    console.log('🎯 Initializing demo data...');
 
-    // Create demo historical trades
-    const demoTrades: Table[] = [
-      {
-        openDate: '01.25.2025 10:30',
-        tradeNotion: [],
-        status: 'Closed',
-        position: 'Buy',
-        symbol: 'EURUSD',
-        type: 'Buy',
-        volume: '0.1',
-        entry: '1.0520',
-        sL: '1.0500',
-        tP: '1.0560',
-        closeDate: '01.25.2025 14:30',
-        exit: '1.0545',
-        commission: '0.50',
-        swap: '0.00',
-        profit: '25.00',
-        netProfit: '24.50'
-      },
-      {
-        openDate: '01.24.2025 15:45',
-        tradeNotion: [],
-        status: 'Closed',
-        position: 'Sell',
-        symbol: 'GBPUSD',
-        type: 'Sell',
-        volume: '0.2',
-        entry: '1.2450',
-        sL: '1.2480',
-        tP: '1.2400',
-        closeDate: '01.24.2025 18:20',
-        exit: '1.2420',
-        commission: '0.75',
-        swap: '0.00',
-        profit: '60.00',
-        netProfit: '59.25'
-      },
-      {
-        openDate: '01.25.2025 16:15',
-        tradeNotion: [],
-        status: 'Open',
-        position: 'Buy',
-        symbol: 'USDJPY',
-        type: 'Buy',
-        volume: '0.15',
-        entry: '155.420',
-        sL: '155.200',
-        tP: '155.800',
-        closeDate: '',
-        exit: '155.465',
-        commission: '0.00',
-        swap: '0.00',
-        profit: '6.75',
-        netProfit: '6.75'
-      }
-    ];
 
-    this.tableData = demoTrades;
-    this.mt5HistoryTrades = demoTrades.filter(trade => trade.status === 'Closed');
-    this.mt5LiveTrades = demoTrades.filter(trade => trade.status === 'Open');
 
-    console.log('✅ Demo data initialized:', this.tableData.length, 'trades');
-  }
-
-  // Load MT5 history (closed trades)
-  async loadMT5History(): Promise<void> {
-    try {
-      // This will be called after demo data is set
-      console.log('✅ MT5 history already loaded via demo data');
-    } catch (error) {
-      console.error('❌ Error loading MT5 history:', error);
-    }
-  }
 
   // Add new MT5 trade when opened
   addMT5LiveTrade(tradeData: any): void {
@@ -2708,7 +2649,10 @@ onUpload(): void {
     ];
 
     console.log('Total table data:', this.tableData.length);
-    this.refreshMT5DataTable();
+    console.log('Table data content:', this.tableData);
+
+    // Don't refresh DataTable for updates, just trigger re-render
+    this.dtTrigger.next(null);
   }
 
   // Refresh DataTable safely
