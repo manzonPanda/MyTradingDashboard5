@@ -27,6 +27,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
+import { io,Socket } from "socket.io-client";
 
 interface Relation {
   relationName: string;
@@ -152,6 +153,9 @@ export class DashboardComponent {
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
 
+  //
+
+
   // Notion Performance Intelligence properties
   notionPerformanceData: NotionPerformanceData[] = [];
   dtOptionsNotion: any = {};
@@ -239,6 +243,25 @@ export class DashboardComponent {
   }
 
   async ngOnInit() {
+    const socket = io("http://localhost:5000",{
+      transports: ['websocket'], // 🔥 Force WebSocket to avoid polling
+      upgrade: false,              // Optional, disables fallback to long-polling
+    });
+
+    socket.on("connect", () => {
+    console.warn("✅ Connected to WebSocket server");
+  });
+
+  socket.on("connect_error", (err) => {
+    console.warn("❌ Socket connection error:", err);
+  });
+    socket.on("trade_opened", (data) => {
+      console.warn("New trade opened:", data);
+    });
+
+    socket.on("trade_closed", (data) => {
+      console.warn("Trade closed:", data);
+    });
     this.dtOptions = {
       destroy: true,
       paging: true,
@@ -1030,7 +1053,7 @@ onUpload(): void {
     const res: any = await firstValueFrom(
       this.http.get("http://localhost:5000/api/open_trades")
     );
-    console.log("Getting MT5 API data...",res);
+    console.warn("Getting MT5 API data...",res);
 
   }
 
@@ -1221,7 +1244,7 @@ onUpload(): void {
           swap: this.getNotionProperty(properties, 'swap', 'number') || 0
         };
 
-        console.log(`✅ Parsed your data page ${index + 1}:`, parsedData);
+        // console.log(`✅ Parsed your data page ${index + 1}:`, parsedData);
         return parsedData;
 
       } catch (error) {
@@ -1239,7 +1262,7 @@ onUpload(): void {
         return null;
       }
 
-      console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
@@ -2206,7 +2229,7 @@ onUpload(): void {
     const last30Days: { value: number, class: string, tooltip: string }[] = [];
 
     // Debug: log table data info
-    console.log('Total trades in tableData:', this.tableData.length);
+    // console.log('Total trades in tableData:', this.tableData.length);
     if (this.tableData.length > 0) {
       console.log('First trade date:', this.tableData[0].openDate);
       console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);

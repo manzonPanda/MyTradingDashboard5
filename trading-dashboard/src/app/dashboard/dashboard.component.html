@@ -74,6 +74,113 @@
     </div>
   </section>
 
+    <!-- Active Account Section -->
+  <section class="table-section">
+    <div class="table-card">
+      <div class="table-header">
+        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]</h2>
+        <div class="table-filters">
+          <button class="filter-btn" [class.active]="!showNotionData" (click)="showNotionData = false">
+            <mat-icon>visibility_off</mat-icon>
+            Hide Notion Data
+          </button>
+          <button class="filter-btn" [class.active]="showNotionData" (click)="showNotionData = true">
+            <mat-icon>visibility</mat-icon>
+            Show Notion Data
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="modern-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
+          <thead>
+            <tr>
+              <th class="col-date">Open Date</th>
+              <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
+              <th class="col-status" [class.hidden]="!showNotionData">Status</th>
+              <th class="col-position">Position</th>
+              <th class="col-symbol">Symbol</th>
+              <th class="col-type">Type</th>
+              <th class="col-volume">Volume</th>
+              <th class="col-price">Entry</th>
+              <th class="col-price">S/L</th>
+              <th class="col-price">T/P</th>
+              <th class="col-date">Close Date</th>
+              <th class="col-price">Exit</th>
+              <th class="col-amount">Commission</th>
+              <th class="col-amount">Swap</th>
+              <th class="col-amount">Profit</th>
+              <th class="col-amount">Net Profit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': isPositiveValue(row.netProfit), 'negative-row': isNegativeValue(row.netProfit) }">
+              <td class="col-date">{{ formatDate(row.openDate) }}</td>
+              
+              <td class="col-notion" [class.hidden]="!showNotionData">
+                <div class="notion-buttons">
+                  <button
+                    *ngFor="let trade of row.tradeNotion"
+                    class="notion-btn"
+                    [ngClass]="{
+                      'selected': selectedTradeId[i] === trade.tradeId,
+                      'matched': !trade.tradeDate && trade.tradeId,
+                      'revert': !trade.tradeDate && !trade.tradeId
+                    }"
+                    (click)="trade.tradeDate ? chooseUnmatchedTrade(trade, row, i) : (!trade.tradeId ? revertTradeNotion(row,i) : null)"
+                    [disabled]="!trade.tradeDate && trade.tradeId">
+                    
+                    <ng-container *ngIf="trade.tradeDate; else showReload">
+                      {{ trade.tradeDate }}
+                    </ng-container>
+                    <ng-template #showReload>
+                      <ng-container *ngIf="!trade.tradeId && !trade.tradeDate">
+                        <mat-icon>refresh</mat-icon>
+                      </ng-container>
+                      <ng-container *ngIf="trade.tradeId && !trade.tradeDate">
+                        {{ trade.tradeId }}
+                      </ng-container>
+                    </ng-template>
+                  </button>
+                </div>
+              </td>
+              
+              <td class="col-status" [class.hidden]="!showNotionData">
+                <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+                  {{ row.status }}
+                </span>
+              </td>
+
+              <td class="col-position">
+                <span class="position-badge" [ngClass]="getPositionClass(row.position)">
+                  {{ row.position }}
+                </span>
+              </td>
+              
+              <td class="col-symbol">{{ row.symbol }}</td>
+              <td class="col-type">{{ row.type }}</td>
+              <td class="col-volume">{{ row.volume }}</td>
+              <td class="col-price">{{ row.entry | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-price">{{ row.sL | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-price">{{ row.tP | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-date">{{ formatDate(row.closeDate) }}</td>
+              <td class="col-price">{{ row.exit | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount">{{ row.commission | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount">{{ row.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
+                {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
+                {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  
   <!-- 🚀 ADVANCED PERFORMANCE ANALYTICS - HERO SECTION -->
   <section class="hero-analytics-section">
     <div class="analytics-hero-header">
@@ -474,112 +581,6 @@
     </div>
   </section>
   
-  <!-- Data Table Section -->
-  <section class="table-section">
-    <div class="table-card">
-      <div class="table-header">
-        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]</h2>
-        <div class="table-filters">
-          <button class="filter-btn" [class.active]="!showNotionData" (click)="showNotionData = false">
-            <mat-icon>visibility_off</mat-icon>
-            Hide Notion Data
-          </button>
-          <button class="filter-btn" [class.active]="showNotionData" (click)="showNotionData = true">
-            <mat-icon>visibility</mat-icon>
-            Show Notion Data
-          </button>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <table class="modern-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
-          <thead>
-            <tr>
-              <th class="col-date">Open Date</th>
-              <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
-              <th class="col-status" [class.hidden]="!showNotionData">Status</th>
-              <th class="col-position">Position</th>
-              <th class="col-symbol">Symbol</th>
-              <th class="col-type">Type</th>
-              <th class="col-volume">Volume</th>
-              <th class="col-price">Entry</th>
-              <th class="col-price">S/L</th>
-              <th class="col-price">T/P</th>
-              <th class="col-date">Close Date</th>
-              <th class="col-price">Exit</th>
-              <th class="col-amount">Commission</th>
-              <th class="col-amount">Swap</th>
-              <th class="col-amount">Profit</th>
-              <th class="col-amount">Net Profit</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': isPositiveValue(row.netProfit), 'negative-row': isNegativeValue(row.netProfit) }">
-              <td class="col-date">{{ formatDate(row.openDate) }}</td>
-              
-              <td class="col-notion" [class.hidden]="!showNotionData">
-                <div class="notion-buttons">
-                  <button
-                    *ngFor="let trade of row.tradeNotion"
-                    class="notion-btn"
-                    [ngClass]="{
-                      'selected': selectedTradeId[i] === trade.tradeId,
-                      'matched': !trade.tradeDate && trade.tradeId,
-                      'revert': !trade.tradeDate && !trade.tradeId
-                    }"
-                    (click)="trade.tradeDate ? chooseUnmatchedTrade(trade, row, i) : (!trade.tradeId ? revertTradeNotion(row,i) : null)"
-                    [disabled]="!trade.tradeDate && trade.tradeId">
-                    
-                    <ng-container *ngIf="trade.tradeDate; else showReload">
-                      {{ trade.tradeDate }}
-                    </ng-container>
-                    <ng-template #showReload>
-                      <ng-container *ngIf="!trade.tradeId && !trade.tradeDate">
-                        <mat-icon>refresh</mat-icon>
-                      </ng-container>
-                      <ng-container *ngIf="trade.tradeId && !trade.tradeDate">
-                        {{ trade.tradeId }}
-                      </ng-container>
-                    </ng-template>
-                  </button>
-                </div>
-              </td>
-              
-              <td class="col-status" [class.hidden]="!showNotionData">
-                <span class="status-badge" [ngClass]="getStatusClass(row.status)">
-                  {{ row.status }}
-                </span>
-              </td>
-
-              <td class="col-position">
-                <span class="position-badge" [ngClass]="getPositionClass(row.position)">
-                  {{ row.position }}
-                </span>
-              </td>
-              
-              <td class="col-symbol">{{ row.symbol }}</td>
-              <td class="col-type">{{ row.type }}</td>
-              <td class="col-volume">{{ row.volume }}</td>
-              <td class="col-price">{{ row.entry | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-price">{{ row.sL | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-price">{{ row.tP | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-date">{{ formatDate(row.closeDate) }}</td>
-              <td class="col-price">{{ row.exit | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount">{{ row.commission | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount">{{ row.swap | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
-                {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
-              </td>
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
-                {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
 
   <!-- Trading Calendar Section -->
   <section class="calendar-section">

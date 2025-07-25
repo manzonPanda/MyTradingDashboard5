@@ -1,13 +1,80 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
+from flask_socketio import SocketIO
 import MetaTrader5 as mt5
+import threading
+import time
+import eventlet
+from datetime import datetime, timedelta
+from collections import defaultdict
+import pandas as pd
+
+eventlet.monkey_patch()  # <- important for eventlet
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")  # Allow WebSocket connections
 
-# Initialize connection to MetaTrader 5
 if not mt5.initialize():
-    raise Exception(f"MT5 Initialization failed: {mt5.last_error()}")
+    raise Exception(f"❌MT5 Initialization failed: {mt5.last_error()}")
+
+# Store previously seen trade tickets to detect new ones
+seen_tickets = set()
+
+# Keep track of currently open position tickets
+last_positions = {}
+
+def watch_trades():
+    global seen_tickets, last_positions
+    print("✅ Trade watcher thread started...")
+
+    while True:
+        # Get current open positions
+        current_positions = {p.ticket: p for p in mt5.positions_get() or []}
+
+        # Detect new open positions
+        for ticket, pos in current_positions.items():
+            if ticket not in seen_tickets:
+                seen_tickets.add(ticket)
+                print(f"🟢 New OPEN trade: {pos.symbol} @ {pos.price_open}")
+                socketio.emit('trade_opened', {
+                    "ticket": pos.ticket,
+                    "symbol": pos.symbol,
+                    "volume": pos.volume,
+                    "type": pos.type,
+                    "price_open": pos.price_open,
+                    "sl": pos.sl,
+                    "tp": pos.tp,
+                    "profit": pos.profit,
+                    "time": pos.time,
+                    "pos":pos
+                })
+
+        # Detect closed positions by comparing with last known positions
+        closed_tickets = set(last_positions.keys()) - set(current_positions.keys())
+        for ticket in closed_tickets:
+            closed_pos = last_positions[ticket]
+            print(f"🔴 CLOSED trade: {closed_pos.symbol} @ {closed_pos.price_open}, closed with P/L")
+            socketio.emit('trade_closed', {
+                "ticket": closed_pos.ticket,
+                "symbol": closed_pos.symbol,
+                "volume": closed_pos.volume,
+                "type": closed_pos.type,
+                "price_open": closed_pos.price_open,
+                "price_close": closed_pos.price_current,  # not always accurate
+                "profit": closed_pos.profit,
+                "time": int(time.time())
+            })
+
+        # Update the last seen positions
+        last_positions = current_positions.copy()
+
+        time.sleep(1)
+
+
+
+# Start background thread
+threading.Thread(target=watch_trades, daemon=True).start()
 
 @app.route("/api/open_trades", methods=["GET"])
 def get_open_trades():
@@ -30,27 +97,26 @@ def get_open_trades():
         })
     return jsonify(results)
 
-@app.route("/api/history", methods=["GET"])
-def get_history():
-    from datetime import datetime, timedelta
-    now = datetime.now()
-    past = now - timedelta(days=30)
-    history = mt5.history_deals_get(past, now)
-    if history is None:
-        return jsonify({"error": "Failed to get history"}), 500
+# from datetime import datetime
 
-    results = []
-    for h in history:
-        results.append({
-            "ticket": h.ticket,
-            "symbol": h.symbol,
-            "volume": h.volume,
-            "type": h.type,
-            "price": h.price,
-            "profit": h.profit,
-            "time": h.time
-        })
-    return jsonify(results)
+@app.route("/api/history", methods=["GET"])
+def full_history():
+    from_date = datetime(2000, 1, 1)  # Start date
+    to_date = datetime.now()          # End date
+
+    deals = mt5.history_deals_get(from_date, to_date)
+    if deals is None:
+        print("No deals found")
+    else:
+        df_deals = pd.DataFrame(list(deals), columns=deals[0]._asdict().keys())
+        print(df_deals)
+
+    orders = mt5.history_orders_get(from_date, to_date)
+    if orders is None:
+        print("No orders found")
+    else:
+        df_orders = pd.DataFrame(list(orders), columns=orders[0]._asdict().keys())
+        print(df_orders)
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
