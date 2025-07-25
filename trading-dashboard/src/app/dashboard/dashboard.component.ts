@@ -1068,7 +1068,7 @@ onUpload(): void {
       this.http.get("http://localhost:5000/api/open_trades")
     );
     console.warn("Getting MT5 API data...",res);
-
+    return res;
   }
 
   async loadNotionPerformanceData(): Promise<void> {
@@ -2428,5 +2428,173 @@ onUpload(): void {
     if (!date1 || !date2) return 0;
 
     return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60); // difference in minutes
+  }
+
+  // Load MT5 data and populate Active Account table
+  async loadMT5Data(): Promise<void> {
+    try {
+      console.log('🔄 Loading MT5 data...');
+      const response = await this.getMt5API();
+
+      if (response && response.length > 0) {
+        const mt5Trades = response.map((trade: any) => {
+          const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }).replace(/\//g, '.').replace(', ', ' ');
+
+          return {
+            openDate: openDate,
+            tradeNotion: [],
+            status: 'Open',
+            position: trade.type === 0 ? 'Buy' : 'Sell',
+            symbol: trade.symbol || '',
+            type: trade.type === 0 ? 'Buy' : 'Sell',
+            volume: trade.volume ? trade.volume.toString() : '0',
+            entry: trade.price_open ? trade.price_open.toString() : '0',
+            sL: trade.sl ? trade.sl.toString() : '0',
+            tP: trade.tp ? trade.tp.toString() : '0',
+            closeDate: '',
+            exit: trade.price_current ? trade.price_current.toString() : '0',
+            commission: '0',
+            swap: trade.swap ? trade.swap.toString() : '0',
+            profit: trade.profit ? trade.profit.toString() : '0',
+            netProfit: trade.profit ? trade.profit.toString() : '0'
+          } as Table;
+        });
+
+        this.mt5LiveTrades = mt5Trades;
+        this.updateMT5TableData();
+        console.log('✅ MT5 data loaded:', mt5Trades.length, 'trades');
+      }
+    } catch (error) {
+      console.error('❌ Error loading MT5 data:', error);
+    }
+  }
+
+  // Add new MT5 trade when opened
+  addMT5LiveTrade(tradeData: any): void {
+    console.log('➕ Adding new MT5 trade:', tradeData);
+    const trade = tradeData.object || tradeData;
+
+    const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).replace(/\//g, '.').replace(', ', ' ');
+
+    const newTrade: Table = {
+      openDate: openDate,
+      tradeNotion: [],
+      status: 'Open',
+      position: trade.type === 0 ? 'Buy' : 'Sell',
+      symbol: trade.symbol || '',
+      type: trade.type === 0 ? 'Buy' : 'Sell',
+      volume: trade.volume ? trade.volume.toString() : '0',
+      entry: trade.price_open ? trade.price_open.toString() : '0',
+      sL: trade.sl ? trade.sl.toString() : '0',
+      tP: trade.tp ? trade.tp.toString() : '0',
+      closeDate: '',
+      exit: trade.price_current ? trade.price_current.toString() : '0',
+      commission: '0',
+      swap: trade.swap ? trade.swap.toString() : '0',
+      profit: trade.profit ? trade.profit.toString() : '0',
+      netProfit: trade.profit ? trade.profit.toString() : '0'
+    };
+
+    const existingIndex = this.mt5LiveTrades.findIndex(t =>
+      t.symbol === newTrade.symbol && t.entry === newTrade.entry
+    );
+
+    if (existingIndex === -1) {
+      this.mt5LiveTrades.push(newTrade);
+      this.updateMT5TableData();
+      console.log('✅ New MT5 trade added');
+    }
+  }
+
+  // Close MT5 trade when closed
+  closeMT5Trade(tradeData: any): void {
+    console.log('🔄 Closing MT5 trade:', tradeData);
+    const trade = tradeData.object || tradeData;
+
+    const liveIndex = this.mt5LiveTrades.findIndex(t =>
+      t.symbol === trade.symbol && parseFloat(t.entry) === trade.price_open
+    );
+
+    if (liveIndex !== -1) {
+      const closedTrade = { ...this.mt5LiveTrades[liveIndex] };
+      closedTrade.status = 'Closed';
+      closedTrade.closeDate = new Date().toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).replace(/\//g, '.').replace(', ', ' ');
+      closedTrade.exit = trade.price_close ? trade.price_close.toString() : trade.price_current.toString();
+      closedTrade.profit = trade.profit ? trade.profit.toString() : '0';
+      closedTrade.netProfit = trade.profit ? trade.profit.toString() : '0';
+
+      this.mt5LiveTrades.splice(liveIndex, 1);
+      this.mt5HistoryTrades.unshift(closedTrade);
+
+      this.updateMT5TableData();
+      console.log('✅ MT5 trade closed and moved to history');
+    }
+  }
+
+  // Update price for existing MT5 trade
+  updateMT5TradePrice(priceData: any): void {
+    const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
+      trade.symbol === priceData.symbol &&
+      parseFloat(trade.entry) === priceData.price_open
+    );
+
+    if (tradeIndex !== -1) {
+      this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
+      this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
+      this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
+
+      this.updateMT5TableData();
+    }
+  }
+
+  // Update the main table data with MT5 trades
+  updateMT5TableData(): void {
+    const originalData = this.tableData.filter(trade =>
+      trade.status !== 'Open' && trade.status !== 'Closed'
+    );
+
+    this.tableData = [
+      ...this.mt5LiveTrades,
+      ...this.mt5HistoryTrades,
+      ...originalData
+    ];
+
+    this.refreshMT5DataTable();
+  }
+
+  // Refresh DataTable safely
+  refreshMT5DataTable(): void {
+    try {
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+        if (table && typeof table.destroy === 'function') {
+          table.destroy(true);
+        }
+      }
+
+      setTimeout(() => {
+        this.dtTrigger.next(null);
+      }, 100);
+    } catch (error) {
+      console.warn('Error refreshing MT5 DataTable:', error);
+    }
   }
 }
