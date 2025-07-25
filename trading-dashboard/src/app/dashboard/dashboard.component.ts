@@ -27,7 +27,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
-import { io,Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 interface Relation {
   relationName: string;
@@ -161,6 +161,7 @@ export class DashboardComponent {
   dtOptionsNotion: any = {};
   dtTriggerNotion: Subject<any> = new Subject<any>();
   isLoadingNotionData = false;
+  showLoadButton = true; // Controls whether to show load button or table
 
   // Column visibility controls
   columnVisibility = {
@@ -252,14 +253,14 @@ export class DashboardComponent {
     console.warn("✅ Connected to WebSocket server");
   });
 
-  socket.on("connect_error", (err) => {
+  socket.on("connect_error", (err: any) => {
     console.warn("❌ Socket connection error:", err);
   });
-    socket.on("trade_opened", (data) => {
+    socket.on("trade_opened", (data: any) => {
       console.warn("New trade opened:", data);
     });
 
-    socket.on("trade_closed", (data) => {
+    socket.on("trade_closed", (data: any) => {
       console.warn("Trade closed:", data);
     });
     this.dtOptions = {
@@ -293,7 +294,7 @@ export class DashboardComponent {
     // this.loadTradesRealtime(); // Start listening immediately
     await this.loadTrades(); // Wait for trades to load
     this.addTradesToCalendar();
-    await this.loadNotionPerformanceData(); // Load Notion performance data
+    // Don't load Notion data automatically - wait for user to click load button
 
     // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering | Enable DataTable feature
 
