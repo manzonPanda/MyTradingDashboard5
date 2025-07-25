@@ -303,13 +303,22 @@ export class DashboardComponent {
     };
 
     localStorage.clear(); // Clear local storage on component initialization
-    // this.loadTradesRealtime(); // Start listening immediately
+
+    // Initialize with demo data first to ensure table has content
+    this.initializeDemoData();
+
+    // Load data
     await this.loadTrades(); // Wait for trades to load
     await this.loadMT5Data(); // Load MT5 data
     this.addTradesToCalendar();
-    // Don't load Notion data automatically - wait for user to click load button
 
-    // this.dtTrigger.next(null);// Emit a value to trigger the DataTable rendering | Enable DataTable feature
+    // Initialize DataTable after data is loaded
+    setTimeout(() => {
+      console.log('🎯 Initializing DataTable with', this.tableData.length, 'rows');
+      this.dtTrigger.next(null);
+    }, 1000);
+
+    // Don't load Notion data automatically - wait for user to click load button
 
   }
 
@@ -1336,7 +1345,7 @@ onUpload(): void {
           return [];
 
         default:
-          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
+          console.warn(`��️ Unknown property type: ${type} for property: ${propertyName}`);
           return null;
       }
     } catch (error) {
@@ -2479,52 +2488,80 @@ onUpload(): void {
     }
   }
 
+  // Initialize demo data to ensure table has content
+  initializeDemoData(): void {
+    console.log('🎯 Initializing demo data...');
+
+    // Create demo historical trades
+    const demoTrades: Table[] = [
+      {
+        openDate: '01.25.2025 10:30',
+        tradeNotion: [],
+        status: 'Closed',
+        position: 'Buy',
+        symbol: 'EURUSD',
+        type: 'Buy',
+        volume: '0.1',
+        entry: '1.0520',
+        sL: '1.0500',
+        tP: '1.0560',
+        closeDate: '01.25.2025 14:30',
+        exit: '1.0545',
+        commission: '0.50',
+        swap: '0.00',
+        profit: '25.00',
+        netProfit: '24.50'
+      },
+      {
+        openDate: '01.24.2025 15:45',
+        tradeNotion: [],
+        status: 'Closed',
+        position: 'Sell',
+        symbol: 'GBPUSD',
+        type: 'Sell',
+        volume: '0.2',
+        entry: '1.2450',
+        sL: '1.2480',
+        tP: '1.2400',
+        closeDate: '01.24.2025 18:20',
+        exit: '1.2420',
+        commission: '0.75',
+        swap: '0.00',
+        profit: '60.00',
+        netProfit: '59.25'
+      },
+      {
+        openDate: '01.25.2025 16:15',
+        tradeNotion: [],
+        status: 'Open',
+        position: 'Buy',
+        symbol: 'USDJPY',
+        type: 'Buy',
+        volume: '0.15',
+        entry: '155.420',
+        sL: '155.200',
+        tP: '155.800',
+        closeDate: '',
+        exit: '155.465',
+        commission: '0.00',
+        swap: '0.00',
+        profit: '6.75',
+        netProfit: '6.75'
+      }
+    ];
+
+    this.tableData = demoTrades;
+    this.mt5HistoryTrades = demoTrades.filter(trade => trade.status === 'Closed');
+    this.mt5LiveTrades = demoTrades.filter(trade => trade.status === 'Open');
+
+    console.log('✅ Demo data initialized:', this.tableData.length, 'trades');
+  }
+
   // Load MT5 history (closed trades)
   async loadMT5History(): Promise<void> {
     try {
-      // For demo purposes, we'll create some historical trades
-      // In a real implementation, you'd call a different API endpoint
-      const historyTrades = [
-        {
-          openDate: '01.25.2025 10:30',
-          tradeNotion: [],
-          status: 'Closed',
-          position: 'Buy',
-          symbol: 'EURUSD',
-          type: 'Buy',
-          volume: '0.1',
-          entry: '1.0520',
-          sL: '1.0500',
-          tP: '1.0560',
-          closeDate: '01.25.2025 14:30',
-          exit: '1.0545',
-          commission: '0.50',
-          swap: '0.00',
-          profit: '25.00',
-          netProfit: '24.50'
-        },
-        {
-          openDate: '01.24.2025 15:45',
-          tradeNotion: [],
-          status: 'Closed',
-          position: 'Sell',
-          symbol: 'GBPUSD',
-          type: 'Sell',
-          volume: '0.2',
-          entry: '1.2450',
-          sL: '1.2480',
-          tP: '1.2400',
-          closeDate: '01.24.2025 18:20',
-          exit: '1.2420',
-          commission: '0.75',
-          swap: '0.00',
-          profit: '60.00',
-          netProfit: '59.25'
-        }
-      ] as Table[];
-
-      this.mt5HistoryTrades = historyTrades;
-      console.log('✅ MT5 history loaded:', historyTrades.length, 'historical trades');
+      // This will be called after demo data is set
+      console.log('✅ MT5 history already loaded via demo data');
     } catch (error) {
       console.error('❌ Error loading MT5 history:', error);
     }
