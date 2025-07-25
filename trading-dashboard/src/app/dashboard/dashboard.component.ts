@@ -1443,10 +1443,6 @@ onUpload(): void {
     this.safelyRefreshDataTable();
   }
 
-  private refreshDataTable(): void {
-    this.safelyRefreshDataTable();
-  }
-
   private safelyRefreshDataTable(): void {
     if (this.isRefreshingTable) {
       return; // Prevent multiple simultaneous refreshes
