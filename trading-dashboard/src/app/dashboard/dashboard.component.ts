@@ -2545,7 +2545,7 @@ onUpload(): void {
       this.mt5LiveTrades.splice(liveIndex, 1);
       this.mt5HistoryTrades.unshift(closedTrade);
 
-      this.updateMT5TableData();
+      this.updateTableData();
       console.log('✅ MT5 trade closed and moved to history');
     }
   }
