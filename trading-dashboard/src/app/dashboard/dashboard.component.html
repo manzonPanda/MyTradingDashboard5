@@ -2,95 +2,100 @@
   <!-- Header Section -->
   <header class="dashboard-header">
     <div class="header-content">
-      <h1 class="dashboard-title">Jake Trading Dashboard</h1>
-      <!-- Progress Indicators -->
-      <div class="progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
-        <div class="progress-grid">
-          <!-- Upload Progress -->
-          <div class="progress-item" *ngIf="isUploading">
-            <div class="progress-content">
+      <div class="header-left-section">
+        <h1 class="dashboard-title">Jake Trading Dashboard</h1>
+
+        <!-- Progress Indicators - moved to header and aligned horizontally -->
+        <div class="header-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
+          <div class="header-progress-grid">
+            <!-- Upload Progress -->
+            <div class="header-progress-item"
+                 *ngIf="isUploading"
+                 [ngClass]="{ 'success': uploadProgress === 100, 'error': uploadProgress === -1 }">
               <mat-progress-spinner
                 [value]="uploadProgress"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6">
+                diameter="32"
+                strokeWidth="4"
+                [ngClass]="{ 'success-spinner': uploadProgress === 100 }">
               </mat-progress-spinner>
-              <div class="progress-text">
-                <span class="progress-value">{{ uploadProgress }}%</span>
-                <span class="progress-label">Uploading</span>
-              </div>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'success-text': uploadProgress === 100, 'error-text': uploadProgress === -1 }">
+                {{ uploadProgress === 100 ? 'Upload Complete' : 'Uploading ' + uploadProgress + '%' }}
+              </span>
             </div>
-          </div>
 
-          <!-- Checking Progress -->
-          <div class="progress-item" *ngIf="isLoadingChecking">
-            <div class="progress-content">
+            <!-- Checking Progress -->
+            <div class="header-progress-item"
+                 *ngIf="isLoadingChecking"
+                 [ngClass]="{ 'success': progressChecking === 100 && !checkingError, 'error': checkingError }">
               <mat-progress-spinner
                 [value]="progressChecking"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
-                [ngClass]="{ 'error-spinner': checkingError }">
+                diameter="32"
+                strokeWidth="4"
+                [ngClass]="{ 'error-spinner': checkingError, 'success-spinner': progressChecking === 100 && !checkingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': checkingError }">
-                <span class="progress-value">{{ progressChecking }}%</span>
-                <span class="progress-label">Checking</span>
-              </div>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': checkingError, 'success-text': progressChecking === 100 && !checkingError }">
+                {{ checkingError ? 'Check Failed' : (progressChecking === 100 ? 'Check Complete' : 'Checking ' + progressChecking + '%') }}
+              </span>
             </div>
-          </div>
 
-          <!-- Patching Progress -->
-          <div class="progress-item" *ngIf="isLoadingPatching">
-            <div class="progress-content">
+            <!-- Patching Progress -->
+            <div class="header-progress-item"
+                 *ngIf="isLoadingPatching"
+                 [ngClass]="{ 'success': progressPatching === 100 && !patchingError, 'error': patchingError }">
               <mat-progress-spinner
                 [value]="progressPatching"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
-                [ngClass]="{ 'error-spinner': patchingError }">
+                diameter="32"
+                strokeWidth="4"
+                [ngClass]="{ 'error-spinner': patchingError, 'success-spinner': progressPatching === 100 && !patchingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': patchingError }">
-                <span class="progress-value">{{ progressPatching }}%</span>
-                <span class="progress-label">Patching</span>
-              </div>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': patchingError, 'success-text': progressPatching === 100 && !patchingError }">
+                {{ patchingError ? 'Patch Failed' : (progressPatching === 100 ? 'Patch Complete' : 'Patching ' + progressPatching + '%') }}
+              </span>
             </div>
-          </div>
 
-          <!-- Comparing Progress -->
-          <div class="progress-item" *ngIf="isLoadingComparing">
-            <div class="progress-content">
+            <!-- Comparing Progress -->
+            <div class="header-progress-item"
+                 *ngIf="isLoadingComparing"
+                 [ngClass]="{ 'success': progressComparing === 100 && !comparingError, 'error': comparingError }">
               <mat-progress-spinner
                 [value]="progressComparing"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
-                [ngClass]="{ 'error-spinner': comparingError }">
+                diameter="32"
+                strokeWidth="4"
+                [ngClass]="{ 'error-spinner': comparingError, 'success-spinner': progressComparing === 100 && !comparingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': comparingError }">
-                <span class="progress-value">{{ progressComparing }}%</span>
-                <span class="progress-label">Comparing</span>
-              </div>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': comparingError, 'success-text': progressComparing === 100 && !comparingError }">
+                {{ comparingError ? 'Compare Failed' : (progressComparing === 100 ? 'Compare Complete' : 'Comparing ' + progressComparing + '%') }}
+              </span>
             </div>
-          </div>
 
-          <!-- Populating Progress -->
-          <div class="progress-item" *ngIf="isLoadingPopulating">
-            <div class="progress-content">
+            <!-- Populating Progress -->
+            <div class="header-progress-item"
+                 *ngIf="isLoadingPopulating"
+                 [ngClass]="{ 'success': progressPopulating === 100 && !populatingError, 'error': populatingError }">
               <mat-progress-spinner
                 [value]="progressPopulating"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
-                [ngClass]="{ 'error-spinner': populatingError }">
+                diameter="32"
+                strokeWidth="4"
+                [ngClass]="{ 'error-spinner': populatingError, 'success-spinner': progressPopulating === 100 && !populatingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': populatingError }">
-                <span class="progress-value">{{ progressPopulating }}%</span>
-                <span class="progress-label">Populating</span>
-              </div>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': populatingError, 'success-text': progressPopulating === 100 && !populatingError }">
+                {{ populatingError ? 'Populate Failed' : (progressPopulating === 100 ? 'Populate Complete' : 'Populating ' + progressPopulating + '%') }}
+              </span>
             </div>
           </div>
         </div>
       </div>
+
       <div class="header-actions">
         <app-connection-status></app-connection-status>
         <button class="btn-info" (click)="getMt5API()"> MT5 api </button>
@@ -167,7 +172,11 @@
   <section class="table-section">
     <div class="table-card">
       <div class="table-header">
-        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]</h2>
+        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]
+          <small style="font-size: 0.8rem; color: #666; font-weight: normal;">
+            ({{ tableData.length }} trades)
+          </small>
+        </h2>
 
       <!-- Action Buttons -->
       <div class="action-buttons">
@@ -186,19 +195,42 @@
       </div>
 
         <div class="table-filters">
-          <button class="filter-btn" [class.active]="!showNotionData" (click)="showNotionData = false">
-            <mat-icon>visibility_off</mat-icon>
-            Hide Notion Data
+          <button class="filter-btn" [class.active]="showNotionData" (click)="toggleNotionData()">
+            <mat-icon>{{ showNotionData ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ showNotionData ? 'Hide' : 'Show' }} Notion Data
           </button>
-          <button class="filter-btn" [class.active]="showNotionData" (click)="showNotionData = true">
-            <mat-icon>visibility</mat-icon>
-            Show Notion Data
-          </button>
+          <div class="live-indicator" *ngIf="recentlyAddedTrades.length > 0">
+            <mat-icon class="pulse">fiber_new</mat-icon>
+            <span>{{ recentlyAddedTrades.length }} new live trades</span>
+          </div>
         </div>
       </div>
 
-      <div class="table-container">
-        <table class="modern-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
+      <!-- Simple controls -->
+      <div class="simple-table-controls">
+        <div class="table-info">
+          <span class="table-count">{{ getFilteredTableData().length }} trades total</span>
+          <span class="table-pagination">Showing {{ getDisplayedRows().length }} rows</span>
+        </div>
+        <div class="table-actions">
+          <button class="btn-secondary" (click)="currentPage > 1 ? setPage(currentPage - 1) : null" [disabled]="currentPage <= 1">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="page-info">Page {{ currentPage }} of {{ getTotalPages() }}</span>
+          <button class="btn-secondary" (click)="currentPage < getTotalPages() ? setPage(currentPage + 1) : null" [disabled]="currentPage >= getTotalPages()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          <select class="page-size-select" [(ngModel)]="pageSize" (change)="setPage(1)">
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Simple reliable Angular table -->
+      <div class="simple-table-container">
+        <table class="modern-table simple-table">
           <thead>
             <tr>
               <th class="col-date">Open Date</th>
@@ -220,12 +252,16 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': isPositiveValue(row.netProfit), 'negative-row': isNegativeValue(row.netProfit) }">
+            <tr *ngFor="let row of getDisplayedRows(); let i = index"
+                [ngClass]="{
+                  'positive-row': isPositiveValue(row.netProfit),
+                  'negative-row': isNegativeValue(row.netProfit),
+                  'new-trade': isNewTrade(row)
+                }">
               <td class="col-date">{{ row.openDate }}</td>
-              
+
               <td class="col-notion" [class.hidden]="!showNotionData">
                 <div class="notion-buttons">
-
                   <ng-container *ngFor="let trade of row.tradeNotion">
                     <button
                       class="notion-btn"
@@ -240,8 +276,8 @@
                           : null
                       "
                       [disabled]="
-                        (!trade.tradeDate && trade.tradeId) ||  
-                        (selectedTradeId[i] && selectedTradeId[i] !== trade.tradeId) 
+                        (!trade.tradeDate && trade.tradeId) ||
+                        (selectedTradeId[i] && selectedTradeId[i] !== trade.tradeId)
                       "
                     >
                       <ng-container *ngIf="trade.tradeDate; else showTrade">
@@ -257,7 +293,6 @@
                       </ng-template>
                     </button>
 
-                    <!-- Show refresh beside the selected date -->
                     <button
                       *ngIf="selectedTradeId[i] === trade.tradeId"
                       mat-icon-button
@@ -267,11 +302,9 @@
                       <mat-icon>refresh</mat-icon>
                     </button>
                   </ng-container>
-
-
                 </div>
               </td>
-              
+
               <td class="col-status" [class.hidden]="!showNotionData">
                 <span class="status-badge" [ngClass]="getStatusClass(row.status)">
                   {{ row.status }}
@@ -285,22 +318,35 @@
               </td>
 
               <td class="col-symbol">{{ row.symbol }}</td>
-              <td class="col-position">
-                <span class="position-badge" [ngClass]="getPositionClass(row.type)"> {{ row.type }} </span> 
+              <td class="col-type">
+                <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
               </td>
               <td class="col-volume">{{ row.volume }}</td>
-              <td class="col-price">-</td>
-              <td class="col-price">-</td>
-              <td class="col-price">-</td>
+              <td class="col-price">{{ row.entry }}</td>
+              <td class="col-price">{{ row.sL }}</td>
+              <td class="col-price">{{ row.tP }}</td>
               <td class="col-date">{{ row.closeDate }}</td>
-              <td class="col-price">-</td>
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">{{ row.commission | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount">-</td>
+              <td class="col-price">{{ row.exit }}</td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
+                {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-amount">{{ getSafeNumber(row.swap) | currency:'USD':'symbol':'1.2-2' }}</td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
-                {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
               </td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
-                {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+
+            <!-- Empty state -->
+            <tr *ngIf="getDisplayedRows().length === 0">
+              <td colspan="16" class="empty-state">
+                <div class="empty-content">
+                  <mat-icon>timeline</mat-icon>
+                  <h3>No trading data</h3>
+                  <p>Click "Mock: MT5+trade" to add sample trading data.</p>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -462,7 +508,7 @@
                  [title]="cell.tooltip"
                  [style.animation-delay]="(i * 50) + 'ms'">
               <div class="cell-inner">
-                <span class="cell-amount" *ngIf="cell.value !== 0">{{ cell.value | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="cell-amount" *ngIf="cell.value !== 0">{{ getSafeNumber(cell.value) | currency:'USD':'symbol':'1.0-0' }}</span>
               </div>
             </div>
           </div>
@@ -868,7 +914,7 @@
                 'negative': data.pnl < 0,
                 'neutral': data.pnl === 0
               }">
-                {{ data.pnl | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(data.pnl) | currency:'USD':'symbol':'1.2-2' }}
               </td>
               <td *ngIf="columnVisibility.percentPnL" class="col-percent" [ngClass]="{
                 'positive': data.percentPnL > 0,
@@ -877,8 +923,8 @@
               }">
                 {{ data.percentPnL | number:'1.2-2' }}%
               </td>
-              <td *ngIf="columnVisibility.commission" class="col-commission">{{ data.commission | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.swap" class="col-swap">{{ data.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.commission" class="col-commission">{{ getSafeNumber(data.commission) | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.swap" class="col-swap">{{ getSafeNumber(data.swap) | currency:'USD':'symbol':'1.2-2' }}</td>
               <td *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">{{ data.idealRRR }}</td>
               <td *ngIf="columnVisibility.idealSL" class="col-ideal-sl">{{ data.idealSL }}</td>
               <td *ngIf="columnVisibility.modelCheck" class="col-model-check">

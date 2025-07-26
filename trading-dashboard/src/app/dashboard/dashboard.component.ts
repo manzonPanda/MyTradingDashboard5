@@ -1,4 +1,4 @@
-import { Component, importProvidersFrom, OnDestroy, OnInit  } from '@angular/core';
+import { Component, importProvidersFrom, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -126,7 +126,7 @@ export class DashboardComponent {
   locale: string = 'en';
   rawData: any[] = [];
   // Active Account Table
-  tableData: Table[] = [];
+  tableData: Table[] = []; // Initialize as empty array
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
 
@@ -158,6 +158,13 @@ export class DashboardComponent {
   showNotionData = false;
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
+
+  // Simple pagination properties
+  currentPage: number = 1;
+  pageSize: number = 10;
+
+  // Live trade tracking
+  recentlyAddedTrades: Table[] = [];
 
   // Overall Trading History Table
   notionPerformanceData: NotionPerformanceData[] = [];
@@ -242,7 +249,7 @@ export class DashboardComponent {
 
 
 
-  constructor(private firestore: Firestore,private http: HttpClient) {
+  constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
 
   }
 
@@ -274,14 +281,20 @@ export class DashboardComponent {
       this.updateMT5TradePrice(data);
     });
     this.dtOptions = {
-      destroy: true,
       paging: true,
       searching: true,
       ordering: true,
       pageLength: 10,
-      processing: true, // Show a loading spinner while data is being processed
+      processing: false,
       responsive: true,
-			keys: true
+      keys: true,
+      retrieve: true,
+      language: {
+        emptyTable: "No trading data available",
+        info: "Showing _START_ to _END_ of _TOTAL_ trades",
+        infoEmpty: "Showing 0 to 0 of 0 trades",
+        lengthMenu: "Show _MENU_ trades per page"
+      }
     };
 
     this.dtOptionsNotion = {
@@ -306,15 +319,52 @@ export class DashboardComponent {
     await this.loadMT5Data(); // Load MT5 trades
     this.addTradesToCalendar(); // Add trades to calendar events
 
-    // Initialize DataTable
-    setTimeout(() => {
-      this.dtTrigger.next(null);
-    }, 500);
+    // Simple table - no DataTables initialization needed!
+    console.log('✅ Simple Angular table ready - no DataTables complexity!');
 
   }
 
   ngAfterViewInit() {
-    // $('#myTable').DataTable(); // Apply DataTables after view is ready
+    // Manual initialization will be called from ngOnInit
+  }
+
+  initializeDataTable(): void {
+    try {
+      console.log('🚀 Initializing DataTable with', this.tableData.length, 'rows');
+
+      // Use Angular DataTables trigger for complex column support
+      this.dtTrigger.next(null);
+      console.log('✅ DataTable initialized successfully');
+
+    } catch (error) {
+      console.error('❌ Error initializing DataTable:', error);
+    }
+  }
+
+  refreshDataTableWithAngularBinding(): void {
+    try {
+      console.log('🔄 Refreshing DataTable with Angular binding for complex columns');
+
+      // Force Angular change detection first
+      this.cdr.detectChanges();
+
+      // For Angular DataTables, we need to destroy and recreate to pick up new data
+      setTimeout(() => {
+        if ($.fn.dataTable.isDataTable('#myTable')) {
+          console.log('🗑️ Destroying existing Angular DataTable');
+          $('#myTable').DataTable().destroy();
+        }
+
+        // Trigger recreation with new data
+        setTimeout(() => {
+          this.dtTrigger.next(null);
+          console.log('✅ DataTable refreshed with Angular binding');
+        }, 100);
+      }, 50);
+
+    } catch (error) {
+      console.error('❌ Error refreshing DataTable with Angular binding:', error);
+    }
   }
 
   ngOnDestroy(): void {
@@ -662,8 +712,19 @@ onUpload(): void {
     return new Promise((resolve, reject) => {
       const tradesRef = collection(this.firestore, 'trades');
       getDocs(tradesRef).then((querySnapshot) => {
-        this.tableData = querySnapshot.docs.map(doc => doc.data()['rowData']);
-        console.log("firestore",this.tableData)
+        const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
+        console.log("��� Loaded from Firestore:", firestoreTrades.length, "trades");
+
+        // Don't overwrite existing tableData, merge with MT5 trades
+        if (this.mt5LiveTrades.length > 0) {
+          console.log("🔴 Preserving existing MT5 trades:", this.mt5LiveTrades.length);
+          // Keep MT5 trades and add Firestore trades
+          this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
+        } else {
+          this.tableData = firestoreTrades;
+        }
+
+        console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
         console.error('Error loading trades:', error);
@@ -892,10 +953,11 @@ isRowAlreadySelected(row: any): boolean {
   }
 
   async compareToNotion(){
+    console.log('🔍 Starting Compare to Notion process...');
     //for progress bar comparing
     const total = this.tableData.length;
     let completed = 0;
-   
+
     for (const row of this.tableData) {  //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
       const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
       const [datePart, timePart] = originalDateStr.split(' ');
@@ -913,7 +975,7 @@ isRowAlreadySelected(row: any): boolean {
           }
         }
       }
-      
+
       try {
         const res: any = await firstValueFrom(
           this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
@@ -923,6 +985,7 @@ isRowAlreadySelected(row: any): boolean {
           // console.log("Matched found:",res.results[0].id)
           row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
           row.status = "Matched"
+          console.log('✅ Match found for', originalDateStr, '- Status:', row.status);
         }else{
           row.status = "Unmatched"
           // console.log('No Matched found for: '+isoDate, error);
@@ -930,15 +993,20 @@ isRowAlreadySelected(row: any): boolean {
             row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
               trade
             );
+            console.log('⚠️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
         }
         completed++;
         this.progressComparing = Math.floor((completed / total) * 100);
-      } catch (error) {         
+      } catch (error) {
         this.comparingError = true
         console.error('Error comparing to Notion',row, error);
       }
     }
 
+    console.log('🎯 Compare to Notion completed! Data updated in simple table.');
+
+    // Simple change detection - no DataTable refresh needed!
+    this.cdr.detectChanges();
   }
 
 // Helper function to format the date; Manually format to ISO with +08:00 timezone
@@ -1087,7 +1155,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('🔍 Checking backend availability...');
+      console.log('�� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -1628,7 +1696,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         errorMessage += 'The server is running but the API route is missing.\n';
         errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
       } else if (error.status === 401 || error.status === 403) {
-        errorMessage += '🔐 Authentication Error\n\n';
+        errorMessage += '���� Authentication Error\n\n';
         errorMessage += 'The Notion API token might be invalid or missing.\n';
         errorMessage += 'Check your Notion API token in the backend configuration.';
       } else if (error.status >= 500) {
@@ -2485,19 +2553,32 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   mockMT5newTrade(){
-    console.log("mt5:",this.mt5LiveTrades);
+    console.log('🚀 Mock button clicked! Current state:');
+    console.log('📊 Current tableData length:', this.tableData.length);
+    console.log('🔴 Current mt5LiveTrades length:', this.mt5LiveTrades.length);
+
+    // Generate random mock data for testing
+    const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+    const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
+    const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
+    const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
+    const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
+
     const mock = {
-    "ticket": 123123123,
-    "symbol": "EURUSD",
-    "volume": 1.0,
-    "type": 0,  
-    "price_open": 1.1050,
-    "sl": 1.1000,
-    "tp": 1.1100,
-    "profit": 50.00,
-    "time": "2025-07-25 13:30:37",  
-    "commission": 0.00,
+      "ticket": randomTicket,
+      "symbol": randomSymbol,
+      "volume": parseFloat(randomVolume),
+      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
+      "price_open": parseFloat(randomPrice),
+      "sl": (parseFloat(randomPrice) - 0.0100).toFixed(4),
+      "tp": (parseFloat(randomPrice) + 0.0150).toFixed(4),
+      "profit": parseFloat(randomProfit),
+      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
+      "commission": (Math.random() * 5).toFixed(2),
     }
+
+    console.log('🎯 Generated mock trade:', mock);
     this.addMT5LiveTrade(mock);
   }
 
@@ -2529,10 +2610,34 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
+      console.log('✅ Adding new trade to mt5LiveTrades...');
       this.mt5LiveTrades.unshift(newTrade);
+      console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
+
       this.updateTableData();
-      // console.log("tableData:", this.tableData);
-      this.refreshDataTable();
+      console.log('📊 tableData after update:', this.tableData.length);
+
+      // Track as recently added for visual indication
+      this.recentlyAddedTrades.unshift(newTrade);
+
+      // Remove from recent list after 5 seconds
+      setTimeout(() => {
+        const index = this.recentlyAddedTrades.indexOf(newTrade);
+        if (index > -1) {
+          this.recentlyAddedTrades.splice(index, 1);
+        }
+      }, 5000);
+
+      // Force Angular change detection for immediate display
+      this.cdr.detectChanges();
+
+      // Go to first page to show the new trade
+      this.setPage(1);
+
+      console.log('✅ New MT5 trade added successfully! Total trades:', this.tableData.length);
+      console.log('🎆 Simple table approach - no more DataTables headaches!');
+    } else {
+      console.log('⚠️ Trade already exists, skipping duplicate');
     }
   }
 
@@ -2586,21 +2691,193 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    this.tableData = [...this.mt5LiveTrades];
+    console.log('🔄 updateTableData called');
+    console.log('📊 Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('🔴 Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+
+    // Get existing non-MT5 trades (those loaded from Firestore)
+    const existingTrades = this.tableData ? this.tableData.filter(trade =>
+      !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
+    ) : [];
+
+    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
+
+    // Create completely new array reference to trigger Angular change detection
+    const previousLength = this.tableData ? this.tableData.length : 0;
+    this.tableData = [...this.mt5LiveTrades, ...existingTrades];
+
+    console.log('✅ After update - tableData:', this.tableData.length, 'trades');
+    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
+    console.log('🎯 Final tableData:', this.tableData);
+  }
+
+  // Toggle method for single notion data button
+  toggleNotionData(): void {
+    this.showNotionData = !this.showNotionData;
+  }
+
+  // Simple pagination methods
+  getFilteredTableData(): Table[] {
+    return this.tableData || [];
+  }
+
+  getDisplayedRows(): Table[] {
+    const filtered = this.getFilteredTableData();
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return filtered.slice(startIndex, endIndex);
+  }
+
+  getTotalPages(): number {
+    const filtered = this.getFilteredTableData();
+    return Math.ceil(filtered.length / this.pageSize);
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.getTotalPages()) {
+      this.currentPage = page;
+    }
+  }
+
+  isNewTrade(trade: Table): boolean {
+    return this.recentlyAddedTrades.includes(trade);
+  }
+
+  getSafeNumber(value: any): number {
+    // Handle null, undefined, or empty values
+    if (value === null || value === undefined || value === '') {
+      return 0;
+    }
+
+    // Already a number
+    if (typeof value === 'number') {
+      return isNaN(value) ? 0 : value;
+    }
+
+    // String conversion
+    if (typeof value === 'string') {
+      // Handle common placeholder strings
+      if (value === '-' || value.trim() === '' || value.toLowerCase() === 'n/a') {
+        return 0;
+      }
+
+      // Remove any non-numeric characters except decimal point and minus sign
+      const cleanValue = value.replace(/[^0-9.-]/g, '');
+      const parsed = parseFloat(cleanValue);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    // Fallback for any other type
+    return 0;
+  }
+
+  addRowDirectlyToDataTable(newTrade: Table): void {
+    try {
+      console.log('🎯 Adding row directly to DataTable:', newTrade);
+
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+
+        // Create row data array matching the table structure
+        const rowData = [
+          newTrade.openDate,
+          '', // Notion Trades column (complex, will be empty for direct insert)
+          newTrade.status,
+          newTrade.position,
+          newTrade.symbol,
+          newTrade.type,
+          newTrade.volume,
+          newTrade.entry,
+          newTrade.sL,
+          newTrade.tP,
+          newTrade.closeDate,
+          newTrade.exit,
+          newTrade.commission,
+          newTrade.swap,
+          newTrade.profit,
+          newTrade.netProfit
+        ];
+
+        // Add the row and redraw
+        const rowNode = table.row.add(rowData).draw(false);
+        console.log('✅ Row added directly to DataTable');
+
+        // Scroll to top to show the new row
+        $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
+
+      } else {
+        console.log('⚠️ DataTable not initialized, cannot add row directly');
+      }
+
+    } catch (error) {
+      console.error('❌ Error adding row directly to DataTable:', error);
+    }
   }
 
   refreshDataTable(): void {
     try {
-      // if ($.fn.dataTable.isDataTable('#myTable')) {
-      //   $('#myTable').DataTable().destroy();
-      // }
-      setTimeout(() => {
-        this.dtTrigger.unsubscribe();
-      this.dtTrigger = new Subject();
-      this.dtTrigger.next(null)
-      }, 0);
+      console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
+      console.log('📊 TableData contents:', this.tableData);
+
+      // Use Angular binding refresh for complex columns
+      this.refreshDataTableWithAngularBinding();
+
     } catch (error) {
-      console.error("Error refreshing datatable:", error);
+      console.error('❌ Error refreshing DataTable:', error);
+    }
+  }
+
+  forceDataTableRefresh(): void {
+    console.log('💪 Force refreshing DataTable...');
+
+    // Method 1: Immediate change detection
+    this.cdr.detectChanges();
+
+    // Method 2: Nuclear option - completely rebuild the table
+    setTimeout(() => {
+      this.nuclearDataTableRebuild();
+    }, 100);
+  }
+
+  nuclearDataTableRebuild(): void {
+    try {
+      console.log('💥 Nuclear DataTable rebuild with', this.tableData.length, 'rows');
+
+      // Step 1: Completely destroy existing DataTable
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        console.log('🗑️ Destroying existing DataTable completely');
+        $('#myTable').DataTable().destroy();
+        $('#myTable').empty(); // Clear all HTML content
+      }
+
+      // Step 2: Force Angular change detection
+      this.cdr.detectChanges();
+
+      // Step 3: Wait for DOM cleanup
+      setTimeout(() => {
+        // Step 4: Manually rebuild table HTML if needed
+        console.log('🔨 Rebuilding table structure...');
+
+        // Step 5: Reinitialize with fresh DataTable
+        setTimeout(() => {
+          console.log('🚀 Reinitializing DataTable from scratch');
+          this.dtTrigger.next(null);
+
+          // Step 6: If still no luck, try direct jQuery DataTable initialization
+          setTimeout(() => {
+            if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
+              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
+              $('#myTable').DataTable(this.dtOptions);
+            }
+          }, 300);
+        }, 200);
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error in nuclear rebuild:', error);
+      // Last resort fallback
+      this.dtTrigger.next(null);
     }
   }
 
