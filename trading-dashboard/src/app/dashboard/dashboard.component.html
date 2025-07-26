@@ -257,8 +257,7 @@
                   'positive-row': isPositiveValue(row.netProfit),
                   'negative-row': isNegativeValue(row.netProfit),
                   'new-trade': isNewTrade(row)
-                }"
-                [@fadeIn]="'in'">
+                }">
               <td class="col-date">{{ row.openDate }}</td>
 
               <td class="col-notion" [class.hidden]="!showNotionData">
