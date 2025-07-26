@@ -2621,9 +2621,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.cdr.detectChanges();
       console.log('🔄 Change detection triggered');
 
-      // Use force refresh for new row additions (destroy/recreate approach)
-      console.log('🚀 Forcing complete DataTable refresh for new row...');
-      this.forceDataTableRefresh();
+      // Try direct DataTable manipulation first for immediate feedback
+      this.addRowDirectlyToDataTable(newTrade);
+
+      // Also trigger full refresh as backup
+      setTimeout(() => {
+        this.forceDataTableRefresh();
+      }, 500);
 
       console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
       console.log('📊 Current tableData:', this.tableData);
@@ -2715,6 +2719,49 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         table.column(2).visible(this.showNotionData); // Status column
       }
     }, 100);
+  }
+
+  addRowDirectlyToDataTable(newTrade: Table): void {
+    try {
+      console.log('🎯 Adding row directly to DataTable:', newTrade);
+
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+
+        // Create row data array matching the table structure
+        const rowData = [
+          newTrade.openDate,
+          '', // Notion Trades column (complex, will be empty for direct insert)
+          newTrade.status,
+          newTrade.position,
+          newTrade.symbol,
+          newTrade.type,
+          newTrade.volume,
+          newTrade.entry,
+          newTrade.sL,
+          newTrade.tP,
+          newTrade.closeDate,
+          newTrade.exit,
+          newTrade.commission,
+          newTrade.swap,
+          newTrade.profit,
+          newTrade.netProfit
+        ];
+
+        // Add the row and redraw
+        const rowNode = table.row.add(rowData).draw(false);
+        console.log('✅ Row added directly to DataTable');
+
+        // Scroll to top to show the new row
+        $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
+
+      } else {
+        console.log('⚠️ DataTable not initialized, cannot add row directly');
+      }
+
+    } catch (error) {
+      console.error('❌ Error adding row directly to DataTable:', error);
+    }
   }
 
   refreshDataTable(): void {
