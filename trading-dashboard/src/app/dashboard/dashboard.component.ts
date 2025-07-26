@@ -1,4 +1,4 @@
-import { Component, importProvidersFrom, OnDestroy, OnInit  } from '@angular/core';
+import { Component, importProvidersFrom, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -242,7 +242,7 @@ export class DashboardComponent {
 
 
 
-  constructor(private firestore: Firestore,private http: HttpClient) {
+  constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
 
   }
 
@@ -2625,20 +2625,32 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       console.log('Refreshing DataTable with', this.tableData.length, 'rows');
 
-      // Use Angular's change detection cycle to properly refresh the DataTable
+      // Force Angular change detection first
+      this.cdr.detectChanges();
+
+      // Then refresh the DataTable
       setTimeout(() => {
         try {
-          // Trigger Angular change detection and DataTable re-render
-          this.dtTrigger.next(null);
-          console.log('DataTable refresh triggered successfully');
-        } catch (triggerError) {
-          console.error('Error triggering DataTable refresh:', triggerError);
-          // If trigger fails, create a new one
+          // Destroy existing DataTable if it exists
+          if ($.fn.dataTable.isDataTable('#myTable')) {
+            $('#myTable').DataTable().destroy();
+            console.log('Destroyed existing DataTable');
+          }
+
+          // Create new trigger and initialize DataTable
           this.dtTrigger.unsubscribe();
           this.dtTrigger = new Subject();
-          this.dtTrigger.next(null);
+
+          // Wait a bit more for DOM to update
+          setTimeout(() => {
+            this.dtTrigger.next(null);
+            console.log('DataTable refresh triggered successfully');
+          }, 100);
+
+        } catch (triggerError) {
+          console.error('Error triggering DataTable refresh:', triggerError);
         }
-      }, 150);
+      }, 200);
     } catch (error) {
       console.error('Error refreshing DataTable:', error);
     }
