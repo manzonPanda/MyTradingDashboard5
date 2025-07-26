@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Frontend",
+      "label": "Frontend-Angular",
       "type": "shell",
       "command": "ng serve",
       "options": {
@@ -15,7 +15,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Backend",
+      "label": "Backend-NotionApi",
       "type": "shell",
       "command": "npm run dev",
       "options": {
@@ -28,8 +28,21 @@
       "problemMatcher": []
     },
     {
+      "label": "Backend-MT5api",
+      "type": "shell",
+      "command": "python mt5_api.py",
+      "options": {
+        "cwd": "${workspaceFolder}/pythonMt5",
+        "shell": {
+            "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+            "args": ["-c"]
+        }
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Start All",
-      "dependsOn": ["Frontend", "Backend"],
+      "dependsOn": ["Frontend-Angular", "Backend-NotionApi", "Backend-MT5api"],
       "dependsOrder": "parallel"
     }
   ]

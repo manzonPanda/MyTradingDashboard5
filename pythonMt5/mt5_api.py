@@ -83,7 +83,7 @@ def watch_trades():
         # Update the last seen positions
         last_positions = current_positions.copy()
 
-        time.sleep(5)
+        time.sleep(1)
 
 
 
@@ -116,22 +116,42 @@ def get_open_trades():
 
 @app.route("/api/history", methods=["GET"])
 def full_history():
-    from_date = datetime(2000, 1, 1)  # Start date
-    to_date = datetime.now()          # End date
+    from_date = datetime(2000, 1, 1)
+    to_date = datetime.now()
 
     deals = mt5.history_deals_get(from_date, to_date)
-    if deals is None:
-        print("No deals found")
-    else:
-        df_deals = pd.DataFrame(list(deals), columns=deals[0]._asdict().keys())
-        print(df_deals)
-
     orders = mt5.history_orders_get(from_date, to_date)
-    if orders is None:
-        print("No orders found")
-    else:
+
+    if deals is None or len(deals) == 0:
+        return jsonify({"error": "No closed trades (deals) found"}), 404
+
+    df_deals = pd.DataFrame(list(deals), columns=deals[0]._asdict().keys())
+    df_deals['time'] = pd.to_datetime(df_deals['time'], unit='s')
+
+    # Filter for closed trades only (entry == DEAL_ENTRY_OUT)
+    df_closed = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT]
+
+    if orders and len(orders) > 0:
         df_orders = pd.DataFrame(list(orders), columns=orders[0]._asdict().keys())
-        print(df_orders)
+        df_orders['time_setup'] = pd.to_datetime(df_orders['time_setup'], unit='s')
+        df_orders = df_orders[['ticket', 'symbol', 'type', 'sl', 'tp', 'comment']]
+
+        # Merge closed deals with matching order info (SL/TP/comment)
+        df_merged = df_closed.merge(df_orders, left_on='order', right_on='ticket', suffixes=('', '_order'))
+    else:
+        df_merged = df_closed
+
+    # Select and return fields, now including commission
+    result = df_merged[[
+        'ticket', 'order', 'symbol', 'volume', 'price', 'profit', 'commission', 'time',
+        'sl', 'tp', 'comment'
+    ]].to_dict(orient='records')
+    
+    # result = df_merged[[
+    #     'profit'
+    # ]].to_dict(orient='records')
+
+    return jsonify(result)
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)

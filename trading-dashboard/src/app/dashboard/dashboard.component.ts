@@ -153,9 +153,6 @@ export class DashboardComponent {
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
 
-  //
-
-
   // Notion Performance Intelligence properties
   notionPerformanceData: NotionPerformanceData[] = [];
   dtOptionsNotion: any = {};
@@ -241,7 +238,7 @@ export class DashboardComponent {
 
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
-  USE_MOCK_DATA = false;
+
 
 
   constructor(private firestore: Firestore,private http: HttpClient) {
@@ -304,9 +301,9 @@ export class DashboardComponent {
 
     localStorage.clear();
 
-    await this.loadTrades();
-    await this.loadMT5Data();
-    this.addTradesToCalendar();
+    await this.loadTrades(); // Load trades from Firestore
+    await this.loadMT5Data(); // Load MT5 trades
+    this.addTradesToCalendar(); // Add trades to calendar events
 
     // Initialize DataTable
     setTimeout(() => {
@@ -665,7 +662,7 @@ onUpload(): void {
       const tradesRef = collection(this.firestore, 'trades');
       getDocs(tradesRef).then((querySnapshot) => {
         this.tableData = querySnapshot.docs.map(doc => doc.data()['rowData']);
-        console.log(this.tableData)
+        console.log("firestore",this.tableData)
         resolve(); // Notify that loading is done
       }).catch((error) => {
         console.error('Error loading trades:', error);
@@ -1067,8 +1064,9 @@ onUpload(): void {
 
   async getMt5API(){
     const res: any = await firstValueFrom(
-      this.http.get("http://localhost:5000/api/open_trades")
+      this.http.get("http://localhost:5000/api/history")
     );
+    console.warn(res)
     return res;
   }
 
@@ -1095,7 +1093,7 @@ onUpload(): void {
       let pageCount = 0;
 
       console.log('📤 Starting pagination to get ALL entries from your Notion database...');
-      console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
+      // console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
 
       while (hasMore) {
         pageCount++;
@@ -1155,11 +1153,11 @@ onUpload(): void {
         this.notionPerformanceData = this.parseNotionResponse(allResults);
         console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
         console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
-        this.USE_MOCK_DATA = false;
+  
       } else {
         console.warn('⚠️ No results found in your Notion database after pagination');
         this.notionPerformanceData = [];
-        this.USE_MOCK_DATA = false;
+   
       }
 
       // Trigger DataTable rendering safely
@@ -1178,7 +1176,7 @@ onUpload(): void {
 
       // Show empty state instead of mock data
       this.notionPerformanceData = [];
-      this.USE_MOCK_DATA = false;
+   
 
       // Still trigger DataTable rendering safely
       this.triggerDataTableRender();
@@ -1533,33 +1531,33 @@ onUpload(): void {
 
   checkBackendInstructions(): void {
     const instructions = `
-🔧 How to start the Notion backend server:
+        🔧 How to start the Notion backend server:
 
-1. Open a new terminal window/tab
-2. Navigate to the backend directory:
-   cd NotionProxyApi
+        1. Open a new terminal window/tab
+        2. Navigate to the backend directory:
+          cd NotionProxyApi
 
-3. Install dependencies (if first time):
-   npm install
+        3. Install dependencies (if first time):
+          npm install
 
-4. Start the development server:
-   npm run dev
+        4. Start the development server:
+          npm run dev
 
-5. You should see this message:
-   "✅ Server running at http://localhost:3000"
+        5. You should see this message:
+          "✅ Server running at http://localhost:3000"
 
-6. Then click "Test Backend" to verify the connection
+        6. Then click "Test Backend" to verify the connection
 
-📁 Project Structure:
-- Your project has both frontend (trading-dashboard) and backend (NotionProxyApi)
-- The backend serves as a proxy to your Notion database
-- The frontend connects to localhost:3000 to get your Notion data
+        📁 Project Structure:
+        - Your project has both frontend (trading-dashboard) and backend (NotionProxyApi)
+        - The backend serves as a proxy to your Notion database
+        - The frontend connects to localhost:3000 to get your Notion data
 
-💡 Troubleshooting:
-- Make sure you're in the NotionProxyApi folder when running npm run dev
-- Check that port 3000 is not already in use
-- Verify your Notion API token is configured in the backend
-`;
+        💡 Troubleshooting:
+        - Make sure you're in the NotionProxyApi folder when running npm run dev
+        - Check that port 3000 is not already in use
+        - Verify your Notion API token is configured in the backend
+        `;
 
     alert(instructions);
   }
@@ -2247,8 +2245,8 @@ onUpload(): void {
     // Debug: log table data info
     // console.log('Total trades in tableData:', this.tableData.length);
     if (this.tableData.length > 0) {
-      console.log('First trade date:', this.tableData[0].openDate);
-      console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);
+      // console.log('First trade date:', this.tableData[0].openDate);
+      // console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);
     }
 
     // Instead of using today's date, let's use the date range from the actual trades
@@ -2272,7 +2270,7 @@ onUpload(): void {
     const minDate = new Date(Math.min(...tradeDates.map(d => d.getTime())));
     const maxDate = new Date(Math.max(...tradeDates.map(d => d.getTime())));
 
-    console.log('Trade date range:', minDate.toDateString(), 'to', maxDate.toDateString());
+    // console.log('Trade date range:', minDate.toDateString(), 'to', maxDate.toDateString());
 
     // Use the actual trade date range to show the last 30 days from the most recent trade
     const endDate = maxDate;
@@ -2301,7 +2299,7 @@ onUpload(): void {
       else if (dayPnL < -25) cellClass = 'negative-med';
       else if (dayPnL < 0) cellClass = 'negative-low';
 
-      console.log(`Date: ${date.toLocaleDateString()}, Trades: ${dayTrades.length}, P&L: ${dayPnL.toFixed(2)}, Class: ${cellClass}`);
+      // console.log(`Date: ${date.toLocaleDateString()}, Trades: ${dayTrades.length}, P&L: ${dayPnL.toFixed(2)}, Class: ${cellClass}`);
 
       last30Days.push({
         value: dayPnL,
