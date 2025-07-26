@@ -126,7 +126,7 @@ export class DashboardComponent {
   locale: string = 'en';
   rawData: any[] = [];
   // Active Account Table
-  tableData: Table[] = [];
+  tableData: Table[] = []; // Initialize as empty array
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
 
