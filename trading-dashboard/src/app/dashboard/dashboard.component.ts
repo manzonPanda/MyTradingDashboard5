@@ -1,5 +1,4 @@
 import { Component, importProvidersFrom, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
-import { trigger, transition, style, animate } from '@angular/animations';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -2439,7 +2438,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const revengeScore = this.getRevengeTradingScore();
     if (revengeScore > 20) {
       insights.push({
-        title: '😤 Revenge Trading Pattern',
+        title: '��� Revenge Trading Pattern',
         description: `${revengeScore.toFixed(1)}% of your trades show signs of revenge trading after losses.`,
         recommendations: [
           'Take a break after a losing trade to reset emotionally',
@@ -2799,7 +2798,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   refreshDataTable(): void {
     try {
       console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
-      console.log('📊 TableData contents:', this.tableData);
+      console.log('�� TableData contents:', this.tableData);
 
       // Use Angular binding refresh for complex columns
       this.refreshDataTableWithAngularBinding();
