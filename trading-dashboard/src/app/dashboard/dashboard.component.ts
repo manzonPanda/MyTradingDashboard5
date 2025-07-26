@@ -1,4 +1,4 @@
-import { Component, importProvidersFrom, OnDestroy, OnInit   } from '@angular/core';
+import { Component, importProvidersFrom, OnDestroy, OnInit  } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
 import { addMonths, subMonths } from 'date-fns';
 declare var $: any;
-import { DataTablesModule, } from 'angular-datatables';
+import { DataTablesModule  } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import * as DataTables from 'datatables.net';
 import 'datatables.net'; // Ensure DataTables functionality is available
@@ -129,6 +129,11 @@ export class DashboardComponent {
   tableData: Table[] = [];
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
+
+  // MT5 Live Trading properties
+  mt5LiveTrades: Table[] = []; // Live trades from MT5
+  isLoadingMT5Data = false;
+
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
@@ -160,11 +165,6 @@ export class DashboardComponent {
   dtTriggerNotion: Subject<any> = new Subject<any>();
   isLoadingNotionData = false;
   showLoadButton = true; // Controls whether to show load button or table
-
-  // MT5 Live Trading properties
-  mt5LiveTrades: Table[] = []; // Live trades from MT5
-  mt5HistoryTrades: Table[] = []; // Historical trades from MT5
-  isLoadingMT5Data = false;
 
   // Column visibility controls
   columnVisibility = {
@@ -2449,7 +2449,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             closeDate: this.convertAndFormatMT5Date(trade.time_close),
             tradeNotion: [],
             status: "",
-            position: trade.type === 0 ? 'Buy' : 'Sell',
+            position: trade.position_id,
             symbol: trade.symbol || '',
             type: trade.type === 0 ? 'Buy' : 'Sell',
             volume: trade.volume ? trade.volume.toString() : '0',
@@ -2465,7 +2465,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         });
 
         this.mt5LiveTrades = mt5Trades;
-        console.log("mt5History",mt5Trades)
         this.updateTableData();
       }
     } catch (error) {
@@ -2485,46 +2484,54 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
   }
 
-
+  mockMT5newTrade(){
+    console.log("mt5:",this.mt5LiveTrades);
+    const mock = {
+    "ticket": 123123123,
+    "symbol": "EURUSD",
+    "volume": 1.0,
+    "type": 0,  
+    "price_open": 1.1050,
+    "sl": 1.1000,
+    "tp": 1.1100,
+    "profit": 50.00,
+    "time": "2025-07-25 13:30:37",  
+    "commission": 0.00,
+    }
+    this.addMT5LiveTrade(mock);
+  }
 
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData.object || tradeData;
     if (!trade) return;
 
-    const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).replace(/\//g, '.').replace(', ', ' ');
-
     const newTrade: Table = {
-      openDate: openDate,
+      openDate: this.convertAndFormatMT5Date(trade.time),
+      closeDate: "-",
       tradeNotion: [],
-      status: 'Open',
-      position: trade.type === 0 ? 'Buy' : 'Sell',
+      status: "",
+      position: trade.ticket,
       symbol: trade.symbol || '',
       type: trade.type === 0 ? 'Buy' : 'Sell',
       volume: trade.volume ? trade.volume.toString() : '0',
-      entry: trade.price_open ? trade.price_open.toString() : '0',
-      sL: trade.sl ? trade.sl.toString() : '0',
-      tP: trade.tp ? trade.tp.toString() : '0',
-      closeDate: '',
-      exit: trade.price_current ? trade.price_current.toString() : '0',
-      commission: '0',
-      swap: trade.swap ? trade.swap.toString() : '0',
+      entry: "-",
+      sL: "-",
+      tP: "-",
+      exit: "-",
+      commission: trade.commission ? trade.commission.toString() : '0',
+      swap: "-",
       profit: trade.profit ? trade.profit.toString() : '0',
       netProfit: trade.profit ? trade.profit.toString() : '0'
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
-      t.symbol === newTrade.symbol && t.entry === newTrade.entry
+      t.position === newTrade.position
     );
-
-    if (existingIndex === -1) {
+    console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
+    if (existingIndex == -1) {
       this.mt5LiveTrades.unshift(newTrade);
       this.updateTableData();
+      // console.log("tableData:", this.tableData);
       this.refreshDataTable();
     }
   }
@@ -2553,7 +2560,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.netProfit = trade.profit ? trade.profit.toString() : '0';
 
       this.mt5LiveTrades.splice(liveIndex, 1);
-      this.mt5HistoryTrades.unshift(closedTrade);
+      
 
       this.updateTableData();
       console.log('✅ MT5 trade closed and moved to history');
@@ -2575,32 +2582,25 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableDataOnly(): void {
-    const originalFirebaseData = this.tableData.filter(trade =>
-      trade.status !== 'Open' && trade.status !== 'Closed'
-    );
-    this.tableData = [...this.mt5LiveTrades, ...this.mt5HistoryTrades, ...originalFirebaseData];
+    this.tableData = [...this.mt5LiveTrades, ];
   }
 
   updateTableData(): void {
-    const originalFirebaseData = this.tableData.filter(trade =>
-      trade.status !== 'Open' && trade.status !== 'Closed'
-    );
-    this.tableData = [...this.mt5LiveTrades, ...this.mt5HistoryTrades, ...originalFirebaseData];
+    this.tableData = [...this.mt5LiveTrades];
   }
 
   refreshDataTable(): void {
     try {
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        $('#myTable').DataTable().destroy();
-      }
-      $('#myTable').empty();
+      // if ($.fn.dataTable.isDataTable('#myTable')) {
+      //   $('#myTable').DataTable().destroy();
+      // }
       setTimeout(() => {
         this.dtTrigger.unsubscribe();
-        this.dtTrigger = new Subject();
-        this.dtTrigger.next(null);
-      }, 100);
+      this.dtTrigger = new Subject();
+      this.dtTrigger.next(null)
+      }, 0);
     } catch (error) {
-      // Silent error handling
+      console.error("Error refreshing datatable:", error);
     }
   }
 

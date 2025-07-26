@@ -94,6 +94,7 @@
       <div class="header-actions">
         <app-connection-status></app-connection-status>
         <button class="btn-info" (click)="getMt5API()"> MT5 api </button>
+         <button class="btn-info" (click)="mockMT5newTrade()"> Mock: MT5+trade </button>
         <!-- <button class="btn-info" (click)="onFileSelected($event)">
           <mat-icon>cloud_upload</mat-icon>
           Import Data
@@ -278,13 +279,15 @@
               </td>
 
               <td class="col-position">
-                <span class="position-badge" [ngClass]="getPositionClass(row.position)">
+                <span class="position-badge">
                   {{ row.position }}
                 </span>
               </td>
-              
+
               <td class="col-symbol">{{ row.symbol }}</td>
-              <td class="col-type">-</td>
+              <td class="col-position">
+                <span class="position-badge" [ngClass]="getPositionClass(row.type)"> {{ row.type }} </span> 
+              </td>
               <td class="col-volume">{{ row.volume }}</td>
               <td class="col-price">-</td>
               <td class="col-price">-</td>
@@ -852,7 +855,7 @@
                 </span>
               </td>
               <td *ngIf="columnVisibility.buySell" class="col-buysell">
-                <span class="position-badge" [ngClass]="getPositionClass(data.buySell)">
+                <span class="position-badge" >
                   {{ data.buySell }}
                 </span>
               </td>

@@ -59,7 +59,7 @@ def watch_trades():
                     "sl": pos.sl,
                     "tp": pos.tp,
                     "profit": pos.profit,
-                    "time": pos.time,
+                    "time": datetime.fromtimestamp(pos.time).strftime('%Y-%m-%d %H:%M:%S'),
                     "object":pos
                 })
 
