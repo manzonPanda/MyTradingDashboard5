@@ -2619,15 +2619,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    // Properly combine MT5 live trades with existing tableData
+    console.log('🔄 updateTableData called');
+    console.log('📊 Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('🔴 Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
       !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
     ) : [];
 
+    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
+
     // Combine MT5 trades with existing trades
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
-    console.log('Updated tableData:', this.tableData.length, 'trades (', this.mt5LiveTrades.length, 'MT5 +', existingTrades.length, 'existing)');
+
+    console.log('✅ After update - tableData:', this.tableData.length, 'trades');
+    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('🎯 Final tableData:', this.tableData);
   }
 
   // Toggle method for single notion data button
