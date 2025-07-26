@@ -281,7 +281,37 @@ export class DashboardComponent {
       processing: false,
       responsive: true,
       keys: true,
-      retrieve: true, // Use retrieve instead of destroy for better performance
+      retrieve: true,
+      data: [], // Initialize with empty data
+      columns: [
+        { title: 'Open Date', data: 'openDate' },
+        { title: 'Notion Trades', data: 'tradeNotion', visible: false }, // Hidden by default
+        { title: 'Status', data: 'status', visible: false }, // Hidden by default
+        { title: 'Position', data: 'position' },
+        { title: 'Symbol', data: 'symbol' },
+        { title: 'Type', data: 'type' },
+        { title: 'Volume', data: 'volume' },
+        { title: 'Entry', data: 'entry' },
+        { title: 'S/L', data: 'sL' },
+        { title: 'T/P', data: 'tP' },
+        { title: 'Close Date', data: 'closeDate' },
+        { title: 'Exit', data: 'exit' },
+        { title: 'Commission', data: 'commission' },
+        { title: 'Swap', data: 'swap' },
+        { title: 'Profit', data: 'profit' },
+        { title: 'Net Profit', data: 'netProfit' }
+      ],
+      columnDefs: [
+        {
+          targets: [1, 2], // Notion Trades and Status columns
+          visible: false, // Hide notion data by default
+          className: 'notion-column'
+        },
+        {
+          targets: [6, 7, 8, 9, 11, 12, 13, 14, 15], // Numeric columns
+          className: 'text-right'
+        }
+      ],
       language: {
         emptyTable: "No trading data available",
         info: "Showing _START_ to _END_ of _TOTAL_ trades",
@@ -2652,6 +2682,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // Toggle method for single notion data button
   toggleNotionData(): void {
     this.showNotionData = !this.showNotionData;
+
+    // Update DataTable column visibility
+    setTimeout(() => {
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+        table.column(1).visible(this.showNotionData); // Notion Trades column
+        table.column(2).visible(this.showNotionData); // Status column
+      }
+    }, 100);
   }
 
   refreshDataTable(): void {
@@ -2682,33 +2721,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Method 1: Immediate change detection
     this.cdr.detectChanges();
 
-    // Method 2: Multiple triggers with different timings
-    setTimeout(() => {
-      console.log('⏰ Trigger 1: Immediate');
-      this.dtTrigger.next(null);
-    }, 0);
-
-    setTimeout(() => {
-      console.log('⏰ Trigger 2: 50ms delay');
-      this.cdr.detectChanges();
-      this.dtTrigger.next(null);
-    }, 50);
-
-    setTimeout(() => {
-      console.log('⏰ Trigger 3: 200ms delay');
-      this.cdr.detectChanges();
-      this.dtTrigger.next(null);
-    }, 200);
-
-    // Method 3: Manual DataTable refresh if it exists
+    // Method 2: Destroy and recreate to avoid data mismatch
     setTimeout(() => {
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        const table = $('#myTable').DataTable();
-        console.log('📋 DataTable exists, clearing and redrawing...');
-        table.clear().draw();
-        table.rows.add($(table.table().body).find('tr')).draw();
+        console.log('🗑️ Destroying existing DataTable');
+        $('#myTable').DataTable().destroy();
       }
-    }, 300);
+
+      // Wait for DOM cleanup then reinitialize
+      setTimeout(() => {
+        console.log('🔄 Reinitializing DataTable with new data');
+        this.dtTrigger.next(null);
+      }, 100);
+    }, 50);
   }
 
 
