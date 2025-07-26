@@ -668,8 +668,19 @@ onUpload(): void {
     return new Promise((resolve, reject) => {
       const tradesRef = collection(this.firestore, 'trades');
       getDocs(tradesRef).then((querySnapshot) => {
-        this.tableData = querySnapshot.docs.map(doc => doc.data()['rowData']);
-        console.log("firestore",this.tableData)
+        const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
+        console.log("��� Loaded from Firestore:", firestoreTrades.length, "trades");
+
+        // Don't overwrite existing tableData, merge with MT5 trades
+        if (this.mt5LiveTrades.length > 0) {
+          console.log("🔴 Preserving existing MT5 trades:", this.mt5LiveTrades.length);
+          // Keep MT5 trades and add Firestore trades
+          this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
+        } else {
+          this.tableData = firestoreTrades;
+        }
+
+        console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
         console.error('Error loading trades:', error);
