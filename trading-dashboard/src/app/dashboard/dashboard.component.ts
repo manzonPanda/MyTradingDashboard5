@@ -2744,6 +2744,21 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.recentlyAddedTrades.includes(trade);
   }
 
+  getSafeNumber(value: string | number): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      // Handle common non-numeric strings
+      if (value === '-' || value === '' || value === null || value === undefined) {
+        return 0;
+      }
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  }
+
   addRowDirectlyToDataTable(newTrade: Table): void {
     try {
       console.log('🎯 Adding row directly to DataTable:', newTrade);
