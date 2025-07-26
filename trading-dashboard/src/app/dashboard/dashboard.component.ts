@@ -342,9 +342,9 @@ export class DashboardComponent {
     await this.loadMT5Data(); // Load MT5 trades
     this.addTradesToCalendar(); // Add trades to calendar events
 
-    // Initialize DataTable
+    // Initialize DataTable manually
     setTimeout(() => {
-      this.dtTrigger.next(null);
+      this.initializeDataTable();
     }, 500);
 
   }
