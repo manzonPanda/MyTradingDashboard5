@@ -2,95 +2,74 @@
   <!-- Header Section -->
   <header class="dashboard-header">
     <div class="header-content">
-      <h1 class="dashboard-title">Jake Trading Dashboard</h1>
-      <!-- Progress Indicators -->
-      <div class="progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
-        <div class="progress-grid">
-          <!-- Upload Progress -->
-          <div class="progress-item" *ngIf="isUploading">
-            <div class="progress-content">
+      <div class="header-left-section">
+        <h1 class="dashboard-title">Jake Trading Dashboard</h1>
+
+        <!-- Progress Indicators - moved to header and aligned horizontally -->
+        <div class="header-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
+          <div class="header-progress-grid">
+            <!-- Upload Progress -->
+            <div class="header-progress-item" *ngIf="isUploading">
               <mat-progress-spinner
                 [value]="uploadProgress"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6">
+                diameter="32"
+                strokeWidth="4">
               </mat-progress-spinner>
-              <div class="progress-text">
-                <span class="progress-value">{{ uploadProgress }}%</span>
-                <span class="progress-label">Uploading</span>
-              </div>
+              <span class="header-progress-label">Uploading {{ uploadProgress }}%</span>
             </div>
-          </div>
 
-          <!-- Checking Progress -->
-          <div class="progress-item" *ngIf="isLoadingChecking">
-            <div class="progress-content">
+            <!-- Checking Progress -->
+            <div class="header-progress-item" *ngIf="isLoadingChecking">
               <mat-progress-spinner
                 [value]="progressChecking"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
+                diameter="32"
+                strokeWidth="4"
                 [ngClass]="{ 'error-spinner': checkingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': checkingError }">
-                <span class="progress-value">{{ progressChecking }}%</span>
-                <span class="progress-label">Checking</span>
-              </div>
+              <span class="header-progress-label" [ngClass]="{ 'error-text': checkingError }">Checking {{ progressChecking }}%</span>
             </div>
-          </div>
 
-          <!-- Patching Progress -->
-          <div class="progress-item" *ngIf="isLoadingPatching">
-            <div class="progress-content">
+            <!-- Patching Progress -->
+            <div class="header-progress-item" *ngIf="isLoadingPatching">
               <mat-progress-spinner
                 [value]="progressPatching"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
+                diameter="32"
+                strokeWidth="4"
                 [ngClass]="{ 'error-spinner': patchingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': patchingError }">
-                <span class="progress-value">{{ progressPatching }}%</span>
-                <span class="progress-label">Patching</span>
-              </div>
+              <span class="header-progress-label" [ngClass]="{ 'error-text': patchingError }">Patching {{ progressPatching }}%</span>
             </div>
-          </div>
 
-          <!-- Comparing Progress -->
-          <div class="progress-item" *ngIf="isLoadingComparing">
-            <div class="progress-content">
+            <!-- Comparing Progress -->
+            <div class="header-progress-item" *ngIf="isLoadingComparing">
               <mat-progress-spinner
                 [value]="progressComparing"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
+                diameter="32"
+                strokeWidth="4"
                 [ngClass]="{ 'error-spinner': comparingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': comparingError }">
-                <span class="progress-value">{{ progressComparing }}%</span>
-                <span class="progress-label">Comparing</span>
-              </div>
+              <span class="header-progress-label" [ngClass]="{ 'error-text': comparingError }">Comparing {{ progressComparing }}%</span>
             </div>
-          </div>
 
-          <!-- Populating Progress -->
-          <div class="progress-item" *ngIf="isLoadingPopulating">
-            <div class="progress-content">
+            <!-- Populating Progress -->
+            <div class="header-progress-item" *ngIf="isLoadingPopulating">
               <mat-progress-spinner
                 [value]="progressPopulating"
                 mode="determinate"
-                diameter="60"
-                strokeWidth="6"
+                diameter="32"
+                strokeWidth="4"
                 [ngClass]="{ 'error-spinner': populatingError }">
               </mat-progress-spinner>
-              <div class="progress-text" [ngClass]="{ 'error-text': populatingError }">
-                <span class="progress-value">{{ progressPopulating }}%</span>
-                <span class="progress-label">Populating</span>
-              </div>
+              <span class="header-progress-label" [ngClass]="{ 'error-text': populatingError }">Populating {{ progressPopulating }}%</span>
             </div>
           </div>
         </div>
       </div>
+
       <div class="header-actions">
         <app-connection-status></app-connection-status>
         <button class="btn-info" (click)="getMt5API()"> MT5 api </button>
@@ -186,13 +165,9 @@
       </div>
 
         <div class="table-filters">
-          <button class="filter-btn" [class.active]="!showNotionData" (click)="showNotionData = false">
-            <mat-icon>visibility_off</mat-icon>
-            Hide Notion Data
-          </button>
-          <button class="filter-btn" [class.active]="showNotionData" (click)="showNotionData = true">
-            <mat-icon>visibility</mat-icon>
-            Show Notion Data
+          <button class="filter-btn" [class.active]="showNotionData" (click)="toggleNotionData()">
+            <mat-icon>{{ showNotionData ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ showNotionData ? 'Hide' : 'Show' }} Notion Data
           </button>
         </div>
       </div>
