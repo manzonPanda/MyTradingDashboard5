@@ -350,7 +350,30 @@ export class DashboardComponent {
   }
 
   ngAfterViewInit() {
-    // $('#myTable').DataTable(); // Apply DataTables after view is ready
+    // Manual initialization will be called from ngOnInit
+  }
+
+  initializeDataTable(): void {
+    try {
+      console.log('🚀 Initializing DataTable with', this.tableData.length, 'rows');
+
+      // Destroy existing DataTable if it exists
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        $('#myTable').DataTable().destroy();
+      }
+
+      // Initialize with current data
+      const dataTableOptions = {
+        ...this.dtOptions,
+        data: this.tableData
+      };
+
+      $('#myTable').DataTable(dataTableOptions);
+      console.log('✅ DataTable initialized successfully');
+
+    } catch (error) {
+      console.error('❌ Error initializing DataTable:', error);
+    }
   }
 
   ngOnDestroy(): void {
