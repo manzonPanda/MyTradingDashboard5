@@ -2486,18 +2486,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   mockMT5newTrade(){
     console.log("mt5:",this.mt5LiveTrades);
+
+    // Generate random mock data for testing
+    const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+    const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
+    const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
+    const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
+    const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
+
     const mock = {
-    "ticket": 123123123,
-    "symbol": "EURUSD",
-    "volume": 1.0,
-    "type": 0,  
-    "price_open": 1.1050,
-    "sl": 1.1000,
-    "tp": 1.1100,
-    "profit": 50.00,
-    "time": "2025-07-25 13:30:37",  
-    "commission": 0.00,
+      "ticket": randomTicket,
+      "symbol": randomSymbol,
+      "volume": parseFloat(randomVolume),
+      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
+      "price_open": parseFloat(randomPrice),
+      "sl": (parseFloat(randomPrice) - 0.0100).toFixed(4),
+      "tp": (parseFloat(randomPrice) + 0.0150).toFixed(4),
+      "profit": parseFloat(randomProfit),
+      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
+      "commission": (Math.random() * 5).toFixed(2),
     }
+
+    console.log('Adding mock trade:', mock);
     this.addMT5LiveTrade(mock);
   }
 
@@ -2531,8 +2542,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (existingIndex == -1) {
       this.mt5LiveTrades.unshift(newTrade);
       this.updateTableData();
-      // console.log("tableData:", this.tableData);
       this.refreshDataTable();
+      console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
+    } else {
+      console.log('⚠️ Trade already exists, skipping duplicate');
     }
   }
 
@@ -2586,21 +2599,34 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
+    // Combine MT5 live trades with any existing table data
     this.tableData = [...this.mt5LiveTrades];
+    console.log('Updated tableData:', this.tableData.length, 'trades');
+  }
+
+  // Toggle method for single notion data button
+  toggleNotionData(): void {
+    this.showNotionData = !this.showNotionData;
   }
 
   refreshDataTable(): void {
     try {
-      // if ($.fn.dataTable.isDataTable('#myTable')) {
-      //   $('#myTable').DataTable().destroy();
-      // }
+      console.log('Refreshing DataTable with', this.tableData.length, 'rows');
+
+      // Safely destroy and recreate the DataTable
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        $('#myTable').DataTable().destroy();
+      }
+
       setTimeout(() => {
+        // Create new trigger and emit
         this.dtTrigger.unsubscribe();
-      this.dtTrigger = new Subject();
-      this.dtTrigger.next(null)
-      }, 0);
+        this.dtTrigger = new Subject();
+        this.dtTrigger.next(null);
+        console.log('DataTable refresh triggered');
+      }, 100);
     } catch (error) {
-      console.error("Error refreshing datatable:", error);
+      console.error('Error refreshing DataTable:', error);
     }
   }
 
