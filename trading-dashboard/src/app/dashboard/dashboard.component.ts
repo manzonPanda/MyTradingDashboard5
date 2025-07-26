@@ -2414,7 +2414,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const rrRatio = parseFloat(this.getRiskRewardRatio());
     if (rrRatio < 1.5) {
       insights.push({
-        title: '⚖️ Poor Risk/Reward Ratio',
+        title: '���️ Poor Risk/Reward Ratio',
         description: `Your risk/reward ratio of ${rrRatio} means you're risking too much for too little reward.`,
         recommendations: [
           'Aim for at least 1:2 risk/reward ratio on trades',
@@ -2783,30 +2783,51 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Method 1: Immediate change detection
     this.cdr.detectChanges();
 
-    // Method 2: Force complete refresh with destroy/recreate
+    // Method 2: Nuclear option - completely rebuild the table
     setTimeout(() => {
-      try {
-        // Destroy existing DataTable completely
-        if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('🗑️ Destroying DataTable for complete refresh');
-          $('#myTable').DataTable().destroy();
-        }
-
-        // Force Angular to detect changes in the data
-        this.cdr.detectChanges();
-
-        // Recreate the DataTable with new data
-        setTimeout(() => {
-          console.log('🚀 Recreating DataTable with', this.tableData.length, 'rows');
-          this.dtTrigger.next(null);
-        }, 150);
-
-      } catch (error) {
-        console.error('❌ Error in force refresh:', error);
-        // Fallback: just trigger
-        this.dtTrigger.next(null);
-      }
+      this.nuclearDataTableRebuild();
     }, 100);
+  }
+
+  nuclearDataTableRebuild(): void {
+    try {
+      console.log('💥 Nuclear DataTable rebuild with', this.tableData.length, 'rows');
+
+      // Step 1: Completely destroy existing DataTable
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        console.log('🗑️ Destroying existing DataTable completely');
+        $('#myTable').DataTable().destroy();
+        $('#myTable').empty(); // Clear all HTML content
+      }
+
+      // Step 2: Force Angular change detection
+      this.cdr.detectChanges();
+
+      // Step 3: Wait for DOM cleanup
+      setTimeout(() => {
+        // Step 4: Manually rebuild table HTML if needed
+        console.log('🔨 Rebuilding table structure...');
+
+        // Step 5: Reinitialize with fresh DataTable
+        setTimeout(() => {
+          console.log('🚀 Reinitializing DataTable from scratch');
+          this.dtTrigger.next(null);
+
+          // Step 6: If still no luck, try direct jQuery DataTable initialization
+          setTimeout(() => {
+            if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
+              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
+              $('#myTable').DataTable(this.dtOptions);
+            }
+          }, 300);
+        }, 200);
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error in nuclear rebuild:', error);
+      // Last resort fallback
+      this.dtTrigger.next(null);
+    }
   }
 
 
