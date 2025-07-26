@@ -2542,8 +2542,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (existingIndex == -1) {
       this.mt5LiveTrades.unshift(newTrade);
       this.updateTableData();
-      this.refreshDataTable();
+
+      // Force Angular change detection and DataTable refresh
+      setTimeout(() => {
+        this.refreshDataTable();
+      }, 50);
+
       console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
+      console.log('📊 Current tableData:', this.tableData);
     } else {
       console.log('⚠️ Trade already exists, skipping duplicate');
     }
@@ -2599,9 +2605,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    // Combine MT5 live trades with any existing table data
-    this.tableData = [...this.mt5LiveTrades];
-    console.log('Updated tableData:', this.tableData.length, 'trades');
+    // Properly combine MT5 live trades with existing tableData
+    // Get existing non-MT5 trades (those loaded from Firestore)
+    const existingTrades = this.tableData ? this.tableData.filter(trade =>
+      !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
+    ) : [];
+
+    // Combine MT5 trades with existing trades
+    this.tableData = [...this.mt5LiveTrades, ...existingTrades];
+    console.log('Updated tableData:', this.tableData.length, 'trades (', this.mt5LiveTrades.length, 'MT5 +', existingTrades.length, 'existing)');
   }
 
   // Toggle method for single notion data button
@@ -2613,18 +2625,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       console.log('Refreshing DataTable with', this.tableData.length, 'rows');
 
-      // Safely destroy and recreate the DataTable
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        $('#myTable').DataTable().destroy();
-      }
-
+      // Use Angular's change detection cycle to properly refresh the DataTable
       setTimeout(() => {
-        // Create new trigger and emit
-        this.dtTrigger.unsubscribe();
-        this.dtTrigger = new Subject();
-        this.dtTrigger.next(null);
-        console.log('DataTable refresh triggered');
-      }, 100);
+        try {
+          // Trigger Angular change detection and DataTable re-render
+          this.dtTrigger.next(null);
+          console.log('DataTable refresh triggered successfully');
+        } catch (triggerError) {
+          console.error('Error triggering DataTable refresh:', triggerError);
+          // If trigger fails, create a new one
+          this.dtTrigger.unsubscribe();
+          this.dtTrigger = new Subject();
+          this.dtTrigger.next(null);
+        }
+      }, 150);
     } catch (error) {
       console.error('Error refreshing DataTable:', error);
     }
