@@ -923,8 +923,8 @@
               }">
                 {{ data.percentPnL | number:'1.2-2' }}%
               </td>
-              <td *ngIf="columnVisibility.commission" class="col-commission">{{ data.commission | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.swap" class="col-swap">{{ data.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.commission" class="col-commission">{{ getSafeNumber(data.commission) | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td *ngIf="columnVisibility.swap" class="col-swap">{{ getSafeNumber(data.swap) | currency:'USD':'symbol':'1.2-2' }}</td>
               <td *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">{{ data.idealRRR }}</td>
               <td *ngIf="columnVisibility.idealSL" class="col-ideal-sl">{{ data.idealSL }}</td>
               <td *ngIf="columnVisibility.modelCheck" class="col-model-check">
