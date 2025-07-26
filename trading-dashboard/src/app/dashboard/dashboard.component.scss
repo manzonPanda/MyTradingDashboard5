@@ -63,8 +63,8 @@
 
   .header-left-section {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    gap: 2rem;
     flex: 1;
   }
   
@@ -86,22 +86,26 @@
   .header-progress-indicators {
     display: flex;
     align-items: center;
+    height: 100%; // Ensure it takes full height of header
 
     .header-progress-grid {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
       align-items: center;
+      flex-wrap: nowrap;
     }
 
     .header-progress-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0.75rem;
       background: var(--tf-bg-card);
       border-radius: 8px;
       border: 1px solid var(--tf-border-primary);
       box-shadow: var(--tf-shadow-sm);
+      white-space: nowrap;
+      min-width: fit-content;
     }
 
     .header-progress-label {
@@ -778,6 +782,9 @@
 
     .header-left-section {
       width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
     }
 
     .dashboard-title {
@@ -790,11 +797,13 @@
       .header-progress-grid {
         flex-wrap: wrap;
         gap: 0.75rem;
+        width: 100%;
       }
 
       .header-progress-item {
         flex: 1;
-        min-width: 120px;
+        min-width: 140px;
+        justify-content: center;
       }
     }
   }
