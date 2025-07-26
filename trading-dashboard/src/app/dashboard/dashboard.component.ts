@@ -343,11 +343,19 @@ export class DashboardComponent {
       // Force Angular change detection first
       this.cdr.detectChanges();
 
-      // Use Angular DataTables trigger to preserve complex column rendering
+      // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
-        this.dtTrigger.next(null);
-        console.log('✅ DataTable refreshed with Angular binding');
-      }, 100);
+        if ($.fn.dataTable.isDataTable('#myTable')) {
+          console.log('🗑️ Destroying existing Angular DataTable');
+          $('#myTable').DataTable().destroy();
+        }
+
+        // Trigger recreation with new data
+        setTimeout(() => {
+          this.dtTrigger.next(null);
+          console.log('✅ DataTable refreshed with Angular binding');
+        }, 100);
+      }, 50);
 
     } catch (error) {
       console.error('❌ Error refreshing DataTable with Angular binding:', error);
@@ -2725,10 +2733,30 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Method 1: Immediate change detection
     this.cdr.detectChanges();
 
-    // Method 2: Use Angular DataTables refresh for complex columns
+    // Method 2: Force complete refresh with destroy/recreate
     setTimeout(() => {
-      this.refreshDataTableWithAngularBinding();
-    }, 50);
+      try {
+        // Destroy existing DataTable completely
+        if ($.fn.dataTable.isDataTable('#myTable')) {
+          console.log('🗑️ Destroying DataTable for complete refresh');
+          $('#myTable').DataTable().destroy();
+        }
+
+        // Force Angular to detect changes in the data
+        this.cdr.detectChanges();
+
+        // Recreate the DataTable with new data
+        setTimeout(() => {
+          console.log('🚀 Recreating DataTable with', this.tableData.length, 'rows');
+          this.dtTrigger.next(null);
+        }, 150);
+
+      } catch (error) {
+        console.error('❌ Error in force refresh:', error);
+        // Fallback: just trigger
+        this.dtTrigger.next(null);
+      }
+    }, 100);
   }
 
 
