@@ -1,4 +1,5 @@
 import { Component, importProvidersFrom, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -115,7 +116,15 @@ interface NotionPerformanceData {
     MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss'],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-10px)' }),
+        animate('300ms ease-in', style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ])
+  ]
 })
 
 
@@ -158,6 +167,13 @@ export class DashboardComponent {
   showNotionData = false;
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
+
+  // Simple pagination properties
+  currentPage: number = 1;
+  pageSize: number = 10;
+
+  // Live trade tracking
+  recentlyAddedTrades: Table[] = [];
 
   // Overall Trading History Table
   notionPerformanceData: NotionPerformanceData[] = [];
@@ -2414,7 +2430,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const rrRatio = parseFloat(this.getRiskRewardRatio());
     if (rrRatio < 1.5) {
       insights.push({
-        title: '���️ Poor Risk/Reward Ratio',
+        title: '⚖️ Poor Risk/Reward Ratio',
         description: `Your risk/reward ratio of ${rrRatio} means you're risking too much for too little reward.`,
         recommendations: [
           'Aim for at least 1:2 risk/reward ratio on trades',
@@ -2617,20 +2633,25 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.updateTableData();
       console.log('📊 tableData after update:', this.tableData.length);
 
-      // Force Angular change detection immediately
-      this.cdr.detectChanges();
-      console.log('🔄 Change detection triggered');
+      // Track as recently added for visual indication
+      this.recentlyAddedTrades.unshift(newTrade);
 
-      // Try direct DataTable manipulation first for immediate feedback
-      this.addRowDirectlyToDataTable(newTrade);
-
-      // Also trigger full refresh as backup
+      // Remove from recent list after 5 seconds
       setTimeout(() => {
-        this.forceDataTableRefresh();
-      }, 500);
+        const index = this.recentlyAddedTrades.indexOf(newTrade);
+        if (index > -1) {
+          this.recentlyAddedTrades.splice(index, 1);
+        }
+      }, 5000);
 
-      console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
-      console.log('📊 Current tableData:', this.tableData);
+      // Force Angular change detection for immediate display
+      this.cdr.detectChanges();
+
+      // Go to first page to show the new trade
+      this.setPage(1);
+
+      console.log('✅ New MT5 trade added successfully! Total trades:', this.tableData.length);
+      console.log('🎆 Simple table approach - no more DataTables headaches!');
     } else {
       console.log('⚠️ Trade already exists, skipping duplicate');
     }
@@ -2710,15 +2731,33 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // Toggle method for single notion data button
   toggleNotionData(): void {
     this.showNotionData = !this.showNotionData;
+  }
 
-    // Update DataTable column visibility
-    setTimeout(() => {
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        const table = $('#myTable').DataTable();
-        table.column(1).visible(this.showNotionData); // Notion Trades column
-        table.column(2).visible(this.showNotionData); // Status column
-      }
-    }, 100);
+  // Simple pagination methods
+  getFilteredTableData(): Table[] {
+    return this.tableData || [];
+  }
+
+  getDisplayedRows(): Table[] {
+    const filtered = this.getFilteredTableData();
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return filtered.slice(startIndex, endIndex);
+  }
+
+  getTotalPages(): number {
+    const filtered = this.getFilteredTableData();
+    return Math.ceil(filtered.length / this.pageSize);
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.getTotalPages()) {
+      this.currentPage = page;
+    }
+  }
+
+  isNewTrade(trade: Table): boolean {
+    return this.recentlyAddedTrades.includes(trade);
   }
 
   addRowDirectlyToDataTable(newTrade: Table): void {
