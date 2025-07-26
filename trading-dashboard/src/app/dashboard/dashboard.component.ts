@@ -2632,34 +2632,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   refreshDataTable(): void {
     try {
-      console.log('Refreshing DataTable with', this.tableData.length, 'rows');
+      console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
+      console.log('📊 TableData contents:', this.tableData);
 
       // Force Angular change detection first
       this.cdr.detectChanges();
 
-      // Use a simpler approach - just trigger the DataTable update
+      // Use DataTable's built-in refresh capability
       setTimeout(() => {
         try {
-          // Check if DataTable exists and clear/reload data
-          if ($.fn.dataTable.isDataTable('#myTable')) {
-            const table = $('#myTable').DataTable();
-            table.clear();
-            table.rows.add($(table.table().body).find('tr'));
-            table.draw();
-            console.log('DataTable data refreshed');
-          } else {
-            // If no DataTable exists, trigger initialization
-            this.dtTrigger.next(null);
-            console.log('DataTable initialized');
-          }
-        } catch (dtError) {
-          console.error('DataTable refresh error:', dtError);
-          // Fallback: trigger re-initialization
           this.dtTrigger.next(null);
+          console.log('✅ DataTable refresh triggered');
+        } catch (dtError) {
+          console.error('❌ DataTable refresh error:', dtError);
         }
       }, 100);
     } catch (error) {
-      console.error('Error refreshing DataTable:', error);
+      console.error('❌ Error refreshing DataTable:', error);
     }
   }
 
