@@ -1157,7 +1157,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('🔍 Checking backend availability...');
+      console.log('�� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -2764,7 +2764,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Wait for DOM cleanup then reinitialize
       setTimeout(() => {
         console.log('🔄 Reinitializing DataTable with new data');
-        this.dtTrigger.next(null);
+        this.initializeDataTable();
       }, 100);
     }, 50);
   }
