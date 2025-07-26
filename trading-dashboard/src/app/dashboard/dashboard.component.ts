@@ -2744,18 +2744,31 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.recentlyAddedTrades.includes(trade);
   }
 
-  getSafeNumber(value: string | number): number {
-    if (typeof value === 'number') {
-      return value;
+  getSafeNumber(value: any): number {
+    // Handle null, undefined, or empty values
+    if (value === null || value === undefined || value === '') {
+      return 0;
     }
+
+    // Already a number
+    if (typeof value === 'number') {
+      return isNaN(value) ? 0 : value;
+    }
+
+    // String conversion
     if (typeof value === 'string') {
-      // Handle common non-numeric strings
-      if (value === '-' || value === '' || value === null || value === undefined) {
+      // Handle common placeholder strings
+      if (value === '-' || value.trim() === '' || value.toLowerCase() === 'n/a') {
         return 0;
       }
-      const parsed = parseFloat(value);
+
+      // Remove any non-numeric characters except decimal point and minus sign
+      const cleanValue = value.replace(/[^0-9.-]/g, '');
+      const parsed = parseFloat(cleanValue);
       return isNaN(parsed) ? 0 : parsed;
     }
+
+    // Fallback for any other type
     return 0;
   }
 
