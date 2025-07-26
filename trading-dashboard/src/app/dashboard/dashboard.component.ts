@@ -346,7 +346,7 @@ export class DashboardComponent {
       // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
         if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('🗑�� Destroying existing Angular DataTable');
+          console.log('🗑️ Destroying existing Angular DataTable');
           $('#myTable').DataTable().destroy();
         }
 
@@ -2693,11 +2693,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('📁 Existing non-MT5 trades:', existingTrades.length);
 
-    // Combine MT5 trades with existing trades
+    // Create completely new array reference to trigger Angular change detection
+    const previousLength = this.tableData ? this.tableData.length : 0;
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
   }
 
