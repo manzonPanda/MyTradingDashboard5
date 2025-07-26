@@ -508,7 +508,7 @@
                  [title]="cell.tooltip"
                  [style.animation-delay]="(i * 50) + 'ms'">
               <div class="cell-inner">
-                <span class="cell-amount" *ngIf="cell.value !== 0">{{ cell.value | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span class="cell-amount" *ngIf="cell.value !== 0">{{ getSafeNumber(cell.value) | currency:'USD':'symbol':'1.0-0' }}</span>
               </div>
             </div>
           </div>
