@@ -914,7 +914,7 @@
                 'negative': data.pnl < 0,
                 'neutral': data.pnl === 0
               }">
-                {{ data.pnl | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(data.pnl) | currency:'USD':'symbol':'1.2-2' }}
               </td>
               <td *ngIf="columnVisibility.percentPnL" class="col-percent" [ngClass]="{
                 'positive': data.percentPnL > 0,
