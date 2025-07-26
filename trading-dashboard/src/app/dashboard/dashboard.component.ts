@@ -1634,7 +1634,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         errorMessage += 'The server is running but the API route is missing.\n';
         errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
       } else if (error.status === 401 || error.status === 403) {
-        errorMessage += '🔐 Authentication Error\n\n';
+        errorMessage += '���� Authentication Error\n\n';
         errorMessage += 'The Notion API token might be invalid or missing.\n';
         errorMessage += 'Check your Notion API token in the backend configuration.';
       } else if (error.status >= 500) {
@@ -2491,7 +2491,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   mockMT5newTrade(){
-    console.log("mt5:",this.mt5LiveTrades);
+    console.log('🚀 Mock button clicked! Current state:');
+    console.log('📊 Current tableData length:', this.tableData.length);
+    console.log('🔴 Current mt5LiveTrades length:', this.mt5LiveTrades.length);
 
     // Generate random mock data for testing
     const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
@@ -2514,7 +2516,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       "commission": (Math.random() * 5).toFixed(2),
     }
 
-    console.log('Adding mock trade:', mock);
+    console.log('🎯 Generated mock trade:', mock);
     this.addMT5LiveTrade(mock);
   }
 
@@ -2546,16 +2548,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
+      console.log('✅ Adding new trade to mt5LiveTrades...');
       this.mt5LiveTrades.unshift(newTrade);
+      console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
+
       this.updateTableData();
+      console.log('📊 tableData after update:', this.tableData.length);
 
       // Force Angular change detection immediately
       this.cdr.detectChanges();
+      console.log('🔄 Change detection triggered');
 
-      // Then refresh DataTable
-      setTimeout(() => {
-        this.refreshDataTable();
-      }, 150);
+      // Try multiple approaches to refresh the table
+      this.forceDataTableRefresh();
 
       console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
       console.log('📊 Current tableData:', this.tableData);
@@ -2650,6 +2655,41 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     } catch (error) {
       console.error('❌ Error refreshing DataTable:', error);
     }
+  }
+
+  forceDataTableRefresh(): void {
+    console.log('💪 Force refreshing DataTable...');
+
+    // Method 1: Immediate change detection
+    this.cdr.detectChanges();
+
+    // Method 2: Multiple triggers with different timings
+    setTimeout(() => {
+      console.log('⏰ Trigger 1: Immediate');
+      this.dtTrigger.next(null);
+    }, 0);
+
+    setTimeout(() => {
+      console.log('⏰ Trigger 2: 50ms delay');
+      this.cdr.detectChanges();
+      this.dtTrigger.next(null);
+    }, 50);
+
+    setTimeout(() => {
+      console.log('⏰ Trigger 3: 200ms delay');
+      this.cdr.detectChanges();
+      this.dtTrigger.next(null);
+    }, 200);
+
+    // Method 3: Manual DataTable refresh if it exists
+    setTimeout(() => {
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+        console.log('📋 DataTable exists, clearing and redrawing...');
+        table.clear().draw();
+        table.rows.add($(table.table().body).find('tr')).draw();
+      }
+    }, 300);
   }
 
 
