@@ -346,7 +346,7 @@ export class DashboardComponent {
       // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
         if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('🗑️ Destroying existing Angular DataTable');
+          console.log('🗑�� Destroying existing Angular DataTable');
           $('#myTable').DataTable().destroy();
         }
 
@@ -2621,7 +2621,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.cdr.detectChanges();
       console.log('🔄 Change detection triggered');
 
-      // Try multiple approaches to refresh the table
+      // Use force refresh for new row additions (destroy/recreate approach)
+      console.log('🚀 Forcing complete DataTable refresh for new row...');
       this.forceDataTableRefresh();
 
       console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
