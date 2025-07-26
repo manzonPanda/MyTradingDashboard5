@@ -58,6 +58,14 @@
     align-items: center;
     max-width: 1400px;
     margin: 0 auto;
+    gap: 2rem;
+  }
+
+  .header-left-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
   }
   
   .dashboard-title {
@@ -71,6 +79,41 @@
   .header-actions {
     display: flex;
     gap: 1rem;
+    flex-shrink: 0;
+  }
+
+  // Header Progress Indicators
+  .header-progress-indicators {
+    display: flex;
+    align-items: center;
+
+    .header-progress-grid {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .header-progress-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--tf-bg-card);
+      border-radius: 8px;
+      border: 1px solid var(--tf-border-primary);
+      box-shadow: var(--tf-shadow-sm);
+    }
+
+    .header-progress-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--tf-text-secondary);
+      white-space: nowrap;
+
+      &.error-text {
+        color: var(--tf-negative);
+      }
+    }
   }
 }
 
@@ -726,15 +769,33 @@
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 1rem;
-    
+
     .header-content {
       flex-direction: column;
       gap: 1rem;
       align-items: flex-start;
     }
-    
+
+    .header-left-section {
+      width: 100%;
+    }
+
     .dashboard-title {
       font-size: 1.5rem;
+    }
+
+    .header-progress-indicators {
+      width: 100%;
+
+      .header-progress-grid {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .header-progress-item {
+        flex: 1;
+        min-width: 120px;
+      }
     }
   }
   
