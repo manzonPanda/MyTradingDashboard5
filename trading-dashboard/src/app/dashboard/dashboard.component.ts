@@ -274,14 +274,20 @@ export class DashboardComponent {
       this.updateMT5TradePrice(data);
     });
     this.dtOptions = {
-      destroy: true,
       paging: true,
       searching: true,
       ordering: true,
       pageLength: 10,
-      processing: true, // Show a loading spinner while data is being processed
+      processing: false,
       responsive: true,
-			keys: true
+      keys: true,
+      retrieve: true, // Use retrieve instead of destroy for better performance
+      language: {
+        emptyTable: "No trading data available",
+        info: "Showing _START_ to _END_ of _TOTAL_ trades",
+        infoEmpty: "Showing 0 to 0 of 0 trades",
+        lengthMenu: "Show _MENU_ trades per page"
+      }
     };
 
     this.dtOptionsNotion = {
@@ -2543,10 +2549,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.mt5LiveTrades.unshift(newTrade);
       this.updateTableData();
 
-      // Force Angular change detection and DataTable refresh
+      // Force Angular change detection immediately
+      this.cdr.detectChanges();
+
+      // Then refresh DataTable
       setTimeout(() => {
         this.refreshDataTable();
-      }, 50);
+      }, 150);
 
       console.log('✅ New MT5 trade added. Total trades:', this.tableData.length);
       console.log('📊 Current tableData:', this.tableData);
@@ -2628,29 +2637,27 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Force Angular change detection first
       this.cdr.detectChanges();
 
-      // Then refresh the DataTable
+      // Use a simpler approach - just trigger the DataTable update
       setTimeout(() => {
         try {
-          // Destroy existing DataTable if it exists
+          // Check if DataTable exists and clear/reload data
           if ($.fn.dataTable.isDataTable('#myTable')) {
-            $('#myTable').DataTable().destroy();
-            console.log('Destroyed existing DataTable');
-          }
-
-          // Create new trigger and initialize DataTable
-          this.dtTrigger.unsubscribe();
-          this.dtTrigger = new Subject();
-
-          // Wait a bit more for DOM to update
-          setTimeout(() => {
+            const table = $('#myTable').DataTable();
+            table.clear();
+            table.rows.add($(table.table().body).find('tr'));
+            table.draw();
+            console.log('DataTable data refreshed');
+          } else {
+            // If no DataTable exists, trigger initialization
             this.dtTrigger.next(null);
-            console.log('DataTable refresh triggered successfully');
-          }, 100);
-
-        } catch (triggerError) {
-          console.error('Error triggering DataTable refresh:', triggerError);
+            console.log('DataTable initialized');
+          }
+        } catch (dtError) {
+          console.error('DataTable refresh error:', dtError);
+          // Fallback: trigger re-initialization
+          this.dtTrigger.next(null);
         }
-      }, 200);
+      }, 100);
     } catch (error) {
       console.error('Error refreshing DataTable:', error);
     }
