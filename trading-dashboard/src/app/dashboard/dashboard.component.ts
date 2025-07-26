@@ -328,10 +328,8 @@ export class DashboardComponent {
     await this.loadMT5Data(); // Load MT5 trades
     this.addTradesToCalendar(); // Add trades to calendar events
 
-    // Initialize DataTable with Angular DataTables for complex column support
-    setTimeout(() => {
-      this.dtTrigger.next(null);
-    }, 500);
+    // Simple table - no DataTables initialization needed!
+    console.log('✅ Simple Angular table ready - no DataTables complexity!');
 
   }
 
