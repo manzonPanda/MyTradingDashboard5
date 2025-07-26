@@ -328,14 +328,14 @@
               <td class="col-date">{{ row.closeDate }}</td>
               <td class="col-price">{{ row.exit }}</td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
-                {{ row.commission | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
               </td>
-              <td class="col-amount">{{ row.swap | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td class="col-amount">{{ getSafeNumber(row.swap) | currency:'USD':'symbol':'1.2-2' }}</td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
-                {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
               </td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
-                {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
+                {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
               </td>
             </tr>
 
