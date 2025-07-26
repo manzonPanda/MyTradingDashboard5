@@ -2724,13 +2724,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Force Angular change detection first
       this.cdr.detectChanges();
 
-      // Use DataTable's built-in refresh capability
+      // Use manual DataTable refresh
       setTimeout(() => {
         try {
-          this.dtTrigger.next(null);
-          console.log('✅ DataTable refresh triggered');
+          if ($.fn.dataTable.isDataTable('#myTable')) {
+            const table = $('#myTable').DataTable();
+            table.clear();
+            table.rows.add(this.tableData);
+            table.draw();
+            console.log('✅ DataTable refreshed with new data');
+          } else {
+            // Initialize if not exists
+            this.initializeDataTable();
+          }
         } catch (dtError) {
           console.error('❌ DataTable refresh error:', dtError);
+          // Fallback: reinitialize
+          this.initializeDataTable();
         }
       }, 100);
     } catch (error) {
