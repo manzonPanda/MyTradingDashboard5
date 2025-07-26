@@ -9,62 +9,88 @@
         <div class="header-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
           <div class="header-progress-grid">
             <!-- Upload Progress -->
-            <div class="header-progress-item" *ngIf="isUploading">
+            <div class="header-progress-item"
+                 *ngIf="isUploading"
+                 [ngClass]="{ 'success': uploadProgress === 100, 'error': uploadProgress === -1 }">
               <mat-progress-spinner
                 [value]="uploadProgress"
                 mode="determinate"
                 diameter="32"
-                strokeWidth="4">
+                strokeWidth="4"
+                [ngClass]="{ 'success-spinner': uploadProgress === 100 }">
               </mat-progress-spinner>
-              <span class="header-progress-label">Uploading {{ uploadProgress }}%</span>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'success-text': uploadProgress === 100, 'error-text': uploadProgress === -1 }">
+                {{ uploadProgress === 100 ? 'Upload Complete' : 'Uploading ' + uploadProgress + '%' }}
+              </span>
             </div>
 
             <!-- Checking Progress -->
-            <div class="header-progress-item" *ngIf="isLoadingChecking">
+            <div class="header-progress-item"
+                 *ngIf="isLoadingChecking"
+                 [ngClass]="{ 'success': progressChecking === 100 && !checkingError, 'error': checkingError }">
               <mat-progress-spinner
                 [value]="progressChecking"
                 mode="determinate"
                 diameter="32"
                 strokeWidth="4"
-                [ngClass]="{ 'error-spinner': checkingError }">
+                [ngClass]="{ 'error-spinner': checkingError, 'success-spinner': progressChecking === 100 && !checkingError }">
               </mat-progress-spinner>
-              <span class="header-progress-label" [ngClass]="{ 'error-text': checkingError }">Checking {{ progressChecking }}%</span>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': checkingError, 'success-text': progressChecking === 100 && !checkingError }">
+                {{ checkingError ? 'Check Failed' : (progressChecking === 100 ? 'Check Complete' : 'Checking ' + progressChecking + '%') }}
+              </span>
             </div>
 
             <!-- Patching Progress -->
-            <div class="header-progress-item" *ngIf="isLoadingPatching">
+            <div class="header-progress-item"
+                 *ngIf="isLoadingPatching"
+                 [ngClass]="{ 'success': progressPatching === 100 && !patchingError, 'error': patchingError }">
               <mat-progress-spinner
                 [value]="progressPatching"
                 mode="determinate"
                 diameter="32"
                 strokeWidth="4"
-                [ngClass]="{ 'error-spinner': patchingError }">
+                [ngClass]="{ 'error-spinner': patchingError, 'success-spinner': progressPatching === 100 && !patchingError }">
               </mat-progress-spinner>
-              <span class="header-progress-label" [ngClass]="{ 'error-text': patchingError }">Patching {{ progressPatching }}%</span>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': patchingError, 'success-text': progressPatching === 100 && !patchingError }">
+                {{ patchingError ? 'Patch Failed' : (progressPatching === 100 ? 'Patch Complete' : 'Patching ' + progressPatching + '%') }}
+              </span>
             </div>
 
             <!-- Comparing Progress -->
-            <div class="header-progress-item" *ngIf="isLoadingComparing">
+            <div class="header-progress-item"
+                 *ngIf="isLoadingComparing"
+                 [ngClass]="{ 'success': progressComparing === 100 && !comparingError, 'error': comparingError }">
               <mat-progress-spinner
                 [value]="progressComparing"
                 mode="determinate"
                 diameter="32"
                 strokeWidth="4"
-                [ngClass]="{ 'error-spinner': comparingError }">
+                [ngClass]="{ 'error-spinner': comparingError, 'success-spinner': progressComparing === 100 && !comparingError }">
               </mat-progress-spinner>
-              <span class="header-progress-label" [ngClass]="{ 'error-text': comparingError }">Comparing {{ progressComparing }}%</span>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': comparingError, 'success-text': progressComparing === 100 && !comparingError }">
+                {{ comparingError ? 'Compare Failed' : (progressComparing === 100 ? 'Compare Complete' : 'Comparing ' + progressComparing + '%') }}
+              </span>
             </div>
 
             <!-- Populating Progress -->
-            <div class="header-progress-item" *ngIf="isLoadingPopulating">
+            <div class="header-progress-item"
+                 *ngIf="isLoadingPopulating"
+                 [ngClass]="{ 'success': progressPopulating === 100 && !populatingError, 'error': populatingError }">
               <mat-progress-spinner
                 [value]="progressPopulating"
                 mode="determinate"
                 diameter="32"
                 strokeWidth="4"
-                [ngClass]="{ 'error-spinner': populatingError }">
+                [ngClass]="{ 'error-spinner': populatingError, 'success-spinner': progressPopulating === 100 && !populatingError }">
               </mat-progress-spinner>
-              <span class="header-progress-label" [ngClass]="{ 'error-text': populatingError }">Populating {{ progressPopulating }}%</span>
+              <span class="header-progress-label"
+                    [ngClass]="{ 'error-text': populatingError, 'success-text': progressPopulating === 100 && !populatingError }">
+                {{ populatingError ? 'Populate Failed' : (progressPopulating === 100 ? 'Populate Complete' : 'Populating ' + progressPopulating + '%') }}
+              </span>
             </div>
           </div>
         </div>
