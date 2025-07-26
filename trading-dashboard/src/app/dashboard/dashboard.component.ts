@@ -282,36 +282,6 @@ export class DashboardComponent {
       responsive: true,
       keys: true,
       retrieve: true,
-      data: [], // Initialize with empty data
-      columns: [
-        { title: 'Open Date', data: 'openDate' },
-        { title: 'Notion Trades', data: 'tradeNotion', visible: false }, // Hidden by default
-        { title: 'Status', data: 'status', visible: false }, // Hidden by default
-        { title: 'Position', data: 'position' },
-        { title: 'Symbol', data: 'symbol' },
-        { title: 'Type', data: 'type' },
-        { title: 'Volume', data: 'volume' },
-        { title: 'Entry', data: 'entry' },
-        { title: 'S/L', data: 'sL' },
-        { title: 'T/P', data: 'tP' },
-        { title: 'Close Date', data: 'closeDate' },
-        { title: 'Exit', data: 'exit' },
-        { title: 'Commission', data: 'commission' },
-        { title: 'Swap', data: 'swap' },
-        { title: 'Profit', data: 'profit' },
-        { title: 'Net Profit', data: 'netProfit' }
-      ],
-      columnDefs: [
-        {
-          targets: [1, 2], // Notion Trades and Status columns
-          visible: false, // Hide notion data by default
-          className: 'notion-column'
-        },
-        {
-          targets: [6, 7, 8, 9, 11, 12, 13, 14, 15], // Numeric columns
-          className: 'text-right'
-        }
-      ],
       language: {
         emptyTable: "No trading data available",
         info: "Showing _START_ to _END_ of _TOTAL_ trades",
@@ -733,7 +703,7 @@ onUpload(): void {
           this.tableData = firestoreTrades;
         }
 
-        console.log("📊 Final tableData after loadTrades:", this.tableData.length);
+        console.log("���� Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
         console.error('Error loading trades:', error);
@@ -962,10 +932,11 @@ isRowAlreadySelected(row: any): boolean {
   }
 
   async compareToNotion(){
+    console.log('🔍 Starting Compare to Notion process...');
     //for progress bar comparing
     const total = this.tableData.length;
     let completed = 0;
-   
+
     for (const row of this.tableData) {  //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
       const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
       const [datePart, timePart] = originalDateStr.split(' ');
@@ -983,7 +954,7 @@ isRowAlreadySelected(row: any): boolean {
           }
         }
       }
-      
+
       try {
         const res: any = await firstValueFrom(
           this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
@@ -993,6 +964,7 @@ isRowAlreadySelected(row: any): boolean {
           // console.log("Matched found:",res.results[0].id)
           row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
           row.status = "Matched"
+          console.log('✅ Match found for', originalDateStr, '- Status:', row.status);
         }else{
           row.status = "Unmatched"
           // console.log('No Matched found for: '+isoDate, error);
@@ -1000,15 +972,25 @@ isRowAlreadySelected(row: any): boolean {
             row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
               trade
             );
+            console.log('⚠️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
         }
         completed++;
         this.progressComparing = Math.floor((completed / total) * 100);
-      } catch (error) {         
+      } catch (error) {
         this.comparingError = true
         console.error('Error comparing to Notion',row, error);
       }
     }
 
+    console.log('🎯 Compare to Notion completed. Refreshing DataTable...');
+
+    // Force Angular change detection and DataTable refresh
+    this.cdr.detectChanges();
+
+    // Refresh the DataTable to show updated notion data
+    setTimeout(() => {
+      this.refreshDataTableWithAngularBinding();
+    }, 200);
   }
 
 // Helper function to format the date; Manually format to ISO with +08:00 timezone
