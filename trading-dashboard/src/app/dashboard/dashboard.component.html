@@ -199,11 +199,38 @@
             <mat-icon>{{ showNotionData ? 'visibility' : 'visibility_off' }}</mat-icon>
             {{ showNotionData ? 'Hide' : 'Show' }} Notion Data
           </button>
+          <div class="live-indicator" *ngIf="recentlyAddedTrades.length > 0">
+            <mat-icon class="pulse">fiber_new</mat-icon>
+            <span>{{ recentlyAddedTrades.length }} new live trades</span>
+          </div>
         </div>
       </div>
 
-      <div class="table-container">
-        <table class="modern-table" id="myTable" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
+      <!-- Simple controls -->
+      <div class="simple-table-controls">
+        <div class="table-info">
+          <span class="table-count">{{ getFilteredTableData().length }} trades total</span>
+          <span class="table-pagination">Showing {{ getDisplayedRows().length }} rows</span>
+        </div>
+        <div class="table-actions">
+          <button class="btn-secondary" (click)="currentPage > 1 ? setPage(currentPage - 1) : null" [disabled]="currentPage <= 1">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="page-info">Page {{ currentPage }} of {{ getTotalPages() }}</span>
+          <button class="btn-secondary" (click)="currentPage < getTotalPages() ? setPage(currentPage + 1) : null" [disabled]="currentPage >= getTotalPages()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          <select class="page-size-select" [(ngModel)]="pageSize" (change)="setPage(1)">
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Simple reliable Angular table -->
+      <div class="simple-table-container">
+        <table class="modern-table simple-table">
           <thead>
             <tr>
               <th class="col-date">Open Date</th>
@@ -225,12 +252,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of tableData; let i = index" [ngClass]="{ 'positive-row': isPositiveValue(row.netProfit), 'negative-row': isNegativeValue(row.netProfit) }">
+            <tr *ngFor="let row of getDisplayedRows(); let i = index"
+                [ngClass]="{
+                  'positive-row': isPositiveValue(row.netProfit),
+                  'negative-row': isNegativeValue(row.netProfit),
+                  'new-trade': isNewTrade(row)
+                }"
+                [@fadeIn]="'in'">
               <td class="col-date">{{ row.openDate }}</td>
-              
+
               <td class="col-notion" [class.hidden]="!showNotionData">
                 <div class="notion-buttons">
-
                   <ng-container *ngFor="let trade of row.tradeNotion">
                     <button
                       class="notion-btn"
@@ -245,8 +277,8 @@
                           : null
                       "
                       [disabled]="
-                        (!trade.tradeDate && trade.tradeId) ||  
-                        (selectedTradeId[i] && selectedTradeId[i] !== trade.tradeId) 
+                        (!trade.tradeDate && trade.tradeId) ||
+                        (selectedTradeId[i] && selectedTradeId[i] !== trade.tradeId)
                       "
                     >
                       <ng-container *ngIf="trade.tradeDate; else showTrade">
@@ -262,7 +294,6 @@
                       </ng-template>
                     </button>
 
-                    <!-- Show refresh beside the selected date -->
                     <button
                       *ngIf="selectedTradeId[i] === trade.tradeId"
                       mat-icon-button
@@ -272,11 +303,9 @@
                       <mat-icon>refresh</mat-icon>
                     </button>
                   </ng-container>
-
-
                 </div>
               </td>
-              
+
               <td class="col-status" [class.hidden]="!showNotionData">
                 <span class="status-badge" [ngClass]="getStatusClass(row.status)">
                   {{ row.status }}
@@ -290,22 +319,35 @@
               </td>
 
               <td class="col-symbol">{{ row.symbol }}</td>
-              <td class="col-position">
-                <span class="position-badge" [ngClass]="getPositionClass(row.type)"> {{ row.type }} </span> 
+              <td class="col-type">
+                <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
               </td>
               <td class="col-volume">{{ row.volume }}</td>
-              <td class="col-price">-</td>
-              <td class="col-price">-</td>
-              <td class="col-price">-</td>
+              <td class="col-price">{{ row.entry }}</td>
+              <td class="col-price">{{ row.sL }}</td>
+              <td class="col-price">{{ row.tP }}</td>
               <td class="col-date">{{ row.closeDate }}</td>
-              <td class="col-price">-</td>
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">{{ row.commission | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td class="col-amount">-</td>
+              <td class="col-price">{{ row.exit }}</td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
+                {{ row.commission | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-amount">{{ row.swap | currency:'USD':'symbol':'1.2-2' }}</td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
                 {{ row.profit | currency:'USD':'symbol':'1.2-2' }}
               </td>
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
                 {{ row.netProfit | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+
+            <!-- Empty state -->
+            <tr *ngIf="getDisplayedRows().length === 0">
+              <td colspan="16" class="empty-state">
+                <div class="empty-content">
+                  <mat-icon>timeline</mat-icon>
+                  <h3>No trading data</h3>
+                  <p>Click "Mock: MT5+trade" to add sample trading data.</p>
+                </div>
               </td>
             </tr>
           </tbody>
