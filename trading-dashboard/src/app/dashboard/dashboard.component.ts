@@ -115,15 +115,7 @@ interface NotionPerformanceData {
     MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss'],
-  animations: [
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(-10px)' }),
-        animate('300ms ease-in', style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ])
-  ]
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss']
 })
 
 
@@ -2438,7 +2430,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const revengeScore = this.getRevengeTradingScore();
     if (revengeScore > 20) {
       insights.push({
-        title: '��� Revenge Trading Pattern',
+        title: '😤 Revenge Trading Pattern',
         description: `${revengeScore.toFixed(1)}% of your trades show signs of revenge trading after losses.`,
         recommendations: [
           'Take a break after a losing trade to reset emotionally',
@@ -2798,7 +2790,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   refreshDataTable(): void {
     try {
       console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
-      console.log('�� TableData contents:', this.tableData);
+      console.log('📊 TableData contents:', this.tableData);
 
       // Use Angular binding refresh for complex columns
       this.refreshDataTableWithAngularBinding();
