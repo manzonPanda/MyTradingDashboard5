@@ -1012,15 +1012,10 @@ isRowAlreadySelected(row: any): boolean {
       }
     }
 
-    console.log('🎯 Compare to Notion completed. Refreshing DataTable...');
+    console.log('🎯 Compare to Notion completed! Data updated in simple table.');
 
-    // Force Angular change detection and DataTable refresh
+    // Simple change detection - no DataTable refresh needed!
     this.cdr.detectChanges();
-
-    // Refresh the DataTable to show updated notion data
-    setTimeout(() => {
-      this.refreshDataTableWithAngularBinding();
-    }, 200);
   }
 
 // Helper function to format the date; Manually format to ISO with +08:00 timezone
