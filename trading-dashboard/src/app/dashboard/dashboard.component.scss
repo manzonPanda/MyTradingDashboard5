@@ -680,17 +680,7 @@
     border-color: var(--tf-positive);
     cursor: not-allowed;
   }
-  
-  &.revert {
-    background: var(--tf-negative);
-    color: white;
-    border-color: var(--tf-negative);
     
-    &:hover {
-      background: #dc2626;
-    }
-  }
-  
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -701,6 +691,35 @@
     width: 0.875rem;
     height: 0.875rem;
   }
+}
+.revert-button {
+  background-color: #ff9800; /* Orange color */
+  color: white;
+  border-radius: 4px;
+  margin-left: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.revert-button:hover {
+  background-color: #fb8c00; /* Slightly darker orange */
+}
+
+
+.notion-btn.date-option {
+  background-color: #f0f0f0;  /* Light gray */
+  color: #333;
+  border: 1px solid #ccc;
+  font-weight: bold;
+}
+
+.notion-btn.selected {
+  background-color: #4caf50; /* Green for selected */
+  color: white;
 }
 
 // Responsive Design

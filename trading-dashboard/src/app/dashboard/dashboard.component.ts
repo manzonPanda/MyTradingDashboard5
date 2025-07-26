@@ -124,8 +124,9 @@ export class DashboardComponent {
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
   locale: string = 'en';
-  tableData: Table[] = [];
   rawData: any[] = [];
+  // Active Account Table
+  tableData: Table[] = [];
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
   //uploading progress bar
@@ -153,7 +154,7 @@ export class DashboardComponent {
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
 
-  // Notion Performance Intelligence properties
+  // Overall Trading History Table
   notionPerformanceData: NotionPerformanceData[] = [];
   dtOptionsNotion: any = {};
   dtTriggerNotion: Subject<any> = new Subject<any>();
@@ -277,7 +278,7 @@ export class DashboardComponent {
       paging: true,
       searching: true,
       ordering: true,
-      pageLength: 25,
+      pageLength: 10,
       processing: true, // Show a loading spinner while data is being processed
       responsive: true,
 			keys: true
@@ -288,7 +289,7 @@ export class DashboardComponent {
       paging: true,
       searching: true,
       ordering: true,
-      pageLength: 15,
+      pageLength: 10,
       processing: true,
       responsive: true,
       keys: true,
@@ -681,6 +682,12 @@ onUpload(): void {
     // });
   }
   
+isRowAlreadySelected(row: any): boolean {
+  return row.tradeNotion.some((t: { tradeDate: any; }) => t.tradeDate);
+}
+
+
+
   async getAllPagesFromDB(startDate:Date,endDate:Date){ 
     const formattedStartDate = startDate
       ? `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
@@ -994,18 +1001,22 @@ onUpload(): void {
       return tradesFoundForUnmatched
   }
 
-  chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
-    // Toggle the selected button for this row
-    if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
-      this.selectedTradeId[rowIndex] = null;
-      row.status = "Unmatched"; // Unselecting = revert to unmatched
-    } else {
-      this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
-      row.status = "Matched"; // Selecting = mark as matched
-    }
+chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
+  if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
+    // Already selected — unselect it
+    this.selectedTradeId[rowIndex] = null;
+    row.status = "Unmatched";
+    localStorage.removeItem(rowIndex.toString());
+  } else {
+    // Select the trade
+    this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
+    row.status = "Matched";
+
+    // Store original array in case of revert
     localStorage.setItem(rowIndex.toString(), JSON.stringify(row.tradeNotion));
-    row.tradeNotion = [{tradeDate: tradeNotion.tradeDate, tradeId: tradeNotion.tradeId},{tradeDate: "", tradeId: ""}];
   }
+}
+
 
   revertTradeNotion(row: Table, rowIndex: number) {
     // Revert the tradeNotion to an empty array
@@ -1738,7 +1749,7 @@ onUpload(): void {
   }
 
   formatDate(dateStr: string): string {
-    if (!dateStr) return '';
+    // if (!dateStr) return '';
     try {
       // Handle MM.DD.YYYY HH:mm format
       const [datePart, timePart] = dateStr.split(' ');
@@ -2431,18 +2442,13 @@ onUpload(): void {
 
       if (response && response.length > 0) {
         const mt5Trades = response.map((trade: any) => {
-          const openDate = new Date(trade.time * 1000).toLocaleString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }).replace(/\//g, '.').replace(', ', ' ');
-
+          
+ 
           return {
-            openDate: openDate,
+            openDate: this.convertAndFormatMT5Date(trade.time_open),
+            closeDate: this.convertAndFormatMT5Date(trade.time_close),
             tradeNotion: [],
-            status: 'Open',
+            status: "",
             position: trade.type === 0 ? 'Buy' : 'Sell',
             symbol: trade.symbol || '',
             type: trade.type === 0 ? 'Buy' : 'Sell',
@@ -2450,16 +2456,16 @@ onUpload(): void {
             entry: trade.price_open ? trade.price_open.toString() : '0',
             sL: trade.sl ? trade.sl.toString() : '0',
             tP: trade.tp ? trade.tp.toString() : '0',
-            closeDate: '',
             exit: trade.price_current ? trade.price_current.toString() : '0',
-            commission: '0',
+            commission: trade.commission ? trade.commission.toString() : '0',
             swap: trade.swap ? trade.swap.toString() : '0',
             profit: trade.profit ? trade.profit.toString() : '0',
-            netProfit: trade.profit ? trade.profit.toString() : '0'
+            netProfit: (trade.profit + trade.commission).toString()
           } as Table;
         });
 
         this.mt5LiveTrades = mt5Trades;
+        console.log("mt5History",mt5Trades)
         this.updateTableData();
       }
     } catch (error) {
@@ -2468,6 +2474,16 @@ onUpload(): void {
   }
 
 
+  convertAndFormatMT5Date(rawDateStr: string): string { //MT5 api date format->  time_close: "2025-07-24 09:56:01"
+    const [datePart, timePart] = rawDateStr.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+
+    const dateObj = new Date(year, month - 1, day, hour, minute, second);
+    dateObj.setHours(dateObj.getHours() + 5); // Adjust timezone if needed
+
+    return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+  }
 
 
 
