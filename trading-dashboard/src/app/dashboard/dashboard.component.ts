@@ -312,9 +312,9 @@ export class DashboardComponent {
     await this.loadMT5Data(); // Load MT5 trades
     this.addTradesToCalendar(); // Add trades to calendar events
 
-    // Initialize DataTable manually
+    // Initialize DataTable with Angular DataTables for complex column support
     setTimeout(() => {
-      this.initializeDataTable();
+      this.dtTrigger.next(null);
     }, 500);
 
   }
@@ -327,22 +327,30 @@ export class DashboardComponent {
     try {
       console.log('🚀 Initializing DataTable with', this.tableData.length, 'rows');
 
-      // Destroy existing DataTable if it exists
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        $('#myTable').DataTable().destroy();
-      }
-
-      // Initialize with current data
-      const dataTableOptions = {
-        ...this.dtOptions,
-        data: this.tableData
-      };
-
-      $('#myTable').DataTable(dataTableOptions);
+      // Use Angular DataTables trigger for complex column support
+      this.dtTrigger.next(null);
       console.log('✅ DataTable initialized successfully');
 
     } catch (error) {
       console.error('❌ Error initializing DataTable:', error);
+    }
+  }
+
+  refreshDataTableWithAngularBinding(): void {
+    try {
+      console.log('🔄 Refreshing DataTable with Angular binding for complex columns');
+
+      // Force Angular change detection first
+      this.cdr.detectChanges();
+
+      // Use Angular DataTables trigger to preserve complex column rendering
+      setTimeout(() => {
+        this.dtTrigger.next(null);
+        console.log('✅ DataTable refreshed with Angular binding');
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error refreshing DataTable with Angular binding:', error);
     }
   }
 
@@ -703,7 +711,7 @@ onUpload(): void {
           this.tableData = firestoreTrades;
         }
 
-        console.log("���� Final tableData after loadTrades:", this.tableData.length);
+        console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
         console.error('Error loading trades:', error);
@@ -2703,28 +2711,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
       console.log('📊 TableData contents:', this.tableData);
 
-      // Force Angular change detection first
-      this.cdr.detectChanges();
+      // Use Angular binding refresh for complex columns
+      this.refreshDataTableWithAngularBinding();
 
-      // Use manual DataTable refresh
-      setTimeout(() => {
-        try {
-          if ($.fn.dataTable.isDataTable('#myTable')) {
-            const table = $('#myTable').DataTable();
-            table.clear();
-            table.rows.add(this.tableData);
-            table.draw();
-            console.log('✅ DataTable refreshed with new data');
-          } else {
-            // Initialize if not exists
-            this.initializeDataTable();
-          }
-        } catch (dtError) {
-          console.error('❌ DataTable refresh error:', dtError);
-          // Fallback: reinitialize
-          this.initializeDataTable();
-        }
-      }, 100);
     } catch (error) {
       console.error('❌ Error refreshing DataTable:', error);
     }
@@ -2736,18 +2725,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Method 1: Immediate change detection
     this.cdr.detectChanges();
 
-    // Method 2: Destroy and recreate to avoid data mismatch
+    // Method 2: Use Angular DataTables refresh for complex columns
     setTimeout(() => {
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑️ Destroying existing DataTable');
-        $('#myTable').DataTable().destroy();
-      }
-
-      // Wait for DOM cleanup then reinitialize
-      setTimeout(() => {
-        console.log('🔄 Reinitializing DataTable with new data');
-        this.initializeDataTable();
-      }, 100);
+      this.refreshDataTableWithAngularBinding();
     }, 50);
   }
 
