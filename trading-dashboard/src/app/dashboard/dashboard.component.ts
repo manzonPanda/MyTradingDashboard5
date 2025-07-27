@@ -134,7 +134,7 @@ export class DashboardComponent {
   // MT5 Live Trading properties
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
-  mockTicket = 123123123;
+  mockTicket = Math.floor(Math.random() * 999999999) + 100000000;;
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
