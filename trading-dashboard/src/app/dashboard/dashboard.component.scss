@@ -1751,6 +1751,28 @@ table.simple-table {
   }
 }
 
+// Live badge glow animation
+@keyframes live-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.6);
+    transform: scale(1.02);
+  }
+}
+
+// Live badge shimmer animation
+@keyframes live-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
 // Responsive design for compact emotion cards
 @media (max-width: 768px) {
   .compact-emotion-section {
