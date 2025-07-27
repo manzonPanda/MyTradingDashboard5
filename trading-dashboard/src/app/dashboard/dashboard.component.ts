@@ -2802,11 +2802,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Remove from recent list after 5 seconds
       setTimeout(() => {
-        const index = this.recentlyAddedTrades.indexOf(newTrade);
-        if (index > -1) {
-          this.recentlyAddedTrades.splice(index, 1);
-        }
-      }, 5000);
+      //   const index = this.recentlyAddedTrades.indexOf(newTrade);
+      //   if (index > -1) {
+      //     this.recentlyAddedTrades.splice(index, 1);
+      //   }
+      // }, 5000);
 
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
