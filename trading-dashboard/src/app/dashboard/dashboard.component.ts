@@ -1936,6 +1936,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
   }
 
+  getSubmittedEmotion(trade: Table): string {
+    const entry = this.emotionalEntries.find(e => e.tradeKey === this.getTradeKey(trade));
+    return entry?.emotion || '';
+  }
+
+  getSubmittedIntensity(trade: Table): number {
+    const entry = this.emotionalEntries.find(e => e.tradeKey === this.getTradeKey(trade));
+    return entry?.intensity || 5;
+  }
+
   calculateAvgWin(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
     const winningTrades = this.tableData.filter(trade => {
