@@ -59,7 +59,7 @@ def watch_trades():
                     "sl": pos.sl,
                     "tp": pos.tp,
                     "profit": pos.profit,
-                    "time": datetime.fromtimestamp(pos.time).strftime('%Y-%m-%d %H:%M:%S'),
+                    "time_open": datetime.fromtimestamp(pos.time).strftime('%Y-%m-%d %H:%M:%S'),
                     "object":pos
                 })
 
@@ -76,7 +76,7 @@ def watch_trades():
                 "price_open": closed_pos.price_open,
                 "price_close": closed_pos.price_current,
                 "profit": closed_pos.profit,
-                "time": int(time.time()),
+                "time_close": int(time.time()),
                 "object":closed_pos
             })
 

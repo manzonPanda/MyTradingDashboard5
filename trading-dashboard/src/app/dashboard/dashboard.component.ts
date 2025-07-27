@@ -9,7 +9,6 @@ import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-ca
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
 import { addMonths, subMonths } from 'date-fns';
-declare var $: any;
 import { DataTablesModule  } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import * as DataTables from 'datatables.net';
@@ -28,6 +27,8 @@ import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { io, Socket } from "socket.io-client";
+
+declare var $: any;
 
 interface Relation {
   relationName: string;
@@ -133,7 +134,7 @@ export class DashboardComponent {
   // MT5 Live Trading properties
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
-
+  mockTicket = 123123123;
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
@@ -787,8 +788,6 @@ isRowAlreadySelected(row: any): boolean {
           const dayOfWeek = d.getDay();
           // Skip weekends (0 = Sunday, 6 = Saturday)
           if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-            // console.log(d)
-            // console.log(dayOfWeek)
             this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
             tradeId: prop.id });
           }
@@ -813,7 +812,6 @@ isRowAlreadySelected(row: any): boolean {
             },
             "url":trade.tradeId
           }
-          // console.log(body)
           try {
             const res: any = await firstValueFrom(
               this.http.patch("http://localhost:3000/api/patchRelationIdToTrade", body) //Patching
@@ -862,23 +860,28 @@ isRowAlreadySelected(row: any): boolean {
     //loop every trades in the table,format the date and save it to dateRange as MM-DD-YYYY
     for ( let i=0; i<= this.tableData.length-1; i++){
       let d = new Date(this.tableData[i].openDate ?? '');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const year = d.getFullYear();
-      dateRange.push(`${month}-${day}-${year}`);
+      const dayOfWeek = d.getDay();
+      // Skip weekends (0 = Sunday, 6 = Saturday)  Skip if date is weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        dateRange.push(`${month}-${day}-${year}`);
+      }
     }
     const total = dateRange.length;
     let completed = 0;
     //loop every date in dateRange, check if relationName already exists in Notion, if not, create it
     //however, to speed up the loop process, if the previous date is already done checking and if date already exists in this.relations, continue already to the next date
     for (const date of dateRange) {
-       // ✅ Skip if already exists
+       // ✅ Skip if already exists 
         const alreadyProcessed = this.relations.some(rel => rel.relationName === date);
-        if (alreadyProcessed) {
+        if (alreadyProcessed  ) { 
           completed++;
           this.progressChecking = Math.floor((completed / total) * 100);
           continue; // Skip to next date
         }
+
 
        const body = {
           "filter": {
@@ -2563,10 +2566,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
     const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
     const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
-    const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
+    // const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
 
     const mock = {
-      "ticket": randomTicket,
+      "ticket": this.mockTicket,
       "symbol": randomSymbol,
       "volume": parseFloat(randomVolume),
       "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
@@ -2580,6 +2583,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('🎯 Generated mock trade:', mock);
     this.addMT5LiveTrade(mock);
+  }
+
+  mockMT5closeTrade(){
+    const mock = {
+      "ticket": this.mockTicket,
+      "symbol": "test",
+      "volume": 1.00,
+      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
+      "price_open": 'test',
+      "sl": "test",
+      "tp": "test",
+      "profit": parseFloat((Math.random() * 200 - 100).toFixed(2)),
+      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
+      "commission": (Math.random() * 5).toFixed(2),
+    }
+
+    console.log('🎯 Generated mock trade:', mock);
+    this.closeMT5Trade(mock);
   }
 
   addMT5LiveTrade(tradeData: any): void {
@@ -2611,7 +2632,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
-      this.mt5LiveTrades.unshift(newTrade);
+      this.mt5LiveTrades.push(newTrade)
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
@@ -2632,7 +2653,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.cdr.detectChanges();
 
       // Go to first page to show the new trade
-      this.setPage(1);
+      this.setPage(this.getTotalPages());
 
       console.log('✅ New MT5 trade added successfully! Total trades:', this.tableData.length);
       console.log('🎆 Simple table approach - no more DataTables headaches!');
@@ -2647,28 +2668,40 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const trade = tradeData.object || tradeData;
 
     const liveIndex = this.mt5LiveTrades.findIndex(t =>
-      t.symbol === trade.symbol && parseFloat(t.entry) === trade.price_open
+      t.position === trade.ticket 
     );
 
     if (liveIndex !== -1) {
       const closedTrade = { ...this.mt5LiveTrades[liveIndex] };
-      closedTrade.status = 'Closed';
-      closedTrade.closeDate = new Date().toLocaleString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).replace(/\//g, '.').replace(', ', ' ');
-      closedTrade.exit = trade.price_close ? trade.price_close.toString() : trade.price_current.toString();
-      closedTrade.profit = trade.profit ? trade.profit.toString() : '0';
-      closedTrade.netProfit = trade.profit ? trade.profit.toString() : '0';
+      console.log('🔴 Found live trade to be close at:', closedTrade);
+      // closedTrade.status = 'Closed';
+      // closedTrade.closeDate = "test";
+      // closedTrade.exit = trade.price_close ? trade.price_close.toString() : '0';
+      // closedTrade.profit = trade.profit ? trade.profit.toString() : '0';
+      // closedTrade.netProfit = trade.profit ? trade.profit.toString() : '0';
+      // closedTrade.commission = trade.commission ? trade.commission.toString() : '0';
+      //////////////
+      closedTrade.status= "Closed";
+      closedTrade.closeDate= "Closed";
+      closedTrade.commission= "0.28";
+      closedTrade.symbol= "AUDUSD";
+      closedTrade.entry = "Closed";
+      closedTrade.exit="0";
+      // closedTrade.openDate= "07.27.2025 06:22";
+      closedTrade.profit= "-78.09";
+      closedTrade.netProfit= "-78.09";
+      closedTrade.sL= "Closed";
+      closedTrade.swap= "-";
+      closedTrade.tP= "Closed";
+      closedTrade.volume= "2";
+      closedTrade.tradeNotion= [];
+      closedTrade.type= "Buy";
+     
+      this.mt5LiveTrades[liveIndex] = closedTrade;
 
-      this.mt5LiveTrades.splice(liveIndex, 1);
-      
-
+      // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
-      console.log('✅ MT5 trade closed and moved to history');
+      console.log('✅ MT5 trade closed');
     }
   }
 
