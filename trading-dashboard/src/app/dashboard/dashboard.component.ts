@@ -167,6 +167,24 @@ export class DashboardComponent {
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
 
+  // Emotion tracking properties
+  currentEmotion: string = '';
+  emotionText: string = '';
+  isSubmittingEmotion = false;
+  showEmotionTracker = false;
+
+  // Quick emotion buttons
+  quickEmotions = [
+    { text: 'FOMO', color: 'warning', icon: 'trending_up' },
+    { text: 'Tired', color: 'neutral', icon: 'bedtime' },
+    { text: 'Impulsive', color: 'danger', icon: 'flash_on' },
+    { text: 'Confident', color: 'success', icon: 'sentiment_very_satisfied' },
+    { text: 'Anxious', color: 'warning', icon: 'sentiment_very_dissatisfied' },
+    { text: 'Disciplined', color: 'success', icon: 'rule' },
+    { text: 'Frustrated', color: 'danger', icon: 'sentiment_dissatisfied' },
+    { text: 'Focused', color: 'primary', icon: 'center_focus_strong' }
+  ];
+
   // Overall Trading History Table
   notionPerformanceData: NotionPerformanceData[] = [];
   dtOptionsNotion: any = {};
@@ -270,6 +288,7 @@ export class DashboardComponent {
     socket.on("trade_opened", (data: any) => {
       console.warn("New trade opened:", data);
       this.addMT5LiveTrade(data);
+      this.showEmotionTracker = true; // Show emotion tracker when new trade is detected
     });
 
     socket.on("trade_closed", (data: any) => {
@@ -323,6 +342,8 @@ export class DashboardComponent {
     // Simple table - no DataTables initialization needed!
     console.log('✅ Simple Angular table ready - no DataTables complexity!');
 
+    // Check if there are new trades to show emotion tracker
+    this.checkForNewTrades();
   }
 
   ngAfterViewInit() {
@@ -841,6 +862,76 @@ isRowAlreadySelected(row: any): boolean {
 
   delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Emotion tracking methods
+  selectQuickEmotion(emotion: string): void {
+    if (this.currentEmotion === emotion) {
+      this.currentEmotion = '';
+    } else {
+      this.currentEmotion = emotion;
+    }
+  }
+
+  clearEmotionForm(): void {
+    this.currentEmotion = '';
+    this.emotionText = '';
+  }
+
+  async submitEmotion(): Promise<void> {
+    if (!this.currentEmotion && !this.emotionText.trim()) {
+      alert('Please select an emotion or enter your feelings.');
+      return;
+    }
+
+    this.isSubmittingEmotion = true;
+
+    try {
+      // Prepare emotion data
+      const emotionData = {
+        timestamp: new Date().toISOString(),
+        selectedEmotion: this.currentEmotion,
+        emotionText: this.emotionText.trim(),
+        tradesCount: this.recentlyAddedTrades.length
+      };
+
+      console.log('Submitting emotion data:', emotionData);
+
+      // TODO: Integrate with Notion API to save emotion data
+      // For now, we'll simulate the submission
+      await this.delay(1000);
+
+      // Success feedback
+      alert(`Emotion recorded successfully!\n\nSelected: ${this.currentEmotion || 'Custom'}\nNotes: ${this.emotionText || 'None'}`);
+
+      // Clear form and hide tracker
+      this.clearEmotionForm();
+      this.showEmotionTracker = false;
+      this.recentlyAddedTrades = []; // Clear recent trades
+
+    } catch (error) {
+      console.error('Error submitting emotion:', error);
+      alert('Failed to submit emotion. Please try again.');
+    } finally {
+      this.isSubmittingEmotion = false;
+    }
+  }
+
+  dismissEmotionTracker(): void {
+    this.showEmotionTracker = false;
+    this.clearEmotionForm();
+  }
+
+  checkForNewTrades(): void {
+    // Show emotion tracker if there are recent trades
+    if (this.recentlyAddedTrades.length > 0) {
+      this.showEmotionTracker = true;
+    }
+  }
+
+  getEmotionButtonClass(emotion: string): string {
+    const emotionConfig = this.quickEmotions.find(e => e.text === emotion);
+    return emotionConfig?.color || 'primary';
   }
 
   async checkAndCreateRelationId(){
