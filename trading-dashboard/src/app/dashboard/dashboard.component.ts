@@ -283,7 +283,7 @@ export class DashboardComponent {
   });
 
   socket.on("connect_error", (err: any) => {
-    console.warn("�� Socket connection error:", err);
+    console.warn("❌ Socket connection error:", err);
   });
     socket.on("trade_opened", (data: any) => {
       console.warn("New trade opened:", data);
@@ -3275,4 +3275,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.dtTrigger.next(null);
     }
   }
+
+
 }
