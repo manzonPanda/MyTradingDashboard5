@@ -628,49 +628,20 @@
         }
 
         &.new-trade {
-          position: relative;
           background: linear-gradient(90deg,
-            rgba(16, 185, 129, 0.12) 0%,
-            rgba(52, 211, 153, 0.08) 30%,
+            rgba(16, 185, 129, 0.08) 0%,
+            rgba(52, 211, 153, 0.04) 30%,
             transparent 70%
           );
           border-left: 4px solid var(--tf-positive);
           animation: live-trade-glow 3s ease-in-out infinite;
 
-          &::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg,
-              var(--tf-positive) 0%,
-              #22c55e 50%,
-              var(--tf-positive) 100%
-            );
-            animation: live-border-pulse 2s ease-in-out infinite;
-          }
-
-          &::before {
-            background: linear-gradient(90deg,
-              transparent,
-              rgba(16, 185, 129, 0.3),
-              transparent
-            );
-            animation: live-shimmer 3s ease-in-out infinite;
-          }
-
           &:hover {
             background: linear-gradient(90deg,
-              rgba(16, 185, 129, 0.18) 0%,
-              rgba(52, 211, 153, 0.12) 30%,
+              rgba(16, 185, 129, 0.12) 0%,
+              rgba(52, 211, 153, 0.08) 30%,
               var(--tf-bg-hover) 70%
             );
-            transform: translateY(-2px);
-            box-shadow:
-              0 8px 25px rgba(16, 185, 129, 0.15),
-              0 4px 12px rgba(0, 0, 0, 0.1);
           }
 
           // Live trade indicator pulse effect
@@ -681,7 +652,7 @@
               content: '🔴';
               position: absolute;
               top: 50%;
-              left: -12px;
+              left: -8px;
               transform: translateY(-50%);
               font-size: 0.5rem;
               animation: live-indicator-pulse 1.5s ease-in-out infinite;
