@@ -169,132 +169,116 @@
     </div>
   </section>
 
-  <!-- Emotional Tracking Section -->
-  <section class="emotional-tracking-section">
-    <div class="emotional-tracking-card">
-      <div class="emotional-header">
-        <div class="header-content">
-          <h2 class="section-title">
-            <mat-icon class="section-icon">psychology</mat-icon>
-            Trading Emotions Tracker
-          </h2>
-          <p class="section-subtitle">Track your emotional state during trades for better self-awareness and performance analysis</p>
-        </div>
-        <button class="btn-primary emotion-toggle-btn" (click)="toggleEmotionalTracking()">
-          <mat-icon>{{ showEmotionalTracking ? 'visibility_off' : 'add' }}</mat-icon>
-          {{ showEmotionalTracking ? 'Cancel' : 'Log Emotions' }}
-        </button>
-      </div>
+  <!-- Individual Trade Emotional Tracking Section -->
+  <section class="live-trades-emotional-section" *ngIf="recentlyAddedTrades.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">
+        <mat-icon class="section-icon">psychology</mat-icon>
+        New Trade Emotions
+        <span class="trade-count-badge">{{ recentlyAddedTrades.length }}</span>
+      </h2>
+      <p class="section-subtitle">Track your emotional state for each new live trade</p>
+    </div>
 
-      <!-- Emotional Entry Form -->
-      <div class="emotional-form-container" *ngIf="showEmotionalTracking">
-        <div class="emotional-form">
-          <div class="form-header">
-            <h3>How are you feeling about this trade?</h3>
-            <p class="trade-context" *ngIf="emotionalState.tradeContext">
-              <mat-icon>trending_up</mat-icon>
-              {{ emotionalState.tradeContext }}
-            </p>
-          </div>
+    <div class="trade-emotion-cards-grid">
+      <div
+        *ngFor="let trade of recentlyAddedTrades; let i = index"
+        class="trade-emotion-card"
+        [class.expanded]="isTradeEmotionalFormExpanded(trade)"
+        [class.submitted]="isTradeEmotionalSubmitted(trade)">
 
-          <!-- Emotion Selection Buttons -->
-          <div class="emotion-selection">
-            <h4>Quick Select Emotions</h4>
-            <div class="emotion-buttons-grid">
-              <button
-                *ngFor="let emotion of predefinedEmotions"
-                class="emotion-btn"
-                [class.selected]="emotionalState.selectedEmotion === emotion.name"
-                [style.--emotion-color]="emotion.color"
-                (click)="selectEmotion(emotion)">
-                <span class="emotion-icon">{{ emotion.icon }}</span>
-                <span class="emotion-name">{{ emotion.name }}</span>
-              </button>
+        <!-- Trade Header -->
+        <div class="trade-card-header">
+          <div class="trade-info">
+            <div class="trade-symbol">{{ trade.symbol }}</div>
+            <div class="trade-details">
+              <span class="trade-type" [class]="trade.type.toLowerCase()">{{ trade.type }}</span>
+              <span class="trade-volume">{{ trade.volume }} lots</span>
+            </div>
+            <div class="trade-profit" [class.positive]="isPositiveValue(trade.netProfit)" [class.negative]="isNegativeValue(trade.netProfit)">
+              {{ getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.2-2' }}
             </div>
           </div>
 
-          <!-- Custom Emotion Input -->
-          <div class="custom-emotion-section">
-            <h4>Or describe your own emotion</h4>
-            <mat-form-field class="custom-emotion-field" appearance="outline">
-              <mat-label>Custom emotion (e.g., "Hopeful", "Uncertain")</mat-label>
-              <input
-                matInput
-                [(ngModel)]="emotionalState.customEmotion"
-                (input)="onCustomEmotionChange()"
-                placeholder="Enter your current emotional state"
-                maxlength="50">
-            </mat-form-field>
+          <div class="trade-actions">
+            <span class="live-indicator">🔴 LIVE</span>
+            <button
+              class="emotion-toggle-btn"
+              (click)="toggleTradeEmotionalForm(trade)"
+              *ngIf="!isTradeEmotionalSubmitted(trade)">
+              <mat-icon>{{ isTradeEmotionalFormExpanded(trade) ? 'expand_less' : 'psychology' }}</mat-icon>
+            </button>
+            <div class="submitted-indicator" *ngIf="isTradeEmotionalSubmitted(trade)">
+              <mat-icon>check_circle</mat-icon>
+              <span>Logged</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emotional Tracking Form -->
+        <div class="trade-emotional-form" *ngIf="isTradeEmotionalFormExpanded(trade)">
+          <div class="emotion-prompt">
+            <h4>How do you feel about this {{ trade.symbol }} trade?</h4>
           </div>
 
-          <!-- Intensity Slider -->
-          <div class="intensity-section">
-            <h4>Intensity Level</h4>
-            <div class="intensity-slider-container">
-              <label class="intensity-label">Mild</label>
+          <!-- Quick Emotion Buttons -->
+          <div class="quick-emotions">
+            <button
+              *ngFor="let emotion of predefinedEmotions.slice(0, 6)"
+              class="quick-emotion-btn"
+              [class.selected]="getTradeEmotionalState(trade)?.selectedEmotion === emotion.name"
+              [style.--emotion-color]="emotion.color"
+              (click)="selectEmotionForTrade(trade, emotion)">
+              <span class="emotion-icon">{{ emotion.icon }}</span>
+              <span class="emotion-name">{{ emotion.name }}</span>
+            </button>
+          </div>
+
+          <!-- Custom Emotion & Intensity -->
+          <div class="emotion-details">
+            <div class="custom-emotion-input">
+              <mat-form-field appearance="outline" class="custom-field">
+                <mat-label>Custom emotion</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="getTradeEmotionalState(trade) && getTradeEmotionalState(trade).customEmotion"
+                  (input)="onCustomEmotionChangeForTrade(trade)"
+                  placeholder="Enter custom emotion"
+                  maxlength="30">
+              </mat-form-field>
+            </div>
+
+            <div class="intensity-control">
+              <label class="intensity-label">Intensity</label>
               <input
                 type="range"
                 min="1"
                 max="10"
-                [(ngModel)]="emotionalState.intensity"
+                [(ngModel)]="getTradeEmotionalState(trade) && getTradeEmotionalState(trade).intensity"
                 class="intensity-slider">
-              <label class="intensity-label">Intense</label>
+              <span class="intensity-value">{{ getTradeEmotionalState(trade)?.intensity || 5 }}/10</span>
             </div>
-            <div class="intensity-value">{{ emotionalState.intensity }}/10</div>
           </div>
 
-          <!-- Notes Section -->
-          <div class="notes-section">
-            <h4>Additional Notes</h4>
-            <mat-form-field class="notes-field" appearance="outline">
-              <mat-label>What's driving this emotion? Any specific thoughts?</mat-label>
+          <!-- Notes -->
+          <div class="emotion-notes">
+            <mat-form-field appearance="outline" class="notes-field">
+              <mat-label>Quick notes (optional)</mat-label>
               <textarea
                 matInput
-                [(ngModel)]="emotionalState.notes"
-                rows="3"
-                maxlength="200"
-                placeholder="E.g., 'Worried about market volatility', 'Confident due to strong technical setup'"></textarea>
+                [(ngModel)]="getTradeEmotionalState(trade) && getTradeEmotionalState(trade).notes"
+                rows="2"
+                maxlength="100"
+                placeholder="What's driving this emotion?"></textarea>
             </mat-form-field>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="form-actions">
-            <button class="btn-secondary" (click)="toggleEmotionalTracking()">
-              <mat-icon>close</mat-icon>
-              Cancel
-            </button>
-            <button class="btn-primary" (click)="submitEmotionalEntry()">
+          <!-- Submit Button -->
+          <div class="form-submit">
+            <button class="btn-primary submit-emotion-btn" (click)="submitEmotionalEntryForTrade(trade)">
               <mat-icon>save</mat-icon>
-              Save to Notion
+              Save Emotion
             </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Emotional Entries -->
-      <div class="recent-emotions" *ngIf="emotionalEntries.length > 0 && !showEmotionalTracking">
-        <h4>Recent Emotional Entries</h4>
-        <div class="emotions-timeline">
-          <div
-            *ngFor="let entry of emotionalEntries.slice(0, 3)"
-            class="emotion-entry-card">
-            <div class="entry-header">
-              <div class="emotion-display">
-                <span class="entry-icon">{{ getEmotionIcon(entry.emotion) }}</span>
-                <span class="entry-emotion" [style.color]="getEmotionColor(entry.emotion)">
-                  {{ entry.emotion }}
-                </span>
-                <span class="intensity-badge">{{ entry.intensity }}/10</span>
-              </div>
-              <span class="entry-time">{{ formatEmotionalTimestamp(entry.timestamp) }}</span>
-            </div>
-            <div class="entry-context" *ngIf="entry.tradeContext">
-              <mat-icon>info_outline</mat-icon>
-              {{ entry.tradeContext }}
-            </div>
-            <div class="entry-notes" *ngIf="entry.notes">
-              "{{ entry.notes }}"
-            </div>
           </div>
         </div>
       </div>
