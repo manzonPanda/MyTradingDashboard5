@@ -40,23 +40,20 @@ table.simple-table {
     }
 
     &.new-trade {
-      border-left: 6px solid #10b981 !important;
-      background: linear-gradient(90deg, rgba(16, 185, 129, 0.25), rgba(52, 211, 153, 0.15) 50%, rgba(16, 185, 129, 0.05) 100%) !important;
-      position: relative !important;
+      border-left: 4px solid #10b981 !important;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.08) 50%, transparent 100%) !important;
 
-      &::before {
-        content: 'LIVE TRADE' !important;
-        position: absolute !important;
-        top: 0.5rem !important;
-        right: 0.5rem !important;
-        background: #10b981 !important;
-        color: white !important;
-        padding: 0.25rem 0.5rem !important;
-        border-radius: 12px !important;
-        font-size: 0.65rem !important;
-        font-weight: 700 !important;
-        z-index: 10 !important;
-        animation: live-badge-pulse 1.5s ease-in-out infinite !important;
+      td:first-child {
+        position: relative !important;
+
+        &::before {
+          content: '🔴' !important;
+          position: absolute !important;
+          top: 0.25rem !important;
+          left: 0.25rem !important;
+          font-size: 0.6rem !important;
+          animation: live-indicator-pulse 1.5s ease-in-out infinite !important;
+        }
       }
     }
   }
