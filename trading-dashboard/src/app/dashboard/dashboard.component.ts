@@ -96,10 +96,102 @@ export class DashboardComponent {
   pageSize: number = 10;
   showNotionData = false;
 
+  // Original dashboard properties
+  uploadProgress: number = 0;
+  isUploading: boolean = false;
+  isLoadingChecking = false;
+  isLoadingPatching = false;
+  isLoadingComparing = false;
+  isLoadingPopulating = false;
+  checkingError = false;
+  patchingError = false;
+  comparingError = false;
+  populatingError = false;
+  progressChecking = 0;
+  progressPatching = 0;
+  progressComparing = 0;
+  progressPopulating = 0;
+
+  // Notion data and column visibility
+  notionPerformanceData: any[] = [];
+  dtOptionsNotion: any = {};
+  dtTriggerNotion: Subject<any> = new Subject<any>();
+  isLoadingNotionData = false;
+  showLoadButton = true;
+  showColumnSelector = false;
+
+  // Column visibility controls
+  columnVisibility = {
+    id: true,
+    action: true,
+    date: true,
+    account: true,
+    status: true,
+    buySell: true,
+    instrument: true,
+    strategy: true,
+    lots: true,
+    pips: true,
+    pnl: true,
+    percentPnL: true,
+    commission: true,
+    swap: true,
+    idealRRR: true,
+    idealSL: true,
+    modelCheck: true,
+    rulesViolated: true,
+    oneToOneReversal: true,
+    reviewed: true,
+    dailyReflection: true,
+    weeklyRetrospective: true,
+    modelForm: false,
+    screenshots: false,
+    outcome: false,
+    held: false,
+    percentPnLCalc: false,
+    divergenceValue: false,
+    formula: false,
+    emptySelect: false
+  };
+
+  // Available columns for selection
+  availableColumns = [
+    { key: 'id', label: 'ID', visible: true },
+    { key: 'action', label: 'Action', visible: true },
+    { key: 'date', label: 'Date', visible: true },
+    { key: 'account', label: 'Account', visible: true },
+    { key: 'status', label: 'Status', visible: true },
+    { key: 'buySell', label: 'Buy/Sell', visible: true },
+    { key: 'instrument', label: 'Instrument', visible: true },
+    { key: 'strategy', label: 'Strategy', visible: true },
+    { key: 'lots', label: 'Lots', visible: true },
+    { key: 'pips', label: 'Pips', visible: true },
+    { key: 'pnl', label: 'PnL', visible: true },
+    { key: 'percentPnL', label: '% PnL', visible: true },
+    { key: 'commission', label: 'Commission', visible: true },
+    { key: 'swap', label: 'Swap', visible: true },
+    { key: 'idealRRR', label: 'Ideal RRR', visible: true },
+    { key: 'idealSL', label: 'Ideal SL', visible: true },
+    { key: 'modelCheck', label: 'Model✔', visible: true },
+    { key: 'rulesViolated', label: 'Rules Violated 🛑', visible: true },
+    { key: 'oneToOneReversal', label: '1:1 Reversal', visible: true },
+    { key: 'reviewed', label: 'Reviewed', visible: true },
+    { key: 'dailyReflection', label: 'Daily Reflection', visible: true },
+    { key: 'weeklyRetrospective', label: 'Weekly Retrospective', visible: true },
+    { key: 'modelForm', label: 'Model Form', visible: false },
+    { key: 'screenshots', label: 'Screenshots', visible: false },
+    { key: 'outcome', label: 'Outcome', visible: false },
+    { key: 'held', label: 'Held🕕', visible: false },
+    { key: 'percentPnLCalc', label: '%PnL-Calc', visible: false },
+    { key: 'divergenceValue', label: 'Divergence Value', visible: false },
+    { key: 'formula', label: 'Formula', visible: false },
+    { key: 'emptySelect', label: 'Empty Select', visible: false }
+  ];
+
   constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
-    console.log('🚀 Clean Dashboard Component initialized');
+    console.log('🚀 Full Dashboard Component initialized');
     
     // Setup socket connection for live trades
     const socket = io("http://localhost:5000", {
@@ -149,7 +241,7 @@ export class DashboardComponent {
 
       console.log('Submitting emotion data:', emotionData);
       
-      // Simulate API call
+      // Simulate API call to Notion
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       alert(`Emotion recorded successfully!\n\nSelected: ${this.currentEmotion || 'Custom'}\nNotes: ${this.emotionText || 'None'}`);
@@ -207,6 +299,95 @@ export class DashboardComponent {
       lastTrade.netProfit = '25.00';
       lastTrade.status = 'Closed';
       console.log('Mock trade closed');
+    }
+  }
+
+  // Column management methods
+  showDefaultColumns(): void {
+    this.columnVisibility = {
+      id: true,
+      action: true,
+      date: true,
+      account: true,
+      status: true,
+      buySell: true,
+      instrument: true,
+      strategy: true,
+      lots: true,
+      pips: true,
+      pnl: true,
+      percentPnL: true,
+      commission: true,
+      swap: true,
+      idealRRR: true,
+      idealSL: true,
+      modelCheck: true,
+      rulesViolated: true,
+      oneToOneReversal: true,
+      reviewed: true,
+      dailyReflection: true,
+      weeklyRetrospective: true,
+      modelForm: false,
+      screenshots: false,
+      outcome: false,
+      held: false,
+      percentPnLCalc: false,
+      divergenceValue: false,
+      formula: false,
+      emptySelect: false
+    };
+  }
+
+  hideAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = false;
+    });
+  }
+
+  showAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = true;
+    });
+  }
+
+  toggleColumnVisibility(columnKey: string): void {
+    this.columnVisibility[columnKey as keyof typeof this.columnVisibility] = !this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+  }
+
+  toggleColumnSelector(): void {
+    this.showColumnSelector = !this.showColumnSelector;
+  }
+
+  // Notion data methods
+  loadNotionDataWithButton(): void {
+    this.showLoadButton = false;
+    this.isLoadingNotionData = true;
+    
+    setTimeout(() => {
+      this.isLoadingNotionData = false;
+      this.notionPerformanceData = [];
+      console.log('Notion data loaded');
+    }, 2000);
+  }
+
+  refreshNotionData(): void {
+    this.loadNotionDataWithButton();
+  }
+
+  testBackendConnection(): void {
+    alert('Testing backend connection...\n\nNote: This is a placeholder. Backend integration can be added later.');
+  }
+
+  formatNotionDate(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return dateStr;
     }
   }
 
