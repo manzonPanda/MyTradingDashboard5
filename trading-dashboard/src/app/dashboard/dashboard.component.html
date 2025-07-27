@@ -247,8 +247,8 @@
                 <mat-label>Custom emotion</mat-label>
                 <input
                   matInput
-                  [(ngModel)]="getTradeEmotionalState(trade) && getTradeEmotionalState(trade).customEmotion"
-                  (input)="onCustomEmotionChangeForTrade(trade)"
+                  [ngModel]="getTradeEmotionalState(trade)?.customEmotion || ''"
+                  (ngModelChange)="updateTradeCustomEmotion(trade, $event)"
                   placeholder="Enter custom emotion"
                   maxlength="30">
               </mat-form-field>
@@ -260,7 +260,8 @@
                 type="range"
                 min="1"
                 max="10"
-                [(ngModel)]="getTradeEmotionalState(trade) && getTradeEmotionalState(trade).intensity"
+                [ngModel]="getTradeEmotionalState(trade)?.intensity || 5"
+                (ngModelChange)="updateTradeIntensity(trade, $event)"
                 class="intensity-slider">
               <span class="intensity-value">{{ getTradeEmotionalState(trade)?.intensity || 5 }}/10</span>
             </div>
@@ -272,7 +273,8 @@
               <mat-label>Quick notes (optional)</mat-label>
               <textarea
                 matInput
-                [(ngModel)]="getTradeEmotionalState(trade) && getTradeEmotionalState(trade).notes"
+                [ngModel]="getTradeEmotionalState(trade)?.notes || ''"
+                (ngModelChange)="updateTradeNotes(trade, $event)"
                 rows="2"
                 maxlength="100"
                 placeholder="What's driving this emotion?"></textarea>
