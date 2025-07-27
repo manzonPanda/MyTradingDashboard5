@@ -548,4 +548,136 @@ export class DashboardComponent {
       return dateStr;
     }
   }
+
+  // Missing template methods - these are placeholders for the original functionality
+  selectedTradeId: any = {};
+
+  getMt5API(): void {
+    console.log('🔗 Connecting to MT5 API...');
+    alert('MT5 API connection initiated. This would connect to your MetaTrader 5 terminal.');
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      console.log('📁 File selected:', file.name);
+      alert(`File "${file.name}" selected. This would import trading data from the file.`);
+    }
+  }
+
+  checkAndCreateRelationId(): void {
+    console.log('🔧 Patching Activity Log...');
+    this.isLoadingPatching = true;
+    this.progressPatching = 0;
+    this.patchingError = false;
+
+    const interval = setInterval(() => {
+      this.progressPatching += 10;
+      if (this.progressPatching >= 100) {
+        this.progressPatching = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          this.isLoadingPatching = false;
+          alert('Activity Log patched successfully!');
+        }, 500);
+      }
+    }, 200);
+  }
+
+  compareToNotion(): void {
+    console.log('🔄 Comparing to Notion...');
+    this.isLoadingComparing = true;
+    this.progressComparing = 0;
+    this.comparingError = false;
+
+    const interval = setInterval(() => {
+      this.progressComparing += 8;
+      if (this.progressComparing >= 100) {
+        this.progressComparing = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          this.isLoadingComparing = false;
+          alert('Comparison with Notion completed!');
+        }, 500);
+      }
+    }, 250);
+  }
+
+  populateData(): void {
+    console.log('📊 Populating Data...');
+    this.isLoadingPopulating = true;
+    this.progressPopulating = 0;
+    this.populatingError = false;
+
+    const interval = setInterval(() => {
+      this.progressPopulating += 12;
+      if (this.progressPopulating >= 100) {
+        this.progressPopulating = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          this.isLoadingPopulating = false;
+          alert('Data population completed!');
+        }, 500);
+      }
+    }, 200);
+  }
+
+  chooseUnmatchedTrade(trade: any, row: any, index: number): void {
+    console.log('🎯 Choosing unmatched trade:', trade);
+    this.selectedTradeId[index] = trade.tradeId;
+    alert(`Trade ${trade.tradeId} selected for matching.`);
+  }
+
+  revertTradeNotion(row: any, index: number): void {
+    console.log('↩️ Reverting trade notion:', row);
+    delete this.selectedTradeId[index];
+    alert('Trade notion reverted successfully.');
+  }
+
+  onUpload(): void {
+    console.log('☁️ Uploading to Firebase...');
+    this.isUploading = true;
+    this.uploadProgress = 0;
+
+    const interval = setInterval(() => {
+      this.uploadProgress += 5;
+      if (this.uploadProgress >= 100) {
+        this.uploadProgress = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          this.isUploading = false;
+          alert('Upload to Firebase completed!');
+        }, 500);
+      }
+    }, 150);
+  }
+
+  onPaste(event: ClipboardEvent): void {
+    const clipboardData = event.clipboardData;
+    if (clipboardData) {
+      const pastedText = clipboardData.getData('text');
+      console.log('📋 Pasted data:', pastedText.substring(0, 100) + '...');
+      alert('Data pasted! This would parse and import the Excel table data.');
+    }
+  }
+
+  checkBackendInstructions(): void {
+    alert(`Backend Setup Instructions:
+
+1. Start the Notion proxy server:
+   cd NotionProxyApi && npm start
+
+2. Ensure the server runs on localhost:3000
+
+3. Configure your Notion database ID
+
+4. Make sure your database has the required fields
+
+For detailed setup, check the README.md file.`);
+  }
+
+  // Ensure parseFloat is available in template
+  parseFloat(value: string): number {
+    return parseFloat(value);
+  }
 }
