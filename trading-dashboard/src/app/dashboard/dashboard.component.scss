@@ -1186,14 +1186,10 @@
 
 @keyframes live-trade-glow {
   0%, 100% {
-    box-shadow:
-      0 0 0 rgba(16, 185, 129, 0),
-      inset 0 0 0 rgba(16, 185, 129, 0.05);
+    border-left-color: var(--tf-positive);
   }
   50% {
-    box-shadow:
-      0 0 20px rgba(16, 185, 129, 0.15),
-      inset 0 0 20px rgba(16, 185, 129, 0.1);
+    border-left-color: #22c55e;
   }
 }
 
