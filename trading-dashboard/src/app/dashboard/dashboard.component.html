@@ -169,6 +169,96 @@
     </div>
   </section>
 
+  <!-- Emotion Tracking Section -->
+  <section class="emotion-tracking-section" *ngIf="showEmotionTracker">
+    <div class="emotion-tracker-card">
+      <div class="emotion-header">
+        <div class="emotion-title-section">
+          <mat-icon class="emotion-icon">psychology</mat-icon>
+          <div class="emotion-title-text">
+            <h3 class="emotion-title">How are you feeling about this trade?</h3>
+            <p class="emotion-subtitle">Track your emotions to improve your trading psychology</p>
+          </div>
+        </div>
+        <button class="emotion-dismiss-btn" (click)="dismissEmotionTracker()" [disabled]="isSubmittingEmotion">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="emotion-content">
+        <!-- Quick Emotion Buttons -->
+        <div class="quick-emotions-section">
+          <h4 class="quick-emotions-title">Quick Selection:</h4>
+          <div class="quick-emotions-grid">
+            <button
+              *ngFor="let emotion of quickEmotions"
+              class="emotion-quick-btn"
+              [ngClass]="{
+                'selected': currentEmotion === emotion.text,
+                'emotion-' + emotion.color: true
+              }"
+              (click)="selectQuickEmotion(emotion.text)"
+              [disabled]="isSubmittingEmotion">
+              <mat-icon>{{ emotion.icon }}</mat-icon>
+              <span>{{ emotion.text }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Emotion Input -->
+        <div class="custom-emotion-section">
+          <h4 class="custom-emotion-title">Or describe your feelings:</h4>
+          <mat-form-field class="emotion-input-field" appearance="outline">
+            <mat-label>What's on your mind?</mat-label>
+            <textarea
+              matInput
+              [(ngModel)]="emotionText"
+              placeholder="e.g., I'm feeling confident about this setup because..."
+              rows="3"
+              maxlength="500"
+              [disabled]="isSubmittingEmotion">
+            </textarea>
+            <mat-hint align="end">{{ emotionText.length }}/500</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="emotion-actions">
+          <button
+            class="emotion-submit-btn"
+            mat-raised-button
+            color="primary"
+            (click)="submitEmotion()"
+            [disabled]="isSubmittingEmotion || (!currentEmotion && !emotionText.trim())">
+            <mat-progress-spinner
+              *ngIf="isSubmittingEmotion"
+              diameter="20"
+              mode="indeterminate">
+            </mat-progress-spinner>
+            <mat-icon *ngIf="!isSubmittingEmotion">send</mat-icon>
+            <span>{{ isSubmittingEmotion ? 'Submitting...' : 'Submit to Notion' }}</span>
+          </button>
+          <button
+            class="emotion-clear-btn"
+            mat-stroked-button
+            (click)="clearEmotionForm()"
+            [disabled]="isSubmittingEmotion">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </div>
+
+        <!-- Trade Context Info -->
+        <div class="trade-context-info" *ngIf="recentlyAddedTrades.length > 0">
+          <mat-icon class="context-icon">info</mat-icon>
+          <span class="context-text">
+            Recording emotions for {{ recentlyAddedTrades.length }} new trade{{ recentlyAddedTrades.length > 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
     <!-- Active Account Section -->
   <section class="table-section">
     <div class="table-card">
