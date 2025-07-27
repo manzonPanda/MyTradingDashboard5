@@ -1007,6 +1007,203 @@ isRowAlreadySelected(row: any): boolean {
     return isNaN(num) ? 0 : num;
   }
 
+  // Advanced Analytics - Psychology Methods (placeholders)
+  getRevengeTradingScore(): number {
+    // Placeholder: analyze consecutive losses followed by larger position sizes
+    return Math.random() * 30; // 0-30%
+  }
+
+  getOvertradingScore(): number {
+    // Placeholder: analyze trading frequency vs optimal frequency
+    return Math.random() * 40; // 0-40%
+  }
+
+  getFOMOScore(): number {
+    // Placeholder: analyze quick trades after wins
+    return Math.random() * 25; // 0-25%
+  }
+
+  getRevengeTradingClass(): string {
+    const score = this.getRevengeTradingScore();
+    if (score > 20) return 'high-risk';
+    if (score > 10) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getOvertradingClass(): string {
+    const score = this.getOvertradingScore();
+    if (score > 30) return 'high-risk';
+    if (score > 15) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getFOMOClass(): string {
+    const score = this.getFOMOScore();
+    if (score > 15) return 'high-risk';
+    if (score > 8) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  // Performance Insights Methods
+  getPerformanceInsights(): any[] {
+    // Placeholder: return AI-generated insights based on trading patterns
+    return [
+      {
+        title: 'Risk Management',
+        severity: 'warning',
+        description: 'Your stop losses are being hit frequently on EURUSD trades.',
+        recommendations: [
+          'Consider wider stop losses for EURUSD trades',
+          'Review your entry timing on EUR pairs',
+          'Analyze market volatility before entering trades'
+        ]
+      },
+      {
+        title: 'Trading Psychology',
+        severity: 'critical',
+        description: 'Detected revenge trading patterns after losses.',
+        recommendations: [
+          'Take a 15-minute break after any loss',
+          'Stick to your predetermined position sizes',
+          'Review your trading plan before each trade'
+        ]
+      }
+    ];
+  }
+
+  // Heatmap Methods
+  getPerformanceHeatmap(): any[] {
+    // Placeholder: generate 30-day heatmap data
+    const heatmapData = [];
+    for (let i = 0; i < 30; i++) {
+      const value = (Math.random() - 0.5) * 100; // -50 to +50
+      heatmapData.push({
+        value: value,
+        class: this.getHeatmapCellClass(value),
+        tooltip: `Day ${i + 1}: ${value > 0 ? '+' : ''}${value.toFixed(2)}`
+      });
+    }
+    return heatmapData;
+  }
+
+  getHeatmapCellClass(value: number): string {
+    if (value > 25) return 'positive-extreme';
+    if (value > 10) return 'positive-high';
+    if (value > -10) return 'neutral';
+    if (value > -25) return 'negative-high';
+    return 'negative-extreme';
+  }
+
+  // Discipline Metrics
+  getStopLossAdherence(): number {
+    // Placeholder: calculate how often stop losses are respected
+    return 75 + Math.random() * 20; // 75-95%
+  }
+
+  getTakeProfitDiscipline(): number {
+    // Placeholder: calculate take profit discipline
+    return 60 + Math.random() * 30; // 60-90%
+  }
+
+  getStopLossAdherenceClass(): string {
+    const score = this.getStopLossAdherence();
+    if (score > 85) return 'excellent';
+    if (score > 70) return 'good';
+    return 'needs-improvement';
+  }
+
+  getTakeProfitDisciplineClass(): string {
+    const score = this.getTakeProfitDiscipline();
+    if (score > 80) return 'excellent';
+    if (score > 65) return 'good';
+    return 'needs-improvement';
+  }
+
+  // Streak Analysis Methods
+  getMaxConsecutiveWins(): number {
+    // Placeholder: find longest winning streak
+    return Math.floor(Math.random() * 8) + 2; // 2-10
+  }
+
+  getMaxConsecutiveLosses(): number {
+    // Placeholder: find longest losing streak
+    return Math.floor(Math.random() * 5) + 1; // 1-6
+  }
+
+  getCurrentStreak(): number {
+    // Placeholder: get current win/loss streak
+    return Math.floor(Math.random() * 6) - 3; // -3 to +3
+  }
+
+  getCurrentStreakClass(): string {
+    const streak = this.getCurrentStreak();
+    if (streak > 0) return 'positive-streak';
+    if (streak < 0) return 'negative-streak';
+    return 'neutral-streak';
+  }
+
+  // MT5 Live Trading Methods
+  addMT5LiveTrade(data: any): void {
+    console.log('Adding MT5 live trade:', data);
+    // Convert MT5 data to Table format and add to recentlyAddedTrades
+    const newTrade: Table = {
+      openDate: new Date().toLocaleString(),
+      tradeNotion: [],
+      status: 'Live',
+      position: data.type || 'BUY',
+      symbol: data.symbol || 'UNKNOWN',
+      type: 'market',
+      volume: data.volume?.toString() || '0.00',
+      entry: data.price?.toString() || '0.00000',
+      sL: data.sl?.toString() || '0.00000',
+      tP: data.tp?.toString() || '0.00000',
+      closeDate: '',
+      exit: '',
+      commission: '0.00',
+      swap: '0.00',
+      profit: data.profit?.toString() || '0.00',
+      netProfit: data.profit?.toString() || '0.00'
+    };
+
+    this.recentlyAddedTrades.push(newTrade);
+    this.tableData.unshift(newTrade);
+    this.cdr.detectChanges();
+  }
+
+  closeMT5Trade(data: any): void {
+    console.log('Closing MT5 trade:', data);
+    // Find and update the closed trade
+    const tradeIndex = this.tableData.findIndex(trade =>
+      trade.symbol === data.symbol && trade.status === 'Live'
+    );
+
+    if (tradeIndex !== -1) {
+      this.tableData[tradeIndex].status = 'Closed';
+      this.tableData[tradeIndex].closeDate = new Date().toLocaleString();
+      this.tableData[tradeIndex].exit = data.close_price?.toString() || '0.00000';
+      this.tableData[tradeIndex].profit = data.profit?.toString() || '0.00';
+      this.tableData[tradeIndex].netProfit = data.profit?.toString() || '0.00';
+      this.cdr.detectChanges();
+    }
+  }
+
+  updateMT5TradePrice(data: any): void {
+    // Update live trade prices
+    const liveTrades = this.tableData.filter(trade => trade.status === 'Live');
+    liveTrades.forEach(trade => {
+      if (trade.symbol === data.symbol) {
+        // Update current price and unrealized P&L if needed
+        console.log(`Price update for ${data.symbol}: ${data.price}`);
+      }
+    });
+  }
+
+  async loadMT5Data(): Promise<void> {
+    // Load existing MT5 data
+    console.log('Loading MT5 data...');
+    // This would typically fetch from MT5 API
+  }
+
   async checkAndCreateRelationId(){
     // if (!this.startDate || !this.endDate){  // Check if startDate or endDate is null{
     //   return
