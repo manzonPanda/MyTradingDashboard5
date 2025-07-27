@@ -1,4 +1,85 @@
 // TradersFeed-inspired light theme Dashboard Styles
+
+// Global table styling that overrides everything
+table.modern-table,
+table.simple-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 2px solid #cbd5e1 !important;
+  background: white !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+
+  thead th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 0.75rem !important;
+    border: 1px solid #e2e8f0 !important;
+    text-align: left !important;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e2e8f0 !important;
+
+    &:nth-child(even) {
+      background: #f8fafc !important;
+    }
+
+    &:hover {
+      background: #f1f5f9 !important;
+    }
+
+    &.positive-row {
+      border-left: 4px solid #10b981 !important;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent 50%) !important;
+    }
+
+    &.negative-row {
+      border-left: 4px solid #ef4444 !important;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), transparent 50%) !important;
+    }
+
+    &.new-trade {
+      border-left: 4px solid #10b981 !important;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.08) 50%, transparent 100%) !important;
+
+      td:first-child {
+        position: relative !important;
+
+        &::before {
+          content: '🔴' !important;
+          position: absolute !important;
+          top: 0.25rem !important;
+          left: 0.25rem !important;
+          font-size: 0.6rem !important;
+          animation: live-indicator-pulse 1.5s ease-in-out infinite !important;
+        }
+      }
+    }
+  }
+
+  tbody td {
+    padding: 0.5rem 0.75rem !important;
+    border-right: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+    vertical-align: middle !important;
+
+    &:last-child {
+      border-right: none !important;
+    }
+
+    &.positive {
+      color: #10b981 !important;
+      font-weight: 700 !important;
+    }
+
+    &.negative {
+      color: #ef4444 !important;
+      font-weight: 700 !important;
+    }
+  }
+}
+
 :host {
   --tf-bg-primary: #ffffff;
   --tf-bg-secondary: #f8fafc;
@@ -575,60 +656,183 @@
   
   .table-container {
     overflow-x: auto;
-    
+
     .modern-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.875rem;
-      
+      border: 2px solid #cbd5e1;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
       thead th {
-        background: var(--tf-bg-secondary);
-        color: var(--tf-text-secondary);
+        background: #f8fafc !important;
+        color: #64748b !important;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         padding: 1rem 0.75rem;
         text-align: left;
-        border-bottom: 1px solid var(--tf-border-primary);
+        vertical-align: middle;
+        border-bottom: 2px solid #cbd5e1 !important;
+        border-right: 1px solid #e2e8f0 !important;
         white-space: nowrap;
-        
+
+        &:last-child {
+          border-right: none;
+        }
+
         &.hidden {
           display: none;
         }
       }
       
       tbody tr {
-        transition: all 0.2s ease;
-        border-bottom: 1px solid var(--tf-border-primary);
-        
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        border-bottom: 1px solid #e2e8f0 !important;
+        position: relative;
+        background: white;
+
         &:hover {
-          background: var(--tf-bg-hover);
+          background: #f1f5f9 !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
-        
+
+        &:nth-child(even) {
+          background: #f8fafc !important;
+
+          &:hover {
+            background: #f1f5f9 !important;
+          }
+        }
+
+        &:last-child {
+          border-bottom: 2px solid #cbd5e1 !important;
+        }
+
         &.positive-row {
-          border-left: 3px solid var(--tf-positive);
+          border-left: 4px solid #10b981 !important;
+          background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), transparent 50%) !important;
+
+          &:hover {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), #f1f5f9 50%) !important;
+          }
+
+          &:nth-child(even) {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), #f8fafc 50%) !important;
+          }
         }
-        
+
         &.negative-row {
-          border-left: 3px solid var(--tf-negative);
+          border-left: 4px solid #ef4444 !important;
+          background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), transparent 50%) !important;
+
+          &:hover {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), #f1f5f9 50%) !important;
+          }
+
+          &:nth-child(even) {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), #f8fafc 50%) !important;
+          }
+        }
+
+        &.new-trade {
+          background: linear-gradient(90deg,
+            rgba(16, 185, 129, 0.25) 0%,
+            rgba(52, 211, 153, 0.15) 50%,
+            rgba(16, 185, 129, 0.05) 100%
+          ) !important;
+          border-left: 6px solid #10b981 !important;
+          position: relative;
+          animation: live-trade-glow 2s ease-in-out infinite;
+
+          &::before {
+            content: 'LIVE TRADE';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+            animation: live-badge-pulse 1.5s ease-in-out infinite;
+          }
+
+          &:hover {
+            background: linear-gradient(90deg,
+              rgba(16, 185, 129, 0.35) 0%,
+              rgba(52, 211, 153, 0.25) 50%,
+              rgba(16, 185, 129, 0.1) 100%
+            ) !important;
+          }
+
+          &:nth-child(even) {
+            background: linear-gradient(90deg,
+              rgba(16, 185, 129, 0.25) 0%,
+              rgba(52, 211, 153, 0.15) 50%,
+              rgba(16, 185, 129, 0.05) 100%
+            ) !important;
+          }
+
+          // Live trade indicator pulse effect
+          td:first-child {
+            position: relative;
+
+            &::after {
+              content: '🔴 LIVE';
+              position: absolute;
+              top: 0.125rem;
+              left: 0.125rem;
+              font-size: 0.6rem;
+              color: #ef4444;
+              font-weight: 700;
+              background: rgba(255, 255, 255, 0.9);
+              padding: 0.125rem 0.25rem;
+              border-radius: 4px;
+              animation: live-indicator-pulse 1s ease-in-out infinite;
+            }
+          }
         }
         
         td {
-          padding: 0.875rem 0.75rem;
-          color: var(--tf-text-primary);
-          
+          padding: 0.5rem 0.75rem;
+          color: #1e293b !important;
+          vertical-align: middle;
+          border-right: 1px solid #e2e8f0 !important;
+          font-size: 0.875rem;
+          line-height: 1.4;
+
+          &:last-child {
+            border-right: none;
+          }
+
           &.hidden {
             display: none;
           }
-          
+
           &.positive {
-            color: var(--tf-positive);
-            font-weight: 600;
+            color: #10b981 !important;
+            font-weight: 700;
           }
-          
+
           &.negative {
-            color: var(--tf-negative);
-            font-weight: 600;
+            color: #ef4444 !important;
+            font-weight: 700;
+          }
+        }
+
+        // Enhanced styling for new trades
+        &.new-trade td {
+          position: relative;
+
+          &.positive::before,
+          &.negative::before {
+            animation-duration: 1s;
+            filter: drop-shadow(0 0 4px currentColor);
           }
         }
       }
@@ -986,22 +1190,75 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
-  border: 1px solid var(--tf-positive);
-  border-radius: 20px;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg,
+    rgba(16, 185, 129, 0.15),
+    rgba(52, 211, 153, 0.08),
+    rgba(16, 185, 129, 0.15)
+  );
+  border: 2px solid var(--tf-positive);
+  border-radius: 25px;
   color: var(--tf-positive);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  animation: live-indicator-glow 2s ease-in-out infinite;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    animation: indicator-shimmer 3s ease-in-out infinite;
+  }
 
   mat-icon {
-    font-size: 1rem;
-    width: 1rem;
-    height: 1rem;
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    position: relative;
+    z-index: 1;
 
     &.pulse {
       animation: pulse-new 1.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6));
     }
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  }
+}
+
+@keyframes live-indicator-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 rgba(16, 185, 129, 0.3),
+      0 0 0 rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 15px rgba(16, 185, 129, 0.4),
+      0 0 30px rgba(16, 185, 129, 0.2);
+  }
+}
+
+@keyframes indicator-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
   }
 }
 
@@ -1047,6 +1304,64 @@
   }
 }
 
+@keyframes live-trade-glow {
+  0%, 100% {
+    border-left-color: var(--tf-positive);
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    border-left-color: #22c55e;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  }
+}
+
+@keyframes live-badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes live-border-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleY(1.05);
+  }
+}
+
+@keyframes live-shimmer {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes live-indicator-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
+}
+
 @keyframes pulse-new {
   0%, 100% {
     opacity: 1;
@@ -1055,6 +1370,28 @@
   50% {
     opacity: 0.7;
     transform: scale(1.1);
+  }
+}
+
+@keyframes profit-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+@keyframes loss-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
   }
 }
 
@@ -1073,6 +1410,226 @@
 
 .neutral {
   color: var(--tf-neutral) !important;
+}
+
+// Enhanced table row styling with gradient overlays
+.simple-table-container .simple-table tbody tr {
+  // Gradient overlay for different row states
+  &.positive-row {
+    background-image:
+      linear-gradient(90deg,
+        rgba(16, 185, 129, 0.04) 0%,
+        rgba(52, 211, 153, 0.02) 50%,
+        transparent 100%
+      );
+
+    &:nth-child(even) {
+      background-image:
+        linear-gradient(90deg,
+          rgba(16, 185, 129, 0.06) 0%,
+          rgba(52, 211, 153, 0.03) 50%,
+          rgba(248, 250, 252, 0.5) 100%
+        );
+    }
+  }
+
+  &.negative-row {
+    background-image:
+      linear-gradient(90deg,
+        rgba(239, 68, 68, 0.04) 0%,
+        rgba(248, 113, 113, 0.02) 50%,
+        transparent 100%
+      );
+
+    &:nth-child(even) {
+      background-image:
+        linear-gradient(90deg,
+          rgba(239, 68, 68, 0.06) 0%,
+          rgba(248, 113, 113, 0.03) 50%,
+          rgba(248, 250, 252, 0.5) 100%
+        );
+    }
+  }
+
+  // Special highlighting for high-value trades
+  &[data-value="high-profit"] {
+    background: linear-gradient(90deg,
+      rgba(16, 185, 129, 0.1) 0%,
+      rgba(52, 211, 153, 0.06) 30%,
+      transparent 70%
+    );
+    border-left-width: 6px;
+
+    &::after {
+      content: '🔥';
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      animation: fire-glow 2s ease-in-out infinite;
+    }
+  }
+
+  &[data-value="high-loss"] {
+    background: linear-gradient(90deg,
+      rgba(239, 68, 68, 0.1) 0%,
+      rgba(248, 113, 113, 0.06) 30%,
+      transparent 70%
+    );
+    border-left-width: 6px;
+
+    &::after {
+      content: '⚠️';
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      animation: warning-pulse 2s ease-in-out infinite;
+    }
+  }
+
+  // Beautiful row separator effect
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 2rem;
+    right: 2rem;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent,
+      var(--tf-border-primary),
+      transparent
+    );
+    opacity: 0.5;
+  }
+
+
+}
+
+// Enhanced position badges with better styling
+.position-badge {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: left 0.5s ease;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Status badges with enhanced styling
+.status-badge {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  &.matched {
+    background: linear-gradient(135deg,
+      rgba(16, 185, 129, 0.15),
+      rgba(52, 211, 153, 0.1)
+    );
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+
+    &::after {
+      content: '✓';
+      position: absolute;
+      right: 0.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.7rem;
+      animation: check-bounce 2s ease-in-out infinite;
+    }
+  }
+
+  &.unmatched {
+    background: linear-gradient(135deg,
+      rgba(239, 68, 68, 0.15),
+      rgba(248, 113, 113, 0.1)
+    );
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    animation: unmatched-alert 3s ease-in-out infinite;
+  }
+}
+
+// Additional animation effects
+@keyframes fire-glow {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    filter: hue-rotate(10deg);
+  }
+}
+
+@keyframes warning-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.15);
+  }
+}
+
+
+
+@keyframes check-bounce {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+@keyframes unmatched-alert {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes live-badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
 // 🚀 HERO ANALYTICS SECTION - ENHANCED DESIGN
