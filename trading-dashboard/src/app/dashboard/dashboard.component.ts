@@ -192,7 +192,7 @@ export class DashboardComponent {
 
   async ngOnInit() {
     console.log('🚀 Full Dashboard Component initialized');
-    
+
     // Setup socket connection for live trades
     const socket = io("http://localhost:5000", {
       transports: ['websocket'],
@@ -207,6 +207,17 @@ export class DashboardComponent {
       console.log("New trade opened:", data);
       this.showEmotionTracker = true;
     });
+
+    // Refresh analytics values periodically to keep them dynamic
+    setInterval(() => {
+      this.refreshAnalyticsCache();
+    }, 30000); // Refresh every 30 seconds
+  }
+
+  private refreshAnalyticsCache(): void {
+    this._cachedRevengeTradingScore = undefined;
+    this._cachedOvertradingScore = undefined;
+    this._cachedFOMOScore = undefined;
   }
 
   // Emotion tracking methods
