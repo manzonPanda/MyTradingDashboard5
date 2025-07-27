@@ -1837,6 +1837,27 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  updateTradeCustomEmotion(trade: Table, value: string) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].customEmotion = value;
+    if (value.trim()) {
+      this.tradeEmotionalStates[tradeKey].selectedEmotion = ''; // Clear predefined if custom is entered
+    }
+  }
+
+  updateTradeIntensity(trade: Table, value: number) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].intensity = value;
+  }
+
+  updateTradeNotes(trade: Table, value: string) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].notes = value;
+  }
+
   submitEmotionalEntryForTrade(trade: Table) {
     const tradeKey = this.getTradeKey(trade);
     const emotionalState = this.tradeEmotionalStates[tradeKey];
