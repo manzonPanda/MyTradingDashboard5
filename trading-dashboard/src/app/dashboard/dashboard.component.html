@@ -169,6 +169,96 @@
     </div>
   </section>
 
+  <!-- DEBUG: Check recentlyAddedTrades -->
+  <div style="background: yellow; padding: 10px; margin: 10px; border: 2px solid red;" *ngIf="recentlyAddedTrades.length === 0">
+    <strong>DEBUG: No recent trades found. recentlyAddedTrades.length = {{ recentlyAddedTrades.length }}</strong>
+    <br>Click "MT5 +trade" button to add a trade and see emotional tracking cards.
+  </div>
+
+  <!-- Compact Trade Emotion Cards -->
+  <section class="compact-emotion-section" *ngIf="recentlyAddedTrades.length > 0">
+    <div class="compact-emotion-grid">
+      <div
+        *ngFor="let trade of recentlyAddedTrades; let i = index"
+        class="compact-emotion-card"
+        [class.submitted]="isTradeEmotionalSubmitted(trade)">
+
+        <!-- Trade Info -->
+        <div class="trade-info-compact">
+          <div class="trade-header-compact">
+            <span class="trade-title-compact">Trade {{ recentlyAddedTrades.length - i }}</span>
+            <span class="live-badge">LIVE</span>
+          </div>
+          <div class="symbol-row">
+            <span class="symbol-compact">{{ trade.symbol }}</span>
+          </div>
+          <div class="trade-details-compact">
+            <span class="type-compact" [class]="trade.type.toLowerCase()">{{ trade.type }}</span>
+            <span class="volume-compact">{{ trade.volume }}L</span>
+          </div>
+          <div class="profit-compact" [class.positive]="isPositiveValue(trade.netProfit)" [class.negative]="isNegativeValue(trade.netProfit)">
+            {{ getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.0-0' }}
+          </div>
+        </div>
+
+        <!-- Emotion Selection -->
+        <div class="emotion-section-compact" *ngIf="!isTradeEmotionalSubmitted(trade)">
+          <div class="emotion-prompt-compact">How do you feel?</div>
+
+          <!-- Quick Emotion Buttons -->
+          <div class="quick-emotions-compact">
+            <button
+              *ngFor="let emotion of predefinedEmotions.slice(0, 6)"
+              class="emotion-btn-compact"
+              [class.selected]="getTradeEmotionalState(trade)?.selectedEmotion === emotion.name"
+              [style.--emotion-color]="emotion.color"
+              (click)="selectEmotionForTrade(trade, emotion)"
+              [title]="emotion.name">
+              {{ emotion.icon }}
+            </button>
+          </div>
+
+          <!-- Custom Input -->
+          <input
+            type="text"
+            class="custom-emotion-compact"
+            [ngModel]="getTradeEmotionalState(trade)?.customEmotion || ''"
+            (ngModelChange)="updateTradeCustomEmotion(trade, $event)"
+            placeholder="Custom emotion..."
+            maxlength="20">
+
+          <!-- Intensity & Submit -->
+          <div class="bottom-controls">
+            <div class="intensity-compact">
+              <label>Intensity:</label>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                [ngModel]="getTradeEmotionalState(trade)?.intensity || 5"
+                (ngModelChange)="updateTradeIntensity(trade, $event)"
+                class="intensity-slider-compact">
+              <span>{{ getTradeEmotionalState(trade)?.intensity || 5 }}</span>
+            </div>
+            <button class="save-btn-compact" (click)="submitEmotionalEntryForTrade(trade)">
+              <mat-icon>save</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submitted State -->
+        <div class="submitted-state-compact" *ngIf="isTradeEmotionalSubmitted(trade)">
+          <div class="submitted-emotion">
+            <span class="submitted-icon">{{ getEmotionIcon(getSubmittedEmotion(trade)) }}</span>
+            <span class="submitted-text">{{ getSubmittedEmotion(trade) }}</span>
+          </div>
+          <div class="submitted-intensity">Intensity: {{ getSubmittedIntensity(trade) }}/10</div>
+          <div class="checkmark">✅ Logged</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
     <!-- Active Account Section -->
   <section class="table-section">
     <div class="table-card">
@@ -200,10 +290,7 @@
             <mat-icon>{{ showNotionData ? 'visibility' : 'visibility_off' }}</mat-icon>
             {{ showNotionData ? 'Hide' : 'Show' }} Notion Data
           </button>
-          <div class="live-indicator" *ngIf="recentlyAddedTrades.length > 0">
-            <mat-icon class="pulse">fiber_new</mat-icon>
-            <span>{{ recentlyAddedTrades.length }} new live trades</span>
-          </div>
+
         </div>
       </div>
 

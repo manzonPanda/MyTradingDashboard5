@@ -134,7 +134,7 @@ export class DashboardComponent {
   // MT5 Live Trading properties
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
-  mockTicket = 123123123;
+  mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
@@ -166,6 +166,26 @@ export class DashboardComponent {
 
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
+
+  // Emotional tracking properties for individual trades
+  predefinedEmotions = [
+    { name: 'FOMO', icon: '😰', color: '#f59e0b' },
+    { name: 'Confident', icon: '😎', color: '#10b981' },
+    { name: 'Tired', icon: '😴', color: '#6b7280' },
+    { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
+    { name: 'Focused', icon: '🎯', color: '#3b82f6' },
+    { name: 'Anxious', icon: '😟', color: '#f59e0b' },
+    { name: 'Greedy', icon: '🤑', color: '#ef4444' },
+    { name: 'Patient', icon: '🧘', color: '#10b981' },
+    { name: 'Frustrated', icon: '😤', color: '#ef4444' },
+    { name: 'Disciplined', icon: '💪', color: '#10b981' },
+    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
+    { name: 'Calm', icon: '😌', color: '#10b981' }
+  ];
+
+  // Individual emotional states for each trade
+  tradeEmotionalStates: { [tradeKey: string]: any } = {};
+  emotionalEntries: any[] = [];
 
   // Overall Trading History Table
   notionPerformanceData: NotionPerformanceData[] = [];
@@ -1777,6 +1797,155 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.tableData ? this.tableData.length : 0;
   }
 
+  // Emotional tracking methods for individual trades
+  getTradeKey(trade: Table): string {
+    return `${trade.openDate}_${trade.symbol}_${trade.volume}`;
+  }
+
+  initializeTradeEmotionalState(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    if (!this.tradeEmotionalStates[tradeKey]) {
+      this.tradeEmotionalStates[tradeKey] = {
+        selectedEmotion: '',
+        customEmotion: '',
+        intensity: 5,
+        notes: '',
+        timestamp: new Date(),
+        isExpanded: false,
+        isSubmitted: false
+      };
+    }
+  }
+
+  toggleTradeEmotionalForm(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].isExpanded = !this.tradeEmotionalStates[tradeKey].isExpanded;
+  }
+
+  selectEmotionForTrade(trade: Table, emotion: any) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].selectedEmotion = emotion.name;
+    this.tradeEmotionalStates[tradeKey].customEmotion = ''; // Clear custom if predefined is selected
+  }
+
+  onCustomEmotionChangeForTrade(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    if (this.tradeEmotionalStates[tradeKey]?.customEmotion?.trim()) {
+      this.tradeEmotionalStates[tradeKey].selectedEmotion = ''; // Clear predefined if custom is entered
+    }
+  }
+
+  updateTradeCustomEmotion(trade: Table, value: string) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].customEmotion = value;
+    if (value.trim()) {
+      this.tradeEmotionalStates[tradeKey].selectedEmotion = ''; // Clear predefined if custom is entered
+    }
+  }
+
+  updateTradeIntensity(trade: Table, value: number) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].intensity = value;
+  }
+
+  updateTradeNotes(trade: Table, value: string) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].notes = value;
+  }
+
+  submitEmotionalEntryForTrade(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    const emotionalState = this.tradeEmotionalStates[tradeKey];
+
+    if (!emotionalState) return;
+
+    const emotion = emotionalState.selectedEmotion || emotionalState.customEmotion;
+
+    if (!emotion.trim()) {
+      alert('Please select an emotion or enter a custom emotion.');
+      return;
+    }
+
+    const entry = {
+      id: Date.now().toString(),
+      tradeKey: tradeKey,
+      emotion: emotion,
+      intensity: emotionalState.intensity,
+      notes: emotionalState.notes,
+      timestamp: new Date(),
+      tradeContext: `${trade.type} ${trade.symbol} - ${trade.volume} lots`,
+      tradeDetails: {
+        openDate: trade.openDate,
+        symbol: trade.symbol,
+        type: trade.type,
+        volume: trade.volume,
+        netProfit: trade.netProfit
+      },
+      isCustom: !emotionalState.selectedEmotion
+    };
+
+    this.emotionalEntries.unshift(entry);
+
+    // Mark as submitted and collapse
+    this.tradeEmotionalStates[tradeKey].isSubmitted = true;
+    this.tradeEmotionalStates[tradeKey].isExpanded = false;
+
+    // TODO: In the future, send to Notion API
+    console.log('💭 Emotional entry recorded for trade:', entry);
+
+    // Show confirmation
+    alert(`Emotional state "${emotion}" recorded for ${trade.symbol} trade! This will be synced to Notion in the future.`);
+  }
+
+  getTradeEmotionalState(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    return this.tradeEmotionalStates[tradeKey];
+  }
+
+  isTradeEmotionalFormExpanded(trade: Table): boolean {
+    const state = this.getTradeEmotionalState(trade);
+    return state?.isExpanded || false;
+  }
+
+  isTradeEmotionalSubmitted(trade: Table): boolean {
+    const state = this.getTradeEmotionalState(trade);
+    return state?.isSubmitted || false;
+  }
+
+  getEmotionIcon(emotionName: string): string {
+    const emotion = this.predefinedEmotions.find(e => e.name === emotionName);
+    return emotion ? emotion.icon : '💭';
+  }
+
+  getEmotionColor(emotionName: string): string {
+    const emotion = this.predefinedEmotions.find(e => e.name === emotionName);
+    return emotion ? emotion.color : '#6b7280';
+  }
+
+  formatEmotionalTimestamp(timestamp: Date): string {
+    return timestamp.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  getSubmittedEmotion(trade: Table): string {
+    const entry = this.emotionalEntries.find(e => e.tradeKey === this.getTradeKey(trade));
+    return entry?.emotion || '';
+  }
+
+  getSubmittedIntensity(trade: Table): number {
+    const entry = this.emotionalEntries.find(e => e.tradeKey === this.getTradeKey(trade));
+    return entry?.intensity || 5;
+  }
+
   calculateAvgWin(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
     const winningTrades = this.tableData.filter(trade => {
@@ -2569,7 +2738,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
 
     const mock = {
-      "ticket": this.mockTicket,
+      "ticket": Math.floor(Math.random() * 999999999) + 100000000,
       "symbol": randomSymbol,
       "volume": parseFloat(randomVolume),
       "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
@@ -2642,12 +2811,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.recentlyAddedTrades.unshift(newTrade);
 
       // Remove from recent list after 5 seconds
-      setTimeout(() => {
-        const index = this.recentlyAddedTrades.indexOf(newTrade);
-        if (index > -1) {
-          this.recentlyAddedTrades.splice(index, 1);
-        }
-      }, 5000);
+      // setTimeout(() => {
+      //   const index = this.recentlyAddedTrades.indexOf(newTrade);
+      //   if (index > -1) {
+      //     this.recentlyAddedTrades.splice(index, 1);
+      //   }
+      // }, 5000);
 
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
