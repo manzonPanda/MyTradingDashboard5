@@ -2772,7 +2772,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   isNewTrade(trade: Table): boolean {
-    return this.recentlyAddedTrades.includes(trade);
+    // Check if trade is recently added OR if it doesn't have a close date (live trade)
+    const isRecent = this.recentlyAddedTrades.includes(trade);
+    const isLiveTrade = !trade.closeDate || trade.closeDate === '' || trade.closeDate === '-' || trade.closeDate === 'N/A';
+    return isRecent || isLiveTrade;
   }
 
   getSafeNumber(value: any): number {
