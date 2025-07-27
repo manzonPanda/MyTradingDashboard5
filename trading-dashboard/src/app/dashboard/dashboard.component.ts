@@ -116,7 +116,7 @@ interface NotionPerformanceData {
     MatProgressSpinnerModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './emotion-tracking.scss']
 })
 
 
