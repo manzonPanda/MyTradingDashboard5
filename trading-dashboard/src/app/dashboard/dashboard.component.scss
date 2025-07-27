@@ -1833,62 +1833,95 @@ table.simple-table {
 
 // Responsive design for emotional tracking
 @media (max-width: 768px) {
-  .emotional-tracking-section {
+  .live-trades-emotional-section {
     padding: 1rem;
 
-    .emotional-tracking-card {
-      .emotional-header {
+    .section-header {
+      padding: 1rem;
+
+      .section-title {
+        font-size: 1.25rem;
         flex-direction: column;
-        gap: 1.5rem;
-        align-items: stretch;
-        text-align: center;
-
-        .emotion-toggle-btn {
-          align-self: center;
-        }
+        gap: 0.5rem;
       }
+    }
 
-      .emotional-form-container {
-        padding: 1.5rem 1rem;
+    .trade-emotion-cards-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
 
-        .emotion-buttons-grid {
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 0.75rem;
-
-          .emotion-btn {
-            padding: 1rem 0.75rem;
-
-            .emotion-icon {
-              font-size: 1.75rem;
-            }
-
-            .emotion-name {
-              font-size: 0.8rem;
-            }
-          }
-        }
-
-        .form-actions {
+      .trade-emotion-card {
+        .trade-card-header {
+          padding: 1rem;
           flex-direction: column;
+          gap: 1rem;
+          align-items: stretch;
 
-          button {
-            min-width: auto;
+          .trade-info {
+            text-align: center;
+
+            .trade-symbol {
+              font-size: 1.25rem;
+              justify-content: center;
+            }
+
+            .trade-details {
+              justify-content: center;
+            }
+          }
+
+          .trade-actions {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+          }
+        }
+
+        .trade-emotional-form {
+          padding: 1rem;
+
+          .quick-emotions {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+
+            .quick-emotion-btn {
+              padding: 0.5rem 0.25rem;
+              font-size: 0.7rem;
+
+              .emotion-icon {
+                font-size: 1rem;
+              }
+            }
+          }
+
+          .emotion-details {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+
+            .intensity-control {
+              flex-direction: row;
+              justify-content: space-between;
+              align-items: center;
+              min-width: auto;
+
+              .intensity-slider {
+                width: 120px;
+              }
+            }
           }
         }
       }
+    }
+  }
+}
 
-      .recent-emotions {
-        padding: 1.5rem 1rem;
-
-        .emotions-timeline {
-          .emotion-entry-card {
-            padding: 1rem;
-
-            .entry-header {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 0.5rem;
-            }
+@media (max-width: 480px) {
+  .live-trades-emotional-section {
+    .trade-emotion-cards-grid {
+      .trade-emotion-card {
+        .trade-emotional-form {
+          .quick-emotions {
+            grid-template-columns: 1fr;
           }
         }
       }
