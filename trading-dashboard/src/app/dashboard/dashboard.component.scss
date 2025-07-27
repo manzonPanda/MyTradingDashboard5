@@ -643,33 +643,47 @@
 
         &.new-trade {
           background: linear-gradient(90deg,
-            rgba(16, 185, 129, 0.08) 0%,
-            rgba(52, 211, 153, 0.04) 30%,
-            transparent 70%
-          );
-          border-left: 4px solid var(--tf-positive);
-          animation: live-trade-glow 3s ease-in-out infinite;
+            rgba(16, 185, 129, 0.15) 0%,
+            rgba(52, 211, 153, 0.08) 50%,
+            transparent 100%
+          ) !important;
+          border-left: 5px solid var(--tf-positive) !important;
+          position: relative;
+          animation: live-trade-glow 2s ease-in-out infinite;
+
+          &::before {
+            content: 'LIVE';
+            position: absolute;
+            top: 0.25rem;
+            right: 0.5rem;
+            background: var(--tf-positive);
+            color: white;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            animation: live-badge-pulse 1.5s ease-in-out infinite;
+          }
 
           &:hover {
             background: linear-gradient(90deg,
-              rgba(16, 185, 129, 0.12) 0%,
-              rgba(52, 211, 153, 0.08) 30%,
-              var(--tf-bg-hover) 70%
-            );
+              rgba(16, 185, 129, 0.2) 0%,
+              rgba(52, 211, 153, 0.12) 50%,
+              var(--tf-bg-hover) 100%
+            ) !important;
           }
 
           // Live trade indicator pulse effect
           td:first-child {
             position: relative;
 
-            &::before {
+            &::after {
               content: '🔴';
               position: absolute;
-              top: 50%;
-              left: -8px;
-              transform: translateY(-50%);
-              font-size: 0.5rem;
-              animation: live-indicator-pulse 1.5s ease-in-out infinite;
+              top: 0.25rem;
+              left: 0.25rem;
+              font-size: 0.6rem;
+              animation: live-indicator-pulse 1s ease-in-out infinite;
             }
           }
         }
