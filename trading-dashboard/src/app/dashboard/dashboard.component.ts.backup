@@ -1,0 +1,3280 @@
+import { Component, importProvidersFrom, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatCardModule  } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from "@angular/common";
+import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
+import * as XLSX from 'xlsx';
+import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
+import { addMonths, subMonths } from 'date-fns';
+import { DataTablesModule  } from 'angular-datatables';
+import { Subject } from 'rxjs';
+import * as DataTables from 'datatables.net';
+import 'datatables.net'; // Ensure DataTables functionality is available
+import { provideHttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatNativeDateModule } from '@angular/material/core'; // for default JS Date support
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { firstValueFrom } from 'rxjs';
+import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
+import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
+import { io, Socket } from "socket.io-client";
+
+declare var $: any;
+
+interface Relation {
+  relationName: string;
+  relationId: string;
+}
+
+interface Trades {
+  tradeDate: string;
+  tradeId: string;
+}
+
+interface Table {
+  openDate: string;
+  tradeNotion: Trades[];
+  status: string;
+  position: string;
+  symbol: string;
+  type: string;
+  volume: string;
+  entry: string;
+  sL: string;
+  tP: string;
+  closeDate: string;
+  exit: string;
+  commission: string;
+  swap: string;
+  profit: string;
+  netProfit: string;
+}
+
+interface NotionPerformanceData {
+  id: string;
+  action: string; // title
+  date: string; // date
+  idealRRR: string; // select
+  buySell: string; // select
+  modelCheck: string[]; // multi_select
+  status: string; // status
+  percentPnL: number; // number
+  weeklyRetrospective: string; // rich_text
+  account: string[]; // multi_select
+  strategy: string; // select
+  oneToOneReversal: boolean; // checkbox
+  screenshots: string[]; // files
+  modelForm: string[]; // multi_select
+  idealSL: string; // select
+  reviewed: boolean; // checkbox
+  uniqueID: number; // unique_id
+  commission: number; // number
+  outcome: string[]; // files
+  held: string; // formula
+  instrument: string; // select
+  pnl: number; // number
+  percentPnLCalc: string; // formula
+  dailyReflection: string; // rich_text
+  lots: number; // number
+  divergenceValue: number; // number
+  pips: number; // number
+  formula: number; // formula
+  rulesViolated: string[]; // multi_select
+  emptySelect: string; // select (empty name)
+  swap: number; // number
+}
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [
+    ConnectionStatusComponent,
+    TradingCalendarComponent,
+    MatSlideToggleModule,
+    MatCardModule,
+    CommonModule,
+    CalendarModule,
+    DataTablesModule,
+    MatProgressBarModule,
+    MatButtonModule,
+    MatIconModule,
+    FormsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatNativeDateModule,
+    MatProgressSpinnerModule
+  ],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './emotion-tracking.scss']
+})
+
+
+// @Injectable({ providedIn: 'root' })
+export class DashboardComponent {
+  viewDate: Date = new Date();
+  events: CalendarEvent[] = [];
+  locale: string = 'en';
+  rawData: any[] = [];
+  // Active Account Table
+  tableData: Table[] = []; // Initialize as empty array
+  dtOptions: any = {}; // Use 'any' or type the object more specifically later
+  dtTrigger: Subject<any> = new Subject<any>();
+
+  // MT5 Live Trading properties
+  mt5LiveTrades: Table[] = []; // Live trades from MT5
+  isLoadingMT5Data = false;
+  mockTicket = 123123123;
+  //uploading progress bar
+  uploadProgress: number = 0;
+  isUploading: boolean = false;
+  showProgressBar = false;
+  hideProgressBar = false;
+  startDate: Date | null = null;
+  endDate: Date | null = null;
+  isLoadingChecking = false;
+  isLoadingPatching = false;
+  isLoadingComparing = false;
+  isLoadingPopulating = false;
+  checkingError = false;
+  patchingError = false;
+  comparingError = false;
+  populatingError = false;
+  progressChecking = 0;
+  progressPatching = 0;
+  progressComparing = 0;
+  progressPopulating = 0;
+  relations: Relation[] = [];
+  trades: Trades[] = [];
+  showNotionData = false;
+  // selectedTradeId: string | null = null;
+  selectedTradeId: { [position: string]: string | null } = {};
+
+  // Simple pagination properties
+  currentPage: number = 1;
+  pageSize: number = 10;
+
+  // Live trade tracking
+  recentlyAddedTrades: Table[] = [];
+
+  // Emotion tracking properties
+  currentEmotion: string = '';
+  emotionText: string = '';
+  isSubmittingEmotion = false;
+  showEmotionTracker = false;
+
+  // Quick emotion buttons
+  quickEmotions = [
+    { text: 'FOMO', color: 'warning', icon: 'trending_up' },
+    { text: 'Tired', color: 'neutral', icon: 'bedtime' },
+    { text: 'Impulsive', color: 'danger', icon: 'flash_on' },
+    { text: 'Confident', color: 'success', icon: 'sentiment_very_satisfied' },
+    { text: 'Anxious', color: 'warning', icon: 'sentiment_very_dissatisfied' },
+    { text: 'Disciplined', color: 'success', icon: 'rule' },
+    { text: 'Frustrated', color: 'danger', icon: 'sentiment_dissatisfied' },
+    { text: 'Focused', color: 'primary', icon: 'center_focus_strong' }
+  ];
+
+  // Overall Trading History Table
+  notionPerformanceData: NotionPerformanceData[] = [];
+  dtOptionsNotion: any = {};
+  dtTriggerNotion: Subject<any> = new Subject<any>();
+  isLoadingNotionData = false;
+  showLoadButton = true; // Controls whether to show load button or table
+
+  // Column visibility controls
+  columnVisibility = {
+    id: true,
+    action: true,
+    date: true,
+    account: true,
+    status: true,
+    buySell: true,
+    instrument: true,
+    strategy: true,
+    lots: true,
+    pips: true,
+    pnl: true,
+    percentPnL: true,
+    commission: true,
+    swap: true,
+    idealRRR: true,
+    idealSL: true,
+    modelCheck: true,
+    rulesViolated: true,
+    oneToOneReversal: true,
+    reviewed: true,
+    dailyReflection: true,
+    weeklyRetrospective: true,
+    modelForm: false,
+    screenshots: false,
+    outcome: false,
+    held: false,
+    percentPnLCalc: false,
+    divergenceValue: false,
+    formula: false,
+    emptySelect: false
+  };
+
+  // Available columns for selection
+  availableColumns = [
+    { key: 'id', label: 'ID', visible: true },
+    { key: 'action', label: 'Action', visible: true },
+    { key: 'date', label: 'Date', visible: true },
+    { key: 'account', label: 'Account', visible: true },
+    { key: 'status', label: 'Status', visible: true },
+    { key: 'buySell', label: 'Buy/Sell', visible: true },
+    { key: 'instrument', label: 'Instrument', visible: true },
+    { key: 'strategy', label: 'Strategy', visible: true },
+    { key: 'lots', label: 'Lots', visible: true },
+    { key: 'pips', label: 'Pips', visible: true },
+    { key: 'pnl', label: 'PnL', visible: true },
+    { key: 'percentPnL', label: '% PnL', visible: true },
+    { key: 'commission', label: 'Commission', visible: true },
+    { key: 'swap', label: 'Swap', visible: true },
+    { key: 'idealRRR', label: 'Ideal RRR', visible: true },
+    { key: 'idealSL', label: 'Ideal SL', visible: true },
+    { key: 'modelCheck', label: 'Model✔', visible: true },
+    { key: 'rulesViolated', label: 'Rules Violated 🛑', visible: true },
+    { key: 'oneToOneReversal', label: '1:1 Reversal', visible: true },
+    { key: 'reviewed', label: 'Reviewed', visible: true },
+    { key: 'dailyReflection', label: 'Daily Reflection', visible: true },
+    { key: 'weeklyRetrospective', label: 'Weekly Retrospective', visible: true },
+    { key: 'modelForm', label: 'Model Form', visible: false },
+    { key: 'screenshots', label: 'Screenshots', visible: false },
+    { key: 'outcome', label: 'Outcome', visible: false },
+    { key: 'held', label: 'Held🕕', visible: false },
+    { key: 'percentPnLCalc', label: '%PnL-Calc', visible: false },
+    { key: 'divergenceValue', label: 'Divergence Value', visible: false },
+    { key: 'formula', label: 'Formula', visible: false },
+    { key: 'emptySelect', label: 'Empty Select', visible: false }
+  ];
+
+  showColumnSelector = false;
+  private isRefreshingTable = false;
+
+  // Backend configuration
+  private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
+
+
+
+  constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
+
+  }
+
+  async ngOnInit() {
+    const socket = io("http://localhost:5000",{
+      transports: ['websocket'], // 🔥 Force WebSocket to avoid polling
+      upgrade: false,              // Optional, disables fallback to long-polling
+    });
+
+    socket.on("connect", () => {
+    console.warn("✅ Connected to WebSocket server");
+  });
+
+  socket.on("connect_error", (err: any) => {
+    console.warn("❌ Socket connection error:", err);
+  });
+    socket.on("trade_opened", (data: any) => {
+      console.warn("New trade opened:", data);
+      this.addMT5LiveTrade(data);
+      this.showEmotionTracker = true; // Show emotion tracker when new trade is detected
+    });
+
+    socket.on("trade_closed", (data: any) => {
+      console.warn("Trade closed:", data);
+      this.closeMT5Trade(data);
+    });
+
+    socket.on('price_update', (data: any) => {
+      console.log("Live price update:", data);
+      this.updateMT5TradePrice(data);
+    });
+    this.dtOptions = {
+      paging: true,
+      searching: true,
+      ordering: true,
+      pageLength: 10,
+      processing: false,
+      responsive: true,
+      keys: true,
+      retrieve: true,
+      language: {
+        emptyTable: "No trading data available",
+        info: "Showing _START_ to _END_ of _TOTAL_ trades",
+        infoEmpty: "Showing 0 to 0 of 0 trades",
+        lengthMenu: "Show _MENU_ trades per page"
+      }
+    };
+
+    this.dtOptionsNotion = {
+      destroy: true,
+      paging: true,
+      searching: true,
+      ordering: true,
+      pageLength: 10,
+      processing: true,
+      responsive: true,
+      keys: true,
+      order: [[1, 'desc']], // Sort by date descending by default
+      columnDefs: [
+        { targets: [2, 3, 5, 6, 7, 8, 9, 10], className: 'text-center' }, // Center align numeric columns
+        { targets: [2, 5, 6, 7, 8, 9, 10], type: 'num' } // Specify numeric sorting
+      ]
+    };
+
+    localStorage.clear();
+
+    await this.loadTrades(); // Load trades from Firestore
+    await this.loadMT5Data(); // Load MT5 trades
+    this.addTradesToCalendar(); // Add trades to calendar events
+
+    // Simple table - no DataTables initialization needed!
+    console.log('✅ Simple Angular table ready - no DataTables complexity!');
+
+    // Check if there are new trades to show emotion tracker
+    this.checkForNewTrades();
+  }
+
+  ngAfterViewInit() {
+    // Manual initialization will be called from ngOnInit
+  }
+
+  initializeDataTable(): void {
+    try {
+      console.log('🚀 Initializing DataTable with', this.tableData.length, 'rows');
+
+      // Use Angular DataTables trigger for complex column support
+      this.dtTrigger.next(null);
+      console.log('✅ DataTable initialized successfully');
+
+    } catch (error) {
+      console.error('❌ Error initializing DataTable:', error);
+    }
+  }
+
+  refreshDataTableWithAngularBinding(): void {
+    try {
+      console.log('🔄 Refreshing DataTable with Angular binding for complex columns');
+
+      // Force Angular change detection first
+      this.cdr.detectChanges();
+
+      // For Angular DataTables, we need to destroy and recreate to pick up new data
+      setTimeout(() => {
+        if ($.fn.dataTable.isDataTable('#myTable')) {
+          console.log('🗑️ Destroying existing Angular DataTable');
+          $('#myTable').DataTable().destroy();
+        }
+
+        // Trigger recreation with new data
+        setTimeout(() => {
+          this.dtTrigger.next(null);
+          console.log('✅ DataTable refreshed with Angular binding');
+        }, 100);
+      }, 50);
+
+    } catch (error) {
+      console.error('❌ Error refreshing DataTable with Angular binding:', error);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.dtTrigger.unsubscribe();
+    this.dtTriggerNotion.unsubscribe();
+
+    // Safely clean up the DataTables when the component is destroyed
+    try {
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const myTable = $('#myTable').DataTable();
+        if (myTable && typeof myTable.destroy === 'function') {
+          myTable.destroy(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying myTable:', error);
+    }
+
+    try {
+      if ($.fn.dataTable.isDataTable('#notionTable')) {
+        const notionTable = $('#notionTable').DataTable();
+        if (notionTable && typeof notionTable.destroy === 'function') {
+          notionTable.destroy(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying notionTable:', error);
+    }
+  }
+
+  private triggerDataTableRender(): void {
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        const tableElement = document.getElementById('notionTable');
+        if (tableElement && this.notionPerformanceData.length > 0) {
+          this.dtTriggerNotion.next(null);
+        } else {
+          console.warn('Table element not found or no data available for DataTable rendering');
+        }
+      } catch (error) {
+        console.error('Error triggering DataTable render:', error);
+      }
+    }, 150);
+  }
+  
+  addMonth(date: Date): Date {
+    return addMonths(date, 1);
+  }
+  
+  subMonth(date: Date): Date {
+    return subMonths(date, 1);
+  }
+
+ addTradesToCalendar() {
+  // console.log("tableData::"+this.tableData)
+    this.tableData.forEach(row => {
+      const tradeDateString = row.openDate; // Column 0: the date string
+      const symbol = row.symbol;           // Column 2: symbol
+      const type = row.position;             // Column 3: buy/sell
+  
+      const tradeDate = this.parseTradeDate(tradeDateString);
+      
+      if (tradeDate) {
+        this.events = [
+          ...this.events,
+          {
+            start: tradeDate,
+            title: `${type.toUpperCase()} ${symbol}`,
+            color: {
+              primary: type.toLowerCase() === 'buy' ? '#1e90ff' : '#ad2121', // blue for buy, red for sell
+              secondary: '#FAE3E3'
+            },
+            allDay: true,
+            meta: {
+              position: row.position,
+              symbol: row.symbol,
+              type: row.type,
+              volume: parseFloat(row.volume),
+              openPrice: parseFloat(row.entry),
+              stopLoss: parseFloat(row.sL),
+              takeProfit: parseFloat(row.tP),
+              closeTime: new Date(row.closeDate.replace(' ', 'T')),
+              closePrice: parseFloat(row.exit),
+              commission: parseFloat(row.commission),
+              swap: parseFloat(row.swap),
+              profit: parseFloat(row.profit),
+            }
+          }
+        ];
+      
+      }
+    });
+  }
+
+  getPnLColor(day: CalendarMonthViewDay): string {
+    if (!day.events.length) return 'bg-white';
+    const pnl = day.events.reduce((sum, e) => sum + (e.meta?.profit || 0), 0);
+    if (pnl > 0) return 'bg-green-100';
+    if (pnl < 0) return 'bg-red-100';
+    return 'bg-gray-100';
+  }
+
+  countWins(events: any[]): number {
+    return events.filter(event => event.meta?.profit > 0).length;
+  }
+  
+  countLosses(events: any[]): number {
+    return events.filter(event => event.meta?.profit < 0).length;
+  }
+  
+  totalProfit(events: any[]): number {
+    console.log(events);
+    return events
+      .filter(event => event.meta?.profit > 0)
+      .reduce((sum, event) => sum + (event.meta?.profit || 0), 0)
+      .toFixed(2);
+  }
+  
+  totalLoss(events: any[]): number {
+    return events
+      .filter(event => event.meta?.profit < 0)
+      .reduce((sum, event) => sum + (event.meta?.profit || 0), 0)
+      .toFixed(2);
+  }
+  parseTradeDate(dateStr: string): Date | null {
+    // MT5 format is like "2025.03.25 09:10:25"
+    const parts = dateStr.split(' ');
+    if (parts.length !== 2) return null;
+  
+    const dateParts = parts[0].split('.');
+    const timeParts = parts[1].split(':');
+  
+    if (dateParts.length !== 3 || timeParts.length !== 3) return null;
+  
+    return new Date(
+      parseInt(dateParts[0]),  // Year
+      parseInt(dateParts[1]) - 1, // Month (0-based)
+      parseInt(dateParts[2]),  // Day
+      parseInt(timeParts[0]),  // Hours
+      parseInt(timeParts[1]),  // Minutes
+      parseInt(timeParts[2])   // Seconds
+    );
+  }
+
+  onDayClicked(date: Date) {
+    alert('Clicked: ' + date.toDateString());
+  }
+
+async onPaste(event: ClipboardEvent): Promise<void> {
+    const clipboardItems = event.clipboardData?.items;
+    if (clipboardItems) {
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
+        if (item.type === 'text/plain' || item.type === 'text/tab-separated-values') {
+          const text = event.clipboardData?.getData('text/plain');
+          if (text) {
+            this.parseTableData(text);
+          }
+        }
+      }
+      //If you're refreshing data multiple times (e.g., after upload or load), don't unsubscribe and reuse the old Subject. Instead, recreate it:
+      this.dtTrigger.unsubscribe();
+      this.dtTrigger = new Subject();
+      this.dtTrigger.next(null)
+      console.log("printing to DT")
+    }
+  }
+
+  parseTableData(data: string): void {
+    // Example: Handle pasted tab-separated or comma-separated values (CSV)
+    // const rows = data.split('\n').map(row => row.split('\t')); // For tab-separated values
+    // Alternatively, for CSV: const rows = data.split('\n').map(row => row.split(','));
+    const rows = data
+    .split('\n')
+    .map((row: string) => row.trim()) 
+    .filter((row: string) => row.length > 0) // Remove empty lines
+    .map((row: string) => {
+      const cells = row.split('\t');
+      
+      // Add 5 hours to datetime strings at column 0 and 8
+      [0, 8].forEach(index => {
+        if (cells[index]) {
+          const [datePart, timePart] = cells[index].split(' ');
+          const [year, month, day] = datePart.split('.').map(Number);
+          const [hour, minute, second] = timePart.split(':').map(Number);
+
+          const dateObj = new Date(year, month - 1, day, hour, minute, second);
+          dateObj.setHours(dateObj.getHours() + 5);
+
+          const formattedDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+          cells[index] = formattedDate;
+        }
+      });
+
+      // Define which columns should be numbers
+      // Indices for: Volume, Price, S/L, T/P, Close Price, Commission, Swap, Profit
+      const numberColumns = [4, 5, 6, 7, 9, 10, 11, 12]; 
+      // Loop and convert specific columns
+      numberColumns.forEach(index => {
+        if (cells[index] !== undefined) {
+          cells[index] = cells[index].replace(/\s+/g, ''); // Remove spaces & parse to number
+        }
+      });
+
+      //add 13th column-Net Profit
+      cells[13] = (parseFloat(cells[10]) + parseFloat(cells[12])).toFixed(2)
+
+      // ✅ Insert null at position 1 and 2 (for displaying notion data later)
+      cells.splice(1, 0, "");   // Insert at index 1
+      cells.splice(2, 0, ""); // Insert at index 2 (after symbol)
+      return cells;
+    }); 
+
+    console.log(rows)
+    // this.tableData = rows;
+    this.tableData = rows.map(row => ({
+      openDate: row[0],
+      tradeNotion: [],
+      status: row[2],
+      position: row[3],
+      symbol: row[4],
+      type: row[5],
+      volume: row[6],
+      entry: row[7],
+      sL: row[8],
+      tP: row[9],
+      closeDate: row[10],
+      exit: row[11],
+      commission: row[12],
+      swap: row[13],
+      profit: row[14],
+      netProfit: row[15]
+    } as Table)); //The 'as Table' makes sure it matches the interface
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];  // Get the selected file
+    if (file) {
+      this.readExcelFile(file);  // Parse the Excel file
+    }
+  }
+
+    // This method reads the Excel file and converts it into a usable format
+    readExcelFile(file: File): void {
+      const reader = new FileReader();
+  
+      reader.onload = (e: any) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+  
+        // Assume that the first sheet contains the data
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+  
+        // Convert the sheet to a 2D array (array of rows and columns)
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  
+        // Store the raw data for later reference
+        this.rawData = jsonData;
+  
+        // Find the start and end rows based on the text in the first column
+        const startRowIndex = this.findRowIndex('Positions')+1;
+        const endRowIndex = this.findRowIndex('Orders')-1;
+  
+        // Slice the data between "Positions" and "Orders"
+        if (startRowIndex !== -1 && endRowIndex !== -1 && endRowIndex > startRowIndex) {
+          this.tableData = this.rawData.slice(startRowIndex, endRowIndex + 1); // Include "Orders" row
+        } else {
+          console.error('Start or end row not found');
+        }
+  
+        // Optional: Show the result in the console for debugging
+        console.log('Filtered data:', this.tableData);
+      };
+  
+      // Read the file as an array buffer
+      reader.readAsArrayBuffer(file);
+    }
+
+    // This method finds the row index of the first occurrence of the given text in the first column
+  findRowIndex(searchText: string): number {
+    for (let i = 0; i < this.rawData.length; i++) {
+      if (this.rawData[i][0] && this.rawData[i][0].toString().toLowerCase() === searchText.toLowerCase()) {
+        return i; // Return the index of the row where the text is found
+      }
+    }
+    return -1; // Return -1 if the text is not found
+  }
+
+  // Optional: Implement file upload to a server or Firebase
+onUpload(): void {
+  console.log('Uploading data...', this.tableData);
+  const collectionRef = collection(this.firestore, 'trades');
+
+  this.showProgressBar = true;
+  this.hideProgressBar = false;
+  this.isUploading = true;
+  this.uploadProgress = 0;
+
+  const total = this.tableData.length;
+  let uploaded = 0;
+
+  this.tableData.forEach(async (row) => {
+    try {
+      const documentId = row.openDate;
+      const docRef = doc(collectionRef, documentId);
+      await setDoc(docRef, {
+        rowData: row
+      });
+      uploaded++;
+      this.uploadProgress = Math.round((uploaded / total) * 100);
+    } catch (error) {
+      console.error('Error uploading row: ', error);
+    }
+
+    if (uploaded === total) {
+      setTimeout(() => {
+        this.isUploading = false;
+        this.hideProgressBar = true; // Triggers CSS fade-out
+        this.showProgressBar = false;
+        this.uploadProgress = 0;
+      }, 2000); // Wait for CSS transition
+    }
+  });
+}
+  
+  loadTradesRealtime() {
+    const collectionRef = collection(this.firestore, 'trades');
+    onSnapshot(collectionRef, (querySnapshot) => {
+      const loadedData: any[] = [];
+  
+      querySnapshot.forEach((doc) => {
+        loadedData.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      console.log('Real-time trades:', loadedData);
+      this.tableData = loadedData;
+    });
+  }
+
+  loadTrades(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const tradesRef = collection(this.firestore, 'trades');
+      getDocs(tradesRef).then((querySnapshot) => {
+        const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
+        console.log("��� Loaded from Firestore:", firestoreTrades.length, "trades");
+
+        // Don't overwrite existing tableData, merge with MT5 trades
+        if (this.mt5LiveTrades.length > 0) {
+          console.log("🔴 Preserving existing MT5 trades:", this.mt5LiveTrades.length);
+          // Keep MT5 trades and add Firestore trades
+          this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
+        } else {
+          this.tableData = firestoreTrades;
+        }
+
+        console.log("📊 Final tableData after loadTrades:", this.tableData.length);
+        resolve(); // Notify that loading is done
+      }).catch((error) => {
+        console.error('Error loading trades:', error);
+        reject(error);
+      });
+    });
+  }
+  
+  copyColumns(index1: number, index2: number): void {
+    // const combinedValues = this.tableData.map(row => {
+    //   return `${row[index1]}\t${row[index2]}`; // tab-separated
+    // });
+    // const textToCopy = combinedValues.join('\n');
+    // navigator.clipboard.writeText(textToCopy).then(() => {
+    //   alert('Two columns copied to clipboard!');
+    // });
+  }
+  
+isRowAlreadySelected(row: any): boolean {
+  return row.tradeNotion.some((t: { tradeDate: any; }) => t.tradeDate);
+}
+
+
+
+  async getAllPagesFromDB(startDate:Date,endDate:Date){ 
+    const formattedStartDate = startDate
+      ? `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
+      : '';
+    const formattedEndDate = endDate
+      ? `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
+      : '';
+    // this.isLoadingPatching = true;
+    this.progressPatching = 0;
+
+    const body = {
+      "filter": {
+        "and": [
+          {
+            "property": "Date",
+            "date": {
+              "on_or_after": formattedStartDate
+            }
+          },
+          {
+            "property": "Date",
+            "date": {
+              "on_or_before": formattedEndDate
+            }
+          }
+        ]
+      }
+    }
+    this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+    .subscribe({
+      next: async (res:any) => {
+        // console.log(res)
+        this.trades = [];
+        res.results.map((prop: any) => {
+          const d = new Date(prop.properties.Date.date.start);
+          const dayOfWeek = d.getDay();
+          // Skip weekends (0 = Sunday, 6 = Saturday)
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
+            tradeId: prop.id });
+          }
+        });
+        const total = this.trades.length;
+        let completed = 0;
+
+        for (const trade of this.trades) {
+          // console.log("trade",trade)
+          let relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
+          const body = {
+            "payload": {
+              "properties": {
+                "Activity log": {
+                  "relation": [
+                    {
+                      "id": relationId
+                    }
+                  ]
+                }
+              }
+            },
+            "url":trade.tradeId
+          }
+          try {
+            const res: any = await firstValueFrom(
+              this.http.patch("http://localhost:3000/api/patchRelationIdToTrade", body) //Patching
+            );
+            if (res) {
+              console.log("Patching successful: "+trade.tradeDate)
+            }else{
+              console.log("Patching failed: "+trade.tradeDate)
+            }
+            completed++;
+            this.progressPatching = Math.floor((completed / total) * 100);
+
+          } catch (error) {
+            this.patchingError = true
+            console.error('Error patching:',trade, error);
+          }
+        }
+        // this.isLoadingPatching = false; //hide the progress for checking and patching, which should be located at the end of the process
+        // this.isLoadingChecking = false;
+      },
+      error: (err) => {
+        this.patchingError = true
+        console.error('Error:', err)
+      }
+    });
+  }
+
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Emotion tracking methods
+  selectQuickEmotion(emotion: string): void {
+    if (this.currentEmotion === emotion) {
+      this.currentEmotion = '';
+    } else {
+      this.currentEmotion = emotion;
+    }
+  }
+
+  clearEmotionForm(): void {
+    this.currentEmotion = '';
+    this.emotionText = '';
+  }
+
+  async submitEmotion(): Promise<void> {
+    if (!this.currentEmotion && !this.emotionText.trim()) {
+      alert('Please select an emotion or enter your feelings.');
+      return;
+    }
+
+    this.isSubmittingEmotion = true;
+
+    try {
+      // Prepare emotion data
+      const emotionData = {
+        timestamp: new Date().toISOString(),
+        selectedEmotion: this.currentEmotion,
+        emotionText: this.emotionText.trim(),
+        tradesCount: this.recentlyAddedTrades.length
+      };
+
+      console.log('Submitting emotion data:', emotionData);
+
+      // TODO: Integrate with Notion API to save emotion data
+      // For now, we'll simulate the submission
+      await this.delay(1000);
+
+      // Success feedback
+      alert(`Emotion recorded successfully!\n\nSelected: ${this.currentEmotion || 'Custom'}\nNotes: ${this.emotionText || 'None'}`);
+
+      // Clear form and hide tracker
+      this.clearEmotionForm();
+      this.showEmotionTracker = false;
+      this.recentlyAddedTrades = []; // Clear recent trades
+
+    } catch (error) {
+      console.error('Error submitting emotion:', error);
+      alert('Failed to submit emotion. Please try again.');
+    } finally {
+      this.isSubmittingEmotion = false;
+    }
+  }
+
+  dismissEmotionTracker(): void {
+    this.showEmotionTracker = false;
+    this.clearEmotionForm();
+  }
+
+  checkForNewTrades(): void {
+    // Show emotion tracker if there are recent trades
+    if (this.recentlyAddedTrades.length > 0) {
+      this.showEmotionTracker = true;
+    }
+  }
+
+  getEmotionButtonClass(emotion: string): string {
+    const emotionConfig = this.quickEmotions.find(e => e.text === emotion);
+    return emotionConfig?.color || 'primary';
+  }
+
+  // Additional helper methods for template
+  mockMT5newTrade(): void {
+    // Mock method to simulate new trade for testing emotion tracker
+    const mockTrade: Table = {
+      openDate: new Date().toLocaleString(),
+      tradeNotion: [],
+      status: 'New',
+      position: 'BUY',
+      symbol: 'EURUSD',
+      type: 'market',
+      volume: '0.10',
+      entry: '1.0850',
+      sL: '1.0800',
+      tP: '1.0900',
+      closeDate: '',
+      exit: '',
+      commission: '0.00',
+      swap: '0.00',
+      profit: '0.00',
+      netProfit: '0.00'
+    };
+
+    this.recentlyAddedTrades.push(mockTrade);
+    this.tableData.unshift(mockTrade);
+    this.showEmotionTracker = true;
+    console.log('Mock trade added, emotion tracker shown');
+  }
+
+  mockMT5closeTrade(): void {
+    // Mock method to simulate closing a trade
+    if (this.tableData.length > 0) {
+      const lastTrade = this.tableData[0];
+      lastTrade.closeDate = new Date().toLocaleString();
+      lastTrade.exit = '1.0875';
+      lastTrade.profit = '25.00';
+      lastTrade.netProfit = '25.00';
+      lastTrade.status = 'Closed';
+      console.log('Mock trade closed');
+    }
+  }
+
+  toggleNotionData(): void {
+    this.showNotionData = !this.showNotionData;
+  }
+
+  getFilteredTableData(): Table[] {
+    return this.tableData;
+  }
+
+  getDisplayedRows(): Table[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.getFilteredTableData().slice(start, end);
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.getFilteredTableData().length / this.pageSize);
+  }
+
+  setPage(page: number): void {
+    this.currentPage = page;
+  }
+
+  isNewTrade(trade: Table): boolean {
+    return this.recentlyAddedTrades.includes(trade);
+  }
+
+  getSafeNumber(value: string | number): number {
+    if (typeof value === 'number') return value;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  }
+
+  // Advanced Analytics - Psychology Methods (placeholders)
+  getRevengeTradingScore(): number {
+    // Placeholder: analyze consecutive losses followed by larger position sizes
+    return Math.random() * 30; // 0-30%
+  }
+
+  getOvertradingScore(): number {
+    // Placeholder: analyze trading frequency vs optimal frequency
+    return Math.random() * 40; // 0-40%
+  }
+
+  getFOMOScore(): number {
+    // Placeholder: analyze quick trades after wins
+    return Math.random() * 25; // 0-25%
+  }
+
+  getRevengeTradingClass(): string {
+    const score = this.getRevengeTradingScore();
+    if (score > 20) return 'high-risk';
+    if (score > 10) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getOvertradingClass(): string {
+    const score = this.getOvertradingScore();
+    if (score > 30) return 'high-risk';
+    if (score > 15) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getFOMOClass(): string {
+    const score = this.getFOMOScore();
+    if (score > 15) return 'high-risk';
+    if (score > 8) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  // Performance Insights Methods
+  getPerformanceInsights(): any[] {
+    // Placeholder: return AI-generated insights based on trading patterns
+    return [
+      {
+        title: 'Risk Management',
+        severity: 'warning',
+        description: 'Your stop losses are being hit frequently on EURUSD trades.',
+        recommendations: [
+          'Consider wider stop losses for EURUSD trades',
+          'Review your entry timing on EUR pairs',
+          'Analyze market volatility before entering trades'
+        ]
+      },
+      {
+        title: 'Trading Psychology',
+        severity: 'critical',
+        description: 'Detected revenge trading patterns after losses.',
+        recommendations: [
+          'Take a 15-minute break after any loss',
+          'Stick to your predetermined position sizes',
+          'Review your trading plan before each trade'
+        ]
+      }
+    ];
+  }
+
+  // Heatmap Methods
+  getPerformanceHeatmap(): any[] {
+    // Placeholder: generate 30-day heatmap data
+    const heatmapData = [];
+    for (let i = 0; i < 30; i++) {
+      const value = (Math.random() - 0.5) * 100; // -50 to +50
+      heatmapData.push({
+        value: value,
+        class: this.getHeatmapCellClass(value),
+        tooltip: `Day ${i + 1}: ${value > 0 ? '+' : ''}${value.toFixed(2)}`
+      });
+    }
+    return heatmapData;
+  }
+
+  getHeatmapCellClass(value: number): string {
+    if (value > 25) return 'positive-extreme';
+    if (value > 10) return 'positive-high';
+    if (value > -10) return 'neutral';
+    if (value > -25) return 'negative-high';
+    return 'negative-extreme';
+  }
+
+  // Discipline Metrics
+  getStopLossAdherence(): number {
+    // Placeholder: calculate how often stop losses are respected
+    return 75 + Math.random() * 20; // 75-95%
+  }
+
+  getTakeProfitDiscipline(): number {
+    // Placeholder: calculate take profit discipline
+    return 60 + Math.random() * 30; // 60-90%
+  }
+
+  getStopLossAdherenceClass(): string {
+    const score = this.getStopLossAdherence();
+    if (score > 85) return 'excellent';
+    if (score > 70) return 'good';
+    return 'needs-improvement';
+  }
+
+  getTakeProfitDisciplineClass(): string {
+    const score = this.getTakeProfitDiscipline();
+    if (score > 80) return 'excellent';
+    if (score > 65) return 'good';
+    return 'needs-improvement';
+  }
+
+  // Streak Analysis Methods
+  getMaxConsecutiveWins(): number {
+    // Placeholder: find longest winning streak
+    return Math.floor(Math.random() * 8) + 2; // 2-10
+  }
+
+  getMaxConsecutiveLosses(): number {
+    // Placeholder: find longest losing streak
+    return Math.floor(Math.random() * 5) + 1; // 1-6
+  }
+
+  getCurrentStreak(): number {
+    // Placeholder: get current win/loss streak
+    return Math.floor(Math.random() * 6) - 3; // -3 to +3
+  }
+
+  getCurrentStreakClass(): string {
+    const streak = this.getCurrentStreak();
+    if (streak > 0) return 'positive-streak';
+    if (streak < 0) return 'negative-streak';
+    return 'neutral-streak';
+  }
+
+  // MT5 Live Trading Methods
+  addMT5LiveTrade(data: any): void {
+    console.log('Adding MT5 live trade:', data);
+    // Convert MT5 data to Table format and add to recentlyAddedTrades
+    const newTrade: Table = {
+      openDate: new Date().toLocaleString(),
+      tradeNotion: [],
+      status: 'Live',
+      position: data.type || 'BUY',
+      symbol: data.symbol || 'UNKNOWN',
+      type: 'market',
+      volume: data.volume?.toString() || '0.00',
+      entry: data.price?.toString() || '0.00000',
+      sL: data.sl?.toString() || '0.00000',
+      tP: data.tp?.toString() || '0.00000',
+      closeDate: '',
+      exit: '',
+      commission: '0.00',
+      swap: '0.00',
+      profit: data.profit?.toString() || '0.00',
+      netProfit: data.profit?.toString() || '0.00'
+    };
+
+    this.recentlyAddedTrades.push(newTrade);
+    this.tableData.unshift(newTrade);
+    this.cdr.detectChanges();
+  }
+
+  closeMT5Trade(data: any): void {
+    console.log('Closing MT5 trade:', data);
+    // Find and update the closed trade
+    const tradeIndex = this.tableData.findIndex(trade =>
+      trade.symbol === data.symbol && trade.status === 'Live'
+    );
+
+    if (tradeIndex !== -1) {
+      this.tableData[tradeIndex].status = 'Closed';
+      this.tableData[tradeIndex].closeDate = new Date().toLocaleString();
+      this.tableData[tradeIndex].exit = data.close_price?.toString() || '0.00000';
+      this.tableData[tradeIndex].profit = data.profit?.toString() || '0.00';
+      this.tableData[tradeIndex].netProfit = data.profit?.toString() || '0.00';
+      this.cdr.detectChanges();
+    }
+  }
+
+  updateMT5TradePrice(data: any): void {
+    // Update live trade prices
+    const liveTrades = this.tableData.filter(trade => trade.status === 'Live');
+    liveTrades.forEach(trade => {
+      if (trade.symbol === data.symbol) {
+        // Update current price and unrealized P&L if needed
+        console.log(`Price update for ${data.symbol}: ${data.price}`);
+      }
+    });
+  }
+
+  async loadMT5Data(): Promise<void> {
+    // Load existing MT5 data
+    console.log('Loading MT5 data...');
+    // This would typically fetch from MT5 API
+  }
+
+  async checkAndCreateRelationId(){
+    // if (!this.startDate || !this.endDate){  // Check if startDate or endDate is null{
+    //   return
+    // }
+    this.isLoadingChecking = true;
+    this.isLoadingPatching = true;
+    this.isLoadingComparing = true;
+    this.isLoadingPopulating = true;
+    this.progressChecking = 0;
+    this.progressPatching = 0;
+    this.progressComparing = 0;
+    this.progressPopulating = 0;
+    const dateRange: string[] = [];
+
+    //loop every trades in the table,format the date and save it to dateRange as MM-DD-YYYY
+    for ( let i=0; i<= this.tableData.length-1; i++){
+      let d = new Date(this.tableData[i].openDate ?? '');
+      const dayOfWeek = d.getDay();
+      // Skip weekends (0 = Sunday, 6 = Saturday)  Skip if date is weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        dateRange.push(`${month}-${day}-${year}`);
+      }
+    }
+    const total = dateRange.length;
+    let completed = 0;
+    //loop every date in dateRange, check if relationName already exists in Notion, if not, create it
+    //however, to speed up the loop process, if the previous date is already done checking and if date already exists in this.relations, continue already to the next date
+    for (const date of dateRange) {
+       // ✅ Skip if already exists 
+        const alreadyProcessed = this.relations.some(rel => rel.relationName === date);
+        if (alreadyProcessed  ) { 
+          completed++;
+          this.progressChecking = Math.floor((completed / total) * 100);
+          continue; // Skip to next date
+        }
+
+
+       const body = {
+          "filter": {
+            "property": "Name",
+            "title": {
+              "equals": date
+            }
+          }
+        }
+        try {
+          const res: any = await firstValueFrom(
+            this.http.post("http://localhost:3000/api/getRelationName", body)
+          );
+          //To check if an object with the same relationName already exists in the this.relations array before pushing
+          if (res.results.length > 0) {
+            const exists = this.relations.some(
+              rel => rel.relationName === date && rel.relationId === res.results[0].id
+            );
+            if (!exists) {
+              this.relations.push({
+                relationName: date,
+                relationId: res.results[0].id
+              });
+            }
+          } else {
+            await this.createRelationId(date); // make this async if needed
+          }
+          console.log('done checking:', date);
+          completed++;
+          this.progressChecking = Math.floor((completed / total) * 100);
+          
+          // await this.delay(300); // optional
+        } catch (error) {   
+          this.checkingError = true      
+          console.error('Error checking relation for', date, error);
+        }
+    }
+    console.log('All dates checked');
+   
+    console.log(this.relations)
+    const startDate = new Date(this.tableData[0].openDate ?? '')
+    const endDate = new Date(this.tableData[this.tableData.length-1].openDate ?? '')
+    this.getAllPagesFromDB(startDate,endDate) //ready for Patching.. relationIds to ActivityLog
+  }
+
+  async createRelationId(dateName:string): Promise<any>{
+    const body = {
+      "parent": {
+        "database_id": "5e00bcb25c3d4276b1de54de3576894a"
+      },
+      "properties": {
+        "Name": {
+          "title": [
+            {
+              "text": {
+                "content": dateName
+              }
+            }
+          ]
+        }
+      }
+    }
+    const res: any = await firstValueFrom(
+      this.http.post("http://localhost:3000/api/createRelationId", body)
+    );
+    if (res) {
+      // this.relations = []
+      this.relations.push({ relationName: dateName, relationId: res.id })
+      console.log("created successful:"+dateName);
+    } 
+
+  }
+
+  async compareToNotion(){
+    console.log('🔍 Starting Compare to Notion process...');
+    //for progress bar comparing
+    const total = this.tableData.length;
+    let completed = 0;
+
+    for (const row of this.tableData) {  //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
+      const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
+      const [datePart, timePart] = originalDateStr.split(' ');
+      const [month, day, year] = datePart.split('.').map(Number);
+      const [hour, minute] = timePart.split(':').map(Number);
+
+      // Create the date in local time (assumes you are in GMT+8 like Philippines)
+      const date = new Date(year, month - 1, day, hour, minute);
+      const isoDate = this.formatToNotionDate(date,"yyyymmdd");;
+      const body = {
+        "filter": {
+          "property": "Date",  // exact name of the Date property in Notion
+          "date": {
+            "equals": isoDate
+          }
+        }
+      }
+
+      try {
+        const res: any = await firstValueFrom(
+          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        );
+        if (res.results && res.results.length > 0) {
+          // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
+          // console.log("Matched found:",res.results[0].id)
+          row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
+          row.status = "Matched"
+          console.log('✅ Match found for', originalDateStr, '- Status:', row.status);
+        }else{
+          row.status = "Unmatched"
+          // console.log('No Matched found for: '+isoDate, error);
+            const tradesForUnmatched = await this.getTradesUnmatched(isoDate)
+            row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
+              trade
+            );
+            console.log('⚠️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
+        }
+        completed++;
+        this.progressComparing = Math.floor((completed / total) * 100);
+      } catch (error) {
+        this.comparingError = true
+        console.error('Error comparing to Notion',row, error);
+      }
+    }
+
+    console.log('🎯 Compare to Notion completed! Data updated in simple table.');
+
+    // Simple change detection - no DataTable refresh needed!
+    this.cdr.detectChanges();
+  }
+
+// Helper function to format the date; Manually format to ISO with +08:00 timezone
+ formatToNotionDate(date: Date,dateFormat:String): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  
+  return (dateFormat === "yyyymmdd")
+  ? `${yyyy}-${mm}-${dd}T${hh}:${min}:00+08:00`
+  : `${yyyy}-${dd}-${mm}T${hh}:${min}:00+08:00`;
+}
+
+  async getTradesUnmatched(isoDate:any): Promise<any>{
+    console.log(isoDate)
+    const targetTime = new Date(isoDate); //"2025-07-04T15:37:00+08:00"
+    // Subtract 10 minutes
+    const from = new Date(targetTime.getTime() - 10 * 60 * 1000);
+    // Add 30 minutes
+    const to = new Date(targetTime.getTime() + 30 * 60 * 1000);
+    const fromISO = this.formatToNotionDate(from,"yyyymmdd");
+    const toISO = this.formatToNotionDate(to,"yyyymmdd");
+   
+    const body = {
+      "filter": {
+        "and": [
+          {
+            "property": "Date",
+            "date": {
+              "on_or_after": fromISO
+            }
+          },
+          {
+            "property": "Date",
+            "date": {
+              "on_or_before": toISO
+            }
+          }
+        ]
+      }
+    }
+    const res: any = await firstValueFrom(
+      this.http.post("http://localhost:3000/api/getAllPagesFromDB", body));
+
+    const tradesFoundForUnmatched:Trades[] = []
+     if (res.results && res.results.length > 0) {
+        res.results.map((prop: any) => {
+          const d = new Date(prop.properties.Date.date.start);
+          const hh = String(d.getHours()).padStart(2, '0');
+          const min = String(d.getMinutes()).padStart(2, '0');
+          tradesFoundForUnmatched.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}.${d.getFullYear()} ${hh}:${min}`, 
+          tradeId: prop.id })
+        });
+        console.log(tradesFoundForUnmatched)
+      }else{
+        console.log("Not tradesFoundForUnmatched.")
+      }
+      return tradesFoundForUnmatched
+  }
+
+chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
+  if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
+    // Already selected — unselect it
+    this.selectedTradeId[rowIndex] = null;
+    row.status = "Unmatched";
+    localStorage.removeItem(rowIndex.toString());
+  } else {
+    // Select the trade
+    this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
+    row.status = "Matched";
+
+    // Store original array in case of revert
+    localStorage.setItem(rowIndex.toString(), JSON.stringify(row.tradeNotion));
+  }
+}
+
+
+  revertTradeNotion(row: Table, rowIndex: number) {
+    // Revert the tradeNotion to an empty array
+    row.tradeNotion = [];
+    this.selectedTradeId[rowIndex] = null; // Reset the selected trade ID for this row
+    row.status = "Unmatched"; // Set status back to unmatched
+    row.tradeNotion = localStorage.getItem(rowIndex.toString()) ? JSON.parse(localStorage.getItem(rowIndex.toString()) || '[]') : [];
+    localStorage.removeItem(rowIndex.toString()); // Clear local storage if needed
+  }
+
+  async populateData(){
+    //for progress bar populating
+    const total = this.tableData.length;
+    let completed = 0;
+    //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
+    const allMatched = this.tableData.every(item => item.status === 'Matched');
+    const propFirmAccountValue = 5000; //change this in the future to read the excel file
+    if (allMatched) {
+      console.log('✅ All trades are matched.');
+      for (const trade of this.tableData) {
+          const percentPnLTemp = (parseFloat(trade.netProfit) / propFirmAccountValue) * 100; // Assuming 5000 is the base value for PnL percentage calculation
+          const percentPnL = parseFloat(percentPnLTemp.toFixed(2)); // -0.23
+          const body = {
+            "payload": {
+              "properties": {
+                "PnL": {
+                  "number": trade.netProfit ? parseFloat(trade.netProfit) : "" // Ensure netProfit is a number
+                },
+                "%PnL": {
+                  "number": percentPnL
+                }
+              }
+            },
+            "url":trade.tradeNotion[0].tradeId // Use the first tradeId from tradeNotion
+          }
+
+          try {
+            const res: any = await firstValueFrom(
+              this.http.patch("http://localhost:3000/api/updatePropertiesToTrade", body)
+            );
+            if (res) {
+              console.log("Updating successful: ",res)
+            }
+            completed++;
+            this.progressPopulating = Math.floor((completed / total) * 100);
+          } catch (error) {
+            this.populatingError = true
+            console.error('Error populating data for', error);
+          }
+      }
+
+    } else {
+      console.log('❌ Some trades are still unmatched.');
+    }
+  }
+
+  async getMt5API(){
+    const res: any = await firstValueFrom(
+      this.http.get("http://localhost:5000/api/history")
+    );
+    console.warn(res)
+    return res;
+  }
+
+  async loadNotionPerformanceData(): Promise<void> {
+    this.isLoadingNotionData = true;
+    console.log('🔄 Starting to load ALL Notion performance data with pagination...');
+
+    try {
+      // Check if backend is running first
+      console.log('�� Checking backend availability...');
+
+      const backendRunning = await this.isBackendRunning();
+
+      if (!backendRunning) {
+        console.warn('⚠️ Backend is not running or not accessible');
+        this.notionPerformanceData = [];
+        return;
+      }
+
+      // Collect all results using pagination
+      let allResults: any[] = [];
+      let hasMore = true;
+      let startCursor: string | null = null;
+      let pageCount = 0;
+
+      console.log('📤 Starting pagination to get ALL entries from your Notion database...');
+      // console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
+
+      while (hasMore) {
+        pageCount++;
+
+        // Build request body for pagination
+        const body: any = {};
+        if (startCursor) {
+          body.start_cursor = startCursor;
+        }
+
+        console.log(`📤 Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
+
+        // Use the proxy endpoint that matches your database ID exactly
+        const proxyResponse: any = await firstValueFrom(
+          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        );
+
+        console.log(`📥 Page ${pageCount} response:`, {
+          results_count: proxyResponse?.results?.length || 0,
+          has_more: proxyResponse?.has_more,
+          next_cursor: proxyResponse?.next_cursor ? `${proxyResponse.next_cursor.substring(0, 20)}...` : null
+        });
+
+        if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
+          // Add results from this page to our collection
+          allResults = allResults.concat(proxyResponse.results);
+          console.log(`✅ Page ${pageCount}: Added ${proxyResponse.results.length} entries. Total so far: ${allResults.length}`);
+
+          // Check if there are more pages
+          hasMore = proxyResponse.has_more === true;
+          startCursor = proxyResponse.next_cursor || null;
+
+          if (hasMore && startCursor) {
+            console.log(`🔄 More data available, fetching next page...`);
+          } else {
+            console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
+          }
+        } else {
+          console.log(`📭 Page ${pageCount}: No results found, ending pagination`);
+          hasMore = false;
+        }
+
+        // Safety check to prevent infinite loops
+        if (pageCount > 50) {
+          console.warn('⚠️ Stopped pagination after 50 pages to prevent infinite loop');
+          break;
+        }
+      }
+
+      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+
+      if (allResults.length > 0) {
+        // Show first page structure for debugging
+        console.log('📝 First entry structure:', allResults[0]);
+        console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
+
+        this.notionPerformanceData = this.parseNotionResponse(allResults);
+        console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
+        console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
+  
+      } else {
+        console.warn('⚠️ No results found in your Notion database after pagination');
+        this.notionPerformanceData = [];
+   
+      }
+
+      // Trigger DataTable rendering safely
+      this.triggerDataTableRender();
+
+    } catch (error: any) {
+      console.error('❌ Error during paginated loading of your Notion data:');
+      console.error('Full error object:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error status:', error.status);
+
+      if (error.status === 0) {
+        console.error('🔌 Connection failed - backend server may not be running');
+      }
+
+      // Show empty state instead of mock data
+      this.notionPerformanceData = [];
+   
+
+      // Still trigger DataTable rendering safely
+      this.triggerDataTableRender();
+
+    } finally {
+      this.isLoadingNotionData = false;
+      console.log('🏁 Finished loading your complete Notion data');
+    }
+  }
+
+  private parseNotionResponse(results: any[]): NotionPerformanceData[] {
+    console.log('🔄 Parsing your Notion response. Results count:', results?.length || 0);
+
+    if (!Array.isArray(results)) {
+      console.error('❌ Results is not an array:', results);
+      return [];
+    }
+
+    if (results.length === 0) {
+      console.log('📭 No pages found in your Notion database');
+      return [];
+    }
+
+    // First, let's see what properties you actually have in your database
+    const firstPage = results[0];
+    if (firstPage && firstPage.properties) {
+      console.log('📋 Your Notion database properties:', Object.keys(firstPage.properties));
+
+      // Show the structure of each property type
+      Object.keys(firstPage.properties).forEach(key => {
+        const prop = firstPage.properties[key];
+        console.log(`   - ${key}: ${prop.type}`, prop);
+      });
+    }
+
+    return results.map((page, index) => {
+      try {
+        const properties = page.properties;
+        if (!properties) {
+          console.warn(`⚠️ Page ${index + 1} has no properties`);
+          return null;
+        }
+
+        // Extract data based on your exact Notion database properties
+        const parsedData: NotionPerformanceData = {
+          id: page.id || `page-${index}`,
+
+          // Extract each property exactly as it appears in your database
+          action: this.getNotionProperty(properties, 'Action', 'title') || '',
+          date: this.getNotionProperty(properties, 'Date', 'date') || '',
+          idealRRR: this.getNotionProperty(properties, 'Ideal RRR', 'select') || '',
+          buySell: this.getNotionProperty(properties, 'Buy/Sell', 'select') || '',
+          modelCheck: this.getNotionProperty(properties, 'Model✔', 'multi_select') || [],
+          status: this.getNotionProperty(properties, 'Status', 'status') || '',
+          percentPnL: this.getNotionProperty(properties, '%PnL', 'number') || 0,
+          weeklyRetrospective: this.getNotionProperty(properties, 'Weekly Retrospective', 'rich_text') || '',
+          account: this.getNotionProperty(properties, 'Account', 'multi_select') || [],
+          strategy: this.getNotionProperty(properties, 'Strategy', 'select') || '',
+          oneToOneReversal: this.getNotionProperty(properties, '1:1 Reversal', 'checkbox') || false,
+          screenshots: this.getNotionProperty(properties, 'Screenshots', 'files') || [],
+          modelForm: this.getNotionProperty(properties, 'Model form', 'multi_select') || [],
+          idealSL: this.getNotionProperty(properties, 'Ideal SL', 'select') || '',
+          reviewed: this.getNotionProperty(properties, 'Reviewed', 'checkbox') || false,
+          uniqueID: this.getNotionProperty(properties, 'ID', 'unique_id') || 0,
+          commission: this.getNotionProperty(properties, 'Commission', 'number') || 0,
+          outcome: this.getNotionProperty(properties, 'Outcome', 'files') || [],
+          held: this.getNotionProperty(properties, 'Held🕕', 'formula') || '',
+          instrument: this.getNotionProperty(properties, 'Instrument', 'select') || '',
+          pnl: this.getNotionProperty(properties, 'PnL', 'number') || 0,
+          percentPnLCalc: this.getNotionProperty(properties, '%PnL-Calc', 'formula') || '',
+          dailyReflection: this.getNotionProperty(properties, 'Daily Reflection ', 'rich_text') || '',
+          lots: this.getNotionProperty(properties, 'Lots', 'number') || 0,
+          divergenceValue: this.getNotionProperty(properties, 'Divergence value', 'number') || 0,
+          pips: this.getNotionProperty(properties, 'Pips', 'number') || 0,
+          formula: this.getNotionProperty(properties, 'Formula', 'formula') || 0,
+          rulesViolated: this.getNotionProperty(properties, 'Rules violated 🛑', 'multi_select') || [],
+          emptySelect: this.getNotionProperty(properties, '', 'select') || '',
+          swap: this.getNotionProperty(properties, 'swap', 'number') || 0
+        };
+
+        // console.log(`✅ Parsed your data page ${index + 1}:`, parsedData);
+        return parsedData;
+
+      } catch (error) {
+        console.error(`❌ Error parsing page ${index + 1}:`, error);
+        return null;
+      }
+    }).filter(item => item !== null) as NotionPerformanceData[];
+  }
+
+  private getNotionProperty(properties: any, propertyName: string, type: string): any {
+    try {
+      const property = properties[propertyName];
+      if (!property) {
+        console.log(`🔍 Property "${propertyName}" not found. Available properties:`, Object.keys(properties));
+        return null;
+      }
+
+      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+
+      switch (type) {
+        case 'select':
+          return property.select?.name || '';
+
+        case 'multi_select':
+          if (Array.isArray(property.multi_select)) {
+            return property.multi_select.map((item: any) => item.name || '');
+          }
+          return [];
+
+        case 'status':
+          return property.status?.name || '';
+
+        case 'date':
+          return property.date?.start || '';
+
+        case 'number':
+          return property.number !== undefined ? property.number : 0;
+
+        case 'rich_text':
+          if (Array.isArray(property.rich_text)) {
+            return property.rich_text.map((text: any) => text.plain_text || '').join('') || '';
+          }
+          return '';
+
+        case 'title':
+          if (Array.isArray(property.title)) {
+            return property.title.map((text: any) => text.plain_text || '').join('') || '';
+          }
+          return '';
+
+        case 'checkbox':
+          return property.checkbox === true;
+
+        case 'unique_id':
+          return property.unique_id?.number || 0;
+
+        case 'formula':
+          if (property.formula?.type === 'string') {
+            return property.formula.string || '';
+          } else if (property.formula?.type === 'number') {
+            return property.formula.number || 0;
+          }
+          return property.formula?.string || property.formula?.number || '';
+
+        case 'files':
+          if (Array.isArray(property.files)) {
+            return property.files.map((file: any) => file.name || '');
+          }
+          return [];
+
+        case 'relation':
+          if (Array.isArray(property.relation)) {
+            return property.relation.map((rel: any) => rel.id || '');
+          }
+          return [];
+
+        default:
+          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
+          return null;
+      }
+    } catch (error) {
+      console.error(`❌ Error getting property "${propertyName}":`, error);
+      return null;
+    }
+  }
+
+  refreshNotionData(): void {
+    this.loadNotionPerformanceData();
+  }
+
+  loadNotionDataWithButton(): void {
+    this.showLoadButton = false; // Hide the load button
+    this.loadNotionPerformanceData(); // Load the data
+  }
+
+  toggleColumnVisibility(columnKey: string): void {
+    // Prevent rapid toggles that could cause issues
+    if (this.isRefreshingTable) {
+      console.warn('Table is currently refreshing, please wait...');
+      return;
+    }
+
+    this.columnVisibility[columnKey as keyof typeof this.columnVisibility] = !this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+
+    // Update available columns array
+    const column = this.availableColumns.find(col => col.key === columnKey);
+    if (column) {
+      column.visible = this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
+    }
+
+    // Safely refresh DataTable
+    this.safelyRefreshDataTable();
+  }
+
+  toggleColumnSelector(): void {
+    this.showColumnSelector = !this.showColumnSelector;
+  }
+
+  getVisibleColumns(): any[] {
+    return this.availableColumns.filter(col => col.visible);
+  }
+
+  hideAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = false;
+      const column = this.availableColumns.find(col => col.key === key);
+      if (column) column.visible = false;
+    });
+    this.safelyRefreshDataTable();
+  }
+
+  showAllColumns(): void {
+    Object.keys(this.columnVisibility).forEach(key => {
+      this.columnVisibility[key as keyof typeof this.columnVisibility] = true;
+      const column = this.availableColumns.find(col => col.key === key);
+      if (column) column.visible = true;
+    });
+    this.safelyRefreshDataTable();
+  }
+
+  showDefaultColumns(): void {
+    // Reset to default visibility
+    this.columnVisibility = {
+      id: true,
+      action: true,
+      date: true,
+      account: true,
+      status: true,
+      buySell: true,
+      instrument: true,
+      strategy: true,
+      lots: true,
+      pips: true,
+      pnl: true,
+      percentPnL: true,
+      commission: true,
+      swap: true,
+      idealRRR: true,
+      idealSL: true,
+      modelCheck: true,
+      rulesViolated: true,
+      oneToOneReversal: true,
+      reviewed: true,
+      dailyReflection: true,
+      weeklyRetrospective: true,
+      modelForm: false,
+      screenshots: false,
+      outcome: false,
+      held: false,
+      percentPnLCalc: false,
+      divergenceValue: false,
+      formula: false,
+      emptySelect: false
+    };
+
+    // Update available columns
+    this.availableColumns.forEach(col => {
+      col.visible = this.columnVisibility[col.key as keyof typeof this.columnVisibility];
+    });
+
+    this.safelyRefreshDataTable();
+  }
+
+  private safelyRefreshDataTable(): void {
+    if (this.isRefreshingTable) {
+      return; // Prevent multiple simultaneous refreshes
+    }
+
+    this.isRefreshingTable = true;
+
+    try {
+      // Check if the table element exists
+      const tableElement = document.getElementById('notionTable');
+      if (!tableElement) {
+        console.warn('Table element not found, skipping DataTable refresh');
+        this.isRefreshingTable = false;
+        return;
+      }
+
+      // Check if DataTable is initialized and destroy it safely
+      if ($.fn.dataTable.isDataTable('#notionTable')) {
+        const table = $('#notionTable').DataTable();
+        if (table && typeof table.destroy === 'function') {
+          table.destroy(true); // true = remove from DOM completely
+        }
+      }
+
+      // Clear any existing DataTable data
+      $('#notionTable').empty();
+
+      // Wait for DOM cleanup, then reinitialize
+      setTimeout(() => {
+        try {
+          // Double-check the element still exists after timeout
+          const tableElementAfter = document.getElementById('notionTable');
+          if (tableElementAfter) {
+            this.dtTriggerNotion.next(null);
+          }
+        } finally {
+          this.isRefreshingTable = false;
+        }
+      }, 200);
+
+    } catch (error) {
+      console.error('Error refreshing DataTable:', error);
+      // Fallback: just trigger re-render without destroying
+      setTimeout(() => {
+        try {
+          this.dtTriggerNotion.next(null);
+        } finally {
+          this.isRefreshingTable = false;
+        }
+      }, 100);
+    }
+  }
+
+  async isBackendRunning(): Promise<boolean> {
+    try {
+      // Try a simple POST request to see if backend endpoint is responding
+      console.log('🔍 Quick check if backend is responding...');
+
+      const quickTestBody = {}; // Empty body as per your specification
+
+      await firstValueFrom(
+        this.http.post('http://localhost:3000/api/getAllPagesFromDB', quickTestBody, {
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+      );
+
+      console.log('✅ Backend is responding to POST requests with empty body');
+      return true;
+
+    } catch (error: any) {
+      console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
+
+      // If it's a 404 with GET, but we're using POST now, so any response means server is up
+      if (error.status === 404) {
+        console.log('❌ Backend endpoint not found');
+        return false;
+      }
+
+      // If it's any other error but not connection error, server might be running
+      if (error.status && error.status !== 0) {
+        console.log('⚠️ Backend is running but has issues with the API');
+        return true; // Server is running, just has issues
+      }
+
+      return false;
+    }
+  }
+
+  checkBackendInstructions(): void {
+    const instructions = `
+        🔧 How to start the Notion backend server:
+
+        1. Open a new terminal window/tab
+        2. Navigate to the backend directory:
+          cd NotionProxyApi
+
+        3. Install dependencies (if first time):
+          npm install
+
+        4. Start the development server:
+          npm run dev
+
+        5. You should see this message:
+          "✅ Server running at http://localhost:3000"
+
+        6. Then click "Test Backend" to verify the connection
+
+        📁 Project Structure:
+        - Your project has both frontend (trading-dashboard) and backend (NotionProxyApi)
+        - The backend serves as a proxy to your Notion database
+        - The frontend connects to localhost:3000 to get your Notion data
+
+        💡 Troubleshooting:
+        - Make sure you're in the NotionProxyApi folder when running npm run dev
+        - Check that port 3000 is not already in use
+        - Verify your Notion API token is configured in the backend
+        `;
+
+    alert(instructions);
+  }
+
+  async testBackendConnection(): Promise<boolean> {
+    console.log('🔍 Testing backend connection...');
+    console.log('Backend URL:', this.BACKEND_URL);
+
+    try {
+      console.log('Testing POST request to /api/getAllPagesFromDB with empty body...');
+
+      // Use the exact API request format you provided - empty JSON object
+      const testBody = {}; // Empty body as per your sample request
+
+      const testResponse = await firstValueFrom(
+        this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, testBody)
+      );
+
+      console.log('✅ Backend POST request successful:', testResponse);
+
+      // Check if we got actual data
+      if (testResponse && (testResponse as any).results) {
+        const resultCount = (testResponse as any).results.length;
+        alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
+      } else {
+        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+      }
+
+      return true;
+
+    } catch (error: any) {
+      console.error('❌ Backend connection test failed:');
+      console.error('- Error object:', error);
+      console.error('- Error name:', error.name);
+      console.error('- Error message:', error.message);
+      console.error('- Error status:', error.status);
+      console.error('- Error statusText:', error.statusText);
+      console.error('- Error url:', error.url);
+
+      if (error.error) {
+        console.error('- Error response body:', error.error);
+      }
+
+      // Provide detailed error message based on status
+      let errorMessage = '❌ Backend connection failed!\n\n';
+
+      if (error.status === 0 || error.status === undefined) {
+        errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
+        errorMessage += 'The backend server is not running.\n\n';
+        errorMessage += 'To start the backend server:\n';
+        errorMessage += '1. Open a new terminal window\n';
+        errorMessage += '2. Navigate to: cd NotionProxyApi\n';
+        errorMessage += '3. Run: npm run dev\n\n';
+        errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
+      } else if (error.status === 404) {
+        errorMessage += '🔍 API Endpoint Not Found\n\n';
+        errorMessage += 'The server is running but the API route is missing.\n';
+        errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
+      } else if (error.status === 401 || error.status === 403) {
+        errorMessage += '���� Authentication Error\n\n';
+        errorMessage += 'The Notion API token might be invalid or missing.\n';
+        errorMessage += 'Check your Notion API token in the backend configuration.';
+      } else if (error.status >= 500) {
+        errorMessage += '💥 Server Error\n\n';
+        errorMessage += `Status: ${error.status}\n`;
+        errorMessage += `Message: ${error.message}\n\n`;
+        errorMessage += 'The server encountered an internal error.\n';
+        errorMessage += 'Check the backend server console for detailed error messages.';
+      } else {
+        errorMessage += `🚨 HTTP Error: ${error.status}\n\n`;
+        errorMessage += `Message: ${error.message}\n`;
+        errorMessage += `URL: ${error.url}\n\n`;
+        errorMessage += 'Check the backend server logs for more details.';
+      }
+
+      alert(errorMessage);
+      return false;
+    }
+  }
+
+
+
+  formatNotionDate(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return dateStr;
+    }
+  }
+
+  getEmotionClass(emotion: string): string {
+    const emotionLower = emotion?.toLowerCase() || '';
+    if (emotionLower.includes('confident') || emotionLower.includes('disciplined')) return 'emotion-positive';
+    if (emotionLower.includes('frustrated') || emotionLower.includes('angry')) return 'emotion-negative';
+    if (emotionLower.includes('nervous') || emotionLower.includes('anxious')) return 'emotion-warning';
+    return 'emotion-neutral';
+  }
+  // Trading Metrics Calculation Methods
+  calculateTotalPnL(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.reduce((total, trade) => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return total + netProfit;
+    }, 0);
+  }
+
+  calculatePnLChangePercent(): string {
+    // This would typically compare against previous period
+    // For now, we'll return a placeholder
+    return '0.00';
+  }
+
+  calculateWinRate(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0.00';
+    const winningTrades = this.getWinCount();
+    const totalTrades = this.getTotalTrades();
+    return totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : '0.00';
+  }
+
+  getWinCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    }).length;
+  }
+
+  getTotalTrades(): number {
+    return this.tableData ? this.tableData.length : 0;
+  }
+
+  calculateAvgWin(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    });
+
+    if (winningTrades.length === 0) return 0;
+
+    const totalWinAmount = winningTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalWinAmount / winningTrades.length;
+  }
+
+  calculateAvgLoss(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const losingTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    });
+
+    if (losingTrades.length === 0) return 0;
+
+    const totalLossAmount = losingTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalLossAmount / losingTrades.length;
+  }
+
+  calculateExpectancy(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const lossRate = 1 - winRate;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    return (winRate * avgWin) - (lossRate * avgLoss);
+  }
+
+  formatDate(dateStr: string): string {
+    // if (!dateStr) return '';
+    try {
+      // Handle MM.DD.YYYY HH:mm format
+      const [datePart, timePart] = dateStr.split(' ');
+      if (!datePart) return dateStr;
+
+      const [month, day, year] = datePart.split('.');
+      if (month && day && year) {
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        if (timePart) {
+          const [hours, minutes] = timePart.split(':');
+          if (hours && minutes) {
+            date.setHours(parseInt(hours), parseInt(minutes));
+            return date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+        }
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error);
+    }
+    return dateStr;
+  }
+
+  calculateDayPnL(events: any[]): number {
+    if (!events || events.length === 0) return 0;
+    return events.reduce((sum, event) => {
+      return sum + (event.meta?.profit || 0);
+    }, 0);
+  }
+
+  // Template helper methods
+  isPositiveValue(value: string | number): boolean {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num > 0;
+  }
+
+  isNegativeValue(value: string | number): boolean {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num < 0;
+  }
+
+  getStatusClass(status: string): string {
+    return status ? status.toLowerCase() : '';
+  }
+
+  getPositionClass(position: string): string {
+    return position ? position.toLowerCase() : '';
+  }
+
+  // Utility method for templates
+  parseFloat(value: string): number {
+    return parseFloat(value) || 0;
+  }
+
+  // Helper method to check if there are critical insights
+  hasCriticalInsights(): boolean {
+    return this.getPerformanceInsights().some(insight => insight.severity === 'critical');
+  }
+
+  // Advanced Trading Analytics Methods
+
+  // Risk Management KPIs
+  getMaxDrawdown(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let runningBalance = 0;
+    let peak = 0;
+    let maxDrawdown = 0;
+
+    this.tableData.forEach(trade => {
+      const tradeProfit = parseFloat(trade.netProfit) || 0;
+      runningBalance += tradeProfit;
+
+      if (runningBalance > peak) {
+        peak = runningBalance;
+      }
+
+      const drawdown = peak - runningBalance;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
+    });
+
+    return -maxDrawdown;
+  }
+
+  getMaxDrawdownPercent(): string {
+    const maxDrawdown = Math.abs(this.getMaxDrawdown());
+    const initialBalance = 5000; // Prop firm account value
+    return ((maxDrawdown / initialBalance) * 100).toFixed(2);
+  }
+
+  getCurrentDrawdown(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let runningBalance = 0;
+    let peak = 0;
+
+    this.tableData.forEach(trade => {
+      const tradeProfit = parseFloat(trade.netProfit) || 0;
+      runningBalance += tradeProfit;
+
+      if (runningBalance > peak) {
+        peak = runningBalance;
+      }
+    });
+
+    return runningBalance - peak;
+  }
+
+  getRiskRewardRatio(): string {
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    if (avgLoss === 0) return '0.00';
+    return (avgWin / avgLoss).toFixed(2);
+  }
+
+  getProfitFactor(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0.00';
+
+    const totalWins = this.tableData
+      .filter(trade => parseFloat(trade.netProfit) > 0)
+      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
+
+    const totalLosses = Math.abs(this.tableData
+      .filter(trade => parseFloat(trade.netProfit) < 0)
+      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0));
+
+    if (totalLosses === 0) return totalWins > 0 ? '∞' : '0.00';
+    return (totalWins / totalLosses).toFixed(2);
+  }
+
+  getAvgRiskPerTrade(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const totalRisk = this.tableData.reduce((sum, trade) => {
+      const entry = parseFloat(trade.entry) || 0;
+      const stopLoss = parseFloat(trade.sL) || 0;
+      const volume = parseFloat(trade.volume) || 0;
+
+      if (entry && stopLoss && volume) {
+        const riskPerUnit = Math.abs(entry - stopLoss);
+        return sum + (riskPerUnit * volume);
+      }
+      return sum;
+    }, 0);
+
+    return totalRisk / this.tableData.length;
+  }
+
+  getKellyCriterion(): string {
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    if (avgLoss === 0) return '0.00';
+
+    const kelly = winRate - ((1 - winRate) / (avgWin / avgLoss));
+    return (kelly * 100).toFixed(2);
+  }
+
+  // Trading Psychology Indicators
+  getRevengeTradingScore(): number {
+    if (!this.tableData || this.tableData.length < 2) return 0;
+
+    let revengeTradeCount = 0;
+
+    for (let i = 1; i < this.tableData.length; i++) {
+      const prevTrade = parseFloat(this.tableData[i-1].netProfit) || 0;
+      const currentTrade = parseFloat(this.tableData[i].netProfit) || 0;
+      const currentVolume = parseFloat(this.tableData[i].volume) || 0;
+      const prevVolume = parseFloat(this.tableData[i-1].volume) || 0;
+
+      // Check if previous trade was a loss and current trade has increased volume
+      if (prevTrade < 0 && currentVolume > prevVolume * 1.5) {
+        revengeTradeCount++;
+      }
+    }
+
+    return Math.min(100, (revengeTradeCount / (this.tableData.length - 1)) * 100);
+  }
+
+  getRevengeTradingClass(): string {
+    const score = this.getRevengeTradingScore();
+    if (score > 30) return 'high-risk';
+    if (score > 15) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getOvertradingScore(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    // Group trades by day
+    const tradesByDay: { [key: string]: number } = {};
+
+    this.tableData.forEach(trade => {
+      const date = trade.openDate.split(' ')[0]; // Get date part only
+      tradesByDay[date] = (tradesByDay[date] || 0) + 1;
+    });
+
+    const dailyTradeCounts = Object.values(tradesByDay);
+    const avgTradesPerDay = dailyTradeCounts.reduce((sum, count) => sum + count, 0) / dailyTradeCounts.length;
+
+    // Calculate days with excessive trading (more than 2x average)
+    const excessiveTradingDays = dailyTradeCounts.filter(count => count > avgTradesPerDay * 2).length;
+
+    return Math.min(100, (excessiveTradingDays / dailyTradeCounts.length) * 100);
+  }
+
+  getOvertradingClass(): string {
+    const score = this.getOvertradingScore();
+    if (score > 40) return 'high-risk';
+    if (score > 20) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getFOMOScore(): number {
+    if (!this.tableData || this.tableData.length < 3) return 0;
+
+    let fomoTradeCount = 0;
+
+    for (let i = 2; i < this.tableData.length; i++) {
+      const trade1 = parseFloat(this.tableData[i-2].netProfit) || 0;
+      const trade2 = parseFloat(this.tableData[i-1].netProfit) || 0;
+      const currentTrade = parseFloat(this.tableData[i].netProfit) || 0;
+
+      // FOMO: Two consecutive wins followed by a quick loss
+      if (trade1 > 0 && trade2 > 0 && currentTrade < 0) {
+        const timeDiff = this.getTimeDifferenceBetweenTrades(i-1, i);
+        if (timeDiff < 30) { // Less than 30 minutes
+          fomoTradeCount++;
+        }
+      }
+    }
+
+    return Math.min(100, (fomoTradeCount / (this.tableData.length - 2)) * 100);
+  }
+
+  getFOMOClass(): string {
+    const score = this.getFOMOScore();
+    if (score > 25) return 'high-risk';
+    if (score > 10) return 'medium-risk';
+    return 'low-risk';
+  }
+
+  getStopLossAdherence(): number {
+    if (!this.tableData || this.tableData.length === 0) return 100;
+
+    const tradesWithSL = this.tableData.filter(trade => {
+      const sl = parseFloat(trade.sL);
+      return sl && sl > 0;
+    });
+
+    if (tradesWithSL.length === 0) return 0;
+
+    const adherentTrades = tradesWithSL.filter(trade => {
+      const entry = parseFloat(trade.entry);
+      const exit = parseFloat(trade.exit);
+      const sl = parseFloat(trade.sL);
+      const profit = parseFloat(trade.netProfit);
+
+      // If it's a loss, check if exit price is close to SL
+      if (profit < 0) {
+        const position = trade.position.toLowerCase();
+        if (position === 'buy') {
+          return exit <= sl * 1.05; // 5% tolerance
+        } else {
+          return exit >= sl * 0.95; // 5% tolerance
+        }
+      }
+      return true; // Winning trades are considered adherent
+    });
+
+    return (adherentTrades.length / tradesWithSL.length) * 100;
+  }
+
+  getStopLossAdherenceClass(): string {
+    const score = this.getStopLossAdherence();
+    if (score > 80) return 'high-discipline';
+    if (score > 60) return 'medium-discipline';
+    return 'low-discipline';
+  }
+
+  getTakeProfitDiscipline(): number {
+    if (!this.tableData || this.tableData.length === 0) return 100;
+
+    const winningTrades = this.tableData.filter(trade => parseFloat(trade.netProfit) > 0);
+
+    if (winningTrades.length === 0) return 0;
+
+    const disciplinedTrades = winningTrades.filter(trade => {
+      const entry = parseFloat(trade.entry);
+      const exit = parseFloat(trade.exit);
+      const tp = parseFloat(trade.tP);
+
+      if (!tp || tp === 0) return false;
+
+      const position = trade.position.toLowerCase();
+      if (position === 'buy') {
+        return exit >= tp * 0.95; // Took profit close to target
+      } else {
+        return exit <= tp * 1.05; // Took profit close to target
+      }
+    });
+
+    return (disciplinedTrades.length / winningTrades.length) * 100;
+  }
+
+  getTakeProfitDisciplineClass(): string {
+    const score = this.getTakeProfitDiscipline();
+    if (score > 70) return 'high-discipline';
+    if (score > 50) return 'medium-discipline';
+    return 'low-discipline';
+  }
+
+  // Time-based Analysis
+  getBestTradingDay(): { day: string, avgPnL: number } {
+    const dayStats = this.getDayOfWeekStats();
+    if (dayStats.length === 0) return { day: 'N/A', avgPnL: 0 };
+    const bestDay = dayStats.reduce((best, current) =>
+      current.avgPnL > best.avgPnL ? current : best
+    );
+    return { day: bestDay.day, avgPnL: bestDay.avgPnL };
+  }
+
+  getWorstTradingDay(): { day: string, avgPnL: number } {
+    const dayStats = this.getDayOfWeekStats();
+    if (dayStats.length === 0) return { day: 'N/A', avgPnL: 0 };
+    const worstDay = dayStats.reduce((worst, current) =>
+      current.avgPnL < worst.avgPnL ? current : worst
+    );
+    return { day: worstDay.day, avgPnL: worstDay.avgPnL };
+  }
+
+  getDayOfWeekStats(): { day: string, avgPnL: number, tradeCount: number }[] {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayStats: { [key: number]: { totalPnL: number, count: number } } = {};
+
+    this.tableData.forEach(trade => {
+      const date = this.parseTradeDate(trade.openDate);
+      if (date) {
+        const dayOfWeek = date.getDay();
+        const pnl = parseFloat(trade.netProfit) || 0;
+
+        if (!dayStats[dayOfWeek]) {
+          dayStats[dayOfWeek] = { totalPnL: 0, count: 0 };
+        }
+
+        dayStats[dayOfWeek].totalPnL += pnl;
+        dayStats[dayOfWeek].count++;
+      }
+    });
+
+    return Object.keys(dayStats).map(dayIndex => {
+      const index = parseInt(dayIndex);
+      const stats = dayStats[index];
+      return {
+        day: dayNames[index],
+        avgPnL: stats.totalPnL / stats.count,
+        tradeCount: stats.count
+      };
+    });
+  }
+
+  getTradingSessionStats(): { name: string, avgPnL: number, tradeCount: number }[] {
+    const sessions = [
+      { name: 'Asian', start: 0, end: 8 },
+      { name: 'London', start: 8, end: 16 },
+      { name: 'New York', start: 16, end: 24 }
+    ];
+
+    const sessionStats = sessions.map(session => {
+      const sessionTrades = this.tableData.filter(trade => {
+        const date = this.parseTradeDate(trade.openDate);
+        if (date) {
+          const hour = date.getHours();
+          return hour >= session.start && hour < session.end;
+        }
+        return false;
+      });
+
+      const totalPnL = sessionTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
+      const avgPnL = sessionTrades.length > 0 ? totalPnL / sessionTrades.length : 0;
+
+      return {
+        name: session.name,
+        avgPnL,
+        tradeCount: sessionTrades.length
+      };
+    });
+
+    return sessionStats;
+  }
+
+  // Consecutive Trades Analysis
+  getMaxConsecutiveWins(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let maxWins = 0;
+    let currentWins = 0;
+
+    this.tableData.forEach(trade => {
+      const profit = parseFloat(trade.netProfit) || 0;
+      if (profit > 0) {
+        currentWins++;
+        maxWins = Math.max(maxWins, currentWins);
+      } else {
+        currentWins = 0;
+      }
+    });
+
+    return maxWins;
+  }
+
+  getMaxConsecutiveLosses(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    let maxLosses = 0;
+    let currentLosses = 0;
+
+    this.tableData.forEach(trade => {
+      const profit = parseFloat(trade.netProfit) || 0;
+      if (profit < 0) {
+        currentLosses++;
+        maxLosses = Math.max(maxLosses, currentLosses);
+      } else {
+        currentLosses = 0;
+      }
+    });
+
+    return maxLosses;
+  }
+
+  getCurrentStreak(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0';
+
+    let streak = 0;
+    let isWinStreak = false;
+
+    for (let i = this.tableData.length - 1; i >= 0; i--) {
+      const profit = parseFloat(this.tableData[i].netProfit) || 0;
+
+      if (i === this.tableData.length - 1) {
+        isWinStreak = profit > 0;
+        streak = 1;
+      } else {
+        if ((isWinStreak && profit > 0) || (!isWinStreak && profit < 0)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    return `${streak} ${isWinStreak ? 'W' : 'L'}`;
+  }
+
+  getCurrentStreakClass(): string {
+    const streak = this.getCurrentStreak();
+    if (streak.includes('W')) return 'positive';
+    if (streak.includes('L')) {
+      const count = parseInt(streak.split(' ')[0]);
+      return count > 3 ? 'high-risk' : 'negative';
+    }
+    return 'neutral';
+  }
+
+  getAvgRecoveryTime(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const recoveryTimes: number[] = [];
+    let lossStreak = 0;
+
+    this.tableData.forEach(trade => {
+      const profit = parseFloat(trade.netProfit) || 0;
+
+      if (profit < 0) {
+        lossStreak++;
+      } else if (lossStreak > 0) {
+        recoveryTimes.push(lossStreak);
+        lossStreak = 0;
+      }
+    });
+
+    return recoveryTimes.length > 0 ?
+      recoveryTimes.reduce((sum, time) => sum + time, 0) / recoveryTimes.length : 0;
+  }
+
+  // Performance Heatmap
+  getPerformanceHeatmap(): { value: number, class: string, tooltip: string }[] {
+    const last30Days: { value: number, class: string, tooltip: string }[] = [];
+
+    // Debug: log table data info
+    // console.log('Total trades in tableData:', this.tableData.length);
+    if (this.tableData.length > 0) {
+      // console.log('First trade date:', this.tableData[0].openDate);
+      // console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);
+    }
+
+    // Instead of using today's date, let's use the date range from the actual trades
+    if (!this.tableData || this.tableData.length === 0) {
+      // If no trades, show empty heatmap for last 30 days
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        last30Days.push({
+          value: 0,
+          class: 'neutral',
+          tooltip: `${date.toLocaleDateString()}: 0 trades, 0.00 P&L`
+        });
+      }
+      return last30Days;
+    }
+
+    // Find the date range of the trades
+    const tradeDates = this.tableData.map(trade => this.parseTradeDate(trade.openDate)).filter(date => date !== null) as Date[];
+    const minDate = new Date(Math.min(...tradeDates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...tradeDates.map(d => d.getTime())));
+
+    // console.log('Trade date range:', minDate.toDateString(), 'to', maxDate.toDateString());
+
+    // Use the actual trade date range to show the last 30 days from the most recent trade
+    const endDate = maxDate;
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(endDate);
+      date.setDate(date.getDate() - i);
+
+      const dayTrades = this.tableData.filter(trade => {
+        const tradeDate = this.parseTradeDate(trade.openDate);
+        if (!tradeDate) return false;
+
+        // Compare just the date part (year, month, day)
+        return tradeDate.getFullYear() === date.getFullYear() &&
+               tradeDate.getMonth() === date.getMonth() &&
+               tradeDate.getDate() === date.getDate();
+      });
+
+      const dayPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
+
+      let cellClass = 'neutral';
+      if (dayPnL > 50) cellClass = 'positive-high';
+      else if (dayPnL > 25) cellClass = 'positive-med';
+      else if (dayPnL > 0) cellClass = 'positive-low';
+      else if (dayPnL < -50) cellClass = 'negative-high';
+      else if (dayPnL < -25) cellClass = 'negative-med';
+      else if (dayPnL < 0) cellClass = 'negative-low';
+
+      // console.log(`Date: ${date.toLocaleDateString()}, Trades: ${dayTrades.length}, P&L: ${dayPnL.toFixed(2)}, Class: ${cellClass}`);
+
+      last30Days.push({
+        value: dayPnL,
+        class: cellClass,
+        tooltip: `${date.toLocaleDateString()}: ${dayTrades.length} trades, ${dayPnL.toFixed(2)} P&L`
+      });
+    }
+
+    return last30Days;
+  }
+
+  // Performance Insights
+  getPerformanceInsights(): { title: string, description: string, recommendations: string[], severity: string }[] {
+    const insights: { title: string, description: string, recommendations: string[], severity: string }[] = [];
+
+    // Win Rate Analysis
+    const winRate = parseFloat(this.calculateWinRate());
+    if (winRate < 40) {
+      insights.push({
+        title: '🎯 Low Win Rate Detected',
+        description: `Your win rate of ${winRate.toFixed(1)}% is below the typical 40-60% range for successful traders.`,
+        recommendations: [
+          'Review your entry criteria - you may be entering trades with poor setups',
+          'Consider tightening your trade selection process',
+          'Focus on high-probability setups only',
+          'Backtest your strategy to validate its effectiveness'
+        ],
+        severity: 'critical'
+      });
+    }
+
+    // Risk/Reward Analysis
+    const rrRatio = parseFloat(this.getRiskRewardRatio());
+    if (rrRatio < 1.5) {
+      insights.push({
+        title: '⚖️ Poor Risk/Reward Ratio',
+        description: `Your risk/reward ratio of ${rrRatio} means you're risking too much for too little reward.`,
+        recommendations: [
+          'Aim for at least 1:2 risk/reward ratio on trades',
+          'Let your winners run longer before taking profit',
+          'Consider wider take profit targets',
+          'Review if you\'re cutting winners too early'
+        ],
+        severity: 'warning'
+      });
+    }
+
+    // Revenge Trading
+    const revengeScore = this.getRevengeTradingScore();
+    if (revengeScore > 20) {
+      insights.push({
+        title: '😤 Revenge Trading Pattern',
+        description: `${revengeScore.toFixed(1)}% of your trades show signs of revenge trading after losses.`,
+        recommendations: [
+          'Take a break after a losing trade to reset emotionally',
+          'Set a maximum daily loss limit and stick to it',
+          'Keep a trading journal to identify emotional triggers',
+          'Never increase position size after a loss'
+        ],
+        severity: 'critical'
+      });
+    }
+
+    // Overtrading
+    const overtradingScore = this.getOvertradingScore();
+    if (overtradingScore > 30) {
+      insights.push({
+        title: '📈 Overtrading Detected',
+        description: `You have excessive trading days suggesting overtrading behavior.`,
+        recommendations: [
+          'Set a maximum number of trades per day (e.g., 3-5 trades)',
+          'Focus on quality over quantity',
+          'Wait for high-probability setups only',
+          'Take time to analyze the market before entering'
+        ],
+        severity: 'warning'
+      });
+    }
+
+    // Drawdown Analysis
+    const maxDrawdown = Math.abs(this.getMaxDrawdown());
+    if (maxDrawdown > 1000) {
+      insights.push({
+        title: '📉 High Drawdown Risk',
+        description: `Your maximum drawdown of $${maxDrawdown.toFixed(2)} indicates high risk exposure.`,
+        recommendations: [
+          'Reduce position sizes to limit account risk',
+          'Implement stricter stop losses',
+          'Never risk more than 1-2% of account per trade',
+          'Consider a period of paper trading to rebuild confidence'
+        ],
+        severity: 'critical'
+      });
+    }
+
+    // Positive insights
+    if (insights.length === 0) {
+      insights.push({
+        title: '✅ Good Trading Performance',
+        description: 'Your trading shows good discipline and risk management.',
+        recommendations: [
+          'Continue following your current strategy',
+          'Consider gradually increasing position sizes',
+          'Document what\'s working well in your trading journal',
+          'Stay consistent with your approach'
+        ],
+        severity: 'success'
+      });
+    }
+
+    return insights;
+  }
+
+  // Helper Methods
+  private getTimeDifferenceBetweenTrades(index1: number, index2: number): number {
+    if (!this.tableData[index1] || !this.tableData[index2]) return 0;
+
+    const date1 = this.parseTradeDate(this.tableData[index1].openDate);
+    const date2 = this.parseTradeDate(this.tableData[index2].openDate);
+
+    if (!date1 || !date2) return 0;
+
+    return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60); // difference in minutes
+  }
+
+  async loadMT5Data(): Promise<void> {
+    try {
+      const response = await this.getMt5API();
+
+      if (response && response.length > 0) {
+        const mt5Trades = response.map((trade: any) => {
+          
+ 
+          return {
+            openDate: this.convertAndFormatMT5Date(trade.time_open),
+            closeDate: this.convertAndFormatMT5Date(trade.time_close),
+            tradeNotion: [],
+            status: "",
+            position: trade.position_id,
+            symbol: trade.symbol || '',
+            type: trade.type === 0 ? 'Buy' : 'Sell',
+            volume: trade.volume ? trade.volume.toString() : '0',
+            entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
+            sL: trade.sl ? trade.sl.toString() : '0',
+            tP: trade.tp ? trade.tp.toString() : '0',
+            exit: trade.price_current ? trade.price_current.toString() : '0',
+            commission: trade.commission ? trade.commission.toString() : '0',
+            swap: trade.swap ? trade.swap.toString() : '0',
+            profit: trade.profit ? trade.profit.toString() : '0',
+            netProfit: (trade.profit + trade.commission).toString()
+          } as Table;
+        });
+
+        this.mt5LiveTrades = mt5Trades;
+        this.updateTableData();
+      }
+    } catch (error) {
+      // Silent error handling
+    }
+  }
+
+
+  convertAndFormatMT5Date(rawDateStr: string): string { //MT5 api date format->  time_close: "2025-07-24 09:56:01"
+    const [datePart, timePart] = rawDateStr.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+
+    const dateObj = new Date(year, month - 1, day, hour, minute, second);
+    dateObj.setHours(dateObj.getHours() + 5); // Adjust timezone if needed
+
+    return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+  }
+
+  mockMT5newTrade(){
+    console.log('🚀 Mock button clicked! Current state:');
+    console.log('📊 Current tableData length:', this.tableData.length);
+    console.log('🔴 Current mt5LiveTrades length:', this.mt5LiveTrades.length);
+
+    // Generate random mock data for testing
+    const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+    const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
+    const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
+    const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
+    // const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
+
+    const mock = {
+      "ticket": this.mockTicket,
+      "symbol": randomSymbol,
+      "volume": parseFloat(randomVolume),
+      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
+      "price_open": parseFloat(randomPrice),
+      "sl": (parseFloat(randomPrice) - 0.0100).toFixed(4),
+      "tp": (parseFloat(randomPrice) + 0.0150).toFixed(4),
+      "profit": parseFloat(randomProfit),
+      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
+      "commission": (Math.random() * 5).toFixed(2),
+    }
+
+    console.log('🎯 Generated mock trade:', mock);
+    this.addMT5LiveTrade(mock);
+  }
+
+  mockMT5closeTrade(){
+    const mock = {
+      "ticket": this.mockTicket,
+      "symbol": "test",
+      "volume": 1.00,
+      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
+      "price_open": 'test',
+      "sl": "test",
+      "tp": "test",
+      "profit": parseFloat((Math.random() * 200 - 100).toFixed(2)),
+      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
+      "commission": (Math.random() * 5).toFixed(2),
+    }
+
+    console.log('🎯 Generated mock trade:', mock);
+    this.closeMT5Trade(mock);
+  }
+
+  addMT5LiveTrade(tradeData: any): void {
+    const trade = tradeData.object || tradeData;
+    if (!trade) return;
+
+    const newTrade: Table = {
+      openDate: this.convertAndFormatMT5Date(trade.time),
+      closeDate: "-",
+      tradeNotion: [],
+      status: "",
+      position: trade.ticket,
+      symbol: trade.symbol || '',
+      type: trade.type === 0 ? 'Buy' : 'Sell',
+      volume: trade.volume ? trade.volume.toString() : '0',
+      entry: "-",
+      sL: "-",
+      tP: "-",
+      exit: "-",
+      commission: trade.commission ? trade.commission.toString() : '0',
+      swap: "-",
+      profit: trade.profit ? trade.profit.toString() : '0',
+      netProfit: trade.profit ? trade.profit.toString() : '0'
+    };
+
+    const existingIndex = this.mt5LiveTrades.findIndex(t =>
+      t.position === newTrade.position
+    );
+    console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
+    if (existingIndex == -1) {
+      console.log('✅ Adding new trade to mt5LiveTrades...');
+      this.mt5LiveTrades.push(newTrade)
+      console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
+
+      this.updateTableData();
+      console.log('📊 tableData after update:', this.tableData.length);
+
+      // Track as recently added for visual indication
+      this.recentlyAddedTrades.unshift(newTrade);
+
+      // Remove from recent list after 5 seconds
+      setTimeout(() => {
+        const index = this.recentlyAddedTrades.indexOf(newTrade);
+        if (index > -1) {
+          this.recentlyAddedTrades.splice(index, 1);
+        }
+      }, 5000);
+
+      // Force Angular change detection for immediate display
+      this.cdr.detectChanges();
+
+      // Go to first page to show the new trade
+      this.setPage(this.getTotalPages());
+
+      console.log('✅ New MT5 trade added successfully! Total trades:', this.tableData.length);
+      console.log('🎆 Simple table approach - no more DataTables headaches!');
+    } else {
+      console.log('⚠️ Trade already exists, skipping duplicate');
+    }
+  }
+
+  // Close MT5 trade when closed
+  closeMT5Trade(tradeData: any): void {
+    console.log('🔄 Closing MT5 trade:', tradeData);
+    const trade = tradeData.object || tradeData;
+
+    const liveIndex = this.mt5LiveTrades.findIndex(t =>
+      t.position === trade.ticket 
+    );
+
+    if (liveIndex !== -1) {
+      const closedTrade = { ...this.mt5LiveTrades[liveIndex] };
+      console.log('🔴 Found live trade to be close at:', closedTrade);
+      // closedTrade.status = 'Closed';
+      // closedTrade.closeDate = "test";
+      // closedTrade.exit = trade.price_close ? trade.price_close.toString() : '0';
+      // closedTrade.profit = trade.profit ? trade.profit.toString() : '0';
+      // closedTrade.netProfit = trade.profit ? trade.profit.toString() : '0';
+      // closedTrade.commission = trade.commission ? trade.commission.toString() : '0';
+      //////////////
+      closedTrade.status= "Closed";
+      closedTrade.closeDate= "Closed";
+      closedTrade.commission= "0.28";
+      closedTrade.symbol= "AUDUSD";
+      // closedTrade.entry = "Closed";
+      closedTrade.exit="0";
+      closedTrade.profit= "-78.09";
+      closedTrade.netProfit= "-78.09";
+      closedTrade.sL= "Closed";
+      closedTrade.swap= "-";
+      closedTrade.tP= "Closed";
+      closedTrade.volume= "2";
+      closedTrade.tradeNotion= [];
+      closedTrade.type= "Buy";
+     
+      this.mt5LiveTrades[liveIndex] = closedTrade;
+
+      // this.mt5LiveTrades.splice(liveIndex, 1);
+      this.updateTableData();
+      console.log('✅ MT5 trade closed');
+    }
+  }
+
+  updateMT5TradePrice(priceData: any): void {
+    const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
+      trade.position === priceData.ticket && trade.entry === priceData.entry
+    );
+
+    if (tradeIndex !== -1) {
+      // this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
+      this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
+      this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      this.updateTableDataOnly();
+    }
+  }
+
+  updateTableDataOnly(): void {
+    this.tableData = [...this.mt5LiveTrades, ];
+  }
+
+  updateTableData(): void {
+    console.log('🔄 updateTableData called');
+    console.log('📊 Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('🔴 Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+
+    // Get existing non-MT5 trades (those loaded from Firestore)
+    const existingTrades = this.tableData ? this.tableData.filter(trade =>
+      !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
+    ) : [];
+
+    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
+
+    // Create completely new array reference to trigger Angular change detection
+    const previousLength = this.tableData ? this.tableData.length : 0;
+    this.tableData = [...this.mt5LiveTrades, ...existingTrades];
+
+    console.log('✅ After update - tableData:', this.tableData.length, 'trades');
+    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
+    console.log('🎯 Final tableData:', this.tableData);
+  }
+
+  // Toggle method for single notion data button
+  toggleNotionData(): void {
+    this.showNotionData = !this.showNotionData;
+  }
+
+  // Simple pagination methods
+  getFilteredTableData(): Table[] {
+    return this.tableData || [];
+  }
+
+  getDisplayedRows(): Table[] {
+    const filtered = this.getFilteredTableData();
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return filtered.slice(startIndex, endIndex);
+  }
+
+  getTotalPages(): number {
+    const filtered = this.getFilteredTableData();
+    return Math.ceil(filtered.length / this.pageSize);
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.getTotalPages()) {
+      this.currentPage = page;
+    }
+  }
+
+  isNewTrade(trade: Table): boolean {
+    // Check if trade is recently added OR if it doesn't have a close date (live trade)
+    const isRecent = this.recentlyAddedTrades.includes(trade);
+    const isLiveTrade = !trade.closeDate || trade.closeDate === '' || trade.closeDate === '-' || trade.closeDate === 'N/A';
+    return isRecent || isLiveTrade;
+  }
+
+  getSafeNumber(value: any): number {
+    // Handle null, undefined, or empty values
+    if (value === null || value === undefined || value === '') {
+      return 0;
+    }
+
+    // Already a number
+    if (typeof value === 'number') {
+      return isNaN(value) ? 0 : value;
+    }
+
+    // String conversion
+    if (typeof value === 'string') {
+      // Handle common placeholder strings
+      if (value === '-' || value.trim() === '' || value.toLowerCase() === 'n/a') {
+        return 0;
+      }
+
+      // Remove any non-numeric characters except decimal point and minus sign
+      const cleanValue = value.replace(/[^0-9.-]/g, '');
+      const parsed = parseFloat(cleanValue);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    // Fallback for any other type
+    return 0;
+  }
+
+  addRowDirectlyToDataTable(newTrade: Table): void {
+    try {
+      console.log('🎯 Adding row directly to DataTable:', newTrade);
+
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        const table = $('#myTable').DataTable();
+
+        // Create row data array matching the table structure
+        const rowData = [
+          newTrade.openDate,
+          '', // Notion Trades column (complex, will be empty for direct insert)
+          newTrade.status,
+          newTrade.position,
+          newTrade.symbol,
+          newTrade.type,
+          newTrade.volume,
+          newTrade.entry,
+          newTrade.sL,
+          newTrade.tP,
+          newTrade.closeDate,
+          newTrade.exit,
+          newTrade.commission,
+          newTrade.swap,
+          newTrade.profit,
+          newTrade.netProfit
+        ];
+
+        // Add the row and redraw
+        const rowNode = table.row.add(rowData).draw(false);
+        console.log('✅ Row added directly to DataTable');
+
+        // Scroll to top to show the new row
+        $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
+
+      } else {
+        console.log('⚠️ DataTable not initialized, cannot add row directly');
+      }
+
+    } catch (error) {
+      console.error('❌ Error adding row directly to DataTable:', error);
+    }
+  }
+
+  refreshDataTable(): void {
+    try {
+      console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
+      console.log('📊 TableData contents:', this.tableData);
+
+      // Use Angular binding refresh for complex columns
+      this.refreshDataTableWithAngularBinding();
+
+    } catch (error) {
+      console.error('❌ Error refreshing DataTable:', error);
+    }
+  }
+
+  forceDataTableRefresh(): void {
+    console.log('💪 Force refreshing DataTable...');
+
+    // Method 1: Immediate change detection
+    this.cdr.detectChanges();
+
+    // Method 2: Nuclear option - completely rebuild the table
+    setTimeout(() => {
+      this.nuclearDataTableRebuild();
+    }, 100);
+  }
+
+  nuclearDataTableRebuild(): void {
+    try {
+      console.log('💥 Nuclear DataTable rebuild with', this.tableData.length, 'rows');
+
+      // Step 1: Completely destroy existing DataTable
+      if ($.fn.dataTable.isDataTable('#myTable')) {
+        console.log('🗑️ Destroying existing DataTable completely');
+        $('#myTable').DataTable().destroy();
+        $('#myTable').empty(); // Clear all HTML content
+      }
+
+      // Step 2: Force Angular change detection
+      this.cdr.detectChanges();
+
+      // Step 3: Wait for DOM cleanup
+      setTimeout(() => {
+        // Step 4: Manually rebuild table HTML if needed
+        console.log('🔨 Rebuilding table structure...');
+
+        // Step 5: Reinitialize with fresh DataTable
+        setTimeout(() => {
+          console.log('🚀 Reinitializing DataTable from scratch');
+          this.dtTrigger.next(null);
+
+          // Step 6: If still no luck, try direct jQuery DataTable initialization
+          setTimeout(() => {
+            if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
+              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
+              $('#myTable').DataTable(this.dtOptions);
+            }
+          }, 300);
+        }, 200);
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error in nuclear rebuild:', error);
+      // Last resort fallback
+      this.dtTrigger.next(null);
+    }
+  }
+
+
+}
