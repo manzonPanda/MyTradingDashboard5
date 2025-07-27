@@ -1244,11 +1244,11 @@
 @keyframes live-indicator-pulse {
   0%, 100% {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
+    transform: scale(1);
   }
   50% {
     opacity: 0.6;
-    transform: translateY(-50%) scale(1.2);
+    transform: scale(1.3);
   }
 }
 
