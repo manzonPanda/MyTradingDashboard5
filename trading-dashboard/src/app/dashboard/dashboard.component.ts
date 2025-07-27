@@ -167,16 +167,7 @@ export class DashboardComponent {
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
 
-  // Emotional tracking properties
-  emotionalState = {
-    selectedEmotion: '',
-    customEmotion: '',
-    intensity: 5,
-    notes: '',
-    timestamp: new Date(),
-    tradeContext: ''
-  };
-
+  // Emotional tracking properties for individual trades
   predefinedEmotions = [
     { name: 'FOMO', icon: '😰', color: '#f59e0b' },
     { name: 'Confident', icon: '😎', color: '#10b981' },
@@ -192,7 +183,8 @@ export class DashboardComponent {
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
-  showEmotionalTracking = false;
+  // Individual emotional states for each trade
+  tradeEmotionalStates: { [tradeKey: string]: any } = {};
   emotionalEntries: any[] = [];
 
   // Overall Trading History Table
@@ -1230,7 +1222,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
           // Add results from this page to our collection
           allResults = allResults.concat(proxyResponse.results);
-          console.log(`�� Page ${pageCount}: Added ${proxyResponse.results.length} entries. Total so far: ${allResults.length}`);
+          console.log(`✅ Page ${pageCount}: Added ${proxyResponse.results.length} entries. Total so far: ${allResults.length}`);
 
           // Check if there are more pages
           hasMore = proxyResponse.has_more === true;
@@ -2745,7 +2737,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
       t.position === newTrade.position
     );
-    console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
+    console.log('���� Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
       this.mt5LiveTrades.push(newTrade)
@@ -2924,7 +2916,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   addRowDirectlyToDataTable(newTrade: Table): void {
     try {
-      console.log('🎯 Adding row directly to DataTable:', newTrade);
+      console.log('�� Adding row directly to DataTable:', newTrade);
 
       if ($.fn.dataTable.isDataTable('#myTable')) {
         const table = $('#myTable').DataTable();
