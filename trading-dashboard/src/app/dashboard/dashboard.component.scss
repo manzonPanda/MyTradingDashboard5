@@ -675,10 +675,16 @@
         }
         
         td {
-          padding: 1rem 0.75rem;
+          padding: 0.875rem 0.75rem;
           color: var(--tf-text-primary);
-          transition: all 0.3s ease;
-          position: relative;
+          vertical-align: middle;
+          border-right: 1px solid var(--tf-border-primary);
+          font-size: 0.875rem;
+          line-height: 1.4;
+
+          &:last-child {
+            border-right: none;
+          }
 
           &.hidden {
             display: none;
@@ -686,36 +692,12 @@
 
           &.positive {
             color: var(--tf-positive);
-            font-weight: 700;
-            text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
-
-            &::before {
-              content: '▲';
-              position: absolute;
-              left: 0.25rem;
-              top: 50%;
-              transform: translateY(-50%);
-              font-size: 0.7rem;
-              opacity: 0.6;
-              animation: profit-pulse 2s ease-in-out infinite;
-            }
+            font-weight: 600;
           }
 
           &.negative {
             color: var(--tf-negative);
-            font-weight: 700;
-            text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
-
-            &::before {
-              content: '▼';
-              position: absolute;
-              left: 0.25rem;
-              top: 50%;
-              transform: translateY(-50%);
-              font-size: 0.7rem;
-              opacity: 0.6;
-              animation: loss-pulse 2s ease-in-out infinite;
-            }
+            font-weight: 600;
           }
         }
 
