@@ -613,6 +613,14 @@
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
+        &:nth-child(even) {
+          background: var(--tf-bg-secondary);
+        }
+
+        &:last-child {
+          border-bottom: 2px solid var(--tf-border-secondary);
+        }
+
         &.positive-row {
           border-left: 4px solid var(--tf-positive);
           background: linear-gradient(90deg, rgba(16, 185, 129, 0.03), transparent 30%);
