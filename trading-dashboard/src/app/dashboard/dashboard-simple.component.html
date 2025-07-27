@@ -1,0 +1,284 @@
+<div class="tradezella-dashboard">
+  <!-- Header Section -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left-section">
+        <h1 class="dashboard-title">Jake Trading Dashboard</h1>
+      </div>
+      <div class="header-actions">
+        <app-connection-status></app-connection-status>
+        <button class="btn-info" (click)="mockMT5newTrade()"> MT5 +trade </button>
+        <button class="btn-orange" (click)="mockMT5closeTrade()"> MT5 -trade </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Key Metrics Cards -->
+  <section class="metrics-section">
+    <div class="metrics-grid">
+      <div class="metric-card profit-loss">
+        <div class="metric-header">
+          <h3 class="metric-title">Net P&L</h3>
+          <mat-icon class="metric-icon">trending_up</mat-icon>
+        </div>
+        <div class="metric-value positive">{{ calculateTotalPnL() | currency }}</div>
+        <div class="metric-change">+{{ calculatePnLChangePercent() }}%</div>
+      </div>
+
+      <div class="metric-card win-rate">
+        <div class="metric-header">
+          <h3 class="metric-title">Win Rate</h3>
+          <mat-icon class="metric-icon">donut_small</mat-icon>
+        </div>
+        <div class="metric-value">{{ calculateWinRate() }}%</div>
+        <div class="metric-subtitle">{{ getWinCount() }}/{{ getTotalTrades() }} trades</div>
+      </div>
+
+      <div class="metric-card average-win">
+        <div class="metric-header">
+          <h3 class="metric-title">Avg Win</h3>
+          <mat-icon class="metric-icon">add_circle</mat-icon>
+        </div>
+        <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
+        <div class="metric-subtitle">Per winning trade</div>
+      </div>
+
+      <div class="metric-card average-loss">
+        <div class="metric-header">
+          <h3 class="metric-title">Avg Loss</h3>
+          <mat-icon class="metric-icon">remove_circle</mat-icon>
+        </div>
+        <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
+        <div class="metric-subtitle">Per losing trade</div>
+      </div>
+
+      <div class="metric-card trade-expectancy">
+        <div class="metric-header">
+          <h3 class="metric-title">Expectancy</h3>
+          <mat-icon class="metric-icon">analytics</mat-icon>
+        </div>
+        <div class="metric-value">{{ calculateExpectancy() | currency }}</div>
+        <div class="metric-subtitle">Per trade</div>
+      </div>
+
+      <div class="metric-card total-trades">
+        <div class="metric-header">
+          <h3 class="metric-title">Total Trades</h3>
+          <mat-icon class="metric-icon">list_alt</mat-icon>
+        </div>
+        <div class="metric-value">{{ getTotalTrades() }}</div>
+        <div class="metric-subtitle">This period</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Emotion Tracking Section -->
+  <section class="emotion-tracking-section" *ngIf="showEmotionTracker">
+    <div class="emotion-tracker-card">
+      <div class="emotion-header">
+        <div class="emotion-title-section">
+          <mat-icon class="emotion-icon">psychology</mat-icon>
+          <div class="emotion-title-text">
+            <h3 class="emotion-title">How are you feeling about this trade?</h3>
+            <p class="emotion-subtitle">Track your emotions to improve your trading psychology</p>
+          </div>
+        </div>
+        <button class="emotion-dismiss-btn" (click)="dismissEmotionTracker()" [disabled]="isSubmittingEmotion">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="emotion-content">
+        <!-- Quick Emotion Buttons -->
+        <div class="quick-emotions-section">
+          <h4 class="quick-emotions-title">Quick Selection:</h4>
+          <div class="quick-emotions-grid">
+            <button 
+              *ngFor="let emotion of quickEmotions"
+              class="emotion-quick-btn"
+              [ngClass]="{
+                'selected': currentEmotion === emotion.text
+              }"
+              [class]="'emotion-' + emotion.color"
+              (click)="selectQuickEmotion(emotion.text)"
+              [disabled]="isSubmittingEmotion">
+              <mat-icon>{{ emotion.icon }}</mat-icon>
+              <span>{{ emotion.text }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Emotion Input -->
+        <div class="custom-emotion-section">
+          <h4 class="custom-emotion-title">Or describe your feelings:</h4>
+          <mat-form-field class="emotion-input-field" appearance="outline">
+            <mat-label>What's on your mind?</mat-label>
+            <textarea 
+              matInput 
+              [(ngModel)]="emotionText"
+              placeholder="e.g., I'm feeling confident about this setup because..."
+              rows="3"
+              maxlength="500"
+              [disabled]="isSubmittingEmotion">
+            </textarea>
+            <mat-hint align="end">{{ emotionText.length }}/500</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="emotion-actions">
+          <button 
+            class="emotion-submit-btn"
+            mat-raised-button 
+            color="primary"
+            (click)="submitEmotion()"
+            [disabled]="isSubmittingEmotion || (!currentEmotion && !emotionText.trim())">
+            <mat-progress-spinner 
+              *ngIf="isSubmittingEmotion" 
+              diameter="20" 
+              mode="indeterminate">
+            </mat-progress-spinner>
+            <mat-icon *ngIf="!isSubmittingEmotion">send</mat-icon>
+            <span>{{ isSubmittingEmotion ? 'Submitting...' : 'Submit to Notion' }}</span>
+          </button>
+          <button 
+            class="emotion-clear-btn"
+            mat-stroked-button
+            (click)="clearEmotionForm()"
+            [disabled]="isSubmittingEmotion">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </div>
+
+        <!-- Trade Context Info -->
+        <div class="trade-context-info" *ngIf="recentlyAddedTrades.length > 0">
+          <mat-icon class="context-icon">info</mat-icon>
+          <span class="context-text">
+            Recording emotions for {{ recentlyAddedTrades.length }} new trade{{ recentlyAddedTrades.length > 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Active Account Section -->
+  <section class="table-section">
+    <div class="table-card">
+      <div class="table-header">
+        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]
+          <small style="font-size: 0.8rem; color: #666; font-weight: normal;">
+            ({{ tableData.length }} trades)
+          </small>
+        </h2>
+
+        <div class="table-filters">
+          <button class="filter-btn" [class.active]="showNotionData" (click)="toggleNotionData()">
+            <mat-icon>{{ showNotionData ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ showNotionData ? 'Hide' : 'Show' }} Notion Data
+          </button>
+          <div class="live-indicator" *ngIf="recentlyAddedTrades.length > 0">
+            <mat-icon class="pulse">fiber_new</mat-icon>
+            <span>{{ recentlyAddedTrades.length }} new live trades</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simple controls -->
+      <div class="simple-table-controls">
+        <div class="table-info">
+          <span class="table-count">{{ getFilteredTableData().length }} trades total</span>
+          <span class="table-pagination">Showing {{ getDisplayedRows().length }} rows</span>
+        </div>
+        <div class="table-actions">
+          <button class="btn-secondary" (click)="currentPage > 1 ? setPage(currentPage - 1) : null" [disabled]="currentPage <= 1">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="page-info">Page {{ currentPage }} of {{ getTotalPages() }}</span>
+          <button class="btn-secondary" (click)="currentPage < getTotalPages() ? setPage(currentPage + 1) : null" [disabled]="currentPage >= getTotalPages()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          <select class="page-size-select" [(ngModel)]="pageSize" (change)="setPage(1)">
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Simple reliable Angular table -->
+      <div class="simple-table-container">
+        <table class="modern-table simple-table">
+          <thead>
+            <tr>
+              <th class="col-date">Open Date</th>
+              <th class="col-status" [class.hidden]="!showNotionData">Status</th>
+              <th class="col-position">Position</th>
+              <th class="col-symbol">Symbol</th>
+              <th class="col-type">Type</th>
+              <th class="col-volume">Volume</th>
+              <th class="col-date">Close Date</th>
+              <th class="col-amount">Commission</th>
+              <th class="col-amount">Profit</th>
+              <th class="col-amount">Net Profit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of getDisplayedRows(); let i = index"
+                [ngClass]="{
+                  'positive-row': isPositiveValue(row.netProfit),
+                  'negative-row': isNegativeValue(row.netProfit),
+                  'new-trade': isNewTrade(row)
+                }">
+              <td class="col-date">{{ formatDate(row.openDate) }}</td>
+              <td class="col-status" [class.hidden]="!showNotionData">
+                <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="col-position">
+                <span class="position-badge">
+                  {{ row.position }}
+                </span>
+              </td>
+              <td class="col-symbol">{{ row.symbol }}</td>
+              <td class="col-type">
+                <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
+              </td>
+              <td class="col-volume">{{ row.volume }}</td>
+              <td class="col-date">{{ formatDate(row.closeDate) }}</td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
+                {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
+                {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
+                {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+
+            <!-- Empty state -->
+            <tr *ngIf="getDisplayedRows().length === 0">
+              <td colspan="10" class="empty-state">
+                <div class="empty-content">
+                  <mat-icon>timeline</mat-icon>
+                  <h3>No trading data</h3>
+                  <p>Click "MT5+trade" to add sample trading data and test the emotion tracker.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trading Calendar Section -->
+  <section class="calendar-section">
+    <app-trading-calendar
+      [tableData]="tableData"
+      [viewDate]="viewDate">
+    </app-trading-calendar>
+  </section>
+</div>
