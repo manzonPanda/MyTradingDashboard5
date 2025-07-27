@@ -169,6 +169,12 @@
     </div>
   </section>
 
+  <!-- DEBUG: Check recentlyAddedTrades -->
+  <div style="background: yellow; padding: 10px; margin: 10px; border: 2px solid red;" *ngIf="recentlyAddedTrades.length === 0">
+    <strong>DEBUG: No recent trades found. recentlyAddedTrades.length = {{ recentlyAddedTrades.length }}</strong>
+    <br>Click "MT5 +trade" button to add a trade and see emotional tracking cards.
+  </div>
+
   <!-- Individual Trade Emotional Tracking Section -->
   <section class="live-trades-emotional-section" *ngIf="recentlyAddedTrades.length > 0">
     <div class="section-header">
