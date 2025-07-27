@@ -1197,9 +1197,22 @@
 @keyframes live-trade-glow {
   0%, 100% {
     border-left-color: var(--tf-positive);
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.3);
   }
   50% {
     border-left-color: #22c55e;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  }
+}
+
+@keyframes live-badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
   }
 }
 
