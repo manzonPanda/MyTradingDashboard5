@@ -607,39 +607,50 @@
       
       tbody tr {
         transition: background-color 0.2s ease, box-shadow 0.2s ease;
-        border-bottom: 1px solid var(--tf-border-primary);
+        border-bottom: 1px solid #e2e8f0 !important;
         position: relative;
+        background: white;
 
         &:hover {
-          background: var(--tf-bg-hover);
+          background: #f1f5f9 !important;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         &:nth-child(even) {
-          background: var(--tf-bg-secondary);
+          background: #f8fafc !important;
+
+          &:hover {
+            background: #f1f5f9 !important;
+          }
         }
 
         &:last-child {
-          border-bottom: 2px solid var(--tf-border-secondary);
+          border-bottom: 2px solid #cbd5e1 !important;
         }
 
         &.positive-row {
-          border-left: 4px solid var(--tf-positive);
-          background: linear-gradient(90deg, rgba(16, 185, 129, 0.03), transparent 30%);
+          border-left: 4px solid #10b981 !important;
+          background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), transparent 50%) !important;
 
           &:hover {
-            background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), var(--tf-bg-hover) 30%);
-            border-left-color: #22c55e;
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), #f1f5f9 50%) !important;
+          }
+
+          &:nth-child(even) {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), #f8fafc 50%) !important;
           }
         }
 
         &.negative-row {
-          border-left: 4px solid var(--tf-negative);
-          background: linear-gradient(90deg, rgba(239, 68, 68, 0.03), transparent 30%);
+          border-left: 4px solid #ef4444 !important;
+          background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), transparent 50%) !important;
 
           &:hover {
-            background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), var(--tf-bg-hover) 30%);
-            border-left-color: #f87171;
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), #f1f5f9 50%) !important;
+          }
+
+          &:nth-child(even) {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), #f8fafc 50%) !important;
           }
         }
 
