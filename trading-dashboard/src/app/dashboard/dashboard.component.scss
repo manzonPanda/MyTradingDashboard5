@@ -1395,73 +1395,25 @@ table.simple-table {
   }
 }
 
-// INDIVIDUAL TRADE EMOTIONAL TRACKING STYLES
-.live-trades-emotional-section {
-  padding: 0 2rem 2rem;
+// COMPACT EMOTION CARDS STYLES
+.compact-emotion-section {
+  padding: 0 2rem 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
 
-  .section-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.03));
-    border-radius: 16px;
-    border: 1px solid var(--tf-border-primary);
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--tf-text-primary);
-      margin: 0 0 0.5rem 0;
-
-      .section-icon {
-        font-size: 1.75rem;
-        color: var(--tf-accent-secondary);
-        animation: pulse-glow 3s ease-in-out infinite;
-      }
-
-      .trade-count-badge {
-        background: var(--tf-positive);
-        color: white;
-        font-size: 0.875rem;
-        font-weight: 700;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        min-width: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        animation: badge-pulse 2s ease-in-out infinite;
-      }
-    }
-
-    .section-subtitle {
-      color: var(--tf-text-secondary);
-      font-size: 1rem;
-      margin: 0;
-      line-height: 1.5;
-    }
-  }
-
-  .trade-emotion-cards-grid {
+  .compact-emotion-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-    gap: 1.5rem;
-    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
 
-    .trade-emotion-card {
+    .compact-emotion-card {
       background: var(--tf-bg-card);
-      border-radius: 16px;
-      border: 1px solid var(--tf-border-primary);
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid var(--tf-border-primary);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.3s ease;
       position: relative;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
       &::before {
         content: '';
@@ -1471,322 +1423,252 @@ table.simple-table {
         right: 0;
         height: 3px;
         background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+        border-radius: 12px 12px 0 0;
         animation: live-border-pulse 2s ease-in-out infinite;
       }
 
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         border-color: var(--tf-accent-primary);
-      }
-
-      &.expanded {
-        border-color: var(--tf-accent-primary);
-        box-shadow: 0 8px 32px rgba(107, 70, 193, 0.15);
-
-        .trade-card-header {
-          background: linear-gradient(135deg, rgba(107, 70, 193, 0.1), rgba(139, 92, 246, 0.05));
-        }
       }
 
       &.submitted {
         border-color: var(--tf-positive);
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(52, 211, 153, 0.02));
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), transparent);
 
         &::before {
           background: var(--tf-positive);
           animation: none;
         }
-
-        .trade-card-header {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
-        }
       }
 
-      .trade-card-header {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--tf-border-primary);
-        background: var(--tf-bg-secondary);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      .trade-info-compact {
+        margin-bottom: 1rem;
 
-        .trade-info {
-          flex: 1;
+        .trade-header-compact {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.5rem;
 
-          .trade-symbol {
-            font-size: 1.375rem;
-            font-weight: 700;
-            color: var(--tf-text-primary);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            &::before {
-              content: '📈';
-              font-size: 1.25rem;
-            }
-          }
-
-          .trade-details {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
-
-            .trade-type {
-              padding: 0.25rem 0.75rem;
-              border-radius: 12px;
-              font-size: 0.75rem;
-              font-weight: 600;
-              text-transform: uppercase;
-
-              &.buy {
-                background: rgba(16, 185, 129, 0.2);
-                color: var(--tf-positive);
-              }
-
-              &.sell {
-                background: rgba(239, 68, 68, 0.2);
-                color: var(--tf-negative);
-              }
-            }
-
-            .trade-volume {
-              color: var(--tf-text-secondary);
-              font-size: 0.875rem;
-              font-weight: 500;
-            }
-          }
-
-          .trade-profit {
+          .symbol-compact {
             font-size: 1.125rem;
             font-weight: 700;
+            color: var(--tf-text-primary);
+          }
 
-            &.positive {
+          .live-dot {
+            font-size: 0.875rem;
+            animation: live-pulse 1.5s ease-in-out infinite;
+          }
+        }
+
+        .trade-details-compact {
+          display: flex;
+          gap: 0.75rem;
+          margin-bottom: 0.5rem;
+
+          .type-compact {
+            padding: 0.125rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+
+            &.buy {
+              background: rgba(16, 185, 129, 0.2);
               color: var(--tf-positive);
             }
 
-            &.negative {
+            &.sell {
+              background: rgba(239, 68, 68, 0.2);
               color: var(--tf-negative);
             }
           }
+
+          .volume-compact {
+            color: var(--tf-text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+          }
         }
 
-        .trade-actions {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 0.75rem;
+        .profit-compact {
+          font-size: 1rem;
+          font-weight: 700;
 
-          .live-indicator {
-            background: linear-gradient(45deg, #ef4444, #f59e0b);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            animation: live-pulse 1.5s ease-in-out infinite;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-          }
-
-          .emotion-toggle-btn {
-            background: var(--tf-accent-primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
-
-            &:hover {
-              transform: scale(1.1);
-              box-shadow: 0 6px 16px rgba(107, 70, 193, 0.4);
-            }
-
-            mat-icon {
-              font-size: 1.25rem;
-            }
-          }
-
-          .submitted-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+          &.positive {
             color: var(--tf-positive);
-            font-size: 0.875rem;
-            font-weight: 600;
+          }
 
-            mat-icon {
-              font-size: 1.25rem;
-              color: var(--tf-positive);
-            }
+          &.negative {
+            color: var(--tf-negative);
           }
         }
       }
 
-      .trade-emotional-form {
-        padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.5));
-
-        .emotion-prompt {
+      .emotion-section-compact {
+        .emotion-prompt-compact {
+          font-size: 0.875rem;
+          color: var(--tf-text-secondary);
+          margin-bottom: 0.75rem;
           text-align: center;
-          margin-bottom: 1.5rem;
-
-          h4 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--tf-text-primary);
-            margin: 0;
-          }
         }
 
-        .quick-emotions {
+        .quick-emotions-compact {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 0.75rem;
-          margin-bottom: 1.5rem;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
 
-          .quick-emotion-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.75rem 0.5rem;
-            background: var(--tf-bg-card);
+          .emotion-btn-compact {
+            aspect-ratio: 1;
+            background: var(--tf-bg-tertiary);
             border: 1px solid var(--tf-border-primary);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.75rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
             &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              transform: scale(1.05);
               border-color: var(--emotion-color, var(--tf-accent-primary));
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
             &.selected {
               border-color: var(--emotion-color, var(--tf-accent-primary));
-              background: linear-gradient(135deg,
-                color-mix(in srgb, var(--emotion-color, var(--tf-accent-primary)) 15%, transparent),
-                color-mix(in srgb, var(--emotion-color, var(--tf-accent-primary)) 5%, transparent));
-
-              .emotion-name {
-                color: var(--emotion-color, var(--tf-accent-primary));
-                font-weight: 700;
-              }
-            }
-
-            .emotion-icon {
-              font-size: 1.25rem;
-            }
-
-            .emotion-name {
-              font-weight: 600;
-              color: var(--tf-text-primary);
-              text-align: center;
-              line-height: 1.2;
+              background: var(--emotion-color, var(--tf-accent-primary));
+              color: white;
+              transform: scale(1.1);
+              box-shadow: 0 4px 12px color-mix(in srgb, var(--emotion-color, var(--tf-accent-primary)) 40%, transparent);
             }
           }
         }
 
-        .emotion-details {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          align-items: center;
+        .custom-emotion-compact {
+          width: 100%;
+          padding: 0.5rem;
+          border: 1px solid var(--tf-border-primary);
+          border-radius: 8px;
+          background: var(--tf-bg-card);
+          color: var(--tf-text-primary);
+          font-size: 0.875rem;
+          margin-bottom: 0.75rem;
+          outline: none;
+          transition: border-color 0.3s ease;
 
-          .custom-emotion-input {
-            .custom-field {
-              width: 100%;
-
-              ::ng-deep .mat-mdc-form-field {
-                .mdc-outlined-field {
-                  background: var(--tf-bg-card);
-                  border-radius: 8px;
-                }
-              }
-            }
+          &:focus {
+            border-color: var(--tf-accent-primary);
           }
 
-          .intensity-control {
+          &::placeholder {
+            color: var(--tf-text-muted);
+          }
+        }
+
+        .bottom-controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .intensity-compact {
             display: flex;
-            flex-direction: column;
             align-items: center;
             gap: 0.5rem;
-            min-width: 100px;
+            font-size: 0.75rem;
 
-            .intensity-label {
-              font-size: 0.75rem;
+            label {
               color: var(--tf-text-secondary);
               font-weight: 500;
             }
 
-            .intensity-slider {
-              width: 80px;
-              height: 6px;
+            .intensity-slider-compact {
+              width: 60px;
+              height: 4px;
               background: var(--tf-bg-tertiary);
-              border-radius: 3px;
+              border-radius: 2px;
               outline: none;
               -webkit-appearance: none;
 
               &::-webkit-slider-thumb {
                 -webkit-appearance: none;
-                width: 18px;
-                height: 18px;
+                width: 16px;
+                height: 16px;
                 background: var(--tf-accent-primary);
                 border-radius: 50%;
                 cursor: pointer;
-                box-shadow: 0 2px 6px rgba(107, 70, 193, 0.4);
+                box-shadow: 0 2px 4px rgba(107, 70, 193, 0.3);
               }
             }
 
-            .intensity-value {
-              font-size: 0.875rem;
-              font-weight: 700;
+            span {
               color: var(--tf-accent-primary);
+              font-weight: 700;
+              min-width: 12px;
             }
           }
-        }
 
-        .emotion-notes {
-          margin-bottom: 1.5rem;
-
-          .notes-field {
-            width: 100%;
-
-            ::ng-deep .mat-mdc-form-field {
-              .mdc-outlined-field {
-                background: var(--tf-bg-card);
-                border-radius: 8px;
-              }
-            }
-          }
-        }
-
-        .form-submit {
-          text-align: center;
-
-          .submit-emotion-btn {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+          .save-btn-compact {
+            background: var(--tf-accent-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(107, 70, 193, 0.3);
 
             &:hover {
-              transform: translateY(-1px);
-              box-shadow: 0 6px 16px rgba(107, 70, 193, 0.4);
+              transform: scale(1.1);
+              box-shadow: 0 4px 12px rgba(107, 70, 193, 0.4);
+            }
+
+            mat-icon {
+              font-size: 1rem;
             }
           }
+        }
+      }
+
+      .submitted-state-compact {
+        text-align: center;
+
+        .submitted-emotion {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+
+          .submitted-icon {
+            font-size: 1.25rem;
+          }
+
+          .submitted-text {
+            font-weight: 600;
+            color: var(--tf-text-primary);
+          }
+        }
+
+        .submitted-intensity {
+          font-size: 0.875rem;
+          color: var(--tf-text-secondary);
+          margin-bottom: 0.5rem;
+        }
+
+        .checkmark {
+          color: var(--tf-positive);
+          font-weight: 600;
+          font-size: 0.875rem;
         }
       }
     }
