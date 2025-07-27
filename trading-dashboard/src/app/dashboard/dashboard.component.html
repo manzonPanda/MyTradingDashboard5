@@ -186,8 +186,11 @@
         <!-- Trade Info -->
         <div class="trade-info-compact">
           <div class="trade-header-compact">
+            <span class="trade-title-compact">Trade {{ i + 1 }}</span>
+            <span class="live-badge">LIVE</span>
+          </div>
+          <div class="symbol-row">
             <span class="symbol-compact">{{ trade.symbol }}</span>
-            <span class="live-dot">🔴</span>
           </div>
           <div class="trade-details-compact">
             <span class="type-compact" [class]="trade.type.toLowerCase()">{{ trade.type }}</span>
