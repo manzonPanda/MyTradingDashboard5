@@ -128,14 +128,16 @@ def full_history():
     df_deals['time'] = pd.to_datetime(df_deals['time'], unit='s')
 
     # Separate different types of deals
-    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][['position_id', 'time']]
-    df_entry = df_entry.rename(columns={'time': 'time_open'})
+    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][['position_id', 'time','price']]
+    df_entry = df_entry.rename(columns={'time': 'time_open', 'price': 'entry_price'})
 
     df_exit = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT].copy()
     df_exit = df_exit.rename(columns={'time': 'time_close'})
 
     # Merge to get time_open and time_close
     df_merged = pd.merge(df_exit, df_entry, on='position_id', how='left')
+    # Rename exit price for clarity
+    df_merged = df_merged.rename(columns={'price': 'exit_price'})
 
     # Fix commissions: sum all commissions for the same position_id
     df_commission = df_deals[df_deals['commission'] != 0].groupby('position_id')['commission'].sum().reset_index()
@@ -158,8 +160,8 @@ def full_history():
 
     # Final output fields
     result = df_merged[[
-        'ticket', 'position_id', 'order', 'symbol', 'volume', 'price', 'profit', 'commission',
-        'sl', 'tp', 'comment', 'time_open', 'time_close'
+        'ticket', 'position_id', 'order', 'symbol', 'volume', 'entry_price', 'exit_price', 'profit',  
+    'commission', 'sl', 'tp', 'comment', 'time_open', 'time_close' 
     ]].to_dict(orient='records')
 
     return jsonify(result)

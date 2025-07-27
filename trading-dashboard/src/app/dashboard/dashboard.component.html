@@ -241,13 +241,13 @@
               <th class="col-symbol">Symbol</th>
               <th class="col-type">Type</th>
               <th class="col-volume">Volume</th>
-              <th class="col-price">Entry</th>
+              <!-- <th class="col-price">Entry</th>
               <th class="col-price">S/L</th>
-              <th class="col-price">T/P</th>
+              <th class="col-price">T/P</th> -->
               <th class="col-date">Close Date</th>
-              <th class="col-price">Exit</th>
+              <!-- <th class="col-price">Exit</th> -->
               <th class="col-amount">Commission</th>
-              <th class="col-amount">Swap</th>
+              <!-- <th class="col-amount">Swap</th> -->
               <th class="col-amount">Profit</th>
               <th class="col-amount">Net Profit</th>
             </tr>
@@ -323,15 +323,15 @@
                 <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
               </td>
               <td class="col-volume">{{ row.volume }}</td>
-              <td class="col-price">{{ row.entry }}</td>
+              <!-- <td class="col-price">{{ row.entry }}</td>
               <td class="col-price">{{ row.sL }}</td>
-              <td class="col-price">{{ row.tP }}</td>
+              <td class="col-price">{{ row.tP }}</td> -->
               <td class="col-date">{{ row.closeDate }}</td>
-              <td class="col-price">{{ row.exit }}</td>
+              <!-- <td class="col-price">{{ row.exit }}</td> -->
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
                 {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
               </td>
-              <td class="col-amount">{{ getSafeNumber(row.swap) | currency:'USD':'symbol':'1.2-2' }}</td>
+              <!-- <td class="col-amount">{{ getSafeNumber(row.swap) | currency:'USD':'symbol':'1.2-2' }}</td> -->
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
                 {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
               </td>

@@ -924,7 +924,7 @@ isRowAlreadySelected(row: any): boolean {
     console.log(this.relations)
     const startDate = new Date(this.tableData[0].openDate ?? '')
     const endDate = new Date(this.tableData[this.tableData.length-1].openDate ?? '')
-    this.getAllPagesFromDB(startDate,endDate) //Patching relationIds to ActivityLog
+    this.getAllPagesFromDB(startDate,endDate) //ready for Patching.. relationIds to ActivityLog
   }
 
   async createRelationId(dateName:string): Promise<any>{
@@ -2524,7 +2524,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             symbol: trade.symbol || '',
             type: trade.type === 0 ? 'Buy' : 'Sell',
             volume: trade.volume ? trade.volume.toString() : '0',
-            entry: trade.price_open ? trade.price_open.toString() : '0',
+            entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
             sL: trade.sl ? trade.sl.toString() : '0',
             tP: trade.tp ? trade.tp.toString() : '0',
             exit: trade.price_current ? trade.price_current.toString() : '0',
@@ -2685,9 +2685,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.closeDate= "Closed";
       closedTrade.commission= "0.28";
       closedTrade.symbol= "AUDUSD";
-      closedTrade.entry = "Closed";
+      // closedTrade.entry = "Closed";
       closedTrade.exit="0";
-      // closedTrade.openDate= "07.27.2025 06:22";
       closedTrade.profit= "-78.09";
       closedTrade.netProfit= "-78.09";
       closedTrade.sL= "Closed";
@@ -2707,12 +2706,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateMT5TradePrice(priceData: any): void {
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      trade.symbol === priceData.symbol &&
-      parseFloat(trade.entry) === priceData.price_open
+      trade.position === priceData.ticket && trade.entry === priceData.entry
     );
 
     if (tradeIndex !== -1) {
-      this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
+      // this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
       this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
       this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
       this.updateTableDataOnly();
