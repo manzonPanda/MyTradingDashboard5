@@ -134,7 +134,7 @@ export class DashboardComponent {
   // MT5 Live Trading properties
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
-  mockTicket = Math.floor(Math.random() * 999999999) + 100000000;;
+  mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
@@ -2738,7 +2738,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
 
     const mock = {
-      "ticket": this.mockTicket,
+      "ticket": Math.floor(Math.random() * 999999999) + 100000000;,
       "symbol": randomSymbol,
       "volume": parseFloat(randomVolume),
       "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
