@@ -575,13 +575,14 @@
   
   .table-container {
     overflow-x: auto;
-    
+
     .modern-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.875rem;
-      border: 1px solid var(--tf-border-primary);
+      border: 2px solid #cbd5e1;
       background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
       thead th {
         background: #f8fafc !important;
