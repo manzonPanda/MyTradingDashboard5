@@ -1797,46 +1797,53 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.tableData ? this.tableData.length : 0;
   }
 
-  // Emotional tracking methods
-  toggleEmotionalTracking() {
-    this.showEmotionalTracking = !this.showEmotionalTracking;
-    if (this.showEmotionalTracking) {
-      this.resetEmotionalState();
+  // Emotional tracking methods for individual trades
+  getTradeKey(trade: Table): string {
+    return `${trade.openDate}_${trade.symbol}_${trade.volume}`;
+  }
+
+  initializeTradeEmotionalState(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    if (!this.tradeEmotionalStates[tradeKey]) {
+      this.tradeEmotionalStates[tradeKey] = {
+        selectedEmotion: '',
+        customEmotion: '',
+        intensity: 5,
+        notes: '',
+        timestamp: new Date(),
+        isExpanded: false,
+        isSubmitted: false
+      };
     }
   }
 
-  resetEmotionalState() {
-    this.emotionalState = {
-      selectedEmotion: '',
-      customEmotion: '',
-      intensity: 5,
-      notes: '',
-      timestamp: new Date(),
-      tradeContext: this.getLatestTradeContext()
-    };
+  toggleTradeEmotionalForm(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].isExpanded = !this.tradeEmotionalStates[tradeKey].isExpanded;
   }
 
-  getLatestTradeContext(): string {
-    if (this.recentlyAddedTrades.length > 0) {
-      const latestTrade = this.recentlyAddedTrades[this.recentlyAddedTrades.length - 1];
-      return `${latestTrade.type} ${latestTrade.symbol} - ${latestTrade.volume} lots`;
-    }
-    return 'General trading session';
+  selectEmotionForTrade(trade: Table, emotion: any) {
+    const tradeKey = this.getTradeKey(trade);
+    this.initializeTradeEmotionalState(trade);
+    this.tradeEmotionalStates[tradeKey].selectedEmotion = emotion.name;
+    this.tradeEmotionalStates[tradeKey].customEmotion = ''; // Clear custom if predefined is selected
   }
 
-  selectEmotion(emotion: any) {
-    this.emotionalState.selectedEmotion = emotion.name;
-    this.emotionalState.customEmotion = ''; // Clear custom if predefined is selected
-  }
-
-  onCustomEmotionChange() {
-    if (this.emotionalState.customEmotion.trim()) {
-      this.emotionalState.selectedEmotion = ''; // Clear predefined if custom is entered
+  onCustomEmotionChangeForTrade(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    if (this.tradeEmotionalStates[tradeKey]?.customEmotion?.trim()) {
+      this.tradeEmotionalStates[tradeKey].selectedEmotion = ''; // Clear predefined if custom is entered
     }
   }
 
-  submitEmotionalEntry() {
-    const emotion = this.emotionalState.selectedEmotion || this.emotionalState.customEmotion;
+  submitEmotionalEntryForTrade(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    const emotionalState = this.tradeEmotionalStates[tradeKey];
+
+    if (!emotionalState) return;
+
+    const emotion = emotionalState.selectedEmotion || emotionalState.customEmotion;
 
     if (!emotion.trim()) {
       alert('Please select an emotion or enter a custom emotion.');
@@ -1845,25 +1852,48 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     const entry = {
       id: Date.now().toString(),
+      tradeKey: tradeKey,
       emotion: emotion,
-      intensity: this.emotionalState.intensity,
-      notes: this.emotionalState.notes,
+      intensity: emotionalState.intensity,
+      notes: emotionalState.notes,
       timestamp: new Date(),
-      tradeContext: this.emotionalState.tradeContext,
-      isCustom: !this.emotionalState.selectedEmotion
+      tradeContext: `${trade.type} ${trade.symbol} - ${trade.volume} lots`,
+      tradeDetails: {
+        openDate: trade.openDate,
+        symbol: trade.symbol,
+        type: trade.type,
+        volume: trade.volume,
+        netProfit: trade.netProfit
+      },
+      isCustom: !emotionalState.selectedEmotion
     };
 
-    this.emotionalEntries.unshift(entry); // Add to beginning of array
+    this.emotionalEntries.unshift(entry);
+
+    // Mark as submitted and collapse
+    this.tradeEmotionalStates[tradeKey].isSubmitted = true;
+    this.tradeEmotionalStates[tradeKey].isExpanded = false;
 
     // TODO: In the future, send to Notion API
-    console.log('💭 Emotional entry recorded:', entry);
+    console.log('💭 Emotional entry recorded for trade:', entry);
 
     // Show confirmation
-    alert(`Emotional state "${emotion}" recorded successfully! This will be synced to Notion in the future.`);
+    alert(`Emotional state "${emotion}" recorded for ${trade.symbol} trade! This will be synced to Notion in the future.`);
+  }
 
-    // Reset and hide the form
-    this.resetEmotionalState();
-    this.showEmotionalTracking = false;
+  getTradeEmotionalState(trade: Table) {
+    const tradeKey = this.getTradeKey(trade);
+    return this.tradeEmotionalStates[tradeKey];
+  }
+
+  isTradeEmotionalFormExpanded(trade: Table): boolean {
+    const state = this.getTradeEmotionalState(trade);
+    return state?.isExpanded || false;
+  }
+
+  isTradeEmotionalSubmitted(trade: Table): boolean {
+    const state = this.getTradeEmotionalState(trade);
+    return state?.isSubmitted || false;
   }
 
   getEmotionIcon(emotionName: string): string {
@@ -2737,7 +2767,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
       t.position === newTrade.position
     );
-    console.log('���� Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
+    console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
       this.mt5LiveTrades.push(newTrade)
@@ -2916,7 +2946,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   addRowDirectlyToDataTable(newTrade: Table): void {
     try {
-      console.log('�� Adding row directly to DataTable:', newTrade);
+      console.log('🎯 Adding row directly to DataTable:', newTrade);
 
       if ($.fn.dataTable.isDataTable('#myTable')) {
         const table = $('#myTable').DataTable();
