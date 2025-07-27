@@ -1,4 +1,88 @@
 // TradersFeed-inspired light theme Dashboard Styles
+
+// Global table styling that overrides everything
+table.modern-table,
+table.simple-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 2px solid #cbd5e1 !important;
+  background: white !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+
+  thead th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    padding: 1rem 0.75rem !important;
+    border: 1px solid #e2e8f0 !important;
+    text-align: left !important;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e2e8f0 !important;
+
+    &:nth-child(even) {
+      background: #f8fafc !important;
+    }
+
+    &:hover {
+      background: #f1f5f9 !important;
+    }
+
+    &.positive-row {
+      border-left: 4px solid #10b981 !important;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent 50%) !important;
+    }
+
+    &.negative-row {
+      border-left: 4px solid #ef4444 !important;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), transparent 50%) !important;
+    }
+
+    &.new-trade {
+      border-left: 6px solid #10b981 !important;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.25), rgba(52, 211, 153, 0.15) 50%, rgba(16, 185, 129, 0.05) 100%) !important;
+      position: relative !important;
+
+      &::before {
+        content: 'LIVE TRADE' !important;
+        position: absolute !important;
+        top: 0.5rem !important;
+        right: 0.5rem !important;
+        background: #10b981 !important;
+        color: white !important;
+        padding: 0.25rem 0.5rem !important;
+        border-radius: 12px !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        z-index: 10 !important;
+        animation: live-badge-pulse 1.5s ease-in-out infinite !important;
+      }
+    }
+  }
+
+  tbody td {
+    padding: 0.875rem 0.75rem !important;
+    border-right: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+    vertical-align: middle !important;
+
+    &:last-child {
+      border-right: none !important;
+    }
+
+    &.positive {
+      color: #10b981 !important;
+      font-weight: 700 !important;
+    }
+
+    &.negative {
+      color: #ef4444 !important;
+      font-weight: 700 !important;
+    }
+  }
+}
+
 :host {
   --tf-bg-primary: #ffffff;
   --tf-bg-secondary: #f8fafc;
