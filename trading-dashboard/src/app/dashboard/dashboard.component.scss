@@ -589,9 +589,15 @@
         letter-spacing: 0.05em;
         padding: 1rem 0.75rem;
         text-align: left;
-        border-bottom: 1px solid var(--tf-border-primary);
+        vertical-align: middle;
+        border-bottom: 2px solid var(--tf-border-secondary);
+        border-right: 1px solid var(--tf-border-primary);
         white-space: nowrap;
-        
+
+        &:last-child {
+          border-right: none;
+        }
+
         &.hidden {
           display: none;
         }
