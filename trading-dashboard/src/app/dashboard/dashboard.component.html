@@ -194,9 +194,9 @@
               *ngFor="let emotion of quickEmotions"
               class="emotion-quick-btn"
               [ngClass]="{
-                'selected': currentEmotion === emotion.text,
-                'emotion-' + emotion.color: true
+                'selected': currentEmotion === emotion.text
               }"
+              [class]="'emotion-' + emotion.color"
               (click)="selectQuickEmotion(emotion.text)"
               [disabled]="isSubmittingEmotion">
               <mat-icon>{{ emotion.icon }}</mat-icon>
