@@ -934,6 +934,79 @@ isRowAlreadySelected(row: any): boolean {
     return emotionConfig?.color || 'primary';
   }
 
+  // Additional helper methods for template
+  mockMT5newTrade(): void {
+    // Mock method to simulate new trade for testing emotion tracker
+    const mockTrade: Table = {
+      openDate: new Date().toLocaleString(),
+      tradeNotion: [],
+      status: 'New',
+      position: 'BUY',
+      symbol: 'EURUSD',
+      type: 'market',
+      volume: '0.10',
+      entry: '1.0850',
+      sL: '1.0800',
+      tP: '1.0900',
+      closeDate: '',
+      exit: '',
+      commission: '0.00',
+      swap: '0.00',
+      profit: '0.00',
+      netProfit: '0.00'
+    };
+
+    this.recentlyAddedTrades.push(mockTrade);
+    this.tableData.unshift(mockTrade);
+    this.showEmotionTracker = true;
+    console.log('Mock trade added, emotion tracker shown');
+  }
+
+  mockMT5closeTrade(): void {
+    // Mock method to simulate closing a trade
+    if (this.tableData.length > 0) {
+      const lastTrade = this.tableData[0];
+      lastTrade.closeDate = new Date().toLocaleString();
+      lastTrade.exit = '1.0875';
+      lastTrade.profit = '25.00';
+      lastTrade.netProfit = '25.00';
+      lastTrade.status = 'Closed';
+      console.log('Mock trade closed');
+    }
+  }
+
+  toggleNotionData(): void {
+    this.showNotionData = !this.showNotionData;
+  }
+
+  getFilteredTableData(): Table[] {
+    return this.tableData;
+  }
+
+  getDisplayedRows(): Table[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.getFilteredTableData().slice(start, end);
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.getFilteredTableData().length / this.pageSize);
+  }
+
+  setPage(page: number): void {
+    this.currentPage = page;
+  }
+
+  isNewTrade(trade: Table): boolean {
+    return this.recentlyAddedTrades.includes(trade);
+  }
+
+  getSafeNumber(value: string | number): number {
+    if (typeof value === 'number') return value;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  }
+
   async checkAndCreateRelationId(){
     // if (!this.startDate || !this.endDate){  // Check if startDate or endDate is null{
     //   return
