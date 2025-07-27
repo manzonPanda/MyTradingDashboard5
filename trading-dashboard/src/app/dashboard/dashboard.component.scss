@@ -656,33 +656,43 @@
 
         &.new-trade {
           background: linear-gradient(90deg,
-            rgba(16, 185, 129, 0.15) 0%,
-            rgba(52, 211, 153, 0.08) 50%,
-            transparent 100%
+            rgba(16, 185, 129, 0.25) 0%,
+            rgba(52, 211, 153, 0.15) 50%,
+            rgba(16, 185, 129, 0.05) 100%
           ) !important;
-          border-left: 5px solid var(--tf-positive) !important;
+          border-left: 6px solid #10b981 !important;
           position: relative;
           animation: live-trade-glow 2s ease-in-out infinite;
 
           &::before {
-            content: 'LIVE';
+            content: 'LIVE TRADE';
             position: absolute;
-            top: 0.25rem;
+            top: 0.5rem;
             right: 0.5rem;
-            background: var(--tf-positive);
+            background: #10b981;
             color: white;
-            padding: 0.125rem 0.375rem;
-            border-radius: 4px;
-            font-size: 0.6rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
             font-weight: 700;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
             animation: live-badge-pulse 1.5s ease-in-out infinite;
           }
 
           &:hover {
             background: linear-gradient(90deg,
-              rgba(16, 185, 129, 0.2) 0%,
-              rgba(52, 211, 153, 0.12) 50%,
-              var(--tf-bg-hover) 100%
+              rgba(16, 185, 129, 0.35) 0%,
+              rgba(52, 211, 153, 0.25) 50%,
+              rgba(16, 185, 129, 0.1) 100%
+            ) !important;
+          }
+
+          &:nth-child(even) {
+            background: linear-gradient(90deg,
+              rgba(16, 185, 129, 0.25) 0%,
+              rgba(52, 211, 153, 0.15) 50%,
+              rgba(16, 185, 129, 0.05) 100%
             ) !important;
           }
 
@@ -691,11 +701,16 @@
             position: relative;
 
             &::after {
-              content: '🔴';
+              content: '🔴 LIVE';
               position: absolute;
-              top: 0.25rem;
-              left: 0.25rem;
+              top: 0.125rem;
+              left: 0.125rem;
               font-size: 0.6rem;
+              color: #ef4444;
+              font-weight: 700;
+              background: rgba(255, 255, 255, 0.9);
+              padding: 0.125rem 0.25rem;
+              border-radius: 4px;
               animation: live-indicator-pulse 1s ease-in-out infinite;
             }
           }
