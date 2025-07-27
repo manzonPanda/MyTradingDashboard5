@@ -2801,7 +2801,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.recentlyAddedTrades.unshift(newTrade);
 
       // Remove from recent list after 5 seconds
-      setTimeout(() => {
+      // setTimeout(() => {
       //   const index = this.recentlyAddedTrades.indexOf(newTrade);
       //   if (index > -1) {
       //     this.recentlyAddedTrades.splice(index, 1);
