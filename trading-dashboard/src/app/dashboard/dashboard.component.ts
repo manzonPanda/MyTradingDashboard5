@@ -498,10 +498,33 @@ export class DashboardComponent {
     return (winRate * avgWin) - (lossRate * avgLoss);
   }
 
+  // Cached analytics values to prevent ExpressionChangedAfterItHasBeenCheckedError
+  private _cachedRevengeTradingScore?: number;
+  private _cachedOvertradingScore?: number;
+  private _cachedFOMOScore?: number;
+
   // Placeholder methods for advanced analytics to prevent template errors
-  getRevengeTradingScore(): number { return Math.random() * 30; }
-  getOvertradingScore(): number { return Math.random() * 40; }
-  getFOMOScore(): number { return Math.random() * 25; }
+  getRevengeTradingScore(): number {
+    if (this._cachedRevengeTradingScore === undefined) {
+      this._cachedRevengeTradingScore = Math.random() * 30;
+    }
+    return this._cachedRevengeTradingScore;
+  }
+
+  getOvertradingScore(): number {
+    if (this._cachedOvertradingScore === undefined) {
+      this._cachedOvertradingScore = Math.random() * 40;
+    }
+    return this._cachedOvertradingScore;
+  }
+
+  getFOMOScore(): number {
+    if (this._cachedFOMOScore === undefined) {
+      this._cachedFOMOScore = Math.random() * 25;
+    }
+    return this._cachedFOMOScore;
+  }
+
   getRevengeTradingClass(): string { return 'low-risk'; }
   getOvertradingClass(): string { return 'low-risk'; }
   getFOMOClass(): string { return 'low-risk'; }
