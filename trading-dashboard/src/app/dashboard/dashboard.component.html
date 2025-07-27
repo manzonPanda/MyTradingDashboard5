@@ -175,119 +175,82 @@
     <br>Click "MT5 +trade" button to add a trade and see emotional tracking cards.
   </div>
 
-  <!-- Individual Trade Emotional Tracking Section -->
-  <section class="live-trades-emotional-section" *ngIf="recentlyAddedTrades.length > 0">
-    <div class="section-header">
-      <h2 class="section-title">
-        <mat-icon class="section-icon">psychology</mat-icon>
-        New Trade Emotions
-        <span class="trade-count-badge">{{ recentlyAddedTrades.length }}</span>
-      </h2>
-      <p class="section-subtitle">Track your emotional state for each new live trade</p>
-    </div>
-
-    <div class="trade-emotion-cards-grid">
+  <!-- Compact Trade Emotion Cards -->
+  <section class="compact-emotion-section" *ngIf="recentlyAddedTrades.length > 0">
+    <div class="compact-emotion-grid">
       <div
         *ngFor="let trade of recentlyAddedTrades; let i = index"
-        class="trade-emotion-card"
-        [class.expanded]="isTradeEmotionalFormExpanded(trade)"
+        class="compact-emotion-card"
         [class.submitted]="isTradeEmotionalSubmitted(trade)">
 
-        <!-- Trade Header -->
-        <div class="trade-card-header">
-          <div class="trade-info">
-            <div class="trade-symbol">{{ trade.symbol }}</div>
-            <div class="trade-details">
-              <span class="trade-type" [class]="trade.type.toLowerCase()">{{ trade.type }}</span>
-              <span class="trade-volume">{{ trade.volume }} lots</span>
-            </div>
-            <div class="trade-profit" [class.positive]="isPositiveValue(trade.netProfit)" [class.negative]="isNegativeValue(trade.netProfit)">
-              {{ getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.2-2' }}
-            </div>
+        <!-- Trade Info -->
+        <div class="trade-info-compact">
+          <div class="trade-header-compact">
+            <span class="symbol-compact">{{ trade.symbol }}</span>
+            <span class="live-dot">🔴</span>
           </div>
-
-          <div class="trade-actions">
-            <span class="live-indicator">🔴 LIVE</span>
-            <button
-              class="emotion-toggle-btn"
-              (click)="toggleTradeEmotionalForm(trade)"
-              *ngIf="!isTradeEmotionalSubmitted(trade)">
-              <mat-icon>{{ isTradeEmotionalFormExpanded(trade) ? 'expand_less' : 'psychology' }}</mat-icon>
-            </button>
-            <div class="submitted-indicator" *ngIf="isTradeEmotionalSubmitted(trade)">
-              <mat-icon>check_circle</mat-icon>
-              <span>Logged</span>
-            </div>
+          <div class="trade-details-compact">
+            <span class="type-compact" [class]="trade.type.toLowerCase()">{{ trade.type }}</span>
+            <span class="volume-compact">{{ trade.volume }}L</span>
+          </div>
+          <div class="profit-compact" [class.positive]="isPositiveValue(trade.netProfit)" [class.negative]="isNegativeValue(trade.netProfit)">
+            {{ getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.0-0' }}
           </div>
         </div>
 
-        <!-- Emotional Tracking Form -->
-        <div class="trade-emotional-form" *ngIf="isTradeEmotionalFormExpanded(trade)">
-          <div class="emotion-prompt">
-            <h4>How do you feel about this {{ trade.symbol }} trade?</h4>
-          </div>
+        <!-- Emotion Selection -->
+        <div class="emotion-section-compact" *ngIf="!isTradeEmotionalSubmitted(trade)">
+          <div class="emotion-prompt-compact">How do you feel?</div>
 
           <!-- Quick Emotion Buttons -->
-          <div class="quick-emotions">
+          <div class="quick-emotions-compact">
             <button
               *ngFor="let emotion of predefinedEmotions.slice(0, 6)"
-              class="quick-emotion-btn"
+              class="emotion-btn-compact"
               [class.selected]="getTradeEmotionalState(trade)?.selectedEmotion === emotion.name"
               [style.--emotion-color]="emotion.color"
-              (click)="selectEmotionForTrade(trade, emotion)">
-              <span class="emotion-icon">{{ emotion.icon }}</span>
-              <span class="emotion-name">{{ emotion.name }}</span>
+              (click)="selectEmotionForTrade(trade, emotion)"
+              [title]="emotion.name">
+              {{ emotion.icon }}
             </button>
           </div>
 
-          <!-- Custom Emotion & Intensity -->
-          <div class="emotion-details">
-            <div class="custom-emotion-input">
-              <mat-form-field appearance="outline" class="custom-field">
-                <mat-label>Custom emotion</mat-label>
-                <input
-                  matInput
-                  [ngModel]="getTradeEmotionalState(trade)?.customEmotion || ''"
-                  (ngModelChange)="updateTradeCustomEmotion(trade, $event)"
-                  placeholder="Enter custom emotion"
-                  maxlength="30">
-              </mat-form-field>
-            </div>
+          <!-- Custom Input -->
+          <input
+            type="text"
+            class="custom-emotion-compact"
+            [ngModel]="getTradeEmotionalState(trade)?.customEmotion || ''"
+            (ngModelChange)="updateTradeCustomEmotion(trade, $event)"
+            placeholder="Custom emotion..."
+            maxlength="20">
 
-            <div class="intensity-control">
-              <label class="intensity-label">Intensity</label>
+          <!-- Intensity & Submit -->
+          <div class="bottom-controls">
+            <div class="intensity-compact">
+              <label>Intensity:</label>
               <input
                 type="range"
                 min="1"
                 max="10"
                 [ngModel]="getTradeEmotionalState(trade)?.intensity || 5"
                 (ngModelChange)="updateTradeIntensity(trade, $event)"
-                class="intensity-slider">
-              <span class="intensity-value">{{ getTradeEmotionalState(trade)?.intensity || 5 }}/10</span>
+                class="intensity-slider-compact">
+              <span>{{ getTradeEmotionalState(trade)?.intensity || 5 }}</span>
             </div>
-          </div>
-
-          <!-- Notes -->
-          <div class="emotion-notes">
-            <mat-form-field appearance="outline" class="notes-field">
-              <mat-label>Quick notes (optional)</mat-label>
-              <textarea
-                matInput
-                [ngModel]="getTradeEmotionalState(trade)?.notes || ''"
-                (ngModelChange)="updateTradeNotes(trade, $event)"
-                rows="2"
-                maxlength="100"
-                placeholder="What's driving this emotion?"></textarea>
-            </mat-form-field>
-          </div>
-
-          <!-- Submit Button -->
-          <div class="form-submit">
-            <button class="btn-primary submit-emotion-btn" (click)="submitEmotionalEntryForTrade(trade)">
+            <button class="save-btn-compact" (click)="submitEmotionalEntryForTrade(trade)">
               <mat-icon>save</mat-icon>
-              Save Emotion
             </button>
           </div>
+        </div>
+
+        <!-- Submitted State -->
+        <div class="submitted-state-compact" *ngIf="isTradeEmotionalSubmitted(trade)">
+          <div class="submitted-emotion">
+            <span class="submitted-icon">{{ getEmotionIcon(getSubmittedEmotion(trade)) }}</span>
+            <span class="submitted-text">{{ getSubmittedEmotion(trade) }}</span>
+          </div>
+          <div class="submitted-intensity">Intensity: {{ getSubmittedIntensity(trade) }}/10</div>
+          <div class="checkmark">✅ Logged</div>
         </div>
       </div>
     </div>
