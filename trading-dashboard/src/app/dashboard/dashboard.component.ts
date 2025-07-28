@@ -2021,18 +2021,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (diffMs < 0) return ''; // Invalid: close before open
 
-      // Convert to seconds
-      const diffSeconds = Math.floor(diffMs / 1000);
+      // Convert to minutes
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-      // Calculate minutes and remaining seconds
-      const minutes = Math.floor(diffSeconds / 60);
-      const seconds = diffSeconds % 60;
+      // Calculate hours and remaining minutes
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
 
-      // Format as "Xmin Ysecs"
-      if (minutes > 0) {
-        return `${minutes}min ${seconds}secs`;
+      // Format as "Xhrs Ymin" or "Xmin"
+      if (hours > 0 && minutes > 0) {
+        return `${hours}hrs ${minutes}min`;
+      } else if (hours > 0) {
+        return `${hours}hrs`;
+      } else if (minutes > 0) {
+        return `${minutes}min`;
       } else {
-        return `${seconds}secs`;
+        return `<1min`;
       }
 
     } catch (error) {
@@ -2702,7 +2706,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Positive insights
     if (insights.length === 0) {
       insights.push({
-        title: '��� Good Trading Performance',
+        title: '✅ Good Trading Performance',
         description: 'Your trading shows good discipline and risk management.',
         recommendations: [
           'Continue following your current strategy',
