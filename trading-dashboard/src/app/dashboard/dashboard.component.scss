@@ -77,6 +77,15 @@ table.simple-table {
       color: #ef4444 !important;
       font-weight: 700 !important;
     }
+
+    &.col-time {
+      font-family: 'Courier New', monospace !important;
+      font-weight: 600 !important;
+      color: #6b46c1 !important;
+      text-align: center !important;
+      font-size: 0.875rem !important;
+      background: rgba(107, 70, 193, 0.05) !important;
+    }
   }
 }
 
