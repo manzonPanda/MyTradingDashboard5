@@ -5,15 +5,17 @@ import MetaTrader5 as mt5
 import threading
 import time
 import eventlet
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import pandas as pd
+from zoneinfo import ZoneInfo
 
 eventlet.monkey_patch()  # <- important for eventlet
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")  # Allow WebSocket connections
+local_tz = ZoneInfo("Asia/Manila")
 
 if not mt5.initialize():
     raise Exception(f"❌MT5 Initialization failed: {mt5.last_error()}")
@@ -50,6 +52,10 @@ def watch_trades():
             if ticket not in seen_tickets:
                 seen_tickets.add(ticket)
                 print(f"🟢 New OPEN trade: {pos.symbol} @ {pos.price_open}")
+
+                # Keep time in MT5 UTC (no local conversion)
+                open_time_str = datetime.fromtimestamp(pos.time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+
                 socketio.emit('trade_opened', {
                     "ticket": pos.ticket,
                     "symbol": pos.symbol,
@@ -59,15 +65,36 @@ def watch_trades():
                     "sl": pos.sl,
                     "tp": pos.tp,
                     "profit": pos.profit,
-                    "time_open": datetime.fromtimestamp(pos.time).strftime('%Y-%m-%d %H:%M:%S'),
-                    "object":pos
+                    "time_open": open_time_str,
+                    "object": pos
                 })
+
 
         # Detect closed positions
         closed_tickets = set(last_positions.keys()) - set(current_positions.keys())
         for ticket in closed_tickets:
             closed_pos = last_positions[ticket]
             print(f"🔴 CLOSED trade: {closed_pos.symbol} @ {closed_pos.price_open}")
+
+            # Default fallback: current time
+            close_time_str = ""
+
+            # Try to get accurate close time from MT5 history using pos time window
+            start_time = datetime.fromtimestamp(closed_pos.time) - timedelta(minutes=30)
+            end_time = datetime.fromtimestamp(closed_pos.time) + timedelta(hours=12)
+            print(f"🔍 Searching deals from {start_time} to {end_time}")
+
+            deals = mt5.history_deals_get(start_time, end_time)
+            if deals:
+                for d in deals:
+                    # print(f"➡️ Deal check: pos_id={d.position_id}, entry={d.entry}, time={d.time}")
+                    if d.position_id == closed_pos.ticket and d.entry == mt5.DEAL_ENTRY_OUT:
+                        print("found",d)
+                        close_time_str = datetime.fromtimestamp(d.time,tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                        break
+            else:
+                print("⚠️ No deals returned from history_deals_get")
+
             socketio.emit('trade_closed', {
                 "ticket": closed_pos.ticket,
                 "symbol": closed_pos.symbol,
@@ -76,15 +103,20 @@ def watch_trades():
                 "price_open": closed_pos.price_open,
                 "price_close": closed_pos.price_current,
                 "profit": closed_pos.profit,
-                "time_close": int(time.time()),
-                "object":closed_pos
+                "time_close": close_time_str,
+                "object": closed_pos
             })
+
+
+
+
+
+
 
         # Update the last seen positions
         last_positions = current_positions.copy()
 
         time.sleep(1)
-
 
 
 # Start background thread
@@ -127,44 +159,45 @@ def full_history():
     df_deals = pd.DataFrame([d._asdict() for d in deals])
     df_deals['time'] = pd.to_datetime(df_deals['time'], unit='s')
 
-    # Separate different types of deals
-    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][['position_id', 'time','price']]
+    # Separate entry and exit deals
+    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][['position_id', 'time', 'price', 'type']]
     df_entry = df_entry.rename(columns={'time': 'time_open', 'price': 'entry_price'})
 
+    # Add human-readable position type
+    df_entry['type'] = df_entry['type'].map({0: 'Buy', 1: 'Sell'})
+    df_entry.drop(columns=['type'], inplace=True)  # Drop raw type if not needed
+
     df_exit = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT].copy()
-    df_exit = df_exit.rename(columns={'time': 'time_close'})
+    df_exit = df_exit.rename(columns={'time': 'time_close', 'price': 'exit_price'})
 
-    # Merge to get time_open and time_close
+    # Merge entry and exit
     df_merged = pd.merge(df_exit, df_entry, on='position_id', how='left')
-    # Rename exit price for clarity
-    df_merged = df_merged.rename(columns={'price': 'exit_price'})
 
-    # Fix commissions: sum all commissions for the same position_id
+    # Fix commissions
     df_commission = df_deals[df_deals['commission'] != 0].groupby('position_id')['commission'].sum().reset_index()
     df_merged = df_merged.merge(df_commission, on='position_id', how='left', suffixes=('', '_total'))
-
-    # Use the total commission
     df_merged['commission'] = df_merged['commission_total'].fillna(0)
     df_merged.drop(columns=['commission_total'], inplace=True)
 
-    # Merge with orders for SL/TP/Comment if available
+    # Merge SL/TP/Comment from orders
     orders = mt5.history_orders_get(from_date, to_date)
     if orders and len(orders) > 0:
         df_orders = pd.DataFrame([o._asdict() for o in orders])
         df_orders = df_orders[['ticket', 'sl', 'tp', 'comment']]
         df_merged = df_merged.merge(df_orders, left_on='order', right_on='ticket', how='left', suffixes=('', '_order'))
 
-    # Convert datetime columns to string to prevent NaT issues
+    # Convert datetime columns to string
     df_merged['time_open'] = df_merged['time_open'].astype(str)
     df_merged['time_close'] = df_merged['time_close'].astype(str)
 
-    # Final output fields
+    # Final output
     result = df_merged[[
-        'ticket', 'position_id', 'order', 'symbol', 'volume', 'entry_price', 'exit_price', 'profit',  
-    'commission', 'sl', 'tp', 'comment', 'time_open', 'time_close' 
+        'ticket', 'position_id', 'order', 'symbol', 'volume', 'entry_price', 'exit_price', 'type',
+        'profit', 'commission', 'sl', 'tp', 'comment', 'time_open', 'time_close'
     ]].to_dict(orient='records')
 
     return jsonify(result)
+
 
 
 

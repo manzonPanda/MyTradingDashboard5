@@ -2773,11 +2773,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   addMT5LiveTrade(tradeData: any): void {
-    const trade = tradeData.object || tradeData;
+    const trade = tradeData;
     if (!trade) return;
-
+    console.log("Open date from MT5:",trade.time_open)
     const newTrade: Table = {
-      openDate: this.convertAndFormatMT5Date(trade.time),
+      openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: "-",
       tradeNotion: [],
       status: "",
@@ -2834,7 +2834,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // Close MT5 trade when closed
   closeMT5Trade(tradeData: any): void {
     console.log('🔄 Closing MT5 trade:', tradeData);
-    const trade = tradeData.object || tradeData;
+    const trade = tradeData;
 
     const liveIndex = this.mt5LiveTrades.findIndex(t =>
       t.position === trade.ticket 
@@ -2851,19 +2851,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // closedTrade.commission = trade.commission ? trade.commission.toString() : '0';
       //////////////
       closedTrade.status= "Closed";
-      closedTrade.closeDate= "Closed";
-      closedTrade.commission= "0.28";
-      closedTrade.symbol= "AUDUSD";
+      closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
+      closedTrade.commission= trade.commission;
+      closedTrade.symbol= trade.symbol || '';
       // closedTrade.entry = "Closed";
       closedTrade.exit="0";
-      closedTrade.profit= "-78.09";
-      closedTrade.netProfit= "-78.09";
+      closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
+      closedTrade.netProfit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.sL= "Closed";
       closedTrade.swap= "-";
-      closedTrade.tP= "Closed";
-      closedTrade.volume= "2";
+      closedTrade.tP= "-";
+      // closedTrade.volume= trade.volume;
       closedTrade.tradeNotion= [];
-      closedTrade.type= "Buy";
+      // closedTrade.type= trade.type === 0 ? 'Buy' : 'Sell';
      
       this.mt5LiveTrades[liveIndex] = closedTrade;
 
@@ -2875,7 +2875,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateMT5TradePrice(priceData: any): void {
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      trade.position === priceData.ticket && trade.entry === priceData.entry
+      trade.position === priceData.ticket 
     );
 
     if (tradeIndex !== -1) {
