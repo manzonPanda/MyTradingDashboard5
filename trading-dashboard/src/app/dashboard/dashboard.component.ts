@@ -1988,6 +1988,63 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return (winRate * avgWin) - (lossRate * avgLoss);
   }
 
+  calculateHoldTime(openDateStr: string, closeDateStr: string): string {
+    if (!openDateStr || !closeDateStr) return '';
+
+    try {
+      // Parse the MT5 date format: "MM.DD.YYYY HH:mm"
+      const parseDate = (dateStr: string): Date | null => {
+        const [datePart, timePart] = dateStr.split(' ');
+        if (!datePart || !timePart) return null;
+
+        const [month, day, year] = datePart.split('.');
+        const [hour, minute] = timePart.split(':');
+
+        if (!month || !day || !year || !hour || !minute) return null;
+
+        return new Date(
+          parseInt(year),
+          parseInt(month) - 1, // JavaScript months are 0-based
+          parseInt(day),
+          parseInt(hour),
+          parseInt(minute)
+        );
+      };
+
+      const openDate = parseDate(openDateStr);
+      const closeDate = parseDate(closeDateStr);
+
+      if (!openDate || !closeDate) return '';
+
+      // Calculate the difference in milliseconds
+      const diffMs = closeDate.getTime() - openDate.getTime();
+
+      if (diffMs < 0) return ''; // Invalid: close before open
+
+      // Convert to minutes
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+      // Calculate hours and remaining minutes
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+
+      // Format as "Xhrs Ymin" or "Xmin"
+      if (hours > 0 && minutes > 0) {
+        return `${hours}hrs ${minutes}min`;
+      } else if (hours > 0) {
+        return `${hours}hrs`;
+      } else if (minutes > 0) {
+        return `${minutes}min`;
+      } else {
+        return `<1min`;
+      }
+
+    } catch (error) {
+      console.error('Error calculating hold time:', error);
+      return '';
+    }
+  }
+
   formatDate(dateStr: string): string {
     // if (!dateStr) return '';
     try {
