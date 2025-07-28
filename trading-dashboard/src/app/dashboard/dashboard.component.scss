@@ -1425,6 +1425,31 @@ table.simple-table {
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
 
+    // Specific overrides for exact card counts
+    .compact-emotion-card:only-child {
+      // When there's only 1 card, it takes full width
+      grid-column: 1 / -1;
+    }
+
+    @media (min-width: 1024px) {
+      // Override grid behavior for specific card counts
+      &.cards-1 {
+        grid-template-columns: 1fr;
+      }
+
+      &.cards-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      &.cards-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      &.cards-4-plus {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
     .compact-emotion-card {
       background: var(--tf-bg-card);
       border: 2px solid var(--tf-border-primary);
