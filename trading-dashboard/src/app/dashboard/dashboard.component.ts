@@ -1988,6 +1988,59 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return (winRate * avgWin) - (lossRate * avgLoss);
   }
 
+  calculateHoldTime(openDateStr: string, closeDateStr: string): string {
+    if (!openDateStr || !closeDateStr) return '';
+
+    try {
+      // Parse the MT5 date format: "MM.DD.YYYY HH:mm"
+      const parseDate = (dateStr: string): Date | null => {
+        const [datePart, timePart] = dateStr.split(' ');
+        if (!datePart || !timePart) return null;
+
+        const [month, day, year] = datePart.split('.');
+        const [hour, minute] = timePart.split(':');
+
+        if (!month || !day || !year || !hour || !minute) return null;
+
+        return new Date(
+          parseInt(year),
+          parseInt(month) - 1, // JavaScript months are 0-based
+          parseInt(day),
+          parseInt(hour),
+          parseInt(minute)
+        );
+      };
+
+      const openDate = parseDate(openDateStr);
+      const closeDate = parseDate(closeDateStr);
+
+      if (!openDate || !closeDate) return '';
+
+      // Calculate the difference in milliseconds
+      const diffMs = closeDate.getTime() - openDate.getTime();
+
+      if (diffMs < 0) return ''; // Invalid: close before open
+
+      // Convert to seconds
+      const diffSeconds = Math.floor(diffMs / 1000);
+
+      // Calculate minutes and remaining seconds
+      const minutes = Math.floor(diffSeconds / 60);
+      const seconds = diffSeconds % 60;
+
+      // Format as "Xmin Ysecs"
+      if (minutes > 0) {
+        return `${minutes}min ${seconds}secs`;
+      } else {
+        return `${seconds}secs`;
+      }
+
+    } catch (error) {
+      console.error('Error calculating hold time:', error);
+      return '';
+    }
+  }
+
   formatDate(dateStr: string): string {
     // if (!dateStr) return '';
     try {
@@ -2649,7 +2702,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Positive insights
     if (insights.length === 0) {
       insights.push({
-        title: '✅ Good Trading Performance',
+        title: '��� Good Trading Performance',
         description: 'Your trading shows good discipline and risk management.',
         recommendations: [
           'Continue following your current strategy',
