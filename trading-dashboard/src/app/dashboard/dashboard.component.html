@@ -173,7 +173,13 @@
 
   <!-- Compact Trade Emotion Cards -->
   <section class="compact-emotion-section" *ngIf="recentlyAddedTrades.length > 0">
-    <div class="compact-emotion-grid">
+    <div class="compact-emotion-grid"
+         [ngClass]="{
+           'cards-1': recentlyAddedTrades.length === 1,
+           'cards-2': recentlyAddedTrades.length === 2,
+           'cards-3': recentlyAddedTrades.length === 3,
+           'cards-4-plus': recentlyAddedTrades.length >= 4
+         }">
       <div
         *ngFor="let trade of recentlyAddedTrades; let i = index"
         class="compact-emotion-card"
