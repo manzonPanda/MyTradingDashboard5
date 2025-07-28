@@ -1406,41 +1406,23 @@ table.simple-table {
     gap: 1rem;
     width: 100%;
 
-    // Responsive based on number of cards - max 3 per row
+    // Default: responsive with minimum width, maximum 3 columns
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 
     @media (min-width: 1024px) {
-      // If 1 card: full width, if 2 cards: 50/50, if 3+: 33% each
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-
-      // Force max 3 columns even with more cards
-      &:has(> :nth-child(4)) {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      // When exactly 1 card - full width
-      &:has(> :only-child) {
-        grid-template-columns: 1fr;
-      }
-
-      // When exactly 2 cards - 50/50 split
-      &:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      // When exactly 3 cards - 33% each
-      &:has(> :nth-child(3)):not(:has(> :nth-child(4))) {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      // Desktop: intelligent responsive layout
+      // Will automatically adjust: 1 card = full width, 2 cards = 50/50, 3+ cards = max 3 columns
+      grid-template-columns: repeat(auto-fit, minmax(min(350px, 33.333%), 1fr));
     }
 
     @media (min-width: 768px) and (max-width: 1023px) {
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      // Tablet: max 2 columns
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 50%), 1fr));
+    }
 
-      // Max 2 columns on tablets
-      &:has(> :nth-child(3)) {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    @media (max-width: 767px) {
+      // Mobile: single column with minimum width
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
 
     .compact-emotion-card {
