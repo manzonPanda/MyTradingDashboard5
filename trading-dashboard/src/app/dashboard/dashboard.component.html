@@ -169,11 +169,7 @@
     </div>
   </section>
 
-  <!-- DEBUG: Check recentlyAddedTrades -->
-  <div style="background: yellow; padding: 10px; margin: 10px; border: 2px solid red;" *ngIf="recentlyAddedTrades.length === 0">
-    <strong>DEBUG: No recent trades found. recentlyAddedTrades.length = {{ recentlyAddedTrades.length }}</strong>
-    <br>Click "MT5 +trade" button to add a trade and see emotional tracking cards.
-  </div>
+
 
   <!-- Compact Trade Emotion Cards -->
   <section class="compact-emotion-section" *ngIf="recentlyAddedTrades.length > 0">
@@ -492,7 +488,7 @@
               <div class="progress-fill" [style.width]="getRevengeTradingScore() + '%'" [ngClass]="getRevengeTradingClass()"></div>
             </div>
             <div class="indicator-insight" *ngIf="getRevengeTradingScore() > 20">
-              🚨 High revenge trading detected! You're increasing position sizes after losses.
+              �� High revenge trading detected! You're increasing position sizes after losses.
             </div>
           </div>
 
