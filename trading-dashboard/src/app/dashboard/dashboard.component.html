@@ -415,6 +415,20 @@
                 <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
               </td>
               <td class="col-volume">{{ row.volume }}</td>
+              <td class="col-risk" [ngClass]="{ 'high-risk': getSafeNumber(row.riskPerTrade) > 100, 'medium-risk': getSafeNumber(row.riskPerTrade) > 50 }">
+                <span class="risk-value">
+                  {{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}
+                </span>
+              </td>
+              <td class="col-rrr">
+                <span class="rrr-badge" [ngClass]="{
+                  'positive-rrr': row.rrr && row.rrr.includes('+'),
+                  'negative-rrr': row.rrr && row.rrr.includes('-'),
+                  'neutral-rrr': !row.rrr || row.rrr === '0' || row.rrr === 'N/A'
+                }">
+                  {{ row.rrr || 'N/A' }}
+                </span>
+              </td>
               <!-- <td class="col-price">{{ row.entry }}</td>
               <td class="col-price">{{ row.sL }}</td>
               <td class="col-price">{{ row.tP }}</td> -->
