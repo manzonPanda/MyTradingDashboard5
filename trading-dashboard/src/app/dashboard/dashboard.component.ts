@@ -2321,7 +2321,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's a loss, check if exit price is close to SL
       if (profit < 0) {
-        const position = trade.position.toLowerCase();
+        const position = trade.position ? trade.position.toString().toLowerCase() : '';
         if (position === 'buy') {
           return exit <= sl * 1.05; // 5% tolerance
         } else {
