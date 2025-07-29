@@ -447,18 +447,19 @@ export class DashboardComponent {
     this.tableData.forEach(row => {
       const tradeDateString = row.openDate; // Column 0: the date string
       const symbol = row.symbol;           // Column 2: symbol
-      const type = row.position;             // Column 3: buy/sell
-  
+      const type = row.type || '';         // Use the actual type field
+
       const tradeDate = this.parseTradeDate(tradeDateString);
-      
+
       if (tradeDate) {
+        const typeStr = type ? type.toString() : '';
         this.events = [
           ...this.events,
           {
             start: tradeDate,
-            title: `${type.toUpperCase()} ${symbol}`,
+            title: `${typeStr.toUpperCase()} ${symbol}`,
             color: {
-              primary: type.toLowerCase() === 'buy' ? '#1e90ff' : '#ad2121', // blue for buy, red for sell
+              primary: typeStr.toLowerCase() === 'buy' ? '#1e90ff' : '#ad2121', // blue for buy, red for sell
               secondary: '#FAE3E3'
             },
             allDay: true,
@@ -1309,7 +1310,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // First, let's see what properties you actually have in your database
     const firstPage = results[0];
     if (firstPage && firstPage.properties) {
-      console.log('📋 Your Notion database properties:', Object.keys(firstPage.properties));
+      console.log('�� Your Notion database properties:', Object.keys(firstPage.properties));
 
       // Show the structure of each property type
       Object.keys(firstPage.properties).forEach(key => {
@@ -1719,7 +1720,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         errorMessage += '3. Run: npm run dev\n\n';
         errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
       } else if (error.status === 404) {
-        errorMessage += '🔍 API Endpoint Not Found\n\n';
+        errorMessage += '���� API Endpoint Not Found\n\n';
         errorMessage += 'The server is running but the API route is missing.\n';
         errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
       } else if (error.status === 401 || error.status === 403) {
@@ -2324,8 +2325,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's a loss, check if exit price is close to SL
       if (profit < 0) {
-        const position = trade.type.toLowerCase();
-        if (position === 'buy') {
+        const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
+        if (tradeType === 'buy') {
           return exit <= sl * 1.05; // 5% tolerance
         } else {
           return exit >= sl * 0.95; // 5% tolerance
@@ -2358,8 +2359,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (!tp || tp === 0) return false;
 
-      const position = trade.type.toLowerCase();
-      if (position === 'buy') {
+      const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
+      if (tradeType === 'buy') {
         return exit >= tp * 0.95; // Took profit close to target
       } else {
         return exit <= tp * 1.05; // Took profit close to target
