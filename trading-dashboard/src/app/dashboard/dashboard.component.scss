@@ -885,7 +885,31 @@ table.simple-table {
         min-width: 80px;
         text-align: right;
       }
-      
+
+      .col-risk {
+        min-width: 90px;
+        text-align: right;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.8rem;
+        font-weight: 600;
+
+        &.high-risk {
+          background: rgba(239, 68, 68, 0.1);
+          color: #dc2626;
+        }
+
+        &.medium-risk {
+          background: rgba(245, 158, 11, 0.1);
+          color: #d97706;
+        }
+      }
+
+      .col-rrr {
+        min-width: 80px;
+        text-align: center;
+        font-weight: 600;
+      }
+
       .col-price {
         min-width: 90px;
         text-align: right;
