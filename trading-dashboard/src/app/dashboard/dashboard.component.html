@@ -345,7 +345,32 @@
                   'negative-row': isNegativeValue(row.netProfit),
                   'new-trade': isNewTrade(row)
                 }">
-              <td class="col-date">{{ row.openDate }}</td>
+              <td class="col-timeline">
+                <div class="timeline-container">
+                  <div class="timeline-entry">
+                    <div class="timeline-label">Open</div>
+                    <div class="timeline-date">{{ formatDate(row.openDate) }}</div>
+                  </div>
+                  <div class="timeline-separator">
+                    <div class="timeline-line"></div>
+                    <div class="timeline-duration">
+                      <mat-icon class="duration-icon">schedule</mat-icon>
+                      <span class="duration-text">{{ calculateHoldTime(row.openDate, row.closeDate) || 'Active' }}</span>
+                    </div>
+                  </div>
+                  <div class="timeline-entry" *ngIf="row.closeDate && row.closeDate !== '-'">
+                    <div class="timeline-label">Close</div>
+                    <div class="timeline-date">{{ formatDate(row.closeDate) }}</div>
+                  </div>
+                  <div class="timeline-entry active-trade" *ngIf="!row.closeDate || row.closeDate === '-'">
+                    <div class="timeline-label">Active</div>
+                    <div class="timeline-date live-indicator">
+                      <mat-icon class="pulse-icon">fiber_manual_record</mat-icon>
+                      Live Trade
+                    </div>
+                  </div>
+                </div>
+              </td>
 
               <td class="col-notion" [class.hidden]="!showNotionData">
                 <div class="notion-buttons">
