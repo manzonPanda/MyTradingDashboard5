@@ -1513,6 +1513,331 @@ table.simple-table {
   }
 }
 
+// Risk Management Hub Styling
+.risk-hub-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.9));
+  border-radius: 10px;
+  border: 1px solid rgba(203, 213, 225, 0.3);
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.6), transparent);
+    animation: scan 3s infinite;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+  }
+
+  &.risk-low {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(16, 185, 129, 0.05));
+  }
+
+  &.risk-medium {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.05));
+  }
+
+  &.risk-high {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.05));
+
+    &::before {
+      background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.8), transparent);
+    }
+  }
+}
+
+// Risk Level Indicator
+.risk-level-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.risk-meter {
+  width: 100%;
+  height: 4px;
+  background: rgba(226, 232, 240, 0.6);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.risk-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.risk-label {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.risk-status-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+
+  &.low-risk-icon {
+    color: #22c55e;
+  }
+
+  &.medium-risk-icon {
+    color: #f59e0b;
+    animation: pulse 2s infinite;
+  }
+
+  &.high-risk-icon {
+    color: #ef4444;
+    animation: pulse 1s infinite;
+  }
+}
+
+.risk-amount {
+  font-size: 0.65rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 700;
+  color: #374151;
+}
+
+// Risk Flow Separator
+.risk-flow-separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.flow-line {
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+  border-radius: 1px;
+}
+
+.flow-arrow {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #6366f1;
+  animation: float 2s ease-in-out infinite;
+}
+
+// RRR Performance Gauge
+.rrr-performance-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  flex: 1.2;
+}
+
+.gauge-container {
+  position: relative;
+  width: 40px;
+  height: 20px;
+}
+
+.gauge-background {
+  width: 100%;
+  height: 100%;
+  background: conic-gradient(from 180deg, #ef4444 0deg, #f59e0b 90deg, #22c55e 180deg);
+  border-radius: 40px 40px 0 0;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 15px;
+    background: white;
+    border-radius: 30px 30px 0 0;
+  }
+}
+
+.gauge-fill {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform-origin: bottom;
+  width: 2px;
+  height: 15px;
+  background: #1f2937;
+  border-radius: 1px;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.gauge-positive {
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+  }
+
+  &.gauge-negative {
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+  }
+
+  &.gauge-neutral {
+    background: #6b7280;
+  }
+}
+
+.gauge-center {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5e7eb;
+}
+
+.rrr-performance-icon {
+  font-size: 8px;
+  width: 8px;
+  height: 8px;
+
+  &.performance-excellent {
+    color: #22c55e;
+    animation: sparkle 1.5s infinite;
+  }
+
+  &.performance-good {
+    color: #22c55e;
+  }
+
+  &.performance-poor {
+    color: #ef4444;
+  }
+}
+
+.rrr-value-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+}
+
+.rrr-value {
+  font-size: 0.7rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 700;
+
+  &.rrr-excellent {
+    color: #22c55e;
+    text-shadow: 0 0 4px rgba(34, 197, 94, 0.3);
+  }
+
+  &.rrr-positive {
+    color: #16a34a;
+  }
+
+  &.rrr-negative {
+    color: #dc2626;
+  }
+
+  &.rrr-unknown {
+    color: #6b7280;
+  }
+}
+
+.rrr-performance-text {
+  font-size: 0.45rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+// Risk Score Badge
+.risk-score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  min-width: 35px;
+
+  &.score-excellent {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.15));
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+  }
+
+  &.score-good {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  &.score-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  &.score-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+}
+
+.score-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+
+  .score-excellent & {
+    color: #22c55e;
+  }
+
+  .score-good & {
+    color: #16a34a;
+  }
+
+  .score-warning & {
+    color: #f59e0b;
+  }
+
+  .score-danger & {
+    color: #ef4444;
+  }
+}
+
+.score-text {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: inherit;
+}
+
 // Animations
 @keyframes pulse {
   0%, 100% {
