@@ -463,18 +463,7 @@
                     <div class="rrr-value">{{ row.rrr || 'N/A' }}</div>
                   </div>
 
-                  <!-- Risk Score -->
-                  <div class="risk-score" [ngClass]="{
-                    'score-excellent': row.rrr && parseFloat(row.rrr) > 1 && getSafeNumber(row.riskPerTrade) <= 50,
-                    'score-good': (row.rrr && parseFloat(row.rrr) > 0) || getSafeNumber(row.riskPerTrade) <= 75,
-                    'score-warning': getSafeNumber(row.riskPerTrade) > 100
-                  }">
-                    <mat-icon class="score-icon">
-                      {{ (row.rrr && parseFloat(row.rrr) > 1 && getSafeNumber(row.riskPerTrade) <= 50) ? 'star' :
-                         ((row.rrr && parseFloat(row.rrr) > 0) || getSafeNumber(row.riskPerTrade) <= 75) ? 'check_circle' :
-                         'warning' }}
-                    </mat-icon>
-                  </div>
+
 
                 </div>
               </td>
