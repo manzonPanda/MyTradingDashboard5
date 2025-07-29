@@ -456,10 +456,8 @@
               </td>
               <!-- <td class="col-price">{{ row.entry }}</td>
               <td class="col-price">{{ row.sL }}</td>
-              <td class="col-price">{{ row.tP }}</td> -->
-              <td class="col-date">{{ row.closeDate }}</td>
-              <!-- <td class="col-price">{{ row.exit }}</td> -->
-              <td class="col-time">{{ calculateHoldTime(row.openDate, row.closeDate) }}</td>
+              <td class="col-price">{{ row.tP }}</td>
+              <td class="col-price">{{ row.exit }}</td> -->
               <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
                 {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
               </td>
