@@ -1305,7 +1305,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // First, let's see what properties you actually have in your database
     const firstPage = results[0];
     if (firstPage && firstPage.properties) {
-      console.log('📋 Your Notion database properties:', Object.keys(firstPage.properties));
+      console.log('�� Your Notion database properties:', Object.keys(firstPage.properties));
 
       // Show the structure of each property type
       Object.keys(firstPage.properties).forEach(key => {
@@ -2355,7 +2355,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (!tp || tp === 0) return false;
 
-      const position = trade.position.toLowerCase();
+      const position = trade.position ? trade.position.toString().toLowerCase() : '';
       if (position === 'buy') {
         return exit >= tp * 0.95; // Took profit close to target
       } else {
