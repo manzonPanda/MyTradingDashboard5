@@ -1001,7 +1001,9 @@ table.simple-table {
 
 // Risk Value Styling
 .risk-value {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   padding: 0.2rem 0.5rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -1009,6 +1011,19 @@ table.simple-table {
   background: rgba(107, 114, 128, 0.1);
   border: 1px solid rgba(107, 114, 128, 0.2);
   color: #374151;
+  transition: all 0.2s ease;
+  cursor: help;
+
+  &:hover {
+    background: rgba(107, 114, 128, 0.15);
+    transform: scale(1.02);
+  }
+
+  .risk-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
 }
 
 // RRR Badge Styling
