@@ -2356,8 +2356,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (!tp || tp === 0) return false;
 
-      const position = trade.position ? trade.position.toString().toLowerCase() : '';
-      if (position === 'buy') {
+      const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
+      if (tradeType === 'buy') {
         return exit >= tp * 0.95; // Took profit close to target
       } else {
         return exit <= tp * 1.05; // Took profit close to target
