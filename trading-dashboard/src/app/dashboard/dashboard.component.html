@@ -416,7 +416,10 @@
               </td>
               <td class="col-volume">{{ row.volume }}</td>
               <td class="col-risk" [ngClass]="{ 'high-risk': getSafeNumber(row.riskPerTrade) > 100, 'medium-risk': getSafeNumber(row.riskPerTrade) > 50 }">
-                <span class="risk-value">
+                <span class="risk-value"
+                      [title]="'Risk per trade: ' + (getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.2-2') + ' | Risk Level: ' + (getSafeNumber(row.riskPerTrade) > 100 ? 'High' : getSafeNumber(row.riskPerTrade) > 50 ? 'Medium' : 'Low')">
+                  <mat-icon class="risk-icon" *ngIf="getSafeNumber(row.riskPerTrade) > 100">warning</mat-icon>
+                  <mat-icon class="risk-icon" *ngIf="getSafeNumber(row.riskPerTrade) > 50 && getSafeNumber(row.riskPerTrade) <= 100">info</mat-icon>
                   {{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}
                 </span>
               </td>
@@ -425,7 +428,10 @@
                   'positive-rrr': row.rrr && row.rrr.includes('+'),
                   'negative-rrr': row.rrr && row.rrr.includes('-'),
                   'neutral-rrr': !row.rrr || row.rrr === '0' || row.rrr === 'N/A'
-                }">
+                }"
+                [title]="'Risk-Reward Ratio: ' + (row.rrr || 'Not Available') + ' | ' + (row.rrr && row.rrr.includes('+') ? 'Profitable trade' : row.rrr && row.rrr.includes('-') ? 'Loss trade' : 'No risk/reward data')">
+                  <mat-icon class="rrr-icon" *ngIf="row.rrr && row.rrr.includes('+')">trending_up</mat-icon>
+                  <mat-icon class="rrr-icon" *ngIf="row.rrr && row.rrr.includes('-')">trending_down</mat-icon>
                   {{ row.rrr || 'N/A' }}
                 </span>
               </td>
