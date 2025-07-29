@@ -56,11 +56,11 @@ table.simple-table {
       color: #6366f1 !important;
       font-weight: 700 !important;
       position: relative;
-      min-width: 240px !important;
+      min-width: 180px !important;
 
       &::before {
         content: '📈';
-        margin-right: 0.3rem;
+        margin-right: 0.2rem;
       }
     }
   }
