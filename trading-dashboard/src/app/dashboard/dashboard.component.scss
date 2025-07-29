@@ -49,6 +49,20 @@ table.simple-table {
         margin-right: 0.3rem;
       }
     }
+
+    &.col-timeline {
+      text-align: center !important;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05)) !important;
+      color: #6366f1 !important;
+      font-weight: 700 !important;
+      position: relative;
+      min-width: 240px !important;
+
+      &::before {
+        content: '📈';
+        margin-right: 0.3rem;
+      }
+    }
   }
 
   tbody tr {
