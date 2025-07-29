@@ -1151,15 +1151,71 @@ table.simple-table {
   }
 }
 
-// Responsive Design for Risk, RRR, Timeline, and P&L columns
+// Responsive Design for Timeline, P&L, and Risk Hub columns
 @media (max-width: 768px) {
-  .col-risk, .col-rrr {
-    min-width: 70px !important;
-    font-size: 0.7rem;
-  }
-
   .col-timeline {
     min-width: 180px !important;
+  }
+
+  .col-risk-hub {
+    min-width: 260px !important;
+
+    .risk-hub-container {
+      padding: 0.3rem;
+      gap: 0.3rem;
+
+      .risk-level-indicator {
+        gap: 0.15rem;
+
+        .risk-amount {
+          font-size: 0.6rem;
+        }
+
+        .risk-status-icon {
+          font-size: 12px;
+          width: 12px;
+          height: 12px;
+        }
+      }
+
+      .flow-line {
+        height: 15px;
+      }
+
+      .flow-arrow {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+
+      .gauge-container {
+        width: 35px;
+        height: 18px;
+      }
+
+      .rrr-value {
+        font-size: 0.65rem;
+      }
+
+      .rrr-performance-text {
+        font-size: 0.4rem;
+      }
+
+      .risk-score-badge {
+        padding: 0.15rem;
+        min-width: 30px;
+
+        .score-icon {
+          font-size: 12px;
+          width: 12px;
+          height: 12px;
+        }
+
+        .score-text {
+          font-size: 0.55rem;
+        }
+      }
+    }
   }
 
   .col-pnl-breakdown {
