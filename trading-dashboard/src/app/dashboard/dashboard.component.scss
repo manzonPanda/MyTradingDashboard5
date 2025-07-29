@@ -914,19 +914,41 @@ table.simple-table {
 
       .col-risk {
         min-width: 90px;
-        text-align: right;
+        text-align: center;
         font-family: 'Monaco', 'Menlo', monospace;
         font-size: 0.8rem;
         font-weight: 600;
+        position: relative;
 
         &.high-risk {
-          background: rgba(239, 68, 68, 0.1);
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.05));
           color: #dc2626;
+
+          .risk-value {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #b91c1c;
+
+            .risk-icon {
+              color: #dc2626;
+              animation: pulse 2s infinite;
+            }
+          }
         }
 
         &.medium-risk {
-          background: rgba(245, 158, 11, 0.1);
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.05));
           color: #d97706;
+
+          .risk-value {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #b45309;
+
+            .risk-icon {
+              color: #f59e0b;
+            }
+          }
         }
       }
 
