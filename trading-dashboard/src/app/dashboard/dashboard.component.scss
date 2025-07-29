@@ -1045,6 +1045,14 @@ table.simple-table {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 
+  .rrr-icon {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    margin-right: 0.2rem;
+    vertical-align: middle;
+  }
+
   &.positive-rrr {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.1));
     color: #047857;
