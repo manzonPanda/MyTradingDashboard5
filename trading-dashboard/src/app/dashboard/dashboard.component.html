@@ -455,15 +455,74 @@
               <td class="col-price">{{ row.sL }}</td>
               <td class="col-price">{{ row.tP }}</td>
               <td class="col-price">{{ row.exit }}</td> -->
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.commission), 'negative': isNegativeValue(row.commission) }">
-                {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
-              </td>
-              <!-- <td class="col-amount">{{ getSafeNumber(row.swap) | currency:'USD':'symbol':'1.2-2' }}</td> -->
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.profit), 'negative': isNegativeValue(row.profit) }">
-                {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
-              </td>
-              <td class="col-amount" [ngClass]="{ 'positive': isPositiveValue(row.netProfit), 'negative': isNegativeValue(row.netProfit) }">
-                {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
+              <td class="col-pnl-breakdown">
+                <div class="pnl-container" [ngClass]="{
+                  'pnl-positive': isPositiveValue(row.netProfit),
+                  'pnl-negative': isNegativeValue(row.netProfit),
+                  'pnl-neutral': getSafeNumber(row.netProfit) === 0
+                }">
+                  <!-- Commission -->
+                  <div class="pnl-item commission-item">
+                    <div class="pnl-label">
+                      <mat-icon class="pnl-icon commission-icon">receipt</mat-icon>
+                      <span>Commission</span>
+                    </div>
+                    <div class="pnl-value commission-value">
+                      {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
+                    </div>
+                  </div>
+
+                  <!-- Arrow separator -->
+                  <div class="pnl-separator">
+                    <mat-icon class="separator-icon">trending_flat</mat-icon>
+                  </div>
+
+                  <!-- Gross Profit -->
+                  <div class="pnl-item profit-item" [ngClass]="{
+                    'profit-positive': isPositiveValue(row.profit),
+                    'profit-negative': isNegativeValue(row.profit)
+                  }">
+                    <div class="pnl-label">
+                      <mat-icon class="pnl-icon profit-icon"
+                                [ngClass]="isPositiveValue(row.profit) ? 'positive-icon' : 'negative-icon'">
+                        {{ isPositiveValue(row.profit) ? 'trending_up' : 'trending_down' }}
+                      </mat-icon>
+                      <span>Gross</span>
+                    </div>
+                    <div class="pnl-value gross-value" [ngClass]="{
+                      'positive-amount': isPositiveValue(row.profit),
+                      'negative-amount': isNegativeValue(row.profit)
+                    }">
+                      {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
+                    </div>
+                  </div>
+
+                  <!-- Equals separator -->
+                  <div class="pnl-separator equals-separator">
+                    <mat-icon class="separator-icon equals-icon">drag_handle</mat-icon>
+                  </div>
+
+                  <!-- Net Profit -->
+                  <div class="pnl-item net-item" [ngClass]="{
+                    'net-positive': isPositiveValue(row.netProfit),
+                    'net-negative': isNegativeValue(row.netProfit)
+                  }">
+                    <div class="pnl-label net-label">
+                      <mat-icon class="pnl-icon net-icon"
+                                [ngClass]="isPositiveValue(row.netProfit) ? 'positive-icon' : 'negative-icon'">
+                        {{ isPositiveValue(row.netProfit) ? 'account_balance_wallet' : 'money_off' }}
+                      </mat-icon>
+                      <span>Net P&L</span>
+                    </div>
+                    <div class="pnl-value net-value" [ngClass]="{
+                      'positive-amount': isPositiveValue(row.netProfit),
+                      'negative-amount': isNegativeValue(row.netProfit),
+                      'neutral-amount': getSafeNumber(row.netProfit) === 0
+                    }">
+                      {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
+                    </div>
+                  </div>
+                </div>
               </td>
             </tr>
 
