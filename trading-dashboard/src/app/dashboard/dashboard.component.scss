@@ -1052,6 +1052,31 @@ table.simple-table {
   }
 }
 
+// Responsive Design for Risk and RRR columns
+@media (max-width: 768px) {
+  .col-risk, .col-rrr {
+    min-width: 70px !important;
+    font-size: 0.7rem;
+  }
+
+  .risk-value {
+    padding: 0.1rem 0.3rem;
+    font-size: 0.7rem;
+  }
+
+  .rrr-badge {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+    min-width: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .col-risk, .col-rrr {
+    display: none; // Hide on very small screens to prevent overcrowding
+  }
+}
+
 // Notion Buttons
 .notion-buttons {
   display: flex;
