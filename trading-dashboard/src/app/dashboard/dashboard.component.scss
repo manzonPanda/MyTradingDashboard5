@@ -1227,9 +1227,8 @@ table.simple-table {
   }
 }
 
-// Add shimmer effect for high-value trades
-.col-risk.high-risk .risk-value,
-.rrr-badge.positive-rrr {
+// Add shimmer effect only for high-risk trades
+.col-risk.high-risk .risk-value {
   background-image: linear-gradient(
     90deg,
     transparent,
