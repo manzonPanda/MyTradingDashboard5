@@ -63,6 +63,20 @@ table.simple-table {
         margin-right: 0.2rem;
       }
     }
+
+    &.col-pnl-breakdown {
+      text-align: center !important;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05), rgba(245, 158, 11, 0.05)) !important;
+      color: #047857 !important;
+      font-weight: 700 !important;
+      position: relative;
+      min-width: 280px !important;
+
+      &::before {
+        content: '💰';
+        margin-right: 0.2rem;
+      }
+    }
   }
 
   tbody tr {
