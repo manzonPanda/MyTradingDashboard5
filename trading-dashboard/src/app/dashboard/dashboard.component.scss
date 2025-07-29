@@ -1222,6 +1222,201 @@ table.simple-table {
   }
 }
 
+// P&L Breakdown Container Styling
+.pnl-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.3rem;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.8));
+  border-radius: 8px;
+  border: 1px solid rgba(203, 213, 225, 0.3);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  }
+
+  &.pnl-positive {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(34, 197, 94, 0.05));
+    border-color: rgba(16, 185, 129, 0.2);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #10b981, #22c55e);
+      border-radius: 8px 0 0 8px;
+    }
+  }
+
+  &.pnl-negative {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.05));
+    border-color: rgba(239, 68, 68, 0.2);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #ef4444, #dc2626);
+      border-radius: 8px 0 0 8px;
+    }
+  }
+
+  &.pnl-neutral {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.05), rgba(156, 163, 175, 0.03));
+    border-color: rgba(107, 114, 128, 0.2);
+  }
+}
+
+.pnl-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  flex: 1;
+
+  &.commission-item {
+    background: rgba(107, 114, 128, 0.05);
+    padding: 0.2rem;
+    border-radius: 6px;
+    border: 1px solid rgba(107, 114, 128, 0.1);
+  }
+
+  &.profit-item {
+    padding: 0.2rem;
+    border-radius: 6px;
+
+    &.profit-positive {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    &.profit-negative {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  &.net-item {
+    padding: 0.25rem;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+
+    &.net-positive {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.1));
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    }
+
+    &.net-negative {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    }
+  }
+}
+
+.pnl-label {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+
+  &.net-label {
+    color: #374151;
+    font-weight: 700;
+  }
+}
+
+.pnl-icon {
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+
+  &.commission-icon {
+    color: #6b7280;
+  }
+
+  &.positive-icon {
+    color: #10b981;
+  }
+
+  &.negative-icon {
+    color: #ef4444;
+  }
+
+  &.net-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.pnl-value {
+  font-size: 0.65rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+
+  &.commission-value {
+    color: #6b7280;
+  }
+
+  &.gross-value {
+    font-size: 0.7rem;
+  }
+
+  &.net-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  &.positive-amount {
+    color: #047857;
+  }
+
+  &.negative-amount {
+    color: #dc2626;
+  }
+
+  &.neutral-amount {
+    color: #6b7280;
+  }
+}
+
+.pnl-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .separator-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+
+    &.equals-icon {
+      color: #6366f1;
+      font-weight: bold;
+    }
+  }
+}
+
 // Animations
 @keyframes pulse {
   0%, 100% {
