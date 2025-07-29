@@ -2325,13 +2325,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's a loss, check if exit price is close to SL
       if (profit < 0) {
-<<<<<<< HEAD
         const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
         if (tradeType === 'buy') {
-=======
-        const position = trade.type.toLowerCase();
-        if (position === 'buy') {
->>>>>>> origin/main
           return exit <= sl * 1.05; // 5% tolerance
         } else {
           return exit >= sl * 0.95; // 5% tolerance
@@ -2364,13 +2359,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (!tp || tp === 0) return false;
 
-<<<<<<< HEAD
       const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
       if (tradeType === 'buy') {
-=======
-      const position = trade.type.toLowerCase();
-      if (position === 'buy') {
->>>>>>> origin/main
         return exit >= tp * 0.95; // Took profit close to target
       } else {
         return exit <= tp * 1.05; // Took profit close to target
