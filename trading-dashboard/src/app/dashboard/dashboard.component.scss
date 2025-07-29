@@ -1231,6 +1231,36 @@ table.simple-table {
     display: none; // Hide on very small screens to prevent overcrowding
   }
 
+  .col-pnl-breakdown {
+    min-width: 160px !important;
+
+    .pnl-container {
+      flex-direction: column;
+      gap: 0.15rem;
+      padding: 0.15rem;
+
+      .pnl-item {
+        width: 100%;
+
+        .pnl-label {
+          font-size: 0.45rem;
+        }
+
+        .pnl-value {
+          font-size: 0.55rem;
+
+          &.net-value {
+            font-size: 0.65rem;
+          }
+        }
+      }
+
+      .pnl-separator {
+        display: none; // Hide separators on very small screens
+      }
+    }
+  }
+
   .col-timeline {
     min-width: 140px !important;
 
