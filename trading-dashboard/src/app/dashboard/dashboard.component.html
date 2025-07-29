@@ -434,98 +434,46 @@
                 <div class="risk-hub-container" [ngClass]="{
                   'risk-low': getSafeNumber(row.riskPerTrade) <= 50,
                   'risk-medium': getSafeNumber(row.riskPerTrade) > 50 && getSafeNumber(row.riskPerTrade) <= 100,
-                  'risk-high': getSafeNumber(row.riskPerTrade) > 100,
-                  'rrr-positive': row.rrr && row.rrr.includes('+'),
-                  'rrr-negative': row.rrr && row.rrr.includes('-')
+                  'risk-high': getSafeNumber(row.riskPerTrade) > 100
                 }">
 
-                  <!-- Risk Level Indicator -->
-                  <div class="risk-level-indicator">
-                    <div class="risk-meter">
-                      <div class="risk-meter-fill" [style.width]="
-                        getSafeNumber(row.riskPerTrade) > 150 ? '100%' :
-                        (getSafeNumber(row.riskPerTrade) / 150 * 100) + '%'
-                      "></div>
-                    </div>
+                  <!-- Risk Amount -->
+                  <div class="risk-section">
                     <div class="risk-label">
-                      <mat-icon class="risk-status-icon" [ngClass]="{
-                        'low-risk-icon': getSafeNumber(row.riskPerTrade) <= 50,
-                        'medium-risk-icon': getSafeNumber(row.riskPerTrade) > 50 && getSafeNumber(row.riskPerTrade) <= 100,
-                        'high-risk-icon': getSafeNumber(row.riskPerTrade) > 100
-                      }">
-                        {{ getSafeNumber(row.riskPerTrade) <= 50 ? 'shield' :
-                           getSafeNumber(row.riskPerTrade) <= 100 ? 'warning_amber' : 'dangerous' }}
-                      </mat-icon>
-                      <span class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}</span>
+                      <mat-icon class="risk-icon">monetization_on</mat-icon>
+                      <span>Risk</span>
                     </div>
+                    <div class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}</div>
                   </div>
 
-                  <!-- Risk Flow Arrow -->
-                  <div class="risk-flow-separator">
-                    <div class="flow-line"></div>
-                    <mat-icon class="flow-arrow">chevron_right</mat-icon>
+                  <!-- Separator -->
+                  <div class="hub-separator">
+                    <mat-icon>trending_flat</mat-icon>
                   </div>
 
-                  <!-- RRR Performance Gauge -->
-                  <div class="rrr-performance-gauge">
-                    <div class="gauge-container">
-                      <div class="gauge-background">
-                        <div class="gauge-fill" [ngClass]="{
-                          'gauge-positive': row.rrr && row.rrr.includes('+'),
-                          'gauge-negative': row.rrr && row.rrr.includes('-'),
-                          'gauge-neutral': !row.rrr || row.rrr === 'N/A'
-                        }" [style.transform]="'rotate(' +
-                          (row.rrr && row.rrr !== 'N/A' ?
-                            Math.min(Math.max(parseFloat(row.rrr) * 90, -90), 90) : 0) + 'deg)'">
-                        </div>
-                      </div>
-                      <div class="gauge-center">
-                        <mat-icon class="rrr-performance-icon" [ngClass]="{
-                          'performance-excellent': row.rrr && parseFloat(row.rrr) > 2,
-                          'performance-good': row.rrr && parseFloat(row.rrr) > 0,
-                          'performance-poor': row.rrr && parseFloat(row.rrr) < 0
-                        }">
-                          {{ row.rrr && parseFloat(row.rrr) > 1 ? 'star' :
-                             row.rrr && parseFloat(row.rrr) > 0 ? 'thumb_up' :
-                             row.rrr && parseFloat(row.rrr) < 0 ? 'thumb_down' : 'help' }}
-                        </mat-icon>
-                      </div>
+                  <!-- RRR Section -->
+                  <div class="rrr-section" [ngClass]="{
+                    'rrr-positive': row.rrr && row.rrr.includes('+'),
+                    'rrr-negative': row.rrr && row.rrr.includes('-')
+                  }">
+                    <div class="rrr-label">
+                      <mat-icon class="rrr-icon">balance</mat-icon>
+                      <span>R:R</span>
                     </div>
-                    <div class="rrr-value-display">
-                      <span class="rrr-value" [ngClass]="{
-                        'rrr-excellent': row.rrr && parseFloat(row.rrr) > 2,
-                        'rrr-positive': row.rrr && parseFloat(row.rrr) > 0 && parseFloat(row.rrr) <= 2,
-                        'rrr-negative': row.rrr && parseFloat(row.rrr) < 0,
-                        'rrr-unknown': !row.rrr || row.rrr === 'N/A'
-                      }">
-                        {{ row.rrr || 'N/A' }}
-                      </span>
-                      <span class="rrr-performance-text">
-                        {{ row.rrr && parseFloat(row.rrr) > 2 ? 'EXCELLENT' :
-                           row.rrr && parseFloat(row.rrr) > 1 ? 'GOOD' :
-                           row.rrr && parseFloat(row.rrr) > 0 ? 'PROFIT' :
-                           row.rrr && parseFloat(row.rrr) < 0 ? 'LOSS' : 'PENDING' }}
-                      </span>
-                    </div>
+                    <div class="rrr-value">{{ row.rrr || 'N/A' }}</div>
                   </div>
 
-                  <!-- Risk Score Badge -->
-                  <div class="risk-score-badge" [ngClass]="{
+                  <!-- Risk Score -->
+                  <div class="risk-score" [ngClass]="{
                     'score-excellent': row.rrr && parseFloat(row.rrr) > 1 && getSafeNumber(row.riskPerTrade) <= 50,
                     'score-good': (row.rrr && parseFloat(row.rrr) > 0) || getSafeNumber(row.riskPerTrade) <= 75,
-                    'score-warning': getSafeNumber(row.riskPerTrade) > 75 && getSafeNumber(row.riskPerTrade) <= 100,
-                    'score-danger': getSafeNumber(row.riskPerTrade) > 100 || (row.rrr && parseFloat(row.rrr) < -1)
+                    'score-warning': getSafeNumber(row.riskPerTrade) > 100
                   }">
                     <mat-icon class="score-icon">
-                      {{ (row.rrr && parseFloat(row.rrr) > 1 && getSafeNumber(row.riskPerTrade) <= 50) ? 'verified' :
+                      {{ (row.rrr && parseFloat(row.rrr) > 1 && getSafeNumber(row.riskPerTrade) <= 50) ? 'star' :
                          ((row.rrr && parseFloat(row.rrr) > 0) || getSafeNumber(row.riskPerTrade) <= 75) ? 'check_circle' :
-                         (getSafeNumber(row.riskPerTrade) > 75 && getSafeNumber(row.riskPerTrade) <= 100) ? 'warning' : 'error' }}
+                         'warning' }}
                     </mat-icon>
-                    <span class="score-text">
-                      {{ (row.rrr && parseFloat(row.rrr) > 1 && getSafeNumber(row.riskPerTrade) <= 50) ? 'A+' :
-                         ((row.rrr && parseFloat(row.rrr) > 0) || getSafeNumber(row.riskPerTrade) <= 75) ? 'A' :
-                         (getSafeNumber(row.riskPerTrade) > 75 && getSafeNumber(row.riskPerTrade) <= 100) ? 'B' : 'C' }}
-                    </span>
                   </div>
 
                 </div>
