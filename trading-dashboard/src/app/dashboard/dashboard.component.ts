@@ -445,18 +445,19 @@ export class DashboardComponent {
     this.tableData.forEach(row => {
       const tradeDateString = row.openDate; // Column 0: the date string
       const symbol = row.symbol;           // Column 2: symbol
-      const type = row.position;             // Column 3: buy/sell
-  
+      const type = row.type || '';         // Use the actual type field
+
       const tradeDate = this.parseTradeDate(tradeDateString);
-      
+
       if (tradeDate) {
+        const typeStr = type ? type.toString() : '';
         this.events = [
           ...this.events,
           {
             start: tradeDate,
-            title: `${type.toUpperCase()} ${symbol}`,
+            title: `${typeStr.toUpperCase()} ${symbol}`,
             color: {
-              primary: type.toLowerCase() === 'buy' ? '#1e90ff' : '#ad2121', // blue for buy, red for sell
+              primary: typeStr.toLowerCase() === 'buy' ? '#1e90ff' : '#ad2121', // blue for buy, red for sell
               secondary: '#FAE3E3'
             },
             allDay: true,
@@ -1715,7 +1716,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         errorMessage += '3. Run: npm run dev\n\n';
         errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
       } else if (error.status === 404) {
-        errorMessage += '🔍 API Endpoint Not Found\n\n';
+        errorMessage += '���� API Endpoint Not Found\n\n';
         errorMessage += 'The server is running but the API route is missing.\n';
         errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
       } else if (error.status === 401 || error.status === 403) {
