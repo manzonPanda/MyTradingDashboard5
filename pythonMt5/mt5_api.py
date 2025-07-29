@@ -6,9 +6,13 @@ import threading
 import time
 import eventlet
 from datetime import datetime, timedelta, timezone
+from dateutil import tz
 from collections import defaultdict
 import pandas as pd
+from pandas.errors import EmptyDataError
 from zoneinfo import ZoneInfo
+from math import isclose
+import numpy as np
 
 eventlet.monkey_patch()  # <- important for eventlet
 
@@ -56,6 +60,17 @@ def watch_trades():
                 # Keep time in MT5 UTC (no local conversion)
                 open_time_str = datetime.fromtimestamp(pos.time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
+                # 💰 Calculate risk in USD
+                risk_usd = None
+                symbol_info = mt5.symbol_info(pos.symbol)
+                if symbol_info is not None and pos.sl > 0:
+                    point = symbol_info.point
+                    tick_value = symbol_info.trade_tick_value
+                    points = abs(pos.price_open - pos.sl) / point
+                    risk_usd = points * tick_value * pos.volume
+                else:
+                    print("⚠️ Cannot calculate risk (missing SL or symbol info)")
+
                 socketio.emit('trade_opened', {
                     "ticket": pos.ticket,
                     "symbol": pos.symbol,
@@ -66,9 +81,9 @@ def watch_trades():
                     "tp": pos.tp,
                     "profit": pos.profit,
                     "time_open": open_time_str,
+                    "risk_usd": round(risk_usd, 2) if risk_usd is not None else None,
                     "object": pos
                 })
-
 
         # Detect closed positions
         closed_tickets = set(last_positions.keys()) - set(current_positions.keys())
@@ -87,13 +102,34 @@ def watch_trades():
             deals = mt5.history_deals_get(start_time, end_time)
             if deals:
                 for d in deals:
-                    # print(f"➡️ Deal check: pos_id={d.position_id}, entry={d.entry}, time={d.time}")
                     if d.position_id == closed_pos.ticket and d.entry == mt5.DEAL_ENTRY_OUT:
-                        print("found",d)
-                        close_time_str = datetime.fromtimestamp(d.time,tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                        print("found", d)
+                        close_time_str = datetime.fromtimestamp(d.time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
                         break
             else:
                 print("⚠️ No deals returned from history_deals_get")
+
+            # ✅ Calculate reward:risk ratio (R)
+            sl = closed_pos.sl
+            price_open = closed_pos.price_open
+            price_close = closed_pos.price_current
+            reward_risk_ratio = None
+
+            if sl and sl > 0 and price_open != sl:
+                if closed_pos.type == mt5.ORDER_TYPE_BUY:
+                    risk_per_lot = price_open - sl
+                    reward_per_lot = price_close - price_open
+                else:  # sell
+                    risk_per_lot = sl - price_open
+                    reward_per_lot = price_open - price_close
+
+                if risk_per_lot != 0:
+                    raw_ratio = reward_per_lot / risk_per_lot
+                    reward_risk_ratio = f"{raw_ratio:+.2f}R"  # formatted with 'R'
+                else:
+                    reward_risk_ratio = "N/A"
+            else:
+                reward_risk_ratio = "N/A"
 
             socketio.emit('trade_closed', {
                 "ticket": closed_pos.ticket,
@@ -104,9 +140,9 @@ def watch_trades():
                 "price_close": closed_pos.price_current,
                 "profit": closed_pos.profit,
                 "time_close": close_time_str,
+                "reward_risk_ratio": reward_risk_ratio,
                 "object": closed_pos
             })
-
 
 
 
@@ -144,7 +180,6 @@ def get_open_trades():
         })
     return jsonify(results)
 
-# from datetime import datetime
 
 @app.route("/api/history", methods=["GET"])
 def full_history():
@@ -152,51 +187,95 @@ def full_history():
     to_date = datetime.now()
 
     deals = mt5.history_deals_get(from_date, to_date)
-    if deals is None or len(deals) == 0:
+    if not deals:
         return jsonify({"error": "No closed trades (deals) found"}), 404
 
-    # Convert all deals to DataFrame
     df_deals = pd.DataFrame([d._asdict() for d in deals])
     df_deals['time'] = pd.to_datetime(df_deals['time'], unit='s')
 
-    # Separate entry and exit deals
-    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][['position_id', 'time', 'price', 'type']]
-    df_entry = df_entry.rename(columns={'time': 'time_open', 'price': 'entry_price'})
+    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][[
+        'position_id', 'time', 'price', 'type', 'volume', 'symbol'
+    ]].rename(columns={
+        'time': 'time_open',
+        'price': 'entry_price',
+        'type': 'trade_type'
+    })
 
-    # Add human-readable position type
-    df_entry['type'] = df_entry['type'].map({0: 'Buy', 1: 'Sell'})
-    df_entry.drop(columns=['type'], inplace=True)  # Drop raw type if not needed
+    df_exit = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT][[
+        'position_id', 'time', 'price', 'profit'
+    ]].rename(columns={
+        'time': 'time_close',
+        'price': 'exit_price'
+    })
 
-    df_exit = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT].copy()
-    df_exit = df_exit.rename(columns={'time': 'time_close', 'price': 'exit_price'})
-
-    # Merge entry and exit
     df_merged = pd.merge(df_exit, df_entry, on='position_id', how='left')
 
-    # Fix commissions
     df_commission = df_deals[df_deals['commission'] != 0].groupby('position_id')['commission'].sum().reset_index()
-    df_merged = df_merged.merge(df_commission, on='position_id', how='left', suffixes=('', '_total'))
-    df_merged['commission'] = df_merged['commission_total'].fillna(0)
-    df_merged.drop(columns=['commission_total'], inplace=True)
+    df_merged = df_merged.merge(df_commission, on='position_id', how='left')
+    df_merged['commission'] = df_merged['commission'].fillna(0)
 
-    # Merge SL/TP/Comment from orders
+    # 🎯 Get SL and TP from order
     orders = mt5.history_orders_get(from_date, to_date)
-    if orders and len(orders) > 0:
-        df_orders = pd.DataFrame([o._asdict() for o in orders])
-        df_orders = df_orders[['ticket', 'sl', 'tp', 'comment']]
-        df_merged = df_merged.merge(df_orders, left_on='order', right_on='ticket', how='left', suffixes=('', '_order'))
+    sl_tp_map = {}
+    if orders:
+        for o in orders:
+            sl_tp_map[o.ticket] = {'sl': o.sl, 'tp': o.tp}
 
-    # Convert datetime columns to string
+    def get_order_sl_tp(order_id):
+        data = sl_tp_map.get(order_id, {})
+        return data.get('sl', 0), data.get('tp', 0)
+
+    df_merged['order'] = df_merged['position_id']  # assumes order ID matches position ID
+    df_merged[['sl', 'tp']] = df_merged['order'].apply(lambda oid: pd.Series(get_order_sl_tp(oid)))
+
+    # 💰 Calculate risk_usd
+    def compute_risk_usd(row):
+        entry = row['entry_price']
+        sl = row['sl']
+        vol = row['volume']
+        symbol = row['symbol']
+
+        symbol_info = mt5.symbol_info(symbol)
+        if symbol_info and sl > 0:
+            point = symbol_info.point
+            tick_value = symbol_info.trade_tick_value
+            points = abs(entry - sl) / point
+            return round(points * tick_value * vol, 2)
+        return None
+
+    df_merged['risk_usd'] = df_merged.apply(compute_risk_usd, axis=1)
+
+    # ✅ Calculate reward:risk ratio
+    def compute_rr(row):
+        risk = row['risk_usd']
+        profit = row['profit']
+        if risk and risk > 0:
+            return f"{round(profit / risk, 2):+0.2f}R"
+        return None
+
+    df_merged['reward_risk_ratio'] = df_merged.apply(compute_rr, axis=1)
+
     df_merged['time_open'] = df_merged['time_open'].astype(str)
     df_merged['time_close'] = df_merged['time_close'].astype(str)
 
-    # Final output
-    result = df_merged[[
-        'ticket', 'position_id', 'order', 'symbol', 'volume', 'entry_price', 'exit_price', 'type',
-        'profit', 'commission', 'sl', 'tp', 'comment', 'time_open', 'time_close'
-    ]].to_dict(orient='records')
+    fields = [
+        'position_id', 'symbol', 'volume', 'trade_type', 'entry_price',
+        'exit_price', 'profit', 'commission', 'sl', 'tp',
+        'risk_usd', 'reward_risk_ratio',
+        'time_open', 'time_close'
+    ]
+    df_final = df_merged[fields] if all(f in df_merged.columns for f in fields) else df_merged
 
-    return jsonify(result)
+    return jsonify(df_final.to_dict(orient='records'))
+
+
+
+
+
+
+
+
+
 
 
 

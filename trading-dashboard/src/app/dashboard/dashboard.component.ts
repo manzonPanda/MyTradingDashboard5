@@ -57,6 +57,8 @@ interface Table {
   swap: string;
   profit: string;
   netProfit: string;
+  riskPerTrade: string; // New field for risk per trade
+  rrr:string
 }
 
 interface NotionPerformanceData {
@@ -618,7 +620,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       commission: row[12],
       swap: row[13],
       profit: row[14],
-      netProfit: row[15]
+      netProfit: row[15],
+      riskPerTrade:"0",
+      rrr:"0"
     } as Table)); //The 'as Table' makes sure it matches the interface
   }
 
@@ -2312,7 +2316,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
 
     if (tradesWithSL.length === 0) return 0;
-
     const adherentTrades = tradesWithSL.filter(trade => {
       const entry = parseFloat(trade.entry);
       const exit = parseFloat(trade.exit);
@@ -2321,7 +2324,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's a loss, check if exit price is close to SL
       if (profit < 0) {
-        const position = trade.position.toLowerCase();
+        const position = trade.type.toLowerCase();
         if (position === 'buy') {
           return exit <= sl * 1.05; // 5% tolerance
         } else {
@@ -2355,7 +2358,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (!tp || tp === 0) return false;
 
-      const position = trade.position.toLowerCase();
+      const position = trade.type.toLowerCase();
       if (position === 'buy') {
         return exit >= tp * 0.95; // Took profit close to target
       } else {
@@ -2736,11 +2739,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   async loadMT5Data(): Promise<void> {
     try {
       const response = await this.getMt5API();
-
       if (response && response.length > 0) {
-        const mt5Trades = response.map((trade: any) => {
-          
- 
+        const mt5Trades = response.map((trade: any) => { 
           return {
             openDate: this.convertAndFormatMT5Date(trade.time_open),
             closeDate: this.convertAndFormatMT5Date(trade.time_close),
@@ -2757,7 +2757,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             commission: trade.commission ? trade.commission.toString() : '0',
             swap: trade.swap ? trade.swap.toString() : '0',
             profit: trade.profit ? trade.profit.toString() : '0',
-            netProfit: (trade.profit + trade.commission).toString()
+            netProfit: (trade.profit + trade.commission).toString(),
+            riskPerTrade: trade.risk_usd? trade.risk_usd.toString() :'0',
+            rrr:trade.reward_risk_ratio ? trade.reward_risk_ratio.toString(): '0'
           } as Table;
         });
 
@@ -2849,7 +2851,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       commission: trade.commission ? trade.commission.toString() : '0',
       swap: "-",
       profit: trade.profit ? trade.profit.toString() : '0',
-      netProfit: trade.profit ? trade.profit.toString() : '0'
+      netProfit: trade.profit ? trade.profit.toString() : '0',
+      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
+      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0'
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
