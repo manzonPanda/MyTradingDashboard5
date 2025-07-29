@@ -1303,8 +1303,36 @@ table.simple-table {
 }
 
 @media (max-width: 480px) {
-  .col-risk, .col-rrr {
-    display: none; // Hide on very small screens to prevent overcrowding
+  .col-risk-hub {
+    min-width: 200px !important;
+
+    .risk-hub-container {
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.2rem;
+
+      .risk-level-indicator, .rrr-performance-gauge {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .risk-flow-separator {
+        display: none; // Hide flow separator on very small screens
+      }
+
+      .gauge-container {
+        width: 30px;
+        height: 15px;
+      }
+
+      .risk-score-badge {
+        align-self: center;
+        flex-direction: row;
+        gap: 0.2rem;
+        padding: 0.1rem 0.3rem;
+      }
+    }
   }
 
   .col-pnl-breakdown {
