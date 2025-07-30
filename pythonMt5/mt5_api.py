@@ -186,87 +186,114 @@ def full_history():
     from_date = datetime(2000, 1, 1)
     to_date = datetime.now()
 
+    # 📕 Closed trades via deals
     deals = mt5.history_deals_get(from_date, to_date)
-    if not deals:
-        return jsonify({"error": "No closed trades (deals) found"}), 404
+    df_closed = []
+    if deals:
+        df_deals = pd.DataFrame([d._asdict() for d in deals])
+        df_deals['time'] = pd.to_datetime(df_deals['time'], unit='s')
 
-    df_deals = pd.DataFrame([d._asdict() for d in deals])
-    df_deals['time'] = pd.to_datetime(df_deals['time'], unit='s')
+        df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][[
+            'position_id', 'time', 'price', 'type', 'volume', 'symbol'
+        ]].rename(columns={
+            'time': 'time_open',
+            'price': 'entry_price',
+            'type': 'trade_type'
+        })
 
-    df_entry = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_IN][[
-        'position_id', 'time', 'price', 'type', 'volume', 'symbol'
-    ]].rename(columns={
-        'time': 'time_open',
-        'price': 'entry_price',
-        'type': 'trade_type'
-    })
+        df_exit = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT][[
+            'position_id', 'time', 'price', 'profit'
+        ]].rename(columns={
+            'time': 'time_close',
+            'price': 'exit_price'
+        })
 
-    df_exit = df_deals[df_deals['entry'] == mt5.DEAL_ENTRY_OUT][[
-        'position_id', 'time', 'price', 'profit'
-    ]].rename(columns={
-        'time': 'time_close',
-        'price': 'exit_price'
-    })
+        df_merged = pd.merge(df_exit, df_entry, on='position_id', how='left')
 
-    df_merged = pd.merge(df_exit, df_entry, on='position_id', how='left')
+        df_commission = df_deals[df_deals['commission'] != 0].groupby('position_id')['commission'].sum().reset_index()
+        df_merged = df_merged.merge(df_commission, on='position_id', how='left')
+        df_merged['commission'] = df_merged['commission'].fillna(0)
 
-    df_commission = df_deals[df_deals['commission'] != 0].groupby('position_id')['commission'].sum().reset_index()
-    df_merged = df_merged.merge(df_commission, on='position_id', how='left')
-    df_merged['commission'] = df_merged['commission'].fillna(0)
+        # 🎯 SL/TP from orders
+        orders = mt5.history_orders_get(from_date, to_date)
+        sl_tp_map = {o.ticket: {'sl': o.sl, 'tp': o.tp} for o in orders} if orders else {}
 
-    # 🎯 Get SL and TP from order
-    orders = mt5.history_orders_get(from_date, to_date)
-    sl_tp_map = {}
-    if orders:
-        for o in orders:
-            sl_tp_map[o.ticket] = {'sl': o.sl, 'tp': o.tp}
+        def get_order_sl_tp(order_id):
+            data = sl_tp_map.get(order_id, {})
+            return data.get('sl', 0), data.get('tp', 0)
 
-    def get_order_sl_tp(order_id):
-        data = sl_tp_map.get(order_id, {})
-        return data.get('sl', 0), data.get('tp', 0)
+        df_merged['order'] = df_merged['position_id']
+        df_merged[['sl', 'tp']] = df_merged['order'].apply(lambda oid: pd.Series(get_order_sl_tp(oid)))
 
-    df_merged['order'] = df_merged['position_id']  # assumes order ID matches position ID
-    df_merged[['sl', 'tp']] = df_merged['order'].apply(lambda oid: pd.Series(get_order_sl_tp(oid)))
+        def compute_risk_usd(row):
+            entry = row['entry_price']
+            sl = row['sl']
+            vol = row['volume']
+            symbol = row['symbol']
+            symbol_info = mt5.symbol_info(symbol)
+            if symbol_info and sl > 0:
+                point = symbol_info.point
+                tick_value = symbol_info.trade_tick_value
+                points = abs(entry - sl) / point
+                return round(points * tick_value * vol, 2)
+            return None
 
-    # 💰 Calculate risk_usd
-    def compute_risk_usd(row):
-        entry = row['entry_price']
-        sl = row['sl']
-        vol = row['volume']
-        symbol = row['symbol']
+        df_merged['risk_usd'] = df_merged.apply(compute_risk_usd, axis=1)
 
-        symbol_info = mt5.symbol_info(symbol)
-        if symbol_info and sl > 0:
-            point = symbol_info.point
-            tick_value = symbol_info.trade_tick_value
-            points = abs(entry - sl) / point
-            return round(points * tick_value * vol, 2)
-        return None
+        def compute_rr(row):
+            risk = row['risk_usd']
+            profit = row['profit']
+            if risk and risk > 0:
+                return f"{round(profit / risk, 2):+0.2f}R"
+            return None
 
-    df_merged['risk_usd'] = df_merged.apply(compute_risk_usd, axis=1)
+        df_merged['reward_risk_ratio'] = df_merged.apply(compute_rr, axis=1)
+        df_merged['time_open'] = df_merged['time_open'].astype(str)
+        df_merged['time_close'] = df_merged['time_close'].astype(str)
+        df_merged['status'] = 'closed'
 
-    # ✅ Calculate reward:risk ratio
-    def compute_rr(row):
-        risk = row['risk_usd']
-        profit = row['profit']
-        if risk and risk > 0:
-            return f"{round(profit / risk, 2):+0.2f}R"
-        return None
+        df_closed = df_merged[[
+            'position_id', 'symbol', 'volume', 'trade_type', 'entry_price',
+            'exit_price', 'profit', 'commission', 'sl', 'tp',
+            'risk_usd', 'reward_risk_ratio',
+            'time_open', 'time_close', 'status'
+        ]].to_dict(orient='records')
 
-    df_merged['reward_risk_ratio'] = df_merged.apply(compute_rr, axis=1)
+    # 📗 Open trades via current positions
+    positions = mt5.positions_get()
+    df_open = []
+    if positions:
+        for pos in positions:
+            symbol_info = mt5.symbol_info(pos.symbol)
+            risk_usd = None
+            if symbol_info and pos.sl > 0:
+                point = symbol_info.point
+                tick_value = symbol_info.trade_tick_value
+                points = abs(pos.price_open - pos.sl) / point
+                risk_usd = round(points * tick_value * pos.volume, 2)
 
-    df_merged['time_open'] = df_merged['time_open'].astype(str)
-    df_merged['time_close'] = df_merged['time_close'].astype(str)
+            df_open.append({
+                'position_id': pos.ticket,
+                'symbol': pos.symbol,
+                'volume': pos.volume,
+                'trade_type': pos.type,
+                'entry_price': pos.price_open,
+                'exit_price': None,
+                'profit': pos.profit,
+                'commission': 0,
+                'sl': pos.sl,
+                'tp': pos.tp,
+                'risk_usd': risk_usd,
+                'reward_risk_ratio': None,
+                'time_open': datetime.fromtimestamp(pos.time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+                'time_close': None,
+                'status': 'open'
+            })
 
-    fields = [
-        'position_id', 'symbol', 'volume', 'trade_type', 'entry_price',
-        'exit_price', 'profit', 'commission', 'sl', 'tp',
-        'risk_usd', 'reward_risk_ratio',
-        'time_open', 'time_close'
-    ]
-    df_final = df_merged[fields] if all(f in df_merged.columns for f in fields) else df_merged
+    # 🧾 Combine both
+    all_trades = df_closed + df_open
+    return jsonify(all_trades)
 
-    return jsonify(df_final.to_dict(orient='records'))
 
 
 

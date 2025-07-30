@@ -58,7 +58,8 @@ interface Table {
   profit: string;
   netProfit: string;
   riskPerTrade: string; // New field for risk per trade
-  rrr:string
+  rrr:string;
+  mt5status:string;// if trade is live(open) or closed in MT5
 }
 
 interface NotionPerformanceData {
@@ -623,7 +624,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       profit: row[14],
       netProfit: row[15],
       riskPerTrade:"0",
-      rrr:"0"
+      rrr:"0",
+      mt5status:"closed"
     } as Table)); //The 'as Table' makes sure it matches the interface
   }
 
@@ -2737,6 +2739,31 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60); // difference in minutes
   }
 
+  // loadTrades(): Promise<void> {
+  //   return new Promise((resolve, reject) => {
+  //     const tradesRef = collection(this.firestore, 'trades');
+  //     getDocs(tradesRef).then((querySnapshot) => {
+  //       const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
+  //       console.log("��� Loaded from Firestore:", firestoreTrades.length, "trades");
+
+  //       // Don't overwrite existing tableData, merge with MT5 trades
+  //       if (this.mt5LiveTrades.length > 0) {
+  //         console.log("🔴 Preserving existing MT5 trades:", this.mt5LiveTrades.length);
+  //         // Keep MT5 trades and add Firestore trades
+  //         this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
+  //       } else {
+  //         this.tableData = firestoreTrades;
+  //       }
+
+  //       console.log("📊 Final tableData after loadTrades:", this.tableData.length);
+  //       resolve(); // Notify that loading is done
+  //     }).catch((error) => {
+  //       console.error('Error loading trades:', error);
+  //       reject(error);
+  //     });
+  //   });
+  // }
+
   async loadMT5Data(): Promise<void> {
     try {
       const response = await this.getMt5API();
@@ -2744,7 +2771,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         const mt5Trades = response.map((trade: any) => { 
           return {
             openDate: this.convertAndFormatMT5Date(trade.time_open),
-            closeDate: this.convertAndFormatMT5Date(trade.time_close),
+            closeDate: trade.time_close? this.convertAndFormatMT5Date(trade.time_close): "-",
             tradeNotion: [],
             status: "",
             position: trade.position_id,
@@ -2760,15 +2787,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             profit: trade.profit ? trade.profit.toString() : '0',
             netProfit: (trade.profit + trade.commission).toString(),
             riskPerTrade: trade.risk_usd? trade.risk_usd.toString() :'0',
-            rrr:trade.reward_risk_ratio ? trade.reward_risk_ratio.toString(): '0'
+            rrr:trade.reward_risk_ratio ? trade.reward_risk_ratio.toString(): '0',
+            mt5status: trade.status || '',
           } as Table;
         });
 
         this.mt5LiveTrades = mt5Trades;
+        console.log("this.mt5LiveTrades", this.mt5LiveTrades);
         this.updateTableData();
       }
     } catch (error) {
-      // Silent error handling
+        console.error('Error loading MT5 data:', error);
     }
   }
 
@@ -2854,7 +2883,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       profit: trade.profit ? trade.profit.toString() : '0',
       netProfit: trade.profit ? trade.profit.toString() : '0',
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
-      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0'
+      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
+      mt5status: trade.status || '',
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
