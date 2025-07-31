@@ -1705,52 +1705,81 @@ table.simple-table {
 
 .rrr-section {
   position: relative;
+  padding: 0.3rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 
+  // 🔥 AMAZING R:R (3.0+)
   &.rrr-on-fire {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.15), rgba(220, 38, 38, 0.1));
-    border-radius: 8px;
-    padding: 0.2rem;
-    border: 2px solid rgba(239, 68, 68, 0.4);
-    animation: fireGlow 1.5s ease-in-out infinite alternate;
-
-    .rrr-value {
-      color: #dc2626;
-      text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
-      animation: fireFlicker 0.8s ease-in-out infinite alternate;
-    }
-  }
-
-  &.rrr-hot {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.1));
-    border-radius: 8px;
-    padding: 0.2rem;
-    border: 2px solid rgba(245, 158, 11, 0.4);
-    animation: hotGlow 2s ease-in-out infinite alternate;
-
-    .rrr-value {
-      color: #d97706;
-      text-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
-    }
-  }
-
-  &.rrr-excellent {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
-    border-radius: 8px;
-    padding: 0.2rem;
-    border: 2px solid rgba(34, 197, 94, 0.3);
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
 
     .rrr-value {
       color: #059669;
-      text-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+      font-weight: 700;
+      text-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    }
+
+    &::after {
+      content: '🚀';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 12px;
     }
   }
 
-  &.rrr-positive .rrr-value {
-    color: #22c55e;
+  // 🔥 HOT R:R (2.0-3.0)
+  &.rrr-hot {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+
+    .rrr-value {
+      color: #16a34a;
+      font-weight: 600;
+    }
+
+    &::after {
+      content: '⚡';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      font-size: 10px;
+    }
   }
 
-  &.rrr-negative .rrr-value {
-    color: #ef4444;
+  // ⭐ EXCELLENT R:R (1.0-2.0)
+  &.rrr-excellent {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+
+    .rrr-value {
+      color: #22c55e;
+      font-weight: 600;
+    }
+  }
+
+  // ✅ POSITIVE R:R (0.1-1.0)
+  &.rrr-positive {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+
+    .rrr-value {
+      color: #10b981;
+      font-weight: 500;
+    }
+  }
+
+  // ❌ NEGATIVE R:R (< 0)
+  &.rrr-negative {
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+
+    .rrr-value {
+      color: #ef4444;
+      font-weight: 500;
+    }
   }
 }
 
