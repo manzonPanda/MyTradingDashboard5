@@ -108,7 +108,8 @@
   display: grid;
   grid-template-columns: 1fr 200px;
   background: var(--tf-bg-card);
-  align-items: stretch;
+  align-items: start;
+  height: 100%;
 }
 
 .calendar-grid {
