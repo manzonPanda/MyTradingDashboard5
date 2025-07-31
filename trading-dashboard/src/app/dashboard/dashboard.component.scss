@@ -1668,39 +1668,41 @@ table.simple-table {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.1rem;
+  gap: 0.2rem;
   flex: 1;
 }
 
 .risk-label, .rrr-label {
   display: flex;
   align-items: center;
-  gap: 0.15rem;
-  font-size: 0.55rem;
-  font-weight: 600;
+  gap: 0.2rem;
+  font-size: 0.6rem;
+  font-weight: 500;
   text-transform: uppercase;
   color: #64748b;
+  letter-spacing: 0.5px;
 }
 
 .risk-icon, .rrr-icon {
-  font-size: 12px;
-  width: 12px;
-  height: 12px;
-  color: #6b7280;
+  font-size: 11px;
+  width: 11px;
+  height: 11px;
+  color: #8b5cf6;
+  opacity: 0.7;
 }
 
 .risk-amount {
-  font-size: 1.1rem;
+  font-size: 0.875rem;
   font-family: 'Monaco', 'Menlo', monospace;
-  font-weight: 700;
-  color: #374151;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .rrr-value {
-  font-size: 1.1rem;
+  font-size: 0.875rem;
   font-family: 'Monaco', 'Menlo', monospace;
-  font-weight: 700;
-  color: #374151;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .rrr-section {
