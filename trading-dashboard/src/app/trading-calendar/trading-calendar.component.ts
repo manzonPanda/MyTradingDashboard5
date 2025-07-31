@@ -33,6 +33,8 @@ interface CalendarDay {
   lossCount: number;
   winRate: number;
   dailyPercentage: number;
+  totalWinAmount: number;
+  totalLossAmount: number;
 }
 
 interface WeekSummary {
@@ -89,15 +91,28 @@ interface WeekSummary {
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
               <div class="day-content" *ngIf="day.tradeCount > 0">
-                <div class="day-pnl" [ngClass]="getDayPnLClass(day.pnl)">
+                <div class="day-net-pnl" [ngClass]="getDayPnLClass(day.pnl)">
                   {{ formatCurrency(day.pnl) }}
                 </div>
-                <div class="day-trades-info">
-                  <span class="win-count">{{ day.winCount }}W</span>
-                  <span class="loss-count">{{ day.lossCount }}L</span>
+                <div class="day-win-loss-amounts">
+                  <div class="win-amount" *ngIf="day.totalWinAmount > 0">
+                    <span class="amount-icon">↗</span>
+                    <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
+                  </div>
+                  <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
+                    <span class="amount-icon">↘</span>
+                    <span class="amount-value">{{ formatCurrency(Math.abs(day.totalLossAmount)) }}</span>
+                  </div>
                 </div>
-                <div class="day-percentage" [ngClass]="getDayPnLClass(day.pnl)">
-                  {{ formatPercentage(day.dailyPercentage) }}
+                <div class="day-trades-summary">
+                  <div class="trades-count">
+                    <span class="win-count">{{ day.winCount }}W</span>
+                    <span class="separator">•</span>
+                    <span class="loss-count">{{ day.lossCount }}L</span>
+                  </div>
+                  <div class="day-percentage" [ngClass]="getDayPnLClass(day.pnl)">
+                    {{ formatPercentage(day.dailyPercentage) }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -171,6 +186,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const winCount = dayTrades.filter(trade => parseFloat(trade.netProfit) > 0).length;
       const lossCount = dayTrades.filter(trade => parseFloat(trade.netProfit) < 0).length;
       const dailyPercentage = (dayPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+      const totalWinAmount = this.calculateTotalWins(dayTrades);
+      const totalLossAmount = this.calculateTotalLosses(dayTrades);
 
       this.calendarDays.push({
         date: currentDay,
@@ -182,7 +199,9 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         winCount: winCount,
         lossCount: lossCount,
         winRate: dayTrades.length > 0 ? (winCount / dayTrades.length) * 100 : 0,
-        dailyPercentage: dailyPercentage
+        dailyPercentage: dailyPercentage,
+        totalWinAmount: totalWinAmount,
+        totalLossAmount: totalLossAmount
       });
     }
 
@@ -255,6 +274,18 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const profit = parseFloat(trade.netProfit) || 0;
       return sum + profit;
     }, 0);
+  }
+
+  calculateTotalWins(trades: Table[]): number {
+    return trades
+      .filter(trade => parseFloat(trade.netProfit) > 0)
+      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
+  }
+
+  calculateTotalLosses(trades: Table[]): number {
+    return trades
+      .filter(trade => parseFloat(trade.netProfit) < 0)
+      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
   }
 
   isToday(date: Date): boolean {
