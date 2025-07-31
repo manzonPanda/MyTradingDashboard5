@@ -424,10 +424,7 @@
               </td>
 
               <td class="col-trade-card">
-                <div class="trade-card-container" [ngClass]="{
-                  'buy-card': row.type.toLowerCase() === 'buy',
-                  'sell-card': row.type.toLowerCase() === 'sell'
-                }">
+                <div class="trade-card-container">
                   <!-- Symbol Section -->
                   <div class="symbol-section">
                     <div class="symbol-icon">
@@ -455,7 +452,7 @@
                         <mat-icon class="volume-icon">account_balance</mat-icon>
                         Volume
                       </div>
-                      <div class="volume-value">{{ row.volume }}L</div>
+                      <div class="volume-value">{{ row.volume }}</div>
                     </div>
                   </div>
 
