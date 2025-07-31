@@ -109,7 +109,7 @@
   grid-template-columns: 1fr 200px;
   background: var(--tf-bg-card);
   align-items: start;
-  height: 100%;
+  grid-template-rows: minmax(auto, auto);
 }
 
 .calendar-grid {
@@ -117,6 +117,7 @@
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 1rem;
+  position: relative;
 
   .day-headers {
     display: grid;
@@ -400,15 +401,16 @@
   background: var(--tf-bg-secondary);
   border-left: 1px solid var(--tf-border-primary);
   padding: 1.5rem 1rem;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto repeat(6, 1fr);
   gap: 1px;
+  height: 100%;
 
   /* Empty space to align with day headers */
   &::before {
     content: '';
     height: calc(0.75rem * 2 + 0.875rem + 1rem); /* Match day headers height + gap */
-    flex-shrink: 0;
+    grid-row: 1;
   }
 
   .week-summary {
@@ -421,7 +423,7 @@
     flex-direction: column;
     justify-content: center;
     min-height: 90px;
-    flex: 1; /* Allow cards to grow equally to match week rows */
+    height: 100%;
 
     &:hover {
       background: var(--tf-bg-hover);
