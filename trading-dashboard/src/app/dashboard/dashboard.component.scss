@@ -4403,107 +4403,39 @@ table.simple-table {
   }
 }
 
-// 🎯 MAGNIFICENT TRADING CARD COMPONENT STYLES
+// 🎯 SIMPLE FUTURISTIC TRADING CARD
 .trade-card-container {
-  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.6rem;
-  border-radius: 16px;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(248, 250, 252, 0.9) 50%,
-    rgba(241, 245, 249, 0.85) 100%
-  );
-  border: 2px solid transparent;
-  backdrop-filter: blur(8px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 4px 16px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 2px;
-    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
-    border-radius: inherit;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: xor;
-    opacity: 0.6;
-    transition: opacity 0.4s ease;
-  }
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow:
-      0 20px 60px rgba(139, 92, 246, 0.15),
-      0 8px 32px rgba(99, 102, 241, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .floating-particles .particle {
-      opacity: 1;
-      animation-play-state: running;
-    }
-
-    .symbol-icon {
-      transform: rotate(360deg) scale(1.1);
-    }
-
-    .type-pulse {
-      animation: cardTypePulse 0.8s ease-in-out infinite;
-    }
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(99, 102, 241, 0.3);
   }
 
   // Buy Card Styling
   &.buy-card {
-    background: linear-gradient(135deg,
-      rgba(16, 185, 129, 0.08) 0%,
-      rgba(34, 197, 94, 0.05) 50%,
-      rgba(255, 255, 255, 0.95) 100%
-    );
-    border-color: rgba(16, 185, 129, 0.2);
+    border-left: 3px solid #10b981;
 
-    &::before {
-      background: linear-gradient(135deg, #10b981, #22c55e, #34d399);
-    }
-
-    .symbol-section .symbol-name {
-      color: #047857;
-    }
-
-    .volume-section .volume-label {
-      color: #059669;
+    .type-badge {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
     }
   }
 
   // Sell Card Styling
   &.sell-card {
-    background: linear-gradient(135deg,
-      rgba(239, 68, 68, 0.08) 0%,
-      rgba(248, 113, 113, 0.05) 50%,
-      rgba(255, 255, 255, 0.95) 100%
-    );
-    border-color: rgba(239, 68, 68, 0.2);
+    border-left: 3px solid #ef4444;
 
-    &::before {
-      background: linear-gradient(135deg, #ef4444, #f87171, #fca5a5);
-    }
-
-    .symbol-section .symbol-name {
-      color: #dc2626;
-    }
-
-    .volume-section .volume-label {
-      color: #b91c1c;
+    .type-badge {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
     }
   }
 }
