@@ -136,12 +136,13 @@
   .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, minmax(90px, auto)); /* 6 weeks with consistent minimum height */
+    grid-template-rows: repeat(6, 1fr); /* 6 weeks with equal heights for alignment */
     gap: 1px;
     background: var(--tf-border-primary);
     border: 1px solid var(--tf-border-primary);
     border-radius: 8px;
     overflow: hidden;
+    min-height: 540px; /* Ensure minimum height for 6 rows × 90px */
 
     .calendar-day {
       background: var(--tf-bg-card);
