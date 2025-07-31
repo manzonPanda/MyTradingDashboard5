@@ -132,9 +132,11 @@
   .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    padding: 1rem;
-    background: transparent;
+    gap: 1px;
+    background: var(--tf-border-primary);
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 8px;
+    overflow: hidden;
 
     .calendar-day {
       background: var(--tf-bg-card);
@@ -145,15 +147,12 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border-radius: 12px;
-      margin: 2px;
-      border: 1px solid transparent;
+      border: none;
 
       &:hover {
         background: var(--tf-bg-hover);
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: var(--shadow-large);
-        border-color: var(--tf-border-secondary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
         z-index: 10;
       }
 
@@ -166,8 +165,8 @@
       }
 
       &.today {
-        border: 2px solid var(--tf-accent-info);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-left: 4px solid var(--tf-accent-info) !important;
+        box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2);
 
         .day-number {
           background: var(--tf-accent-info);
@@ -184,9 +183,8 @@
       }
 
       &.profit-day {
-        background: var(--tf-bg-card);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.05);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(16, 185, 129, 0.08) 100%);
+        border-left: 4px solid var(--calendar-positive);
 
         &::before {
           content: '';
@@ -194,16 +192,14 @@
           top: 0;
           left: 0;
           right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, var(--calendar-positive), #10b981);
-          border-radius: 12px 12px 0 0;
+          height: 2px;
+          background: var(--calendar-positive);
         }
       }
 
       &.loss-day {
-        background: var(--tf-bg-card);
-        border: 1px solid rgba(244, 63, 94, 0.3);
-        box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.05);
+        background: linear-gradient(135deg, rgba(244, 63, 94, 0.03) 0%, rgba(244, 63, 94, 0.08) 100%);
+        border-left: 4px solid var(--calendar-negative);
 
         &::before {
           content: '';
@@ -211,9 +207,8 @@
           top: 0;
           left: 0;
           right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, var(--calendar-negative), #f43f5e);
-          border-radius: 12px 12px 0 0;
+          height: 2px;
+          background: var(--calendar-negative);
         }
       }
 
@@ -404,8 +399,7 @@
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 14px; /* Align with calendar row height */
-  padding-top: calc(1.5rem + 60px); /* Account for day headers */
+  padding-top: calc(1.5rem + 68px); /* Account for day headers + padding */
 
   .week-summary {
     padding: 1rem;
@@ -413,11 +407,11 @@
     border: 1px solid var(--tf-border-primary);
     background: var(--tf-bg-card);
     transition: all 0.2s ease;
-    height: fit-content;
-    min-height: 90px; /* Match calendar day height */
+    height: 91px; /* Match exact calendar row height (90px + 1px border) */
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-bottom: 1px; /* Match calendar row gap */
 
     &:hover {
       background: var(--tf-bg-hover);
@@ -522,8 +516,7 @@
   }
 
   .calendar-days {
-    gap: 4px;
-    padding: 0.75rem;
+    gap: 1px;
   }
 
   .calendar-days .calendar-day {
@@ -579,8 +572,7 @@
   }
 
   .calendar-days {
-    gap: 3px;
-    padding: 0.5rem;
+    gap: 1px;
   }
 
   .calendar-days .calendar-day {
