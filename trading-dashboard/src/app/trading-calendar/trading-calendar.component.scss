@@ -131,15 +131,18 @@
 
     .calendar-day {
       background: var(--tf-bg-card);
-      min-height: 100px;
+      min-height: 120px;
       padding: 0.75rem;
       transition: all 0.2s ease;
       position: relative;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
 
       &:hover {
         background: var(--tf-bg-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
       &.outside-month {
@@ -164,13 +167,15 @@
       }
 
       &.profit-day {
-        background: rgba(34, 197, 94, 0.1);
-        border-left: 3px solid var(--tf-positive);
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.15) 100%);
+        border-left: 4px solid var(--tf-positive);
+        box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.1);
       }
 
       &.loss-day {
-        background: rgba(239, 68, 68, 0.1);
-        border-left: 3px solid var(--tf-negative);
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.15) 100%);
+        border-left: 4px solid var(--tf-negative);
+        box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.1);
       }
 
       .day-number {
@@ -184,54 +189,130 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 0.375rem;
 
-        .day-pnl {
+        .day-net-pnl {
           font-weight: 700;
-          font-size: 0.875rem;
+          font-size: 0.9rem;
+          text-align: center;
+          padding: 0.25rem;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.05);
 
           &.positive {
             color: var(--tf-positive);
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
           }
 
           &.negative {
             color: var(--tf-negative);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
           }
 
           &.neutral {
             color: var(--tf-text-muted);
+            border: 1px solid var(--tf-border-primary);
           }
         }
 
-        .day-trades-info {
+        .day-win-loss-amounts {
           display: flex;
-          gap: 0.5rem;
-          font-size: 0.75rem;
-          font-weight: 500;
+          flex-direction: column;
+          gap: 0.2rem;
 
-          .win-count {
-            color: var(--tf-positive);
+          .win-amount, .loss-amount {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.15rem 0.3rem;
+            border-radius: 4px;
+
+            .amount-icon {
+              font-size: 0.8rem;
+              line-height: 1;
+            }
           }
 
-          .loss-count {
+          .win-amount {
+            color: var(--tf-positive);
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+
+            .amount-icon {
+              color: #22c55e;
+            }
+          }
+
+          .loss-amount {
             color: var(--tf-negative);
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+
+            .amount-icon {
+              color: #ef4444;
+            }
           }
         }
 
-        .day-percentage {
-          font-size: 0.75rem;
-          font-weight: 600;
+        .day-trades-summary {
+          display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
+          margin-top: auto;
 
-          &.positive {
-            color: var(--tf-positive);
+          .trades-count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.1rem;
+
+            .separator {
+              color: var(--tf-text-muted);
+              opacity: 0.6;
+            }
+
+            .win-count {
+              color: var(--tf-positive);
+              background: rgba(34, 197, 94, 0.1);
+              padding: 0.1rem 0.3rem;
+              border-radius: 3px;
+            }
+
+            .loss-count {
+              color: var(--tf-negative);
+              background: rgba(239, 68, 68, 0.1);
+              padding: 0.1rem 0.3rem;
+              border-radius: 3px;
+            }
           }
 
-          &.negative {
-            color: var(--tf-negative);
-          }
+          .day-percentage {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.1rem;
+            border-radius: 3px;
 
-          &.neutral {
-            color: var(--tf-text-muted);
+            &.positive {
+              color: var(--tf-positive);
+              background: rgba(34, 197, 94, 0.05);
+            }
+
+            &.negative {
+              color: var(--tf-negative);
+              background: rgba(239, 68, 68, 0.05);
+            }
+
+            &.neutral {
+              color: var(--tf-text-muted);
+            }
           }
         }
       }
@@ -297,8 +378,23 @@
   }
 
   .calendar-days .calendar-day {
-    min-height: 80px;
+    min-height: 100px;
     padding: 0.5rem;
+
+    .day-content {
+      gap: 0.25rem;
+
+      .day-net-pnl {
+        font-size: 0.8rem;
+      }
+
+      .day-win-loss-amounts {
+        .win-amount, .loss-amount {
+          font-size: 0.7rem;
+          padding: 0.1rem 0.2rem;
+        }
+      }
+    }
   }
 }
 
@@ -336,19 +432,31 @@
   }
 
   .calendar-days .calendar-day {
-    min-height: 60px;
+    min-height: 85px;
     padding: 0.375rem;
 
     .day-content {
-      gap: 0.125rem;
+      gap: 0.2rem;
 
-      .day-pnl {
+      .day-net-pnl {
         font-size: 0.75rem;
       }
 
-      .day-trades-info,
-      .day-percentage {
-        font-size: 0.625rem;
+      .day-win-loss-amounts {
+        .win-amount, .loss-amount {
+          font-size: 0.65rem;
+          padding: 0.1rem 0.2rem;
+        }
+      }
+
+      .day-trades-summary {
+        .trades-count {
+          font-size: 0.6rem;
+        }
+
+        .day-percentage {
+          font-size: 0.6rem;
+        }
       }
     }
   }
@@ -365,22 +473,41 @@
   }
 
   .calendar-days .calendar-day {
-    min-height: 50px;
+    min-height: 70px;
     padding: 0.25rem;
 
     .day-number {
       font-size: 0.75rem;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
     }
 
     .day-content {
-      .day-pnl {
-        font-size: 0.625rem;
+      gap: 0.15rem;
+
+      .day-net-pnl {
+        font-size: 0.7rem;
+        padding: 0.15rem;
       }
 
-      .day-trades-info,
-      .day-percentage {
-        font-size: 0.5rem;
+      .day-win-loss-amounts {
+        .win-amount, .loss-amount {
+          font-size: 0.6rem;
+          padding: 0.05rem 0.15rem;
+
+          .amount-icon {
+            font-size: 0.7rem;
+          }
+        }
+      }
+
+      .day-trades-summary {
+        .trades-count {
+          font-size: 0.55rem;
+        }
+
+        .day-percentage {
+          font-size: 0.55rem;
+        }
       }
     }
   }
