@@ -327,9 +327,7 @@
               <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
               <th class="col-status" [class.hidden]="!showNotionData">Status</th>
               <th class="col-position">Ticket</th>
-              <th class="col-symbol">Symbol</th>
-              <th class="col-type">Type</th>
-              <th class="col-volume">Volume</th>
+              <th class="col-trade-card">🎯 Trading Information</th>
               <th class="col-risk-hub">Risk Management Hub</th>
               <th class="col-pnl-breakdown">Trade P&L Breakdown</th>
             </tr>
@@ -425,11 +423,49 @@
                 </span>
               </td>
 
-              <td class="col-symbol">{{ row.symbol }}</td>
-              <td class="col-type">
-                <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
+              <td class="col-trade-card">
+                <div class="trade-card-container" [ngClass]="{
+                  'buy-card': row.type.toLowerCase() === 'buy',
+                  'sell-card': row.type.toLowerCase() === 'sell'
+                }">
+                  <!-- Symbol Section -->
+                  <div class="symbol-section">
+                    <div class="symbol-icon">
+                      <mat-icon class="currency-icon">currency_exchange</mat-icon>
+                    </div>
+                    <div class="symbol-details">
+                      <div class="symbol-name">{{ row.symbol }}</div>
+                      <div class="symbol-subtitle">Pair</div>
+                    </div>
+                  </div>
+
+                  <!-- Type Badge -->
+                  <div class="type-section">
+                    <div class="type-badge">
+                      <mat-icon class="type-icon" *ngIf="row.type.toLowerCase() === 'buy'">trending_up</mat-icon>
+                      <mat-icon class="type-icon" *ngIf="row.type.toLowerCase() === 'sell'">trending_down</mat-icon>
+                      <span class="type-text">{{ row.type }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Volume Display -->
+                  <div class="volume-section">
+                    <div class="volume-display">
+                      <div class="volume-label">
+                        <mat-icon class="volume-icon">account_balance</mat-icon>
+                        Volume
+                      </div>
+                      <div class="volume-value">{{ row.volume }}L</div>
+                    </div>
+                  </div>
+
+                  <!-- Simple Live Indicator -->
+                  <div class="live-indicator" *ngIf="isNewTrade(row)">
+                    <div class="live-dot"></div>
+                    <span>LIVE</span>
+                  </div>
+                </div>
               </td>
-              <td class="col-volume">{{ row.volume }}</td>
               <td class="col-risk-hub">
                 <div class="risk-hub-container" [ngClass]="{
                   'risk-low': getSafeNumber(row.riskPerTrade) <= 50,
@@ -453,35 +489,17 @@
 
                   <!-- RRR Section -->
                   <div class="rrr-section" [ngClass]="{
-                    'rrr-on-fire': row.rrr && parseFloat(row.rrr) >= 3,
-                    'rrr-hot': row.rrr && parseFloat(row.rrr) >= 2 && parseFloat(row.rrr) < 3,
-                    'rrr-excellent': row.rrr && parseFloat(row.rrr) >= 1 && parseFloat(row.rrr) < 2,
-                    'rrr-positive': row.rrr && parseFloat(row.rrr) > 0 && parseFloat(row.rrr) < 1,
-                    'rrr-negative': row.rrr && parseFloat(row.rrr) < 0
+                    'rrr-on-fire': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) >= 3,
+                    'rrr-hot': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) >= 2 && parseFloat(row.rrr.toString().replace('R', '')) < 3,
+                    'rrr-excellent': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) >= 1 && parseFloat(row.rrr.toString().replace('R', '')) < 2,
+                    'rrr-positive': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) > 0 && parseFloat(row.rrr.toString().replace('R', '')) < 1,
+                    'rrr-negative': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) < 0
                   }">
                     <div class="rrr-label">
                       <mat-icon class="rrr-icon">balance</mat-icon>
                       <span>R:R</span>
                     </div>
                     <div class="rrr-value-container">
-                      <!-- Fire effects for amazing RRR -->
-                      <div class="fire-effects" *ngIf="row.rrr && parseFloat(row.rrr) >= 2">
-                        <span class="fire-emoji fire-1">🔥</span>
-                        <span class="fire-emoji fire-2" *ngIf="parseFloat(row.rrr) >= 3">🔥</span>
-                        <span class="fire-emoji fire-3" *ngIf="parseFloat(row.rrr) >= 4">🔥</span>
-                      </div>
-
-                      <!-- Lightning for super amazing RRR -->
-                      <div class="lightning-effects" *ngIf="row.rrr && parseFloat(row.rrr) >= 5">
-                        <span class="lightning-emoji">⚡</span>
-                        <span class="lightning-emoji">⚡</span>
-                      </div>
-
-                      <!-- Star effects for excellent RRR -->
-                      <div class="star-effects" *ngIf="row.rrr && parseFloat(row.rrr) >= 1 && parseFloat(row.rrr) < 2">
-                        <span class="star-emoji">⭐</span>
-                      </div>
-
                       <div class="rrr-value">{{ row.rrr || 'N/A' }}</div>
                     </div>
                   </div>
