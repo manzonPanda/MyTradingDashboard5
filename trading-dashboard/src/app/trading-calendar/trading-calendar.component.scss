@@ -3,20 +3,26 @@
   --calendar-border: #333;
   --calendar-text: #ffffff;
   --calendar-text-muted: #999;
-  --calendar-positive: #22c55e;
-  --calendar-negative: #ef4444;
+  --calendar-positive: #10b981;
+  --calendar-negative: #f43f5e;
   --calendar-neutral: #6b7280;
   --calendar-today: #3b82f6;
   --calendar-outside: #666;
   --calendar-hover: #2a2a2a;
+  --gradient-positive: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  --gradient-negative: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .trading-calendar-container {
   background: var(--tf-bg-card);
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid var(--tf-border-primary);
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  box-shadow: var(--shadow-medium);
 }
 
 .calendar-header {
@@ -99,19 +105,22 @@
 }
 
 .calendar-grid-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 200px;
   background: var(--tf-bg-card);
+  align-items: stretch;
 }
 
 .calendar-grid {
-  flex: 1;
   padding: 1.5rem;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
 
   .day-headers {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    margin-bottom: 1rem;
 
     .day-header {
       text-align: center;
@@ -125,113 +134,260 @@
   .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, auto); /* 6 weeks, auto height */
     gap: 1px;
     background: var(--tf-border-primary);
     border: 1px solid var(--tf-border-primary);
+    border-radius: 8px;
+    overflow: hidden;
 
     .calendar-day {
       background: var(--tf-bg-card);
-      min-height: 100px;
+      min-height: 90px;
       padding: 0.75rem;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      border: none;
 
       &:hover {
         background: var(--tf-bg-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
+        z-index: 10;
       }
 
       &.outside-month {
+        background: rgba(255, 255, 255, 0.02);
         .day-number {
           color: var(--tf-text-muted);
-          opacity: 0.5;
+          opacity: 0.4;
         }
       }
 
       &.today {
+        border-left: 4px solid var(--tf-accent-info) !important;
+        box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2);
+
         .day-number {
           background: var(--tf-accent-info);
           color: white;
           border-radius: 50%;
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 600;
+          box-shadow: var(--shadow-soft);
         }
       }
 
       &.profit-day {
-        background: rgba(34, 197, 94, 0.1);
-        border-left: 3px solid var(--tf-positive);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(16, 185, 129, 0.08) 100%);
+        border-left: 4px solid var(--calendar-positive);
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--calendar-positive);
+        }
       }
 
       &.loss-day {
-        background: rgba(239, 68, 68, 0.1);
-        border-left: 3px solid var(--tf-negative);
+        background: linear-gradient(135deg, rgba(244, 63, 94, 0.03) 0%, rgba(244, 63, 94, 0.08) 100%);
+        border-left: 4px solid var(--calendar-negative);
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--calendar-negative);
+        }
       }
 
       .day-number {
-        font-weight: 600;
+        font-weight: 700;
         color: var(--tf-text-primary);
         margin-bottom: 0.5rem;
         font-size: 0.875rem;
+        line-height: 1;
       }
 
       .day-content {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 0.375rem;
 
-        .day-pnl {
-          font-weight: 700;
+        .day-net-pnl {
+          font-weight: 800;
           font-size: 0.875rem;
+          text-align: center;
+          padding: 0.375rem 0.5rem;
+          border-radius: 8px;
+          background: var(--tf-bg-tertiary);
+          border: 1px solid var(--tf-border-primary);
+          box-shadow: var(--shadow-soft);
+          backdrop-filter: blur(10px);
+          letter-spacing: 0.025em;
 
           &.positive {
-            color: var(--tf-positive);
+            color: #065f46;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 1px solid #a7f3d0;
+            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
           }
 
           &.negative {
-            color: var(--tf-negative);
+            color: #991b1b;
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            border: 1px solid #fca5a5;
+            box-shadow: 0 1px 3px rgba(244, 63, 94, 0.2);
           }
 
           &.neutral {
-            color: var(--tf-text-muted);
+            color: var(--tf-text-primary);
+            background: var(--tf-bg-tertiary);
+            border: 1px solid var(--tf-border-primary);
           }
         }
 
-        .day-trades-info {
+        .day-win-loss-amounts {
+          .amounts-row {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: space-between;
+          }
+
+          .win-amount, .loss-amount {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.3rem;
+            border-radius: 6px;
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-soft);
+            letter-spacing: 0.025em;
+            flex: 1;
+            min-width: 0;
+
+            .amount-icon {
+              font-size: 0.75rem;
+              line-height: 1;
+              font-weight: bold;
+              flex-shrink: 0;
+            }
+
+            .amount-value {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+
+          .win-amount {
+            color: #065f46;
+            background: linear-gradient(135deg, rgba(236, 253, 245, 0.9) 0%, rgba(209, 250, 229, 0.9) 100%);
+            border: 1px solid #a7f3d0;
+
+            .amount-icon {
+              color: #059669;
+            }
+          }
+
+          .loss-amount {
+            color: #991b1b;
+            background: linear-gradient(135deg, rgba(254, 242, 242, 0.9) 0%, rgba(254, 202, 202, 0.9) 100%);
+            border: 1px solid #fca5a5;
+
+            .amount-icon {
+              color: #dc2626;
+            }
+          }
+        }
+
+        .day-trades-summary {
           display: flex;
-          gap: 0.5rem;
-          font-size: 0.75rem;
-          font-weight: 500;
+          flex-direction: column;
+          gap: 0.25rem;
+          margin-top: auto;
 
-          .win-count {
-            color: var(--tf-positive);
+          .trades-count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            padding: 0.25rem 0.375rem;
+            background: var(--tf-bg-tertiary);
+            border-radius: 6px;
+            border: 1px solid var(--tf-border-primary);
+            box-shadow: var(--shadow-soft);
+
+            .separator {
+              color: var(--tf-text-muted);
+              opacity: 0.7;
+              font-weight: 700;
+            }
+
+            .win-count {
+              color: #065f46;
+              background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+              padding: 0.125rem 0.25rem;
+              border-radius: 4px;
+              font-weight: 700;
+              border: 1px solid #a7f3d0;
+            }
+
+            .loss-count {
+              color: #991b1b;
+              background: linear-gradient(135deg, #fef2f2, #fecaca);
+              padding: 0.125rem 0.25rem;
+              border-radius: 4px;
+              font-weight: 700;
+              border: 1px solid #fca5a5;
+            }
           }
 
-          .loss-count {
-            color: var(--tf-negative);
-          }
-        }
+          .day-percentage {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0.2rem 0.3rem;
+            border-radius: 6px;
+            background: var(--tf-bg-tertiary);
+            border: 1px solid var(--tf-border-primary);
+            box-shadow: var(--shadow-soft);
+            letter-spacing: 0.025em;
 
-        .day-percentage {
-          font-size: 0.75rem;
-          font-weight: 600;
+            &.positive {
+              color: #065f46;
+              background: linear-gradient(135deg, rgba(236, 253, 245, 0.8), rgba(209, 250, 229, 0.8));
+              border-color: #a7f3d0;
+            }
 
-          &.positive {
-            color: var(--tf-positive);
-          }
+            &.negative {
+              color: #991b1b;
+              background: linear-gradient(135deg, rgba(254, 242, 242, 0.8), rgba(254, 202, 202, 0.8));
+              border-color: #fca5a5;
+            }
 
-          &.negative {
-            color: var(--tf-negative);
-          }
-
-          &.neutral {
-            color: var(--tf-text-muted);
+            &.neutral {
+              color: var(--tf-text-primary);
+            }
           }
         }
       }
@@ -240,18 +396,30 @@
 }
 
 .weekly-summary {
-  width: 200px;
   background: var(--tf-bg-secondary);
   border-left: 1px solid var(--tf-border-primary);
   padding: 1.5rem 1rem;
+  display: grid;
+  grid-template-rows: auto repeat(6, 1fr); /* Header space + 6 week rows */
+  gap: 1px;
+  align-items: stretch;
+
+  /* Empty space to align with day headers */
+  &::before {
+    content: '';
+    height: calc(0.75rem * 2 + 0.875rem + 1rem); /* Match day headers height + gap */
+  }
 
   .week-summary {
     padding: 1rem;
-    margin-bottom: 0.5rem;
     border-radius: 8px;
     border: 1px solid var(--tf-border-primary);
     background: var(--tf-bg-card);
     transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90px; /* Minimum height but can expand */
 
     &:hover {
       background: var(--tf-bg-hover);
@@ -299,6 +467,26 @@
   .calendar-days .calendar-day {
     min-height: 80px;
     padding: 0.5rem;
+
+    .day-content {
+      gap: 0.25rem;
+
+      .day-net-pnl {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.4rem;
+      }
+
+      .day-win-loss-amounts {
+        .win-amount, .loss-amount {
+          font-size: 0.65rem;
+          padding: 0.15rem 0.25rem;
+
+          .amount-icon {
+            font-size: 0.7rem;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -323,32 +511,65 @@
   }
 
   .calendar-grid-container {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
   }
 
   .weekly-summary {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
     border-left: none;
     border-top: 1px solid var(--tf-border-primary);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-rows: auto;
+    gap: 1rem;
+    padding: 1rem;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .calendar-days {
+    gap: 1px;
   }
 
   .calendar-days .calendar-day {
-    min-height: 60px;
-    padding: 0.375rem;
+    min-height: 75px;
+    padding: 0.4rem;
 
     .day-content {
-      gap: 0.125rem;
+      gap: 0.2rem;
 
-      .day-pnl {
+      .day-net-pnl {
         font-size: 0.75rem;
+        padding: 0.25rem 0.3rem;
       }
 
-      .day-trades-info,
-      .day-percentage {
-        font-size: 0.625rem;
+      .day-win-loss-amounts {
+        .amounts-row {
+          gap: 0.15rem;
+        }
+
+        .win-amount, .loss-amount {
+          font-size: 0.6rem;
+          padding: 0.1rem 0.2rem;
+
+          .amount-icon {
+            font-size: 0.65rem;
+          }
+        }
+      }
+
+      .day-trades-summary {
+        .trades-count {
+          font-size: 0.6rem;
+          padding: 0.15rem 0.25rem;
+        }
+
+        .day-percentage {
+          font-size: 0.6rem;
+          padding: 0.15rem 0.2rem;
+        }
       }
     }
   }
@@ -364,9 +585,14 @@
     padding: 1rem 0.5rem;
   }
 
+  .calendar-days {
+    gap: 1px;
+  }
+
   .calendar-days .calendar-day {
-    min-height: 50px;
-    padding: 0.25rem;
+    min-height: 65px;
+    padding: 0.3rem;
+    border-radius: 8px;
 
     .day-number {
       font-size: 0.75rem;
@@ -374,13 +600,38 @@
     }
 
     .day-content {
-      .day-pnl {
-        font-size: 0.625rem;
+      gap: 0.15rem;
+
+      .day-net-pnl {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.25rem;
       }
 
-      .day-trades-info,
-      .day-percentage {
-        font-size: 0.5rem;
+      .day-win-loss-amounts {
+        .amounts-row {
+          gap: 0.1rem;
+        }
+
+        .win-amount, .loss-amount {
+          font-size: 0.55rem;
+          padding: 0.1rem 0.15rem;
+
+          .amount-icon {
+            font-size: 0.6rem;
+          }
+        }
+      }
+
+      .day-trades-summary {
+        .trades-count {
+          font-size: 0.55rem;
+          padding: 0.1rem 0.15rem;
+        }
+
+        .day-percentage {
+          font-size: 0.55rem;
+          padding: 0.1rem 0.15rem;
+        }
       }
     }
   }
