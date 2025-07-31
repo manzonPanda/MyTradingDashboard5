@@ -348,4 +348,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     if (pnl < 0) return 'negative';
     return 'neutral';
   }
+
+  getAbsoluteValue(value: number): number {
+    return Math.abs(value);
+  }
 }
