@@ -23,7 +23,7 @@ local_tz = ZoneInfo("Asia/Manila")
 
 if not mt5.initialize():
     raise Exception(f"❌MT5 Initialization failed: {mt5.last_error()}")
-
+         
 # Store previously seen trade tickets to detect new ones
 seen_tickets = set()
 
@@ -299,13 +299,17 @@ def full_history():
 
 
 
-
-
-
-
-
-
+@socketio.on('connect')
+def on_connect():
+    info = mt5.account_info()
+    if info:
+        socketio.emit('account_info', {
+            'login': info.login,
+            'name': info.name,
+            'server': info.server
+        })
 
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+ 

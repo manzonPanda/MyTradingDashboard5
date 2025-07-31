@@ -283,27 +283,33 @@ export class DashboardComponent {
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
-    socket.on("connect", () => {
+  socket.on("connect", () => {
     console.warn("✅ Connected to WebSocket server");
+  });
+
+  socket.on("account_info", (data) => {
+    console.warn("📊 Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
     console.warn("❌ Socket connection error:", err);
   });
-    socket.on("trade_opened", (data: any) => {
-      console.warn("New trade opened:", data);
-      this.addMT5LiveTrade(data);
-    });
 
-    socket.on("trade_closed", (data: any) => {
-      console.warn("Trade closed:", data);
-      this.closeMT5Trade(data);
-    });
+  socket.on("trade_opened", (data: any) => {
+    console.warn("New trade opened:", data);
+    this.addMT5LiveTrade(data);
+  });
 
-    socket.on('price_update', (data: any) => {
-      console.log("Live price update:", data);
-      this.updateMT5TradePrice(data);
-    });
+  socket.on("trade_closed", (data: any) => {
+    console.warn("Trade closed:", data);
+    this.closeMT5Trade(data);
+  });
+
+  socket.on('price_update', (data: any) => {
+    console.log("Live price update:", data);
+    this.updateMT5TradePrice(data);
+  });
+
     this.dtOptions = {
       paging: true,
       searching: true,
