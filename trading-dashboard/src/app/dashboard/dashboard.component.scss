@@ -4402,3 +4402,457 @@ table.simple-table {
     }
   }
 }
+
+// 🎯 MAGNIFICENT TRADING CARD COMPONENT STYLES
+.trade-card-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.9) 50%,
+    rgba(241, 245, 249, 0.85) 100%
+  );
+  border: 2px solid transparent;
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    opacity: 0.6;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow:
+      0 20px 60px rgba(139, 92, 246, 0.15),
+      0 8px 32px rgba(99, 102, 241, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .floating-particles .particle {
+      opacity: 1;
+      animation-play-state: running;
+    }
+
+    .symbol-icon {
+      transform: rotate(360deg) scale(1.1);
+    }
+
+    .type-pulse {
+      animation: cardTypePulse 0.8s ease-in-out infinite;
+    }
+  }
+
+  // Buy Card Styling
+  &.buy-card {
+    background: linear-gradient(135deg,
+      rgba(16, 185, 129, 0.08) 0%,
+      rgba(34, 197, 94, 0.05) 50%,
+      rgba(255, 255, 255, 0.95) 100%
+    );
+    border-color: rgba(16, 185, 129, 0.2);
+
+    &::before {
+      background: linear-gradient(135deg, #10b981, #22c55e, #34d399);
+    }
+
+    .symbol-section .symbol-name {
+      color: #047857;
+    }
+
+    .volume-section .volume-label {
+      color: #059669;
+    }
+  }
+
+  // Sell Card Styling
+  &.sell-card {
+    background: linear-gradient(135deg,
+      rgba(239, 68, 68, 0.08) 0%,
+      rgba(248, 113, 113, 0.05) 50%,
+      rgba(255, 255, 255, 0.95) 100%
+    );
+    border-color: rgba(239, 68, 68, 0.2);
+
+    &::before {
+      background: linear-gradient(135deg, #ef4444, #f87171, #fca5a5);
+    }
+
+    .symbol-section .symbol-name {
+      color: #dc2626;
+    }
+
+    .volume-section .volume-label {
+      color: #b91c1c;
+    }
+  }
+}
+
+// Symbol Section Styling
+.symbol-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(203, 213, 225, 0.3);
+  position: relative;
+
+  .symbol-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+
+    .currency-icon {
+      color: white;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .symbol-details {
+    flex: 1;
+    text-align: left;
+
+    .symbol-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.1rem;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .symbol-subtitle {
+      font-size: 0.65rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+  }
+}
+
+// Type Section Styling
+.type-section {
+  display: flex;
+  justify-content: center;
+  margin: 0.2rem 0;
+
+  .type-badge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+
+    .type-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      z-index: 2;
+    }
+
+    .type-text {
+      z-index: 2;
+      position: relative;
+    }
+
+    .type-pulse {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &.buy-badge {
+      background: linear-gradient(135deg,
+        rgba(16, 185, 129, 0.9) 0%,
+        rgba(34, 197, 94, 0.8) 100%
+      );
+      color: white;
+      box-shadow:
+        0 6px 20px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+      .type-pulse {
+        background: radial-gradient(circle at center,
+          rgba(255, 255, 255, 0.3) 0%,
+          transparent 70%
+        );
+      }
+    }
+
+    &.sell-badge {
+      background: linear-gradient(135deg,
+        rgba(239, 68, 68, 0.9) 0%,
+        rgba(248, 113, 113, 0.8) 100%
+      );
+      color: white;
+      box-shadow:
+        0 6px 20px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+      .type-pulse {
+        background: radial-gradient(circle at center,
+          rgba(255, 255, 255, 0.3) 0%,
+          transparent 70%
+        );
+      }
+    }
+  }
+}
+
+// Volume Section Styling
+.volume-section {
+  .volume-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.4rem;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(203, 213, 225, 0.2);
+
+    .volume-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #64748b;
+      letter-spacing: 0.5px;
+
+      .volume-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+      }
+    }
+
+    .volume-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1e293b;
+      text-align: center;
+      font-family: 'Monaco', 'Menlo', monospace;
+    }
+
+    .volume-bar {
+      height: 4px;
+      background: rgba(203, 213, 225, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+
+      .volume-fill {
+        height: 100%;
+        border-radius: inherit;
+        transition: all 0.4s ease;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.6) 50%,
+            transparent 100%
+          );
+          animation: cardVolumeShimmer 2s infinite;
+        }
+
+        &.volume-small {
+          background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        &.volume-medium {
+          background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        &.volume-large {
+          background: linear-gradient(90deg, #10b981, #34d399);
+        }
+      }
+    }
+  }
+}
+
+// Floating Particles
+.floating-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: radial-gradient(circle, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    opacity: 0;
+    animation-play-state: paused;
+
+    &.particle-1 {
+      top: 20%;
+      left: 15%;
+      animation: cardFloat1 3s infinite ease-in-out;
+      animation-delay: 0s;
+    }
+
+    &.particle-2 {
+      top: 60%;
+      right: 20%;
+      animation: cardFloat2 4s infinite ease-in-out;
+      animation-delay: 1s;
+    }
+
+    &.particle-3 {
+      bottom: 30%;
+      left: 80%;
+      animation: cardFloat3 3.5s infinite ease-in-out;
+      animation-delay: 2s;
+    }
+  }
+}
+
+// Live Indicator
+.live-indicator {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.2rem 0.4rem;
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  animation: cardLiveBlink 1.5s infinite;
+
+  .live-dot {
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    animation: cardLivePulse 1s infinite;
+  }
+}
+
+// Trading Card Animations
+@keyframes cardTypePulse {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes cardVolumeShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cardFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(10px, -10px) rotate(180deg);
+    opacity: 0.8;
+  }
+}
+
+@keyframes cardFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-15px, -8px) rotate(-180deg);
+    opacity: 0.6;
+  }
+}
+
+@keyframes cardFloat3 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(8px, -12px) rotate(90deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes cardLiveBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes cardLivePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+}
