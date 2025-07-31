@@ -107,6 +107,7 @@
 .calendar-grid-container {
   display: flex;
   background: var(--tf-bg-card);
+  align-items: flex-start;
 }
 
 .calendar-grid {
@@ -264,26 +265,37 @@
         }
 
         .day-win-loss-amounts {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
+          .amounts-row {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: space-between;
+          }
 
           .win-amount, .loss-amount {
             display: flex;
             align-items: center;
-            gap: 0.3rem;
-            font-size: 0.75rem;
+            gap: 0.2rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            padding: 0.25rem 0.375rem;
+            padding: 0.2rem 0.3rem;
             border-radius: 6px;
             backdrop-filter: blur(8px);
             box-shadow: var(--shadow-soft);
             letter-spacing: 0.025em;
+            flex: 1;
+            min-width: 0;
 
             .amount-icon {
-              font-size: 0.875rem;
+              font-size: 0.75rem;
               line-height: 1;
               font-weight: bold;
+              flex-shrink: 0;
+            }
+
+            .amount-value {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
           }
 
@@ -390,14 +402,22 @@
   background: var(--tf-bg-secondary);
   border-left: 1px solid var(--tf-border-primary);
   padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* Align with calendar row height */
+  padding-top: calc(1.5rem + 60px); /* Account for day headers */
 
   .week-summary {
     padding: 1rem;
-    margin-bottom: 0.5rem;
     border-radius: 8px;
     border: 1px solid var(--tf-border-primary);
     background: var(--tf-bg-card);
     transition: all 0.2s ease;
+    height: fit-content;
+    min-height: 90px; /* Match calendar day height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     &:hover {
       background: var(--tf-bg-hover);
