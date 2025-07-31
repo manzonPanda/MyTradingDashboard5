@@ -105,20 +105,22 @@
 }
 
 .calendar-grid-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 200px;
   background: var(--tf-bg-card);
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .calendar-grid {
-  flex: 1;
   padding: 1.5rem;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
 
   .day-headers {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    margin-bottom: 1rem;
 
     .day-header {
       text-align: center;
@@ -132,6 +134,7 @@
   .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, auto); /* 6 weeks, auto height */
     gap: 1px;
     background: var(--tf-border-primary);
     border: 1px solid var(--tf-border-primary);
@@ -393,13 +396,19 @@
 }
 
 .weekly-summary {
-  width: 200px;
   background: var(--tf-bg-secondary);
   border-left: 1px solid var(--tf-border-primary);
   padding: 1.5rem 1rem;
-  display: flex;
-  flex-direction: column;
-  padding-top: calc(1.5rem + 68px); /* Account for day headers + padding */
+  display: grid;
+  grid-template-rows: auto repeat(6, 1fr); /* Header space + 6 week rows */
+  gap: 1px;
+  align-items: stretch;
+
+  /* Empty space to align with day headers */
+  &::before {
+    content: '';
+    height: calc(0.75rem * 2 + 0.875rem + 1rem); /* Match day headers height + gap */
+  }
 
   .week-summary {
     padding: 1rem;
@@ -407,11 +416,10 @@
     border: 1px solid var(--tf-border-primary);
     background: var(--tf-bg-card);
     transition: all 0.2s ease;
-    height: 91px; /* Match exact calendar row height (90px + 1px border) */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    margin-bottom: 1px; /* Match calendar row gap */
+    min-height: 90px; /* Minimum height but can expand */
 
     &:hover {
       background: var(--tf-bg-hover);
@@ -503,16 +511,22 @@
   }
 
   .calendar-grid-container {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
   }
 
   .weekly-summary {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
     border-left: none;
     border-top: 1px solid var(--tf-border-primary);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-rows: auto;
+    gap: 1rem;
+    padding: 1rem;
+
+    &::before {
+      display: none;
+    }
   }
 
   .calendar-days {
