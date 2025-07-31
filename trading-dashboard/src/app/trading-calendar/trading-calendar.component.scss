@@ -476,8 +476,12 @@
 
       .day-win-loss-amounts {
         .win-amount, .loss-amount {
-          font-size: 0.7rem;
-          padding: 0.2rem 0.3rem;
+          font-size: 0.65rem;
+          padding: 0.15rem 0.25rem;
+
+          .amount-icon {
+            font-size: 0.7rem;
+          }
         }
       }
     }
@@ -535,9 +539,17 @@
       }
 
       .day-win-loss-amounts {
+        .amounts-row {
+          gap: 0.15rem;
+        }
+
         .win-amount, .loss-amount {
-          font-size: 0.65rem;
-          padding: 0.15rem 0.25rem;
+          font-size: 0.6rem;
+          padding: 0.1rem 0.2rem;
+
+          .amount-icon {
+            font-size: 0.65rem;
+          }
         }
       }
 
@@ -590,12 +602,16 @@
       }
 
       .day-win-loss-amounts {
+        .amounts-row {
+          gap: 0.1rem;
+        }
+
         .win-amount, .loss-amount {
-          font-size: 0.6rem;
-          padding: 0.15rem 0.2rem;
+          font-size: 0.55rem;
+          padding: 0.1rem 0.15rem;
 
           .amount-icon {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
           }
         }
       }
