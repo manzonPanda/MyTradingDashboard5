@@ -4505,80 +4505,35 @@ table.simple-table {
   }
 }
 
-// Volume Section Styling
+// Volume Section - Simple Display
 .volume-section {
   .volume-display {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.4rem;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 10px;
-    border: 1px solid rgba(203, 213, 225, 0.2);
+    text-align: right;
 
     .volume-label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.2rem;
       font-size: 0.6rem;
-      font-weight: 600;
-      text-transform: uppercase;
       color: #64748b;
+      text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 0.1rem;
 
       .volume-icon {
-        font-size: 12px;
-        width: 12px;
-        height: 12px;
+        font-size: 10px;
+        width: 10px;
+        height: 10px;
+        margin-right: 0.2rem;
       }
     }
 
     .volume-value {
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 0.75rem;
+      font-weight: 600;
       color: #1e293b;
-      text-align: center;
       font-family: 'Monaco', 'Menlo', monospace;
     }
 
     .volume-bar {
-      height: 4px;
-      background: rgba(203, 213, 225, 0.3);
-      border-radius: 2px;
-      overflow: hidden;
-      position: relative;
-
-      .volume-fill {
-        height: 100%;
-        border-radius: inherit;
-        transition: all 0.4s ease;
-        position: relative;
-
-        &::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.6) 50%,
-            transparent 100%
-          );
-          animation: cardVolumeShimmer 2s infinite;
-        }
-
-        &.volume-small {
-          background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-
-        &.volume-medium {
-          background: linear-gradient(90deg, #3b82f6, #60a5fa);
-        }
-
-        &.volume-large {
-          background: linear-gradient(90deg, #10b981, #34d399);
-        }
-      }
+      display: none; // Remove complex volume bar
     }
   }
 }
