@@ -327,9 +327,7 @@
               <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
               <th class="col-status" [class.hidden]="!showNotionData">Status</th>
               <th class="col-position">Ticket</th>
-              <th class="col-symbol">Symbol</th>
-              <th class="col-type">Type</th>
-              <th class="col-volume">Volume</th>
+              <th class="col-trade-card">🎯 Trading Information</th>
               <th class="col-risk-hub">Risk Management Hub</th>
               <th class="col-pnl-breakdown">Trade P&L Breakdown</th>
             </tr>
@@ -425,11 +423,74 @@
                 </span>
               </td>
 
-              <td class="col-symbol">{{ row.symbol }}</td>
-              <td class="col-type">
-                <span class="position-badge" [ngClass]="getPositionClass(row.type)">{{ row.type }}</span>
+              <td class="col-trade-card">
+                <div class="trade-card-container" [ngClass]="{
+                  'buy-card': row.type.toLowerCase() === 'buy',
+                  'sell-card': row.type.toLowerCase() === 'sell'
+                }">
+                  <!-- Main Trade Symbol with animated background -->
+                  <div class="symbol-section">
+                    <div class="symbol-icon">
+                      <mat-icon class="currency-icon">currency_exchange</mat-icon>
+                    </div>
+                    <div class="symbol-details">
+                      <div class="symbol-name">{{ row.symbol }}</div>
+                      <div class="symbol-subtitle">Currency Pair</div>
+                    </div>
+                  </div>
+
+                  <!-- Animated Trading Type Badge -->
+                  <div class="type-section">
+                    <div class="type-badge" [ngClass]="{
+                      'buy-badge': row.type.toLowerCase() === 'buy',
+                      'sell-badge': row.type.toLowerCase() === 'sell'
+                    }">
+                      <div class="type-icon">
+                        <mat-icon *ngIf="row.type.toLowerCase() === 'buy'">trending_up</mat-icon>
+                        <mat-icon *ngIf="row.type.toLowerCase() === 'sell'">trending_down</mat-icon>
+                      </div>
+                      <div class="type-text">{{ row.type }}</div>
+                      <div class="type-pulse" [ngClass]="{
+                        'buy-pulse': row.type.toLowerCase() === 'buy',
+                        'sell-pulse': row.type.toLowerCase() === 'sell'
+                      }"></div>
+                    </div>
+                  </div>
+
+                  <!-- Volume Display with Size Indicator -->
+                  <div class="volume-section">
+                    <div class="volume-display">
+                      <div class="volume-label">
+                        <mat-icon class="volume-icon">account_balance</mat-icon>
+                        <span>Volume</span>
+                      </div>
+                      <div class="volume-value">{{ row.volume }}L</div>
+                      <div class="volume-bar">
+                        <div class="volume-fill"
+                             [style.width]="(parseFloat(row.volume) * 20) + '%'"
+                             [ngClass]="{
+                               'volume-small': parseFloat(row.volume) <= 0.5,
+                               'volume-medium': parseFloat(row.volume) > 0.5 && parseFloat(row.volume) <= 1.0,
+                               'volume-large': parseFloat(row.volume) > 1.0
+                             }"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Floating Particles Effect -->
+                  <div class="floating-particles">
+                    <div class="particle particle-1"></div>
+                    <div class="particle particle-2"></div>
+                    <div class="particle particle-3"></div>
+                  </div>
+
+                  <!-- Live Trading Indicator -->
+                  <div class="live-indicator" *ngIf="isNewTrade(row)">
+                    <div class="live-dot"></div>
+                    <span class="live-text">LIVE</span>
+                  </div>
+                </div>
               </td>
-              <td class="col-volume">{{ row.volume }}</td>
               <td class="col-risk-hub">
                 <div class="risk-hub-container" [ngClass]="{
                   'risk-low': getSafeNumber(row.riskPerTrade) <= 50,
