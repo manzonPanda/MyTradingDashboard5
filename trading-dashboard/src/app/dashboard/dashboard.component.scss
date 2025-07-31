@@ -1793,67 +1793,7 @@ table.simple-table {
   gap: 0.1rem;
 }
 
-// Fire Effects
-.fire-effects {
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.2rem;
-  z-index: 10;
-}
-
-.fire-emoji {
-  font-size: 12px;
-  animation: fireFloat 1s ease-in-out infinite;
-
-  &.fire-1 {
-    animation-delay: 0s;
-  }
-
-  &.fire-2 {
-    animation-delay: 0.3s;
-    animation-duration: 1.2s;
-  }
-
-  &.fire-3 {
-    animation-delay: 0.6s;
-    animation-duration: 0.8s;
-  }
-}
-
-// Lightning Effects
-.lightning-effects {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.3rem;
-  z-index: 10;
-}
-
-.lightning-emoji {
-  font-size: 14px;
-  animation: lightningStrike 0.5s ease-in-out infinite alternate;
-  color: #fbbf24;
-  text-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
-}
-
-// Star Effects
-.star-effects {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-.star-emoji {
-  font-size: 10px;
-  animation: starTwinkle 2s ease-in-out infinite;
-}
+// Removed old complex effects for cleaner futuristic look
 
 .hub-separator {
   display: flex;
