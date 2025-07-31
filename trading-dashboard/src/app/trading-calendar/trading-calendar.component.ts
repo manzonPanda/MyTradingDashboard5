@@ -95,13 +95,15 @@ interface WeekSummary {
                   {{ formatCurrency(day.pnl) }}
                 </div>
                 <div class="day-win-loss-amounts">
-                  <div class="win-amount" *ngIf="day.totalWinAmount > 0">
-                    <span class="amount-icon">↗</span>
-                    <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
-                  </div>
-                  <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
-                    <span class="amount-icon">↘</span>
-                    <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
+                  <div class="amounts-row">
+                    <div class="win-amount" *ngIf="day.totalWinAmount > 0">
+                      <span class="amount-icon">↗</span>
+                      <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
+                    </div>
+                    <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
+                      <span class="amount-icon">↘</span>
+                      <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
+                    </div>
                   </div>
                 </div>
                 <div class="day-trades-summary">
