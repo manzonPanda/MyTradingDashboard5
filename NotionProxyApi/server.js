@@ -112,4 +112,23 @@ app.patch('/api/updatePropertiesToTrade', async (req, res) => {
   }
 });
 
+app.post('/api/createNewEntry', async (req, res) => {
+  try {
+    const response = await axios.post(
+      'https://api.notion.com/v1/pages',
+      req.body,
+      {
+        headers: {
+          Authorization: `Bearer ${NOTION_TOKEN}`,
+          'Notion-Version': NOTION_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    res.json(response.data);
+  } catch (err) {
+    res.status(err.response?.status || 500).json(err.response?.data || { error: 'Unknown error' });
+  }
+});
+
 app.listen(3000, () => console.log('✅ Server running at http://localhost:3000'));

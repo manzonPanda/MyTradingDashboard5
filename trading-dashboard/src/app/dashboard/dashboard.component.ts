@@ -982,6 +982,166 @@ isRowAlreadySelected(row: any): boolean {
 
   }
 
+    async createNewEntry(trade:Table): Promise<any>{
+      const [month, day, yearAndTime] = trade.openDate.split(".");
+      const [year, time] = yearAndTime.split(" ");
+      const iso = `${time ? `${year}-${month}-${day}T${time}:00+08:00` : ""}`; //2025-07-04T15:37:00+08:00
+    const body = {
+        "parent": {
+          "database_id": "ef10ac6f79524ea49e4bc0997e0ee704"
+        },
+        "properties": {
+          "Date": {
+            "date": {
+              "start": iso, //2025-07-04T15:37:00+08:00
+              "end": iso
+            }
+          },
+          "Account": {  
+            "multi_select": [
+              { "name": "5ers4️⃣5k [#25475923]" }
+            ]
+          },
+          "ticket":{
+            "number": trade.position
+          },
+          "riskPerTrade":{
+              "rich_text": [
+                {
+                  "text": {
+                    "content": trade.riskPerTrade
+                  }
+                }
+              ]
+            },
+          "sl":{
+              "rich_text": [
+                {
+                  "text": {
+                    "content": trade.sL
+                  }
+                }
+              ]
+            },
+          "tp":{
+            "rich_text": [
+              {
+                "text": {
+                  "content": trade.tP
+                }
+              }
+            ]
+          },
+          "Lots":{
+            "rich_text": [
+              {
+                "text": {
+                  "content": trade.volume
+                }
+              }
+            ]
+          },
+          "price_open":{
+            "rich_text": [
+              {
+                "text": {
+                  "content": trade.entry
+                }
+              }
+            ]
+          },
+          "Buy/Sell": {
+            "select": {
+              "name": parseInt(trade.type) === 0 ? 'Buy' : 'Sell'
+            }
+          }
+
+
+        }
+      }
+    const res: any = await firstValueFrom(
+      this.http.post("http://localhost:3000/api/createNewEntry", body)
+    );
+    // if (res) {
+      
+    // } 
+
+  }
+
+
+  async updateExistingEntry(trade:Table): Promise<any>{
+    const body = { //get the page id of the existing entry
+      "filter": {
+        "property": "ticket",
+        "number": {
+          "equals": trade.position
+        }
+      }
+    }
+    try {
+      const res: any = await firstValueFrom(
+        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+      );
+      if (res.results.length > 0) {
+        const pageId = res.results[0].id; // Get the first result's ID
+        const [month, day, yearAndTime] = trade.closeDate.split(".");
+        const [year, time] = yearAndTime.split(" ");
+        const iso = `${time ? `${year}-${month}-${day}T${time}:00+08:00` : ""}`; //2025-07-04T15:37:00+08:00
+        const body = {
+          "payload": {
+            "properties": {
+              "Date": {
+                "date": {
+                  "start": res.results[0].properties.Date.date.start, // Keep the original start date
+                  "end": iso
+                }
+              },
+              "price_close": {
+                 "rich_text": [
+                  {
+                    "text": {
+                      "content": trade.exit ? trade.exit.toString() : "0"
+                    }
+                  }
+                ]
+              },
+              "PnL": {
+                "number": trade.profit ? parseFloat(trade.profit) : "" // Ensure profit is a number
+              },
+              "rrr":{
+                "rich_text": [
+                  {
+                    "text": {
+                      "content": trade.rrr ? trade.rrr.toString() : "0"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "url":pageId // Use the first tradeId from tradeNotion
+        }
+
+        try {
+          const res: any = await firstValueFrom(
+            this.http.patch("http://localhost:3000/api/updatePropertiesToTrade", body)
+          );
+          if (res) {
+            console.log("Updated existing entry for ticket:", res);
+          }
+          
+        } catch (error) {
+          console.error('Error updating existing entry', error);
+        }
+
+      }
+
+    } catch (error) {   
+        console.log("No existing entry found for ticket:", trade.position);
+    } 
+
+  }
+
   async compareToNotion(){
     console.log('🔍 Starting Compare to Notion process...');
     //for progress bar comparing
@@ -2796,6 +2956,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.log("this.mt5LiveTrades", this.mt5LiveTrades);
         this.updateTableData();
       }
+
+     // Go to last page of the table to show the latest trade
+     this.setPage(this.getTotalPages());
     } catch (error) {
         console.error('Error loading MT5 data:', error);
     }
@@ -2873,10 +3036,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       position: trade.ticket,
       symbol: trade.symbol || '',
       type: trade.type === 0 ? 'Buy' : 'Sell',
-      volume: trade.volume ? trade.volume.toString() : '0',
-      entry: "-",
-      sL: "-",
-      tP: "-",
+      volume: trade.volume ? trade.volume.toString() : 0,
+      entry: trade.price_open ? trade.price_open.toFixed(5) : 0,
+      sL: trade.sl ? trade.sl.toString() : 0,
+      tP: trade.tp ? trade.tp.toString() : 0,
       exit: "-",
       commission: trade.commission ? trade.commission.toString() : '0',
       swap: "-",
@@ -2913,11 +3076,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
 
-      // Go to first page to show the new trade
+      // Go to last page of the table to show the latest trade
       this.setPage(this.getTotalPages());
 
-      console.log('✅ New MT5 trade added successfully! Total trades:', this.tableData.length);
-      console.log('🎆 Simple table approach - no more DataTables headaches!');
+      //call Notion api to add new entry
+      this.createNewEntry(newTrade);
+
     } else {
       console.log('⚠️ Trade already exists, skipping duplicate');
     }
@@ -2935,29 +3099,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (liveIndex !== -1) {
       const closedTrade = { ...this.mt5LiveTrades[liveIndex] };
       console.log('🔴 Found live trade to be close at:', closedTrade);
-      // closedTrade.status = 'Closed';
-      // closedTrade.closeDate = "test";
-      // closedTrade.exit = trade.price_close ? trade.price_close.toString() : '0';
-      // closedTrade.profit = trade.profit ? trade.profit.toString() : '0';
-      // closedTrade.netProfit = trade.profit ? trade.profit.toString() : '0';
-      // closedTrade.commission = trade.commission ? trade.commission.toString() : '0';
-      //////////////
-      closedTrade.status= "Closed";
+      // closedTrade.status= "Closed";
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
-      closedTrade.commission= trade.commission;
-      closedTrade.symbol= trade.symbol || '';
-      // closedTrade.entry = "Closed";
-      closedTrade.exit="0";
+      closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
-      closedTrade.netProfit= trade.profit ? trade.profit.toString() : '0';
-      closedTrade.sL= "Closed";
-      closedTrade.swap= "-";
-      closedTrade.tP= "-";
-      // closedTrade.volume= trade.volume;
-      closedTrade.tradeNotion= [];
-      // closedTrade.type= trade.type === 0 ? 'Buy' : 'Sell';
-     
+      closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
+
       this.mt5LiveTrades[liveIndex] = closedTrade;
+
+      //call Notion api to update an existing entry for closed trade
+      this.updateExistingEntry(closedTrade);  
+
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
