@@ -101,7 +101,7 @@ interface WeekSummary {
                   </div>
                   <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
                     <span class="amount-icon">↘</span>
-                    <span class="amount-value">{{ formatCurrency(Math.abs(day.totalLossAmount)) }}</span>
+                    <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
                   </div>
                 </div>
                 <div class="day-trades-summary">
