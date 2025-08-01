@@ -323,13 +323,51 @@
         <table class="modern-table simple-table">
           <thead>
             <tr>
-              <th class="col-timeline">Trade Timeline</th>
-              <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
-              <th class="col-status" [class.hidden]="!showNotionData">Status</th>
-              <th class="col-position">Ticket</th>
-              <th class="col-trade-card">🎯 Trading Information</th>
-              <th class="col-risk-hub">Risk Management Hub</th>
-              <th class="col-pnl-breakdown">Trade P&L Breakdown</th>
+              <th class="col-timeline">
+                <div class="header-content">
+                  <mat-icon class="header-icon timeline-icon">schedule</mat-icon>
+                  <span>Trade Timeline</span>
+                </div>
+              </th>
+              <th class="col-notion" [class.hidden]="!showNotionData">
+                <div class="header-content">
+                  <mat-icon class="header-icon notion-icon">description</mat-icon>
+                  <span>Notion Trades</span>
+                </div>
+              </th>
+              <th class="col-status" [class.hidden]="!showNotionData">
+                <div class="header-content">
+                  <mat-icon class="header-icon status-icon">signal_cellular_alt</mat-icon>
+                  <span>Status</span>
+                </div>
+              </th>
+              <th class="col-position">
+                <div class="header-content">
+                  <mat-icon class="header-icon ticket-icon">confirmation_number</mat-icon>
+                  <span>Ticket</span>
+                </div>
+              </th>
+              <th class="col-trade-card">
+                <div class="header-content">
+                  <mat-icon class="header-icon trading-icon">trending_up</mat-icon>
+                  <mat-icon class="header-icon-secondary">currency_exchange</mat-icon>
+                  <span>Trading Information</span>
+                </div>
+              </th>
+              <th class="col-risk-hub">
+                <div class="header-content">
+                  <mat-icon class="header-icon risk-icon">security</mat-icon>
+                  <mat-icon class="header-icon-secondary">shield</mat-icon>
+                  <span>Risk Management Hub</span>
+                </div>
+              </th>
+              <th class="col-pnl-breakdown">
+                <div class="header-content">
+                  <mat-icon class="header-icon pnl-icon">analytics</mat-icon>
+                  <mat-icon class="header-icon-secondary">attach_money</mat-icon>
+                  <span>Trade P&L Breakdown</span>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
