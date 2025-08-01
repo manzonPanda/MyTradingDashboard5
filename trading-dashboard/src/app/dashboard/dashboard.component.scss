@@ -1294,19 +1294,19 @@ table.simple-table {
   }
 
   .timeline-label {
-    font-size: 0.6rem;
+    font-size: 0.85rem;
     padding: 0.05rem 0.2rem;
   }
 
   .timeline-date {
-    font-size: 0.65rem;
+    font-size: 0.9rem;
   }
 
   .timeline-duration {
     padding: 0.1rem 0.3rem;
 
     .duration-text {
-      font-size: 0.6rem;
+      font-size: 0.85rem;
     }
   }
 
@@ -4550,3 +4550,133 @@ table.simple-table {
 }
 
 // Remove all complex animations for clean look
+
+// =============================================
+// SIMPLE & STUNNING TABLE HEADERS ✨
+// =============================================
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.header-icon {
+  font-size: 18px !important;
+  width: 18px;
+  height: 18px;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+}
+
+.header-icon-secondary {
+  font-size: 14px !important;
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+  margin-left: -2px;
+}
+
+// Clean color palette for each header
+.col-timeline {
+  .timeline-icon {
+    color: #8b5cf6;
+  }
+
+  &:hover .timeline-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+.col-notion {
+  .notion-icon {
+    color: #06b6d4;
+  }
+
+  &:hover .notion-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+.col-status {
+  .status-icon {
+    color: #10b981;
+  }
+
+  &:hover .status-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+.col-position {
+  .ticket-icon {
+    color: #f59e0b;
+  }
+
+  &:hover .ticket-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+.col-trade-card {
+  .trading-icon {
+    color: #ef4444;
+  }
+
+  .header-icon-secondary {
+    color: #10b981;
+  }
+
+  &:hover .trading-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  &:hover .header-icon-secondary {
+    opacity: 0.8;
+  }
+}
+
+.col-risk-hub {
+  .risk-icon {
+    color: #dc2626;
+  }
+
+  .header-icon-secondary {
+    color: #059669;
+  }
+
+  &:hover .risk-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  &:hover .header-icon-secondary {
+    opacity: 0.8;
+  }
+}
+
+.col-pnl-breakdown {
+  .pnl-icon {
+    color: #7c3aed;
+  }
+
+  .header-icon-secondary {
+    color: #059669;
+  }
+
+  &:hover .pnl-icon {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  &:hover .header-icon-secondary {
+    opacity: 0.8;
+  }
+}
