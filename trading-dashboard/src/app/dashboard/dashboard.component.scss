@@ -457,10 +457,16 @@ table.simple-table {
 
               &.clickable {
                 cursor: pointer;
+                user-select: none;
 
                 &:hover {
                   background: rgba(255, 255, 255, 0.8);
                   transform: scale(1.02);
+                }
+
+                &:active {
+                  background: rgba(255, 255, 255, 0.9);
+                  transform: scale(0.98);
                 }
               }
 
