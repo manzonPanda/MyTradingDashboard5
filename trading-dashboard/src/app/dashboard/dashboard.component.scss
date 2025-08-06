@@ -346,13 +346,22 @@ table.simple-table {
             }
           }
 
-          &.current-day .day-dot {
+          &.current-day-with-news .day-dot {
+            background: #ef4444 !important;
+            box-shadow:
+              0 0 8px rgba(239, 68, 68, 0.8),
+              0 0 16px rgba(239, 68, 68, 0.6),
+              0 0 24px rgba(239, 68, 68, 0.4);
+            animation: current-day-red-glow 2s ease-in-out infinite;
+          }
+
+          &.current-day-no-news .day-dot {
             background: #10b981 !important;
             box-shadow:
               0 0 8px rgba(16, 185, 129, 0.8),
               0 0 16px rgba(16, 185, 129, 0.6),
               0 0 24px rgba(16, 185, 129, 0.4);
-            animation: current-day-glow 2s ease-in-out infinite;
+            animation: current-day-green-glow 2s ease-in-out infinite;
           }
 
         }
@@ -2795,7 +2804,7 @@ table.simple-table {
     }
   }
 
-  // �� POSITIVE R:R (0.1-1.0)
+  // ✅ POSITIVE R:R (0.1-1.0)
   &.rrr-positive {
     background: rgba(16, 185, 129, 0.05);
     border: 1px solid rgba(16, 185, 129, 0.15);
