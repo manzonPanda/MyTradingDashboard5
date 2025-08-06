@@ -2241,14 +2241,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
 
     // Convert to array of time groups with metadata
-    return Object.keys(timeGroups).map(time => ({
-      time,
-      events: timeGroups[time],
-      isMultiple: timeGroups[time].length > 1,
-      expanded: false, // For expandable UI
-      currencies: [...new Set(timeGroups[time].map(event => event.currency))], // Unique currencies
-      dominantCurrency: this.getDominantCurrency(timeGroups[time])
-    })).sort((a, b) => {
+    return Object.keys(timeGroups).map(time => {
+      const events = timeGroups[time];
+      const isMultiple = events.length > 1;
+
+      console.log(`🕐 Creating time group: ${time} with ${events.length} events, isMultiple: ${isMultiple}`);
+
+      return {
+        time,
+        events,
+        isMultiple,
+        expanded: false, // For expandable UI
+        currencies: [...new Set(events.map(event => event.currency))], // Unique currencies
+        dominantCurrency: this.getDominantCurrency(events),
+        id: `${time}-${Math.random()}` // Unique ID for tracking
+      };
+    }).sort((a, b) => {
       // Sort by time (basic string comparison works for most time formats)
       return a.time.localeCompare(b.time);
     });
