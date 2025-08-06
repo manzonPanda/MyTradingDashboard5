@@ -257,62 +257,70 @@ table.simple-table {
 
     .trading-days-grid {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.75rem;
       background: var(--tf-bg-tertiary);
-      padding: 0.5rem;
-      border-radius: 8px;
+      padding: 0.75rem;
+      border-radius: 10px;
       border: 1px solid var(--tf-border-primary);
       overflow-x: auto;
 
       .day-column {
         display: flex;
         flex-direction: column;
-        min-width: 80px;
-        max-width: 100px;
+        min-width: 160px;
+        max-width: 220px;
         flex: 1;
         background: var(--tf-bg-card);
         border: 1px solid var(--tf-border-primary);
-        border-radius: 6px;
+        border-radius: 8px;
         overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
         &.current {
-          border-color: rgba(16, 185, 129, 0.4);
-          box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+          border-color: rgba(16, 185, 129, 0.5);
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 8px 25px rgba(16, 185, 129, 0.15);
+          transform: scale(1.02);
         }
 
         &.past {
-          opacity: 0.7;
+          opacity: 0.75;
         }
 
         &.future {
-          opacity: 0.8;
+          opacity: 0.85;
         }
 
-        .compact-day-header {
+        .enhanced-day-header {
           display: flex;
           justify-content: center;
           align-items: center;
-          gap: 0.25rem;
-          padding: 0.375rem 0.25rem;
+          gap: 0.375rem;
+          padding: 0.5rem 0.375rem;
           background: var(--tf-bg-secondary);
           border-bottom: 1px solid var(--tf-border-primary);
+          position: relative;
+
+          &.current-day {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.08));
+            border-bottom-color: rgba(16, 185, 129, 0.3);
+          }
 
           .day-text {
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
             color: var(--tf-text-primary);
           }
 
           .day-dot {
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
 
             &.status-active {
               background: #10b981;
-              box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
+              box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
               animation: pulse-dot 2s infinite;
             }
 
@@ -328,125 +336,153 @@ table.simple-table {
               background: #3b82f6;
             }
           }
+
+          .current-indicator {
+            position: absolute;
+            top: -8px;
+            right: 0.375rem;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.125rem 0.375rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            animation: glow-now 2s ease-in-out infinite;
+          }
         }
 
-        .compact-news-list {
+        .enhanced-news-list {
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
-          padding: 0.25rem;
-          min-height: 60px;
-          max-height: 150px;
+          gap: 0.375rem;
+          padding: 0.5rem;
+          min-height: 80px;
+          max-height: 200px;
           overflow-y: auto;
-          scrollbar-width: none;
+          scrollbar-width: thin;
+          scrollbar-color: var(--tf-border-primary) transparent;
+
+          &.current-day-news {
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
+          }
 
           &::-webkit-scrollbar {
-            display: none;
+            width: 3px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: var(--tf-border-primary);
+            border-radius: 3px;
           }
 
           .mini-loading {
             display: flex;
             justify-content: center;
-            padding: 0.5rem;
+            padding: 1rem;
           }
 
-          .news-line {
+          .enhanced-news-line {
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 0.25rem;
-            padding: 0.25rem 0.125rem;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            padding: 0.375rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            background: var(--tf-bg-primary);
 
             &:hover {
               background: var(--tf-bg-secondary);
-              transform: scale(1.05);
-              z-index: 100;
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              border-color: var(--tf-border-secondary);
             }
 
-            // Tooltip on hover
-            &::after {
-              content: attr(data-tooltip);
-              position: absolute;
-              bottom: 100%;
-              left: 50%;
-              transform: translateX(-50%);
-              background: rgba(0, 0, 0, 0.9);
-              color: white;
-              padding: 0.5rem 0.75rem;
-              border-radius: 6px;
-              font-size: 0.7rem;
-              white-space: nowrap;
-              opacity: 0;
-              pointer-events: none;
-              transition: opacity 0.3s ease;
-              z-index: 1000;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-              max-width: 200px;
-              white-space: normal;
-              line-height: 1.3;
+            &.current-day-item {
+              border-left: 3px solid rgba(16, 185, 129, 0.4);
+              background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), transparent 30%);
+
+              &:hover {
+                border-left-color: rgba(16, 185, 129, 0.7);
+                transform: translateY(-2px) translateX(2px);
+              }
             }
 
-            &::before {
-              content: '';
-              position: absolute;
-              bottom: 100%;
-              left: 50%;
-              transform: translateX(-50%) translateY(1px);
-              border: 4px solid transparent;
-              border-top-color: rgba(0, 0, 0, 0.9);
-              opacity: 0;
-              transition: opacity 0.3s ease;
-              z-index: 1000;
-            }
+            &.high-impact {
+              border-left: 3px solid var(--tf-negative);
 
-            &:hover::after,
-            &:hover::before {
-              opacity: 1;
-            }
-
-            .time-mini {
-              font-size: 0.55rem;
-              font-weight: 600;
-              color: var(--tf-accent-primary);
-              font-family: 'Monaco', 'Menlo', monospace;
-              min-width: 28px;
-              text-align: center;
-            }
-
-            .currency-mini {
-              font-size: 0.55rem;
-              font-weight: 700;
-              color: var(--tf-text-primary);
-              background: var(--tf-bg-tertiary);
-              padding: 0.125rem 0.25rem;
-              border-radius: 2px;
-              min-width: 18px;
-              text-align: center;
-            }
-
-            .impact-dot {
-              width: 6px;
-              height: 6px;
-              border-radius: 50%;
-              flex-shrink: 0;
-
-              &.high {
-                background: #ef4444;
-                box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
+              .news-meta .impact-dot.high {
                 animation: pulse-high 2s infinite;
               }
+            }
 
-              &.medium {
-                background: #f59e0b;
-                box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+            &.medium-impact {
+              border-left: 3px solid var(--tf-warning);
+            }
+
+            &.low-impact {
+              border-left: 3px solid var(--tf-neutral);
+            }
+
+            .news-meta {
+              display: flex;
+              align-items: center;
+              gap: 0.375rem;
+
+              .time-display {
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: var(--tf-accent-primary);
+                font-family: 'Monaco', 'Menlo', monospace;
+                min-width: 40px;
               }
 
-              &.low {
-                background: #6b7280;
+              .currency-display {
+                font-size: 0.65rem;
+                font-weight: 700;
+                color: white;
+                background: linear-gradient(135deg, var(--tf-accent-primary), var(--tf-accent-secondary));
+                padding: 0.15rem 0.3rem;
+                border-radius: 4px;
+                min-width: 22px;
+                text-align: center;
+                box-shadow: 0 1px 4px rgba(107, 70, 193, 0.3);
               }
+
+              .impact-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+
+                &.high {
+                  background: #ef4444;
+                  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+                }
+
+                &.medium {
+                  background: #f59e0b;
+                  box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+                }
+
+                &.low {
+                  background: #6b7280;
+                }
+              }
+            }
+
+            .news-title {
+              font-size: 0.72rem;
+              color: var(--tf-text-primary);
+              line-height: 1.3;
+              font-weight: 500;
+              margin-left: 0.25rem;
             }
           }
 
@@ -454,7 +490,7 @@ table.simple-table {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem 0;
+            padding: 1.5rem 0;
             color: var(--tf-text-muted);
             font-size: 0.8rem;
             font-style: italic;
