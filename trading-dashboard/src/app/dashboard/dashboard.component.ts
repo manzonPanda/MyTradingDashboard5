@@ -1380,7 +1380,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('���� Checking backend availability...');
+      console.log('�� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -2211,7 +2211,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
 
   getCurrentDay(): number {
-    return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    console.log(`📅 Current day number:`, today);
+    return today;
   }
 
   getEnhancedNewsClasses(news: any, dayNumber: number): any {
