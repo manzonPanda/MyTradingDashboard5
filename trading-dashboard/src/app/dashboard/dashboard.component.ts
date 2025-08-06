@@ -2268,6 +2268,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
   }
 
+  onTimeGroupClick(timeGroup: any): void {
+    console.log('🖱️ Time group clicked:', timeGroup.time, 'isMultiple:', timeGroup.isMultiple, 'expanded:', timeGroup.expanded);
+
+    if (timeGroup.isMultiple) {
+      timeGroup.expanded = !timeGroup.expanded;
+      console.log('✅ Toggled to:', timeGroup.expanded);
+      this.cdr.detectChanges(); // Force change detection
+    } else {
+      console.log('⚠️ Single event - no toggle needed');
+    }
+  }
+
   toggleTimeGroup(timeGroup: any): void {
     timeGroup.expanded = !timeGroup.expanded;
     this.cdr.detectChanges(); // Force change detection
