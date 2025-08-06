@@ -2024,7 +2024,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (!this.newsData || !Array.isArray(this.newsData)) {
       return [];
     }
-    return this.newsData.slice(0, 3);
+    // Show all news for Monday to Friday
+    return this.newsData;
   }
 
   getNewsTitle(title: string): string {
@@ -2122,11 +2123,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const today = new Date().getDay();
     let classes: string[] = [];
 
-    // Selected state
-    if (this.selectedDay === day.day) {
-      classes.push('selected');
-    }
-
     // Current day
     if (day.day === today) {
       classes.push('current');
@@ -2145,9 +2141,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return classes.join(' ');
   }
 
-  selectDay(day: any): void {
-    this.selectedDay = day.day;
-  }
+  // Removed selectDay functionality - showing all weekday news
 
   trackByDayIndex(index: number, item: any): number {
     return item.day;
