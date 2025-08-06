@@ -2220,9 +2220,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
 
   getCurrentDay(): number {
-    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
-    console.log(`📅 Current day number:`, today);
-    return today;
+    return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
   }
 
   getEnhancedNewsClasses(news: any, dayNumber: number): any {
