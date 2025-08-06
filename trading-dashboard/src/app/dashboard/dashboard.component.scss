@@ -766,6 +766,24 @@ table.simple-table {
       }
     }
 
+    @keyframes current-day-glow {
+      0%, 100% {
+        box-shadow:
+          0 0 8px rgba(16, 185, 129, 0.8),
+          0 0 16px rgba(16, 185, 129, 0.6),
+          0 0 24px rgba(16, 185, 129, 0.4);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow:
+          0 0 12px rgba(16, 185, 129, 1),
+          0 0 24px rgba(16, 185, 129, 0.8),
+          0 0 36px rgba(16, 185, 129, 0.6),
+          0 0 48px rgba(16, 185, 129, 0.4);
+        transform: scale(1.2);
+      }
+    }
+
     @keyframes pulse-high {
       0%, 100% {
         box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
@@ -2777,7 +2795,7 @@ table.simple-table {
     }
   }
 
-  // ✅ POSITIVE R:R (0.1-1.0)
+  // �� POSITIVE R:R (0.1-1.0)
   &.rrr-positive {
     background: rgba(16, 185, 129, 0.05);
     border: 1px solid rgba(16, 185, 129, 0.15);
