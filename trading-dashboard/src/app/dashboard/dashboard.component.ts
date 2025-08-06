@@ -2040,11 +2040,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getNewsForDay(dayNumber: number): any[] {
     if (!this.newsData || !Array.isArray(this.newsData)) {
-      console.log(`❌ No news data available for day ${dayNumber}`);
       return [];
     }
-
-    console.log(`📰 Total news data:`, this.newsData.length, this.newsData);
 
     // Filter news by actual date
     const dayNews = this.newsData.filter(news => {
@@ -2062,15 +2059,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         'Fri': 5
       };
 
-      const matches = dayMap[dayAbbr] === dayNumber;
-      if (matches) {
-        console.log(`✅ News for day ${dayNumber} (${dayAbbr}):`, news);
-      }
-
-      return matches;
+      return dayMap[dayAbbr] === dayNumber;
     });
 
-    console.log(`📊 Filtered news for day ${dayNumber}:`, dayNews.length, 'items');
     return dayNews;
   }
 
