@@ -1448,7 +1448,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`�� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
@@ -2278,19 +2278,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   onTimeGroupClick(timeGroup: any): void {
-    console.log('🖱️ Time group clicked:', timeGroup.time, 'isMultiple:', timeGroup.isMultiple, 'expanded:', timeGroup.expanded, 'id:', timeGroup.id);
-
     if (timeGroup.isMultiple) {
       // Toggle state in persistent storage
       this.timeGroupStates[timeGroup.id] = !this.timeGroupStates[timeGroup.id];
       timeGroup.expanded = this.timeGroupStates[timeGroup.id];
-
-      console.log('✅ Toggled to:', timeGroup.expanded, 'stored state:', this.timeGroupStates[timeGroup.id]);
-      console.log('📊 All time group states:', this.timeGroupStates);
-
       this.cdr.detectChanges(); // Force change detection
-    } else {
-      console.log('⚠️ Single event - no toggle needed');
     }
   }
 
