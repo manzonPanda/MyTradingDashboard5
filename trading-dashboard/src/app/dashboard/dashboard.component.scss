@@ -1078,8 +1078,8 @@ table.simple-table {
     }
   }
 
-  // Modal Animations
-  @keyframes modal-fade-in {
+  // Popover Animations
+  @keyframes popover-fade-in {
     from {
       opacity: 0;
     }
@@ -1088,21 +1088,21 @@ table.simple-table {
     }
   }
 
-  @keyframes modal-slide-up {
+  @keyframes popover-slide-in {
     from {
       opacity: 0;
-      transform: translateY(50px) scale(0.95);
+      transform: translate(-50%, -50%) scale(0.9);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 
   @keyframes modal-item-slide-in {
     from {
       opacity: 0;
-      transform: translateX(-20px);
+      transform: translateX(-10px);
     }
     to {
       opacity: 1;
