@@ -142,7 +142,7 @@
         <div class="vertical-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
           <div class="vertical-progress-list">
             <!-- Upload Progress -->
-            <div class="header-progress-item"
+            <div class="vertical-progress-item"
                  *ngIf="isUploading"
                  [ngClass]="{ 'success': uploadProgress === 100, 'error': uploadProgress === -1 }">
               <mat-progress-spinner
@@ -159,7 +159,7 @@
             </div>
 
             <!-- Checking Progress -->
-            <div class="header-progress-item"
+            <div class="vertical-progress-item"
                  *ngIf="isLoadingChecking"
                  [ngClass]="{ 'success': progressChecking === 100 && !checkingError, 'error': checkingError }">
               <mat-progress-spinner
@@ -176,7 +176,7 @@
             </div>
 
             <!-- Patching Progress -->
-            <div class="header-progress-item"
+            <div class="vertical-progress-item"
                  *ngIf="isLoadingPatching"
                  [ngClass]="{ 'success': progressPatching === 100 && !patchingError, 'error': patchingError }">
               <mat-progress-spinner
@@ -193,7 +193,7 @@
             </div>
 
             <!-- Comparing Progress -->
-            <div class="header-progress-item"
+            <div class="vertical-progress-item"
                  *ngIf="isLoadingComparing"
                  [ngClass]="{ 'success': progressComparing === 100 && !comparingError, 'error': comparingError }">
               <mat-progress-spinner
@@ -210,7 +210,7 @@
             </div>
 
             <!-- Populating Progress -->
-            <div class="header-progress-item"
+            <div class="vertical-progress-item"
                  *ngIf="isLoadingPopulating"
                  [ngClass]="{ 'success': progressPopulating === 100 && !populatingError, 'error': populatingError }">
               <mat-progress-spinner
