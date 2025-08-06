@@ -775,7 +775,25 @@ table.simple-table {
       }
     }
 
-    @keyframes current-day-glow {
+    @keyframes current-day-red-glow {
+      0%, 100% {
+        box-shadow:
+          0 0 8px rgba(239, 68, 68, 0.8),
+          0 0 16px rgba(239, 68, 68, 0.6),
+          0 0 24px rgba(239, 68, 68, 0.4);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow:
+          0 0 12px rgba(239, 68, 68, 1),
+          0 0 24px rgba(239, 68, 68, 0.8),
+          0 0 36px rgba(239, 68, 68, 0.6),
+          0 0 48px rgba(239, 68, 68, 0.4);
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes current-day-green-glow {
       0%, 100% {
         box-shadow:
           0 0 8px rgba(16, 185, 129, 0.8),
