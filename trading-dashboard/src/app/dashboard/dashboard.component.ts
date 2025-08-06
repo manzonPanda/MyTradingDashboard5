@@ -314,6 +314,7 @@ export class DashboardComponent {
     this.updateMT5TradePrice(data);
   });
 
+  this.isNewsLoading = true;
   try {
     const news: any = await firstValueFrom(
       this.http.get("http://localhost:3000/api/news")
@@ -323,6 +324,8 @@ export class DashboardComponent {
   } catch (error) {
     console.warn("⚠️ Failed to load forex news:", error);
     this.newsData = [];
+  } finally {
+    this.isNewsLoading = false;
   }
 
     this.dtOptions = {
