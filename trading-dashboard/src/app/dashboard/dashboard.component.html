@@ -104,6 +104,54 @@
           </div>
         </div>
 
+        <!-- News Modal Overlay -->
+        <div *ngIf="showNewsModal" class="news-modal-overlay" (click)="closeNewsModal()">
+          <div class="news-modal-container" (click)="$event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="modal-header" [ngClass]="getCurrencyBackgroundClass(selectedTimeGroup?.dominantCurrency)">
+              <div class="modal-title">
+                <mat-icon class="time-icon">schedule</mat-icon>
+                <span class="time-text">{{ selectedTimeGroup?.time }}</span>
+                <div class="currency-badges">
+                  <span *ngFor="let currency of selectedTimeGroup?.currencies"
+                        class="modal-currency-badge"
+                        [ngClass]="getCurrencyBackgroundClass(currency)">{{ currency }}</span>
+                </div>
+              </div>
+              <button class="close-button" (click)="closeNewsModal()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="modal-content">
+              <div class="modal-events-list">
+                <div *ngFor="let event of selectedTimeGroup?.events; let i = index"
+                     class="modal-event-item"
+                     [ngClass]="getEnhancedNewsClasses(event, getCurrentDay())"
+                     [style.animation-delay]="i * 0.1 + 's'">
+
+                  <div class="event-number">{{ i + 1 }}</div>
+
+                  <div class="event-details">
+                    <div class="event-meta-row">
+                      <span class="event-currency">{{ event.currency }}</span>
+                      <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
+                      <span class="impact-text" [ngClass]="getNewsImpactBadgeClass(event)">
+                        {{ getNewsImpact(event) }} Impact
+                      </span>
+                    </div>
+
+                    <div class="event-title-full">{{ getNewsTitle(event) }}</div>
+
+                    <div class="event-date">{{ event.date }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Progress Indicators - moved to header and aligned horizontally -->
         <div class="header-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
           <div class="header-progress-grid">
@@ -1307,7 +1355,7 @@
               <td *ngIf="columnVisibility.screenshots" class="col-screenshots">
                 <div class="files-container">
                   <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
-                    ���� {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
+                    📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
                   </span>
                 </div>
               </td>
