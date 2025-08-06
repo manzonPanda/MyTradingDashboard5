@@ -168,6 +168,8 @@ export class DashboardComponent {
   isNewsLoading: boolean = true;
   selectedDay: number = new Date().getDay(); // Current day
   timeGroupStates: { [key: string]: boolean } = {}; // Track expanded states
+  showNewsModal: boolean = false;
+  selectedTimeGroup: any = null;
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -1448,7 +1450,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`�� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
