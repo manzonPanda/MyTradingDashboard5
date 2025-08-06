@@ -749,7 +749,7 @@ onUpload(): void {
     const collectionRef = collection(this.firestore, 'trades');
     onSnapshot(collectionRef, (querySnapshot) => {
       const loadedData: any[] = [];
-  
+
       querySnapshot.forEach((doc) => {
         loadedData.push({
           id: doc.id,
@@ -758,6 +758,9 @@ onUpload(): void {
       });
       console.log('Real-time trades:', loadedData);
       this.tableData = loadedData;
+    }, (error) => {
+      console.warn('⚠️ Firestore realtime listener error - continuing in offline mode:', error.message);
+      // Keep existing data, don't update
     });
   }
 
