@@ -382,7 +382,7 @@ export class DashboardComponent {
 
       // Use Angular DataTables trigger for complex column support
       this.dtTrigger.next(null);
-      console.log('✅ DataTable initialized successfully');
+      console.log('�� DataTable initialized successfully');
 
     } catch (error) {
       console.error('❌ Error initializing DataTable:', error);
@@ -2054,7 +2054,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   shouldShowNews(): boolean {
     try {
-      return this.newsData &&
+      return !this.isNewsLoading &&
+             this.newsData &&
              Array.isArray(this.newsData) &&
              this.newsData.length > 0 &&
              this.getLatestNews().length > 0;
@@ -2062,6 +2063,53 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       console.warn('Error checking news display condition:', error);
       return false;
     }
+  }
+
+  isLoadingNews(): boolean {
+    return this.isNewsLoading;
+  }
+
+  // Market Hours and Trading Days Methods
+  isMarketOpen(): boolean {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const hour = now.getHours();
+
+    // Monday to Friday (1-5), roughly 9 AM to 5 PM (can be adjusted for forex hours)
+    return dayOfWeek >= 1 && dayOfWeek <= 5 && hour >= 9 && hour <= 17;
+  }
+
+  getMarketStatusClass(): string {
+    return this.isMarketOpen() ? 'market-open' : 'market-closed';
+  }
+
+  getMarketStatusText(): string {
+    return this.isMarketOpen() ? 'Markets Open' : 'Markets Closed';
+  }
+
+  getTradingDays(): any[] {
+    const today = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+
+    return [
+      { label: 'Mon', class: this.getDayClass(1, today), day: 1 },
+      { label: 'Tue', class: this.getDayClass(2, today), day: 2 },
+      { label: 'Wed', class: this.getDayClass(3, today), day: 3 },
+      { label: 'Thu', class: this.getDayClass(4, today), day: 4 },
+      { label: 'Fri', class: this.getDayClass(5, today), day: 5 }
+    ];
+  }
+
+  private getDayClass(dayNumber: number, today: number): string {
+    if (dayNumber === today) {
+      return this.isMarketOpen() ? 'day-current day-active' : 'day-current day-inactive';
+    }
+
+    // Monday to Friday are trading days
+    if (dayNumber >= 1 && dayNumber <= 5) {
+      return today >= 1 && today <= 5 ? 'day-trading' : 'day-trading day-future';
+    }
+
+    return 'day-weekend';
   }
 
   toggleTradeEmotionalForm(trade: Table) {
