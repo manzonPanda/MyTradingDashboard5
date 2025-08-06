@@ -2205,6 +2205,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     timeGroup.expanded = !timeGroup.expanded;
   }
 
+  getCurrentDay(): number {
+    return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+  }
+
   trackByDayIndex(index: number, item: any): number {
     return item.day;
   }
