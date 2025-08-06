@@ -780,8 +780,15 @@ onUpload(): void {
         console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
-        console.error('Error loading trades:', error);
-        reject(error);
+        console.warn('⚠️ Firestore connection issue - operating in offline mode:', error.message);
+        // Continue with existing data or empty array
+        if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
+          this.tableData = [...this.mt5LiveTrades];
+          console.log("📊 Using MT5 data only:", this.tableData.length);
+        } else {
+          this.tableData = [];
+        }
+        resolve(); // Don't reject, just continue with available data
       });
     });
   }
@@ -3376,7 +3383,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    console.log('🔄 updateTableData called');
+    console.log('��� updateTableData called');
     console.log('📊 Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('🔴 Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
