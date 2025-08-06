@@ -19,9 +19,20 @@
 
               <!-- Enhanced News List -->
               <div class="enhanced-news-list" [ngClass]="{'current-day-news': day.day === getCurrentDay()}">
-                <!-- Loading -->
-                <div *ngIf="isLoadingNews()" class="mini-loading">
-                  <mat-progress-spinner diameter="16" strokeWidth="2"></mat-progress-spinner>
+                <!-- Loading State -->
+                <div *ngIf="isLoadingNews()" class="news-loading-container">
+                  <div class="loading-spinner-wrapper">
+                    <mat-progress-spinner
+                      mode="indeterminate"
+                      diameter="24"
+                      strokeWidth="3"
+                      color="primary">
+                    </mat-progress-spinner>
+                  </div>
+                  <div class="loading-text">Loading news...</div>
+                  <div class="loading-skeleton">
+                    <div class="skeleton-line" *ngFor="let item of [1,2,3]"></div>
+                  </div>
                 </div>
 
                 <!-- Grouped Time Slots -->
@@ -1296,7 +1307,7 @@
               <td *ngIf="columnVisibility.screenshots" class="col-screenshots">
                 <div class="files-container">
                   <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
-                    📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
+                    ���� {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
                   </span>
                 </div>
               </td>
