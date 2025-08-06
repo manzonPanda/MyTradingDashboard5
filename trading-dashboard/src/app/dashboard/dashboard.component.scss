@@ -247,150 +247,134 @@ table.simple-table {
     flex: 1;
   }
 
-  // Forex News Section
-  .forex-news-section {
+  // Trading Week Container
+  .trading-week-container {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     flex: 1;
-    max-width: 80%;
+    max-width: 85%;
 
-    .news-header {
+    .trading-days-nav {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
+      gap: 0.25rem;
+      background: var(--tf-bg-tertiary);
+      padding: 0.375rem;
+      border-radius: 12px;
+      border: 1px solid var(--tf-border-primary);
 
-      .news-header-left {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-
-        .news-icon {
-          color: var(--tf-accent-primary);
-          font-size: 1.125rem;
-          width: 1.125rem;
-          height: 1.125rem;
-        }
-
-        .news-title {
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: var(--tf-text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-      }
-
-      .market-hours-indicator {
+      .day-tab {
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: center;
         gap: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        flex: 1;
+        min-width: 60px;
 
-        .market-status {
-          display: flex;
-          align-items: center;
-          gap: 0.375rem;
-          padding: 0.25rem 0.5rem;
-          background: var(--tf-bg-card);
-          border-radius: 12px;
-          border: 1px solid var(--tf-border-primary);
-          transition: all 0.3s ease;
+        &:hover {
+          background: var(--tf-bg-hover);
+          transform: translateY(-1px);
+        }
 
-          &.market-open {
+        &.selected {
+          background: linear-gradient(135deg, var(--tf-accent-primary), var(--tf-accent-secondary));
+          color: white;
+          box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+          transform: translateY(-2px);
+
+          .day-label {
+            color: white;
+            font-weight: 700;
+          }
+
+          .day-status-indicator {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+          }
+        }
+
+        &.current {
+          &:not(.selected) {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
-            border-color: rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(16, 185, 129, 0.2);
 
-            .status-dot {
-              background: linear-gradient(135deg, #10b981, #22c55e);
-              box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
-              animation: market-pulse 2s ease-in-out infinite;
-            }
-
-            .status-text {
+            .day-label {
               color: #047857;
               font-weight: 600;
             }
-          }
 
-          &.market-closed {
-            background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(156, 163, 175, 0.05));
-            border-color: rgba(107, 114, 128, 0.3);
-
-            .status-dot {
-              background: #6b7280;
+            &.active {
+              .day-status-indicator.status-active {
+                background: linear-gradient(135deg, #10b981, #22c55e);
+                animation: market-pulse 2s ease-in-out infinite;
+                box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+              }
             }
-
-            .status-text {
-              color: #6b7280;
-            }
-          }
-
-          .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-          }
-
-          .status-text {
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
           }
         }
 
-        .trading-days {
-          display: flex;
-          gap: 0.125rem;
+        &.past {
+          opacity: 0.7;
 
-          .day-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 22px;
-            font-size: 0.6rem;
-            font-weight: 600;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+          .day-label {
+            color: var(--tf-text-muted);
+          }
+        }
 
-            &.day-current {
-              &.day-active {
-                background: linear-gradient(135deg, #10b981, #22c55e);
-                color: white;
-                box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
-                transform: scale(1.05);
-              }
+        &.future {
+          .day-label {
+            color: var(--tf-text-secondary);
+          }
+        }
 
-              &.day-inactive {
-                background: linear-gradient(135deg, #6b7280, #9ca3af);
-                color: white;
-                box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3);
-              }
-            }
+        .day-label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--tf-text-primary);
+          transition: all 0.3s ease;
+        }
 
-            &.day-trading {
-              background: rgba(59, 130, 246, 0.1);
-              color: #3b82f6;
-              border: 1px solid rgba(59, 130, 246, 0.2);
+        .day-status-indicator {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          transition: all 0.3s ease;
 
-              &.day-future {
-                opacity: 0.6;
-              }
-            }
+          &.status-active {
+            background: linear-gradient(135deg, #10b981, #22c55e);
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+            animation: market-pulse 2s ease-in-out infinite;
+          }
 
-            &.day-weekend {
-              background: rgba(107, 114, 128, 0.05);
-              color: #9ca3af;
-              border: 1px solid rgba(107, 114, 128, 0.1);
-            }
+          &.status-inactive {
+            background: #6b7280;
+          }
+
+          &.status-past {
+            background: #94a3b8;
+          }
+
+          &.status-future {
+            background: rgba(59, 130, 246, 0.6);
+          }
+
+          &.status-weekend {
+            background: rgba(107, 114, 128, 0.3);
           }
         }
       }
+    }
+
+    .news-content-area {
+      min-height: 80px;
+      position: relative;
     }
 
     // Loading State
