@@ -804,6 +804,15 @@ table.simple-table {
         transform: translateY(0);
       }
     }
+
+    @keyframes skeleton-shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
   }
   
   .dashboard-title {
@@ -887,7 +896,7 @@ table.simple-table {
         font-weight: 600;
 
         &::after {
-          content: '✓';
+          content: '���';
           margin-left: 0.5rem;
           color: var(--tf-positive);
           font-weight: bold;
