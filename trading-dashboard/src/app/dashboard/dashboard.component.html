@@ -25,20 +25,66 @@
                   <mat-progress-spinner diameter="16" strokeWidth="2"></mat-progress-spinner>
                 </div>
 
-                <!-- Enhanced News Items -->
-                <div *ngFor="let news of getNewsForDay(day.day); trackBy: trackByNewsIndex"
-                     class="enhanced-news-line"
-                     [ngClass]="getEnhancedNewsClasses(news, day.day)">
+                <!-- Grouped Time Slots -->
+                <div *ngFor="let timeGroup of getGroupedNewsByTime(day.day); trackBy: trackByNewsIndex"
+                     class="time-group-container"
+                     [ngClass]="getCurrencyBackgroundClass(timeGroup.dominantCurrency)">
 
-                  <!-- Time & Currency & Impact -->
-                  <div class="news-meta">
-                    <span class="time-display">{{ news.time }}</span>
-                    <span class="currency-display">{{ news.currency }}</span>
-                    <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(news)"></span>
+                  <!-- Time Group Header -->
+                  <div class="time-group-header"
+                       [ngClass]="{clickable: timeGroup.isMultiple}"
+                       (click)="timeGroup.isMultiple ? toggleTimeGroup(timeGroup) : null">
+                    <div class="time-info">
+                      <span class="time-display">{{ timeGroup.time }}</span>
+                      <div class="currency-badges">
+                        <span *ngFor="let currency of timeGroup.currencies"
+                              class="mini-currency-badge"
+                              [ngClass]="getCurrencyBackgroundClass(currency)">{{ currency }}</span>
+                      </div>
+                    </div>
+                    <div *ngIf="timeGroup.isMultiple" class="group-controls">
+                      <span class="event-count">{{ timeGroup.events.length }}</span>
+                      <mat-icon class="expand-icon" [ngClass]="{expanded: timeGroup.expanded}">expand_more</mat-icon>
+                    </div>
                   </div>
 
-                  <!-- News Title -->
-                  <div class="news-title">{{ getNewsTitle(news) }}</div>
+                  <!-- Single Event (when only 1 event at this time) -->
+                  <div *ngIf="!timeGroup.isMultiple" class="single-event">
+                    <div class="event-content" [ngClass]="getEnhancedNewsClasses(timeGroup.events[0], day.day)">
+                      <div class="event-meta">
+                        <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
+                      </div>
+                      <div class="event-title">{{ getNewsTitle(timeGroup.events[0]) }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Multiple Events (expandable group) -->
+                  <div *ngIf="timeGroup.isMultiple" class="multiple-events">
+                    <!-- Collapsed Summary -->
+                    <div *ngIf="!timeGroup.expanded" class="events-summary">
+                      <div class="summary-content">
+                        <span class="summary-text">{{ timeGroup.events.length }} events</span>
+                        <div class="summary-impacts">
+                          <span *ngFor="let event of timeGroup.events"
+                                class="mini-impact"
+                                [ngClass]="getNewsImpactBadgeClass(event)"></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Expanded Events List -->
+                    <div *ngIf="timeGroup.expanded" class="expanded-events">
+                      <div *ngFor="let event of timeGroup.events; let i = index"
+                           class="expanded-event"
+                           [ngClass]="getEnhancedNewsClasses(event, day.day)"
+                           [style.animation-delay]="i * 0.1 + 's'">
+                        <div class="event-meta">
+                          <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
+                        </div>
+                        <div class="event-title">{{ getNewsTitle(event) }}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Empty state -->
