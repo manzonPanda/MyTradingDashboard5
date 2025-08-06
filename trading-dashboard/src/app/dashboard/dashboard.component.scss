@@ -2338,6 +2338,26 @@ table.simple-table {
   }
 }
 
+@keyframes market-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 // Add shimmer effect only for high-risk trades
 .col-risk.high-risk .risk-value {
   background-image: linear-gradient(
