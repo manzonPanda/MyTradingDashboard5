@@ -2053,8 +2053,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
   }
 
-  getNewsTitle(event: string): string {
-    if (!event || typeof event !== 'string') return 'No event available';
+  getNewsTitle(news: any): string {
+    console.log('getNewsTitle called with:', news);
+    const event = news?.event;
+    if (!event || typeof event !== 'string') {
+      console.log('No event field found, news object:', news);
+      return 'No event available';
+    }
     return event.length > 50 ? event.slice(0, 50) + '...' : event;
   }
 
