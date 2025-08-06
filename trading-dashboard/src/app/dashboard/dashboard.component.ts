@@ -2247,7 +2247,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const isMultiple = events.length > 1;
       const groupId = `day-${dayNumber}-time-${time}`;
 
-      console.log(`🕐 Creating time group: ${time} with ${events.length} events, isMultiple: ${isMultiple}, expanded: ${this.timeGroupStates[groupId] || false}`);
 
       return {
         time,
