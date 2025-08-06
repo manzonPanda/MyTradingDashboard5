@@ -1522,6 +1522,46 @@ table.simple-table {
   .forex-news-section {
     max-width: 100%;
 
+    .news-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      .market-hours-indicator {
+        align-items: flex-start;
+        width: 100%;
+
+        .market-status {
+          padding: 0.2rem 0.4rem;
+
+          .status-text {
+            font-size: 0.7rem;
+          }
+        }
+
+        .trading-days {
+          gap: 0.1rem;
+
+          .day-indicator {
+            width: 24px;
+            height: 18px;
+            font-size: 0.55rem;
+          }
+        }
+      }
+    }
+
+    .news-loading {
+      .loading-skeleton {
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .skeleton-item {
+          min-width: 100%;
+        }
+      }
+    }
+
     .news-feed {
       gap: 0.5rem;
 
