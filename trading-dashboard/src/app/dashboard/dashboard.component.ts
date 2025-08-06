@@ -2028,6 +2028,21 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.newsData;
   }
 
+  getNewsForDay(dayNumber: number): any[] {
+    if (!this.newsData || !Array.isArray(this.newsData)) {
+      return [];
+    }
+
+    // Filter news for specific day
+    // For demo purposes, we'll distribute news across days
+    // In a real app, news would have actual dates/days associated
+    const newsPerDay = Math.ceil(this.newsData.length / 5);
+    const startIndex = (dayNumber - 1) * newsPerDay;
+    const endIndex = Math.min(startIndex + newsPerDay, this.newsData.length);
+
+    return this.newsData.slice(startIndex, endIndex);
+  }
+
   getNewsTitle(title: string): string {
     if (!title || typeof title !== 'string') return 'No title available';
     return title.length > 50 ? title.slice(0, 50) + '...' : title;
@@ -3315,7 +3330,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
-    console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
+    console.log('�� Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
   }
 
