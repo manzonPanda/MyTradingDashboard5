@@ -367,10 +367,53 @@ table.simple-table {
             border-radius: 3px;
           }
 
-          .mini-loading {
+          .news-loading-container {
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 1.5rem 0.75rem;
+            min-height: 120px;
+
+            .loading-spinner-wrapper {
+              margin-bottom: 0.75rem;
+
+              ::ng-deep .mat-mdc-progress-spinner circle {
+                stroke: var(--tf-accent-primary);
+              }
+            }
+
+            .loading-text {
+              font-size: 0.7rem;
+              color: var(--tf-text-muted);
+              font-weight: 500;
+              margin-bottom: 1rem;
+              text-align: center;
+            }
+
+            .loading-skeleton {
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+
+              .skeleton-line {
+                height: 28px;
+                background: linear-gradient(
+                  90deg,
+                  var(--tf-bg-secondary) 25%,
+                  var(--tf-bg-tertiary) 50%,
+                  var(--tf-bg-secondary) 75%
+                );
+                background-size: 200% 100%;
+                animation: skeleton-shimmer 1.5s infinite;
+                border-radius: 6px;
+
+                &:nth-child(1) { width: 85%; }
+                &:nth-child(2) { width: 70%; }
+                &:nth-child(3) { width: 90%; }
+              }
+            }
           }
 
           .time-group-container {
