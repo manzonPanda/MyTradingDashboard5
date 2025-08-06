@@ -2286,10 +2286,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   toggleTimeGroup(timeGroup: any): void {
-    console.log('🔄 Toggling time group:', timeGroup.time, 'from', timeGroup.expanded, 'to', !timeGroup.expanded);
     timeGroup.expanded = !timeGroup.expanded;
     this.cdr.detectChanges(); // Force change detection
-    console.log('✅ Time group toggled:', timeGroup.time, 'is now', timeGroup.expanded);
   }
 
   getCurrencyBackgroundClass(currency: string): string {
