@@ -37,7 +37,7 @@
                        [ngClass]="getNewsImpactClass(news)">
                     <div class="news-time">{{ formatNewsTime(news?.time) }}</div>
                     <div class="news-currency">{{ news?.currency || 'USD' }}</div>
-                    <div class="news-title-text">{{ getNewsTitle(news?.title) }}</div>
+                    <div class="news-title-text">{{ getNewsTitle(news?.event) }}</div>
                     <div class="news-impact-badge" [ngClass]="getNewsImpactBadgeClass(news)">{{ getNewsImpact(news) }}</div>
                   </div>
                 </div>
