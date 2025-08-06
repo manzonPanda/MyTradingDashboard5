@@ -432,13 +432,13 @@ table.simple-table {
 
             // Currency-specific backgrounds
             &.currency-usd {
-              background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(16, 185, 129, 0.04));
-              border-left: 4px solid #22c55e;
+              background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04));
+              border-left: 4px solid #3b82f6;
             }
 
             &.currency-eur {
-              background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04));
-              border-left: 4px solid #3b82f6;
+              background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(234, 88, 12, 0.04));
+              border-left: 4px solid #f97316;
             }
 
             &.currency-gbp {
