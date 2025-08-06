@@ -28,7 +28,7 @@
                 <!-- Enhanced News Items -->
                 <div *ngFor="let news of getNewsForDay(day.day); trackBy: trackByNewsIndex"
                      class="enhanced-news-line"
-                     [ngClass]="[getNewsImpactClass(news), {'current-day-item': day.day === getCurrentDay()}]">
+                     [ngClass]="getEnhancedNewsClasses(news, day.day)">
 
                   <!-- Time & Currency & Impact -->
                   <div class="news-meta">
