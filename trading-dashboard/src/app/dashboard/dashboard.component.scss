@@ -455,14 +455,11 @@ table.simple-table {
 
     .news-feed {
       display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+      scrollbar-width: thin;
 
       .news-item {
         display: flex;
@@ -2100,7 +2097,7 @@ table.simple-table {
     }
 
     &::after {
-      content: '��';
+      content: '⚡';
       position: absolute;
       top: -6px;
       right: -6px;
