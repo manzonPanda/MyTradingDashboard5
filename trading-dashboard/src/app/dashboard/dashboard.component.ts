@@ -2228,7 +2228,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getGroupedNewsByTime(dayNumber: number): any[] {
     const dayNews = this.getNewsForDay(dayNumber);
-    console.log(`🔍 Day ${dayNumber} news:`, dayNews);
 
     // Group news by time
     const timeGroups: { [key: string]: any[] } = {};
@@ -2241,10 +2240,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       timeGroups[time].push(news);
     });
 
-    console.log(`⏰ Time groups for day ${dayNumber}:`, timeGroups);
-
     // Convert to array of time groups with metadata
-    const groupedNews = Object.keys(timeGroups).map(time => ({
+    return Object.keys(timeGroups).map(time => ({
       time,
       events: timeGroups[time],
       isMultiple: timeGroups[time].length > 1,
@@ -2255,9 +2252,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Sort by time (basic string comparison works for most time formats)
       return a.time.localeCompare(b.time);
     });
-
-    console.log(`✅ Final grouped news for day ${dayNumber}:`, groupedNews);
-    return groupedNews;
   }
 
   getDominantCurrency(events: any[]): string {
