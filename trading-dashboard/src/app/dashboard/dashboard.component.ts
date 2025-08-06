@@ -165,6 +165,7 @@ export class DashboardComponent {
 
   //news data from ForexFactory
   newsData: any[] = [];
+  isNewsLoading: boolean = true;
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -2869,7 +2870,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const winRate = parseFloat(this.calculateWinRate());
     if (winRate < 40) {
       insights.push({
-        title: '��� Low Win Rate Detected',
+        title: '🎯 Low Win Rate Detected',
         description: `Your win rate of ${winRate.toFixed(1)}% is below the typical 40-60% range for successful traders.`,
         recommendations: [
           'Review your entry criteria - you may be entering trades with poor setups',
