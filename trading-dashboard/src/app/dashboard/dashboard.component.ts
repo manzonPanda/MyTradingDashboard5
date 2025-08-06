@@ -1492,7 +1492,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
-    console.log('🔄 Parsing your Notion response. Results count:', results?.length || 0);
+    console.log('�� Parsing your Notion response. Results count:', results?.length || 0);
 
     if (!Array.isArray(results)) {
       console.error('❌ Results is not an array:', results);
@@ -2092,10 +2092,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getNewsTitle(news: any): string {
-    console.log('getNewsTitle called with:', news);
     const event = news?.event;
     if (!event || typeof event !== 'string') {
-      console.log('No event field found, news object:', news);
       return 'No event available';
     }
     return event.length > 50 ? event.slice(0, 50) + '...' : event;
