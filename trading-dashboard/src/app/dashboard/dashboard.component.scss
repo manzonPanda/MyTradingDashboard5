@@ -346,6 +346,15 @@ table.simple-table {
             }
           }
 
+          &.current-day .day-dot {
+            background: #10b981 !important;
+            box-shadow:
+              0 0 8px rgba(16, 185, 129, 0.8),
+              0 0 16px rgba(16, 185, 129, 0.6),
+              0 0 24px rgba(16, 185, 129, 0.4);
+            animation: current-day-glow 2s ease-in-out infinite;
+          }
+
         }
 
         .enhanced-news-list {
