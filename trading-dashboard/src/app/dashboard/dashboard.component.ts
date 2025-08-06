@@ -185,7 +185,7 @@ export class DashboardComponent {
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '��', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
@@ -1361,7 +1361,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
-    console.log('��� Starting to load ALL Notion performance data with pagination...');
+    console.log('🔄 Starting to load ALL Notion performance data with pagination...');
 
     try {
       // Check if backend is running first
@@ -2023,8 +2023,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getNewsTitle(title: string): string {
-    if (!title) return 'No title available';
+    if (!title || typeof title !== 'string') return 'No title available';
     return title.length > 50 ? title.slice(0, 50) + '...' : title;
+  }
+
+  getNewsImpact(news: any): string {
+    if (!news || !news.impact || typeof news.impact !== 'string') {
+      return 'Low';
+    }
+    return news.impact;
+  }
+
+  getNewsImpactClass(news: any): any {
+    const impact = this.getNewsImpact(news);
+    return {
+      'high-impact': impact === 'High',
+      'medium-impact': impact === 'Medium',
+      'low-impact': impact === 'Low'
+    };
+  }
+
+  getNewsImpactBadgeClass(news: any): string {
+    const impact = this.getNewsImpact(news);
+    return impact.toLowerCase();
   }
 
   toggleTradeEmotionalForm(trade: Table) {
