@@ -165,6 +165,8 @@ export class DashboardComponent {
 
   //news data from ForexFactory
   newsData: any[] = [];
+  isNewsLoading: boolean = true;
+  selectedDay: number = new Date().getDay(); // Current day
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -313,11 +315,19 @@ export class DashboardComponent {
     this.updateMT5TradePrice(data);
   });
 
-  const news:any = await firstValueFrom(
+  this.isNewsLoading = true;
+  try {
+    const news: any = await firstValueFrom(
       this.http.get("http://localhost:3000/api/news")
-  );
-  this.newsData = news
+    );
+    this.newsData = Array.isArray(news) ? news : [];
     console.log("📈 Forex Factory News Data:", this.newsData);
+  } catch (error) {
+    console.warn("⚠️ Failed to load forex news:", error);
+    this.newsData = [];
+  } finally {
+    this.isNewsLoading = false;
+  }
 
     this.dtOptions = {
       paging: true,
@@ -1997,6 +2007,150 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         isSubmitted: false
       };
     }
+  }
+
+  // News helper methods
+  trackByNewsIndex(index: number, item: any): number {
+    return index;
+  }
+
+  formatNewsTime(time: string): string {
+    if (!time || typeof time !== 'string') return '--:--';
+    // Assuming time is in format like "10:30" or "3:45"
+    return time;
+  }
+
+  getLatestNews(): any[] {
+    if (!this.newsData || !Array.isArray(this.newsData)) {
+      return [];
+    }
+    return this.newsData.slice(0, 3);
+  }
+
+  getNewsTitle(title: string): string {
+    if (!title || typeof title !== 'string') return 'No title available';
+    return title.length > 50 ? title.slice(0, 50) + '...' : title;
+  }
+
+  getNewsImpact(news: any): string {
+    if (!news || !news.impact || typeof news.impact !== 'string') {
+      return 'Low';
+    }
+    return news.impact;
+  }
+
+  getNewsImpactClass(news: any): any {
+    const impact = this.getNewsImpact(news);
+    return {
+      'high-impact': impact === 'High',
+      'medium-impact': impact === 'Medium',
+      'low-impact': impact === 'Low'
+    };
+  }
+
+  getNewsImpactBadgeClass(news: any): string {
+    const impact = this.getNewsImpact(news);
+    return impact.toLowerCase();
+  }
+
+  shouldShowNews(): boolean {
+    try {
+      return !this.isNewsLoading &&
+             this.newsData &&
+             Array.isArray(this.newsData) &&
+             this.newsData.length > 0 &&
+             this.getLatestNews().length > 0;
+    } catch (error) {
+      console.warn('Error checking news display condition:', error);
+      return false;
+    }
+  }
+
+  isLoadingNews(): boolean {
+    return this.isNewsLoading;
+  }
+
+  // Market Hours and Trading Days Methods
+  isMarketOpen(): boolean {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const hour = now.getHours();
+
+    // Monday to Friday (1-5), roughly 9 AM to 5 PM (can be adjusted for forex hours)
+    return dayOfWeek >= 1 && dayOfWeek <= 5 && hour >= 9 && hour <= 17;
+  }
+
+  getMarketStatusClass(): string {
+    return this.isMarketOpen() ? 'market-open' : 'market-closed';
+  }
+
+  getMarketStatusText(): string {
+    return this.isMarketOpen() ? 'Markets Open' : 'Markets Closed';
+  }
+
+  getTradingDays(): any[] {
+    const today = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+
+    return [
+      { label: 'Mon', day: 1, statusClass: this.getDayStatusClass(1, today) },
+      { label: 'Tue', day: 2, statusClass: this.getDayStatusClass(2, today) },
+      { label: 'Wed', day: 3, statusClass: this.getDayStatusClass(3, today) },
+      { label: 'Thu', day: 4, statusClass: this.getDayStatusClass(4, today) },
+      { label: 'Fri', day: 5, statusClass: this.getDayStatusClass(5, today) }
+    ];
+  }
+
+  private getDayStatusClass(dayNumber: number, today: number): string {
+    if (dayNumber === today) {
+      return this.isMarketOpen() ? 'status-active' : 'status-inactive';
+    }
+
+    // Past trading days
+    if (dayNumber < today && dayNumber >= 1 && dayNumber <= 5) {
+      return 'status-past';
+    }
+
+    // Future trading days
+    if (dayNumber > today && dayNumber >= 1 && dayNumber <= 5) {
+      return 'status-future';
+    }
+
+    return 'status-weekend';
+  }
+
+  getDayTabClass(day: any): string {
+    const today = new Date().getDay();
+    let classes: string[] = [];
+
+    // Selected state
+    if (this.selectedDay === day.day) {
+      classes.push('selected');
+    }
+
+    // Current day
+    if (day.day === today) {
+      classes.push('current');
+      if (this.isMarketOpen()) {
+        classes.push('active');
+      }
+    }
+
+    // Past/Future
+    if (day.day < today) {
+      classes.push('past');
+    } else if (day.day > today) {
+      classes.push('future');
+    }
+
+    return classes.join(' ');
+  }
+
+  selectDay(day: any): void {
+    this.selectedDay = day.day;
+  }
+
+  trackByDayIndex(index: number, item: any): number {
+    return item.day;
   }
 
   toggleTradeEmotionalForm(trade: Table) {
