@@ -2281,11 +2281,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   onTimeGroupClick(timeGroup: any): void {
     if (timeGroup.isMultiple) {
-      // Toggle state in persistent storage
-      this.timeGroupStates[timeGroup.id] = !this.timeGroupStates[timeGroup.id];
-      timeGroup.expanded = this.timeGroupStates[timeGroup.id];
-      this.cdr.detectChanges(); // Force change detection
+      // Show modal with grouped news details
+      this.selectedTimeGroup = timeGroup;
+      this.showNewsModal = true;
+      this.cdr.detectChanges();
     }
+  }
+
+  closeNewsModal(): void {
+    this.showNewsModal = false;
+    this.selectedTimeGroup = null;
+    this.cdr.detectChanges();
   }
 
   toggleTimeGroup(timeGroup: any): void {
