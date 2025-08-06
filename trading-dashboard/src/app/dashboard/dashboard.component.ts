@@ -2201,6 +2201,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Removed selectDay functionality - showing all weekday news
 
+  toggleTimeGroup(dayNumber: number, timeGroup: any): void {
+    timeGroup.expanded = !timeGroup.expanded;
+  }
+
   trackByDayIndex(index: number, item: any): number {
     return item.day;
   }
