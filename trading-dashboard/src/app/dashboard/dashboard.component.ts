@@ -2010,7 +2010,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   formatNewsTime(time: string): string {
-    if (!time) return '';
+    if (!time || typeof time !== 'string') return '--:--';
     // Assuming time is in format like "10:30" or "3:45"
     return time;
   }
