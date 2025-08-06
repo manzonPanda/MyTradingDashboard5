@@ -9,8 +9,7 @@
           <div class="trading-days-nav">
             <div class="day-tab"
                  *ngFor="let day of getTradingDays(); trackBy: trackByDayIndex"
-                 [ngClass]="getDayTabClass(day)"
-                 (click)="selectDay(day)">
+                 [ngClass]="getDayTabClass(day)">
               <div class="day-label">{{ day.label }}</div>
               <div class="day-status-indicator" [ngClass]="day.statusClass"></div>
             </div>
