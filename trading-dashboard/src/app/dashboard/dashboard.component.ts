@@ -2209,6 +2209,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
   }
 
+  getEnhancedNewsClasses(news: any, dayNumber: number): any {
+    const impact = this.getNewsImpact(news);
+    const isCurrentDay = dayNumber === this.getCurrentDay();
+
+    return {
+      'high-impact': impact === 'High',
+      'medium-impact': impact === 'Medium',
+      'low-impact': impact === 'Low',
+      'current-day-item': isCurrentDay
+    };
+  }
+
   trackByDayIndex(index: number, item: any): number {
     return item.day;
   }
