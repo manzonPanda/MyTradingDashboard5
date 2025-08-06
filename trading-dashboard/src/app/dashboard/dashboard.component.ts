@@ -163,6 +163,9 @@ export class DashboardComponent {
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
 
+  //news data from ForexFactory
+  newsData: any[] = [];
+
   // Simple pagination properties
   currentPage: number = 1;
   pageSize: number = 10;
@@ -309,6 +312,12 @@ export class DashboardComponent {
     console.log("Live price update:", data);
     this.updateMT5TradePrice(data);
   });
+
+  const news:any = await firstValueFrom(
+      this.http.get("http://localhost:3000/api/news")
+  );
+  this.newsData = news
+    console.log("📈 Forex Factory News Data:", this.newsData);
 
     this.dtOptions = {
       paging: true,

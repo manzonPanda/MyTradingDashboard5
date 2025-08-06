@@ -29,7 +29,7 @@ seen_tickets = set()
 
 # Keep track of currently open position tickets
 last_positions = {}
-
+ 
 def watch_trades():
     global seen_tickets, last_positions
     print("✅ Trade watcher thread started...")
