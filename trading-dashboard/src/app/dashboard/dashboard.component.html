@@ -5,56 +5,48 @@
       <div class="header-left-section">
         <!-- Trading Week News Container -->
         <div class="trading-week-container">
-          <!-- Trading Days as Main Navigation -->
-          <div class="trading-days-nav">
-            <div class="day-tab"
+          <!-- Days with Vertical News Layout -->
+          <div class="trading-days-grid">
+            <div class="day-column"
                  *ngFor="let day of getTradingDays(); trackBy: trackByDayIndex"
                  [ngClass]="getDayTabClass(day)">
-              <div class="day-label">{{ day.label }}</div>
-              <div class="day-status-indicator" [ngClass]="day.statusClass"></div>
-            </div>
-          </div>
 
-          <!-- News Content Area -->
-          <div class="news-content-area">
-            <!-- Loading State -->
-            <div class="news-loading" *ngIf="isLoadingNews()">
-              <div class="loading-container">
-                <div class="loading-spinner">
-                  <mat-progress-spinner
-                    mode="indeterminate"
-                    diameter="20"
-                    strokeWidth="3">
-                  </mat-progress-spinner>
+              <!-- Day Header -->
+              <div class="day-header">
+                <div class="day-label">{{ day.label }}</div>
+                <div class="day-status-indicator" [ngClass]="day.statusClass"></div>
+              </div>
+
+              <!-- News for this day -->
+              <div class="day-news-container">
+                <!-- Loading State for this day -->
+                <div class="day-news-loading" *ngIf="isLoadingNews()">
+                  <div class="loading-spinner-small">
+                    <mat-progress-spinner
+                      mode="indeterminate"
+                      diameter="16"
+                      strokeWidth="2">
+                    </mat-progress-spinner>
+                  </div>
                 </div>
-                <span class="loading-text">Loading news...</span>
-              </div>
-              <div class="loading-skeleton">
-                <div class="skeleton-item" *ngFor="let item of [1,2,3]">
-                  <div class="skeleton-time"></div>
-                  <div class="skeleton-currency"></div>
-                  <div class="skeleton-title"></div>
-                  <div class="skeleton-badge"></div>
+
+                <!-- News items for this day -->
+                <div class="day-news-feed" *ngIf="shouldShowNews()">
+                  <div *ngFor="let news of getNewsForDay(day.day); trackBy: trackByNewsIndex"
+                       class="day-news-item"
+                       [ngClass]="getNewsImpactClass(news)">
+                    <div class="news-time">{{ formatNewsTime(news?.time) }}</div>
+                    <div class="news-currency">{{ news?.currency || 'USD' }}</div>
+                    <div class="news-title-text">{{ getNewsTitle(news?.title) }}</div>
+                    <div class="news-impact-badge" [ngClass]="getNewsImpactBadgeClass(news)">{{ getNewsImpact(news) }}</div>
+                  </div>
+                </div>
+
+                <!-- Empty state for this day -->
+                <div class="day-news-empty" *ngIf="!isLoadingNews() && getNewsForDay(day.day).length === 0">
+                  <span class="empty-text">No news</span>
                 </div>
               </div>
-            </div>
-
-            <!-- News Feed -->
-            <div class="news-feed" *ngIf="shouldShowNews()">
-              <div *ngFor="let news of getLatestNews(); trackBy: trackByNewsIndex"
-                   class="news-item"
-                   [ngClass]="getNewsImpactClass(news)">
-                <div class="news-time">{{ formatNewsTime(news?.time) }}</div>
-                <div class="news-currency">{{ news?.currency || 'USD' }}</div>
-                <div class="news-title-text">{{ getNewsTitle(news?.title) }}</div>
-                <div class="news-impact-badge" [ngClass]="getNewsImpactBadgeClass(news)">{{ getNewsImpact(news) }}</div>
-              </div>
-            </div>
-
-            <!-- Empty State -->
-            <div class="news-empty" *ngIf="!isLoadingNews() && !shouldShowNews()">
-              <mat-icon class="empty-icon">event_busy</mat-icon>
-              <span class="empty-text">No news for this day</span>
             </div>
           </div>
         </div>
