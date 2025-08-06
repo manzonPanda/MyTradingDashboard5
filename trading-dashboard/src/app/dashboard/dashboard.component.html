@@ -68,10 +68,9 @@
                     </div>
                   </div>
 
-                  <!-- Multiple Events (expandable group) -->
+                  <!-- Multiple Events (shows summary only, opens modal on click) -->
                   <div *ngIf="timeGroup.isMultiple" class="multiple-events">
-                    <!-- Collapsed Summary -->
-                    <div *ngIf="!timeGroup.expanded" class="events-summary">
+                    <div class="events-summary">
                       <div class="summary-content">
                         <span class="summary-text">{{ timeGroup.events.length }} events</span>
                         <div class="summary-impacts">
@@ -79,19 +78,6 @@
                                 class="mini-impact"
                                 [ngClass]="getNewsImpactBadgeClass(event)"></span>
                         </div>
-                      </div>
-                    </div>
-
-                    <!-- Expanded Events List -->
-                    <div *ngIf="timeGroup.expanded" class="expanded-events">
-                      <div *ngFor="let event of timeGroup.events; let i = index"
-                           class="expanded-event"
-                           [ngClass]="getEnhancedNewsClasses(event, day.day)"
-                           [style.animation-delay]="i * 0.1 + 's'">
-                        <div class="event-meta">
-                          <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
-                        </div>
-                        <div class="event-title">{{ getNewsTitle(event) }}</div>
                       </div>
                     </div>
                   </div>
