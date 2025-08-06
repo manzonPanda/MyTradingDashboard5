@@ -181,11 +181,11 @@ export class DashboardComponent {
     { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
     { name: 'Focused', icon: '🎯', color: '#3b82f6' },
     { name: 'Anxious', icon: '😟', color: '#f59e0b' },
-    { name: 'Greedy', icon: '���', color: '#ef4444' },
+    { name: 'Greedy', icon: '🤑', color: '#ef4444' },
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '��', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
@@ -313,11 +313,16 @@ export class DashboardComponent {
     this.updateMT5TradePrice(data);
   });
 
-  const news:any = await firstValueFrom(
+  try {
+    const news: any = await firstValueFrom(
       this.http.get("http://localhost:3000/api/news")
-  );
-  this.newsData = news
+    );
+    this.newsData = Array.isArray(news) ? news : [];
     console.log("📈 Forex Factory News Data:", this.newsData);
+  } catch (error) {
+    console.warn("⚠️ Failed to load forex news:", error);
+    this.newsData = [];
+  }
 
     this.dtOptions = {
       paging: true,
@@ -1356,7 +1361,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
-    console.log('🔄 Starting to load ALL Notion performance data with pagination...');
+    console.log('��� Starting to load ALL Notion performance data with pagination...');
 
     try {
       // Check if backend is running first
