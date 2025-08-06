@@ -2209,9 +2209,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Removed selectDay functionality - showing all weekday news
 
-  toggleTimeGroup(dayNumber: number, timeGroup: any): void {
-    timeGroup.expanded = !timeGroup.expanded;
-  }
 
   getCurrentDay(): number {
     return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
@@ -3575,7 +3572,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   refreshDataTable(): void {
     try {
       console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
-      console.log('📊 TableData contents:', this.tableData);
+      console.log('��� TableData contents:', this.tableData);
 
       // Use Angular binding refresh for complex columns
       this.refreshDataTableWithAngularBinding();
