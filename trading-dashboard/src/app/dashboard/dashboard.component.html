@@ -12,7 +12,11 @@
                  [ngClass]="getDayTabClass(day)">
 
               <!-- Enhanced Day Header -->
-              <div class="enhanced-day-header" [ngClass]="{'current-day': day.day === getCurrentDay()}">
+              <div class="enhanced-day-header" [ngClass]="{
+                'current-day': day.day === getCurrentDay(),
+                'current-day-with-news': day.day === getCurrentDay() && currentDayHasNews(),
+                'current-day-no-news': day.day === getCurrentDay() && !currentDayHasNews()
+              }">
                 <span class="day-text">{{ day.label }}</span>
                 <div class="day-dot" [ngClass]="day.statusClass"></div>
               </div>
