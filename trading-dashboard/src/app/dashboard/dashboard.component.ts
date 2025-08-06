@@ -1451,7 +1451,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
-        console.log('📝 First entry structure:', allResults[0]);
+        console.log('��� First entry structure:', allResults[0]);
         console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
 
         this.notionPerformanceData = this.parseNotionResponse(allResults);
@@ -1492,7 +1492,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
-    console.log('�� Parsing your Notion response. Results count:', results?.length || 0);
+    console.log('🔄 Parsing your Notion response. Results count:', results?.length || 0);
 
     if (!Array.isArray(results)) {
       console.error('❌ Results is not an array:', results);
@@ -2227,6 +2227,67 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       'low-impact': impact === 'Low',
       'current-day-item': isCurrentDay
     };
+  }
+
+  getGroupedNewsByTime(dayNumber: number): any[] {
+    const dayNews = this.getNewsForDay(dayNumber);
+
+    // Group news by time
+    const timeGroups: { [key: string]: any[] } = {};
+
+    dayNews.forEach(news => {
+      const time = news.time || 'Unknown';
+      if (!timeGroups[time]) {
+        timeGroups[time] = [];
+      }
+      timeGroups[time].push(news);
+    });
+
+    // Convert to array of time groups with metadata
+    return Object.keys(timeGroups).map(time => ({
+      time,
+      events: timeGroups[time],
+      isMultiple: timeGroups[time].length > 1,
+      expanded: false, // For expandable UI
+      currencies: [...new Set(timeGroups[time].map(event => event.currency))], // Unique currencies
+      dominantCurrency: this.getDominantCurrency(timeGroups[time])
+    })).sort((a, b) => {
+      // Sort by time (basic string comparison works for most time formats)
+      return a.time.localeCompare(b.time);
+    });
+  }
+
+  getDominantCurrency(events: any[]): string {
+    // Count currency occurrences
+    const currencyCount: { [key: string]: number } = {};
+    events.forEach(event => {
+      const currency = event.currency || 'USD';
+      currencyCount[currency] = (currencyCount[currency] || 0) + 1;
+    });
+
+    // Return the most frequent currency
+    return Object.keys(currencyCount).reduce((a, b) =>
+      currencyCount[a] > currencyCount[b] ? a : b
+    );
+  }
+
+  toggleTimeGroup(timeGroup: any): void {
+    timeGroup.expanded = !timeGroup.expanded;
+  }
+
+  getCurrencyBackgroundClass(currency: string): string {
+    const currencyMap: { [key: string]: string } = {
+      'USD': 'currency-usd',
+      'EUR': 'currency-eur',
+      'GBP': 'currency-gbp',
+      'JPY': 'currency-jpy',
+      'AUD': 'currency-aud',
+      'CAD': 'currency-cad',
+      'CHF': 'currency-chf',
+      'NZD': 'currency-nzd'
+    };
+
+    return currencyMap[currency] || 'currency-default';
   }
 
   trackByDayIndex(index: number, item: any): number {
