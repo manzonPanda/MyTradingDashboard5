@@ -248,12 +248,20 @@ table.simple-table {
   }
 
   // Trading Week Container
+  // Update header left section to be flex layout
+  .header-left-section {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    flex: 1;
+  }
+
   .trading-week-container {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     flex: 1;
-    max-width: 95%;
+    max-width: none;
 
     .trading-days-grid {
       display: flex;
@@ -4082,7 +4090,7 @@ table.simple-table {
     border-left-width: 6px;
 
     &::after {
-      content: '⚠️';
+      content: '���️';
       position: absolute;
       right: 1rem;
       top: 50%;
