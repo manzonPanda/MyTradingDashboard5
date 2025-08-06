@@ -2034,7 +2034,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     // Filter news by actual date
-    return this.newsData.filter(news => {
+    const dayNews = this.newsData.filter(news => {
       if (!news.date) return false;
 
       // Parse the date string like "Tue Aug 5" or "Thu Aug 7"
@@ -2050,6 +2050,34 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       };
 
       return dayMap[dayAbbr] === dayNumber;
+    });
+
+    return dayNews;
+  }
+
+  getGroupedNewsForDay(dayNumber: number): any[] {
+    const dayNews = this.getNewsForDay(dayNumber);
+
+    // Group news by time
+    const timeGroups: { [key: string]: any[] } = {};
+
+    dayNews.forEach(news => {
+      const time = news.time || 'Unknown';
+      if (!timeGroups[time]) {
+        timeGroups[time] = [];
+      }
+      timeGroups[time].push(news);
+    });
+
+    // Convert to array of time groups with metadata
+    return Object.keys(timeGroups).map(time => ({
+      time,
+      events: timeGroups[time],
+      isMultiple: timeGroups[time].length > 1,
+      expanded: false // For expandable UI
+    })).sort((a, b) => {
+      // Sort by time (basic string comparison works for most time formats)
+      return a.time.localeCompare(b.time);
     });
   }
 
