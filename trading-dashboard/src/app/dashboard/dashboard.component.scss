@@ -473,14 +473,7 @@ table.simple-table {
         background: var(--tf-bg-card);
         border: 1px solid var(--tf-border-primary);
         border-radius: 8px;
-        transition: all 0.2s ease;
         position: relative;
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: var(--tf-shadow-md);
-          border-color: var(--tf-border-secondary);
-        }
 
         &.high-impact {
           border-left: 3px solid var(--tf-negative);
@@ -2107,7 +2100,7 @@ table.simple-table {
     }
 
     &::after {
-      content: '⚡';
+      content: '��';
       position: absolute;
       top: -6px;
       right: -6px;
