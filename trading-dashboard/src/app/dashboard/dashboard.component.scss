@@ -738,6 +738,24 @@ table.simple-table {
       }
     }
 
+    @keyframes glow-now-enhanced {
+      0%, 100% {
+        box-shadow:
+          0 4px 12px rgba(239, 68, 68, 0.6),
+          0 0 20px rgba(239, 68, 68, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+      }
+      50% {
+        box-shadow:
+          0 6px 20px rgba(239, 68, 68, 0.8),
+          0 0 30px rgba(239, 68, 68, 0.6),
+          0 0 40px rgba(255, 0, 0, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        transform: scale(1.15);
+      }
+    }
+
     @keyframes glow-count {
       0%, 100% {
         box-shadow: 0 2px 6px rgba(107, 70, 193, 0.3);
