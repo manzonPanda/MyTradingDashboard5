@@ -139,8 +139,8 @@
         </div>
 
         <!-- Progress Indicators - moved to vertical layout beside news -->
-        <div class="header-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
-          <div class="header-progress-grid">
+        <div class="vertical-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
+          <div class="vertical-progress-list">
             <!-- Upload Progress -->
             <div class="header-progress-item"
                  *ngIf="isUploading"
