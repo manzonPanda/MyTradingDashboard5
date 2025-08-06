@@ -167,6 +167,7 @@ export class DashboardComponent {
   newsData: any[] = [];
   isNewsLoading: boolean = true;
   selectedDay: number = new Date().getDay(); // Current day
+  timeGroupStates: { [key: string]: boolean } = {}; // Track expanded states
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -187,7 +188,7 @@ export class DashboardComponent {
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '���', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
