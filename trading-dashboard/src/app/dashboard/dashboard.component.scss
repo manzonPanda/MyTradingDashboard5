@@ -1118,49 +1118,48 @@ table.simple-table {
     }
   }
 
-  // Vertical Progress Indicators
+  // Compact Vertical Progress Indicators
   .vertical-progress-indicators {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    min-width: 200px;
-    max-width: 220px;
+    gap: 0.375rem;
+    min-width: 120px;
+    max-width: 140px;
     background: var(--tf-bg-tertiary);
-    padding: 0.75rem;
-    border-radius: 10px;
+    padding: 0.5rem;
+    border-radius: 8px;
     border: 1px solid var(--tf-border-primary);
     height: fit-content;
 
     .vertical-progress-list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.375rem;
     }
 
     .vertical-progress-item {
       display: flex;
-      flex-direction: column;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem;
+      padding: 0.375rem 0.5rem;
       background: var(--tf-bg-card);
       border: 1px solid var(--tf-border-primary);
-      border-radius: 8px;
+      border-radius: 6px;
       transition: all 0.3s ease;
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
       &.success {
-        border-color: var(--tf-positive);
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+        border-left: 3px solid var(--tf-positive);
+        background: linear-gradient(90deg, rgba(34, 197, 94, 0.05), transparent 30%);
       }
 
       &.error {
-        border-color: var(--tf-negative);
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+        border-left: 3px solid var(--tf-negative);
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.05), transparent 30%);
       }
 
       ::ng-deep mat-progress-spinner {
@@ -1178,11 +1177,11 @@ table.simple-table {
       }
 
       .vertical-progress-label {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 600;
         color: var(--tf-text-primary);
-        text-align: center;
-        line-height: 1.3;
+        line-height: 1.2;
+        flex: 1;
 
         &.success-text {
           color: var(--tf-positive);
