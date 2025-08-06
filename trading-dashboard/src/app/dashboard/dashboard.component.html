@@ -32,7 +32,7 @@
                   <!-- Time Group Header -->
                   <div class="time-group-header"
                        [ngClass]="{clickable: timeGroup.isMultiple}"
-                       (click)="timeGroup.isMultiple ? toggleTimeGroup(timeGroup) : null">
+                       (click)="onTimeGroupClick(timeGroup)">
                     <div class="time-info">
                       <span class="time-display">{{ timeGroup.time }}</span>
                       <div class="currency-badges">
