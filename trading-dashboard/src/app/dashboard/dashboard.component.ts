@@ -2217,6 +2217,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
   }
 
+  currentDayHasNews(): boolean {
+    const currentDay = this.getCurrentDay();
+    const newsForToday = this.getNewsForDay(currentDay);
+    return newsForToday.length > 0;
+  }
+
   getEnhancedNewsClasses(news: any, dayNumber: number): any {
     const impact = this.getNewsImpact(news);
     const isCurrentDay = dayNumber === this.getCurrentDay();
