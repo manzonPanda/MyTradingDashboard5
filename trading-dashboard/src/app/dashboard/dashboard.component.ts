@@ -166,6 +166,7 @@ export class DashboardComponent {
   //news data from ForexFactory
   newsData: any[] = [];
   isNewsLoading: boolean = true;
+  selectedDay: number = new Date().getDay(); // Current day
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -382,7 +383,7 @@ export class DashboardComponent {
 
       // Use Angular DataTables trigger for complex column support
       this.dtTrigger.next(null);
-      console.log('�� DataTable initialized successfully');
+      console.log('✅ DataTable initialized successfully');
 
     } catch (error) {
       console.error('❌ Error initializing DataTable:', error);
