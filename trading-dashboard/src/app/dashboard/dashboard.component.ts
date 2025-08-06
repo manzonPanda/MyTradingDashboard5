@@ -181,7 +181,7 @@ export class DashboardComponent {
     { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
     { name: 'Focused', icon: '🎯', color: '#3b82f6' },
     { name: 'Anxious', icon: '😟', color: '#f59e0b' },
-    { name: 'Greedy', icon: '🤑', color: '#ef4444' },
+    { name: 'Greedy', icon: '���', color: '#ef4444' },
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
@@ -2008,6 +2008,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (!time) return '';
     // Assuming time is in format like "10:30" or "3:45"
     return time;
+  }
+
+  getLatestNews(): any[] {
+    if (!this.newsData || !Array.isArray(this.newsData)) {
+      return [];
+    }
+    return this.newsData.slice(0, 3);
+  }
+
+  getNewsTitle(title: string): string {
+    if (!title) return 'No title available';
+    return title.length > 50 ? title.slice(0, 50) + '...' : title;
   }
 
   toggleTradeEmotionalForm(trade: Table) {
