@@ -1299,8 +1299,35 @@ table.simple-table {
   }
 }
 
-// Responsive Design for Timeline, P&L, and Risk Hub columns
+// Responsive Design for News and other components
 @media (max-width: 768px) {
+  .forex-news-section {
+    max-width: 100%;
+
+    .news-feed {
+      gap: 0.5rem;
+
+      .news-item {
+        min-width: 150px;
+        padding: 0.375rem 0.5rem;
+
+        .news-title-text {
+          font-size: 0.7rem;
+        }
+
+        .news-time, .news-currency {
+          font-size: 0.7rem;
+        }
+
+        .news-impact-badge {
+          font-size: 0.6rem;
+          padding: 0.1rem 0.3rem;
+        }
+      }
+    }
+  }
+
+  // Timeline, P&L, and Risk Hub columns
   .col-timeline {
     min-width: 180px !important;
   }
