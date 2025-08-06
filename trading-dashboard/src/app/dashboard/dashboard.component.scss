@@ -730,6 +730,26 @@ table.simple-table {
         box-shadow: 0 4px 16px rgba(239, 68, 68, 0.7), 0 0 20px rgba(239, 68, 68, 0.3);
       }
     }
+
+    @keyframes glow-count {
+      0%, 100% {
+        box-shadow: 0 2px 6px rgba(107, 70, 193, 0.3);
+      }
+      50% {
+        box-shadow: 0 3px 12px rgba(107, 70, 193, 0.6);
+      }
+    }
+
+    @keyframes slide-in-up {
+      0% {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   }
   
   .dashboard-title {
