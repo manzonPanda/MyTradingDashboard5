@@ -1999,6 +1999,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  // News helper methods
+  trackByNewsIndex(index: number, item: any): number {
+    return index;
+  }
+
+  formatNewsTime(time: string): string {
+    if (!time) return '';
+    // Assuming time is in format like "10:30" or "3:45"
+    return time;
+  }
+
   toggleTradeEmotionalForm(trade: Table) {
     const tradeKey = this.getTradeKey(trade);
     this.initializeTradeEmotionalState(trade);
