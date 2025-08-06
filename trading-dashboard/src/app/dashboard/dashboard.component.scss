@@ -1118,6 +1118,83 @@ table.simple-table {
     }
   }
 
+  // Vertical Progress Indicators
+  .vertical-progress-indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 200px;
+    max-width: 220px;
+    background: var(--tf-bg-tertiary);
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--tf-border-primary);
+    height: fit-content;
+
+    .vertical-progress-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .vertical-progress-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--tf-bg-card);
+      border: 1px solid var(--tf-border-primary);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &.success {
+        border-color: var(--tf-positive);
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+      }
+
+      &.error {
+        border-color: var(--tf-negative);
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+      }
+
+      ::ng-deep mat-progress-spinner {
+        .mat-mdc-progress-spinner circle {
+          stroke: var(--tf-accent-primary);
+        }
+
+        &.success-spinner circle {
+          stroke: var(--tf-positive);
+        }
+
+        &.error-spinner circle {
+          stroke: var(--tf-negative);
+        }
+      }
+
+      .vertical-progress-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--tf-text-primary);
+        text-align: center;
+        line-height: 1.3;
+
+        &.success-text {
+          color: var(--tf-positive);
+        }
+
+        &.error-text {
+          color: var(--tf-negative);
+        }
+      }
+    }
+  }
+
   .dashboard-title {
     font-size: 1.875rem;
     font-weight: 700;
@@ -4090,7 +4167,7 @@ table.simple-table {
     border-left-width: 6px;
 
     &::after {
-      content: '���️';
+      content: '⚠️';
       position: absolute;
       right: 1rem;
       top: 50%;
