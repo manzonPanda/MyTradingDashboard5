@@ -4,7 +4,7 @@
     <div class="header-content">
       <div class="header-left-section">
         <!-- Forex News Display -->
-        <div class="forex-news-section" *ngIf="newsData && Array.isArray(newsData) && newsData.length > 0">
+        <div class="forex-news-section" *ngIf="shouldShowNews()">
           <div class="news-header">
             <mat-icon class="news-icon">trending_up</mat-icon>
             <span class="news-title">Market News</span>
