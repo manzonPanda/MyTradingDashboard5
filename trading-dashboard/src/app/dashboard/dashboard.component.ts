@@ -2033,19 +2033,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return [];
     }
 
-    // Filter news for specific day
-    // For demo purposes, we'll distribute news across days
-    // In a real app, news would have actual dates/days associated
-    const newsPerDay = Math.ceil(this.newsData.length / 5);
-    const startIndex = (dayNumber - 1) * newsPerDay;
-    const endIndex = Math.min(startIndex + newsPerDay, this.newsData.length);
+    // Filter news by actual date
+    return this.newsData.filter(news => {
+      if (!news.date) return false;
 
-    return this.newsData.slice(startIndex, endIndex);
+      // Parse the date string like "Tue Aug 5" or "Thu Aug 7"
+      const dayAbbr = news.date.split(' ')[0]; // Get "Tue", "Thu", etc.
+
+      // Map day abbreviations to day numbers (1=Monday, 2=Tuesday, etc.)
+      const dayMap: { [key: string]: number } = {
+        'Mon': 1,
+        'Tue': 2,
+        'Wed': 3,
+        'Thu': 4,
+        'Fri': 5
+      };
+
+      return dayMap[dayAbbr] === dayNumber;
+    });
   }
 
-  getNewsTitle(title: string): string {
-    if (!title || typeof title !== 'string') return 'No title available';
-    return title.length > 50 ? title.slice(0, 50) + '...' : title;
+  getNewsTitle(event: string): string {
+    if (!event || typeof event !== 'string') return 'No event available';
+    return event.length > 50 ? event.slice(0, 50) + '...' : event;
   }
 
   getNewsImpact(news: any): string {
@@ -3330,7 +3340,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
-    console.log('�� Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
+    console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
   }
 
