@@ -165,8 +165,8 @@
               <mat-progress-spinner
                 [value]="progressChecking"
                 mode="determinate"
-                diameter="32"
-                strokeWidth="4"
+                diameter="20"
+                strokeWidth="3"
                 [ngClass]="{ 'error-spinner': checkingError, 'success-spinner': progressChecking === 100 && !checkingError }">
               </mat-progress-spinner>
               <span class="vertical-progress-label"
@@ -182,8 +182,8 @@
               <mat-progress-spinner
                 [value]="progressPatching"
                 mode="determinate"
-                diameter="32"
-                strokeWidth="4"
+                diameter="20"
+                strokeWidth="3"
                 [ngClass]="{ 'error-spinner': patchingError, 'success-spinner': progressPatching === 100 && !patchingError }">
               </mat-progress-spinner>
               <span class="vertical-progress-label"
@@ -199,8 +199,8 @@
               <mat-progress-spinner
                 [value]="progressComparing"
                 mode="determinate"
-                diameter="32"
-                strokeWidth="4"
+                diameter="20"
+                strokeWidth="3"
                 [ngClass]="{ 'error-spinner': comparingError, 'success-spinner': progressComparing === 100 && !comparingError }">
               </mat-progress-spinner>
               <span class="vertical-progress-label"
@@ -216,8 +216,8 @@
               <mat-progress-spinner
                 [value]="progressPopulating"
                 mode="determinate"
-                diameter="32"
-                strokeWidth="4"
+                diameter="20"
+                strokeWidth="3"
                 [ngClass]="{ 'error-spinner': populatingError, 'success-spinner': progressPopulating === 100 && !populatingError }">
               </mat-progress-spinner>
               <span class="vertical-progress-label"
