@@ -11,27 +11,34 @@
                  *ngFor="let day of getTradingDays(); trackBy: trackByDayIndex"
                  [ngClass]="getDayTabClass(day)">
 
-              <!-- Compact Day Header -->
-              <div class="compact-day-header">
+              <!-- Enhanced Day Header -->
+              <div class="enhanced-day-header" [ngClass]="{'current-day': day.day === getCurrentDay()}">
                 <span class="day-text">{{ day.label }}</span>
                 <div class="day-dot" [ngClass]="day.statusClass"></div>
+                <div *ngIf="day.day === getCurrentDay()" class="current-indicator">NOW</div>
               </div>
 
-              <!-- Ultra Compact News List -->
-              <div class="compact-news-list">
+              <!-- Enhanced News List -->
+              <div class="enhanced-news-list" [ngClass]="{'current-day-news': day.day === getCurrentDay()}">
                 <!-- Loading -->
                 <div *ngIf="isLoadingNews()" class="mini-loading">
-                  <mat-progress-spinner diameter="12" strokeWidth="2"></mat-progress-spinner>
+                  <mat-progress-spinner diameter="16" strokeWidth="2"></mat-progress-spinner>
                 </div>
 
-                <!-- Compact News Items -->
+                <!-- Enhanced News Items -->
                 <div *ngFor="let news of getNewsForDay(day.day); trackBy: trackByNewsIndex"
-                     class="news-line"
-                     [ngClass]="getNewsImpactClass(news)"
-                     [attr.data-tooltip]="getNewsTitle(news)">
-                  <span class="time-mini">{{ news.time }}</span>
-                  <span class="currency-mini">{{ news.currency }}</span>
-                  <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(news)"></span>
+                     class="enhanced-news-line"
+                     [ngClass]="[getNewsImpactClass(news), {'current-day-item': day.day === getCurrentDay()}]">
+
+                  <!-- Time & Currency & Impact -->
+                  <div class="news-meta">
+                    <span class="time-display">{{ news.time }}</span>
+                    <span class="currency-display">{{ news.currency }}</span>
+                    <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(news)"></span>
+                  </div>
+
+                  <!-- News Title -->
+                  <div class="news-title">{{ getNewsTitle(news) }}</div>
                 </div>
 
                 <!-- Empty state -->
