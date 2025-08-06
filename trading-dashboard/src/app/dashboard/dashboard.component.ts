@@ -2092,25 +2092,65 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const today = new Date().getDay(); // 0 = Sunday, 6 = Saturday
 
     return [
-      { label: 'Mon', class: this.getDayClass(1, today), day: 1 },
-      { label: 'Tue', class: this.getDayClass(2, today), day: 2 },
-      { label: 'Wed', class: this.getDayClass(3, today), day: 3 },
-      { label: 'Thu', class: this.getDayClass(4, today), day: 4 },
-      { label: 'Fri', class: this.getDayClass(5, today), day: 5 }
+      { label: 'Mon', day: 1, statusClass: this.getDayStatusClass(1, today) },
+      { label: 'Tue', day: 2, statusClass: this.getDayStatusClass(2, today) },
+      { label: 'Wed', day: 3, statusClass: this.getDayStatusClass(3, today) },
+      { label: 'Thu', day: 4, statusClass: this.getDayStatusClass(4, today) },
+      { label: 'Fri', day: 5, statusClass: this.getDayStatusClass(5, today) }
     ];
   }
 
-  private getDayClass(dayNumber: number, today: number): string {
+  private getDayStatusClass(dayNumber: number, today: number): string {
     if (dayNumber === today) {
-      return this.isMarketOpen() ? 'day-current day-active' : 'day-current day-inactive';
+      return this.isMarketOpen() ? 'status-active' : 'status-inactive';
     }
 
-    // Monday to Friday are trading days
-    if (dayNumber >= 1 && dayNumber <= 5) {
-      return today >= 1 && today <= 5 ? 'day-trading' : 'day-trading day-future';
+    // Past trading days
+    if (dayNumber < today && dayNumber >= 1 && dayNumber <= 5) {
+      return 'status-past';
     }
 
-    return 'day-weekend';
+    // Future trading days
+    if (dayNumber > today && dayNumber >= 1 && dayNumber <= 5) {
+      return 'status-future';
+    }
+
+    return 'status-weekend';
+  }
+
+  getDayTabClass(day: any): string {
+    const today = new Date().getDay();
+    let classes: string[] = [];
+
+    // Selected state
+    if (this.selectedDay === day.day) {
+      classes.push('selected');
+    }
+
+    // Current day
+    if (day.day === today) {
+      classes.push('current');
+      if (this.isMarketOpen()) {
+        classes.push('active');
+      }
+    }
+
+    // Past/Future
+    if (day.day < today) {
+      classes.push('past');
+    } else if (day.day > today) {
+      classes.push('future');
+    }
+
+    return classes.join(' ');
+  }
+
+  selectDay(day: any): void {
+    this.selectedDay = day.day;
+  }
+
+  trackByDayIndex(index: number, item: any): number {
+    return item.day;
   }
 
   toggleTradeEmotionalForm(trade: Table) {
