@@ -3,7 +3,27 @@
   <header class="dashboard-header">
     <div class="header-content">
       <div class="header-left-section">
-        <h1 class="dashboard-title">Jake Trading Dashboard</h1>
+        <!-- Forex News Display -->
+        <div class="forex-news-section" *ngIf="newsData && newsData.length > 0">
+          <div class="news-header">
+            <mat-icon class="news-icon">trending_up</mat-icon>
+            <span class="news-title">Market News</span>
+          </div>
+          <div class="news-feed">
+            <div *ngFor="let news of newsData.slice(0, 3); trackBy: trackByNewsIndex"
+                 class="news-item"
+                 [ngClass]="{
+                   'high-impact': news.impact === 'High',
+                   'medium-impact': news.impact === 'Medium',
+                   'low-impact': news.impact === 'Low'
+                 }">
+              <div class="news-time">{{ formatNewsTime(news.time) }}</div>
+              <div class="news-currency">{{ news.currency }}</div>
+              <div class="news-title-text">{{ news.title | slice:0:50 }}{{ news.title.length > 50 ? '...' : '' }}</div>
+              <div class="news-impact-badge" [ngClass]="news.impact?.toLowerCase()">{{ news.impact }}</div>
+            </div>
+          </div>
+        </div>
 
         <!-- Progress Indicators - moved to header and aligned horizontally -->
         <div class="header-progress-indicators" *ngIf="isUploading || isLoadingChecking || isLoadingPatching || isLoadingComparing || isLoadingPopulating">
@@ -98,13 +118,6 @@
 
       <div class="header-actions">
         <app-connection-status></app-connection-status>
-        <button class="btn-info" (click)="getMt5API()"> MT5 api </button>
-         <button class="btn-info" (click)="mockMT5newTrade()"> MT5 +trade </button>
-         <button class="btn-orange" (click)="mockMT5closeTrade()"> MT5 -trade </button>
-        <!-- <button class="btn-info" (click)="onFileSelected($event)">
-          <mat-icon>cloud_upload</mat-icon>
-          Import Data
-        </button> -->
         <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;" />
       </div>
     </div>
