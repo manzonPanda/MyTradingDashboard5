@@ -15,7 +15,6 @@
               <div class="enhanced-day-header" [ngClass]="{'current-day': day.day === getCurrentDay()}">
                 <span class="day-text">{{ day.label }}</span>
                 <div class="day-dot" [ngClass]="day.statusClass"></div>
-                <div *ngIf="day.day === getCurrentDay()" class="current-indicator">NOW</div>
               </div>
 
               <!-- Enhanced News List -->
