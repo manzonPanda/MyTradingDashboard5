@@ -4,12 +4,52 @@
     <div class="header-content">
       <div class="header-left-section">
         <!-- Forex News Display -->
-        <div class="forex-news-section" *ngIf="shouldShowNews()">
+        <div class="forex-news-section">
+          <!-- News Header with Market Hours -->
           <div class="news-header">
-            <mat-icon class="news-icon">trending_up</mat-icon>
-            <span class="news-title">Market News</span>
+            <div class="news-header-left">
+              <mat-icon class="news-icon">trending_up</mat-icon>
+              <span class="news-title">Market News</span>
+            </div>
+            <div class="market-hours-indicator">
+              <div class="market-status" [ngClass]="getMarketStatusClass()">
+                <div class="status-dot" [ngClass]="getMarketStatusClass()"></div>
+                <span class="status-text">{{ getMarketStatusText() }}</span>
+              </div>
+              <div class="trading-days">
+                <span class="day-indicator"
+                      *ngFor="let day of getTradingDays()"
+                      [ngClass]="day.class">
+                  {{ day.label }}
+                </span>
+              </div>
+            </div>
           </div>
-          <div class="news-feed">
+
+          <!-- Loading State -->
+          <div class="news-loading" *ngIf="isLoadingNews()">
+            <div class="loading-container">
+              <div class="loading-spinner">
+                <mat-progress-spinner
+                  mode="indeterminate"
+                  diameter="24"
+                  strokeWidth="3">
+                </mat-progress-spinner>
+              </div>
+              <span class="loading-text">Loading market news...</span>
+            </div>
+            <div class="loading-skeleton">
+              <div class="skeleton-item" *ngFor="let item of [1,2,3]">
+                <div class="skeleton-time"></div>
+                <div class="skeleton-currency"></div>
+                <div class="skeleton-title"></div>
+                <div class="skeleton-badge"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- News Feed -->
+          <div class="news-feed" *ngIf="shouldShowNews()">
             <div *ngFor="let news of getLatestNews(); trackBy: trackByNewsIndex"
                  class="news-item"
                  [ngClass]="getNewsImpactClass(news)">
@@ -18,6 +58,12 @@
               <div class="news-title-text">{{ getNewsTitle(news?.title) }}</div>
               <div class="news-impact-badge" [ngClass]="getNewsImpactBadgeClass(news)">{{ getNewsImpact(news) }}</div>
             </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="news-empty" *ngIf="!isLoadingNews() && !shouldShowNews()">
+            <mat-icon class="empty-icon">schedule</mat-icon>
+            <span class="empty-text">Markets closed - No news available</span>
           </div>
         </div>
 
