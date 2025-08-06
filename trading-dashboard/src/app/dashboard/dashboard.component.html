@@ -12,15 +12,11 @@
           <div class="news-feed">
             <div *ngFor="let news of getLatestNews(); trackBy: trackByNewsIndex"
                  class="news-item"
-                 [ngClass]="{
-                   'high-impact': news?.impact === 'High',
-                   'medium-impact': news?.impact === 'Medium',
-                   'low-impact': news?.impact === 'Low'
-                 }">
+                 [ngClass]="getNewsImpactClass(news)">
               <div class="news-time">{{ formatNewsTime(news?.time) }}</div>
               <div class="news-currency">{{ news?.currency || 'USD' }}</div>
               <div class="news-title-text">{{ getNewsTitle(news?.title) }}</div>
-              <div class="news-impact-badge" [ngClass]="news?.impact?.toLowerCase()">{{ news?.impact || 'Low' }}</div>
+              <div class="news-impact-badge" [ngClass]="getNewsImpactBadgeClass(news)">{{ getNewsImpact(news) }}</div>
             </div>
           </div>
         </div>
