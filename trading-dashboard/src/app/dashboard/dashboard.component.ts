@@ -188,7 +188,7 @@ export class DashboardComponent {
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '���', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
@@ -2245,17 +2245,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return Object.keys(timeGroups).map(time => {
       const events = timeGroups[time];
       const isMultiple = events.length > 1;
+      const groupId = `day-${dayNumber}-time-${time}`;
 
-      console.log(`🕐 Creating time group: ${time} with ${events.length} events, isMultiple: ${isMultiple}`);
+      console.log(`🕐 Creating time group: ${time} with ${events.length} events, isMultiple: ${isMultiple}, expanded: ${this.timeGroupStates[groupId] || false}`);
 
       return {
         time,
         events,
         isMultiple,
-        expanded: false, // For expandable UI
+        expanded: this.timeGroupStates[groupId] || false, // Use persistent state
         currencies: [...new Set(events.map(event => event.currency))], // Unique currencies
         dominantCurrency: this.getDominantCurrency(events),
-        id: `${time}-${Math.random()}` // Unique ID for tracking
+        id: groupId // Consistent ID for tracking
       };
     }).sort((a, b) => {
       // Sort by time (basic string comparison works for most time formats)
