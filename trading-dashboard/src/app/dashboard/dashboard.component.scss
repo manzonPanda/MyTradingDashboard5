@@ -263,6 +263,7 @@ table.simple-table {
       border-radius: 10px;
       border: 1px solid var(--tf-border-primary);
       overflow-x: auto;
+      overflow-y: visible;
 
       .day-column {
         display: flex;
