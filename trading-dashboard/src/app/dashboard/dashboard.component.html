@@ -4,23 +4,23 @@
     <div class="header-content">
       <div class="header-left-section">
         <!-- Forex News Display -->
-        <div class="forex-news-section" *ngIf="newsData && newsData.length > 0">
+        <div class="forex-news-section" *ngIf="newsData && Array.isArray(newsData) && newsData.length > 0">
           <div class="news-header">
             <mat-icon class="news-icon">trending_up</mat-icon>
             <span class="news-title">Market News</span>
           </div>
           <div class="news-feed">
-            <div *ngFor="let news of newsData.slice(0, 3); trackBy: trackByNewsIndex"
+            <div *ngFor="let news of getLatestNews(); trackBy: trackByNewsIndex"
                  class="news-item"
                  [ngClass]="{
-                   'high-impact': news.impact === 'High',
-                   'medium-impact': news.impact === 'Medium',
-                   'low-impact': news.impact === 'Low'
+                   'high-impact': news?.impact === 'High',
+                   'medium-impact': news?.impact === 'Medium',
+                   'low-impact': news?.impact === 'Low'
                  }">
-              <div class="news-time">{{ formatNewsTime(news.time) }}</div>
-              <div class="news-currency">{{ news.currency }}</div>
-              <div class="news-title-text">{{ news.title | slice:0:50 }}{{ news.title.length > 50 ? '...' : '' }}</div>
-              <div class="news-impact-badge" [ngClass]="news.impact?.toLowerCase()">{{ news.impact }}</div>
+              <div class="news-time">{{ formatNewsTime(news?.time) }}</div>
+              <div class="news-currency">{{ news?.currency || 'USD' }}</div>
+              <div class="news-title-text">{{ getNewsTitle(news?.title) }}</div>
+              <div class="news-impact-badge" [ngClass]="news?.impact?.toLowerCase()">{{ news?.impact || 'Low' }}</div>
             </div>
           </div>
         </div>
