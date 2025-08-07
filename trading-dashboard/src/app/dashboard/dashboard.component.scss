@@ -269,15 +269,15 @@ table.simple-table {
       .day-column {
         display: flex;
         flex-direction: column;
-        min-width: 160px;
-        max-width: 200px;
-        flex: 1;
+        min-width: 140px;
+        max-width: 180px;
         flex: 1;
         background: var(--tf-bg-card);
         border: 1px solid var(--tf-border-primary);
-        border-radius: 8px;
+        border-radius: 6px;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-height: 220px;
 
         &.current {
           border-color: rgba(16, 185, 129, 0.5);
