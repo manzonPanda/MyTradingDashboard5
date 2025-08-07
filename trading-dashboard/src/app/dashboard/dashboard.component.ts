@@ -1814,7 +1814,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         })
       );
 
-      console.log('��� Backend is responding to POST requests with empty body');
+      console.log('✅ Backend is responding to POST requests with empty body');
       return true;
 
     } catch (error: any) {
@@ -2520,21 +2520,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
 
-  calculateAvgLoss(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const losingTrades = this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit < 0;
-    });
-
-    if (losingTrades.length === 0) return 0;
-
-    const totalLossAmount = losingTrades.reduce((total, trade) => {
-      return total + (parseFloat(trade.netProfit) || 0);
-    }, 0);
-
-    return totalLossAmount / losingTrades.length;
-  }
 
   calculateExpectancy(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
@@ -3713,7 +3698,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }, 100);
 
     } catch (error) {
-      console.error('�� Error in nuclear rebuild:', error);
+      console.error('❌ Error in nuclear rebuild:', error);
       // Last resort fallback
       this.dtTrigger.next(null);
     }
