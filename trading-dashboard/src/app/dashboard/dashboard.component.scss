@@ -1371,8 +1371,9 @@ table.simple-table {
   
   .header-actions {
     display: flex;
-    gap: 1rem;
-    flex-shrink: 0;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+    align-items: center;
   }
 
   // Header Progress Indicators
