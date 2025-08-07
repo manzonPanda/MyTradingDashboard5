@@ -720,9 +720,26 @@ table.simple-table {
                 // Default to 2 columns for multiple items
                 grid-template-columns: repeat(2, 1fr);
 
-                // For single item, use 1 column centered
-                .expanded-event:only-child {
-                  grid-column: 1 / -1;
+                // For single event, use 1 column centered
+                &.events-count-1 {
+                  grid-template-columns: 1fr;
+                  justify-items: center;
+                }
+
+                // For 2 events, keep 2 columns
+                &.events-count-2 {
+                  grid-template-columns: 1fr 1fr;
+                }
+
+                // For 3+ events, use 2 columns with automatic wrapping
+                &.events-count-3,
+                &.events-count-4,
+                &.events-count-5,
+                &.events-count-6,
+                &.events-count-7,
+                &.events-count-8,
+                &.events-count-9 {
+                  grid-template-columns: repeat(2, 1fr);
                 }
 
                 .expanded-event {
