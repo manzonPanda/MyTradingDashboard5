@@ -392,9 +392,9 @@ table.simple-table {
           .time-group-container:only-child {
             grid-column: 1 / -1;
           }
-          padding: 0.5rem;
-          min-height: 80px;
-          max-height: 300px;
+          padding: 0.4rem;
+          min-height: 70px;
+          max-height: 250px;
           overflow-y: auto;
           overflow-x: hidden;
           scrollbar-width: thin;
