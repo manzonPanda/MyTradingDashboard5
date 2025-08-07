@@ -23,7 +23,10 @@ const firebaseConfig = {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
     importProvidersFrom(
+      BrowserAnimationsModule,
       CalendarModule.forRoot({
         provide: DateAdapter,
         useFactory: adapterFactory,
