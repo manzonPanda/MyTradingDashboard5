@@ -1503,7 +1503,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     if (results.length === 0) {
-      console.log('📭 No pages found in your Notion database');
+      console.log('��� No pages found in your Notion database');
       return [];
     }
 
@@ -2521,15 +2521,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
 
 
-  calculateExpectancy(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const winRate = parseFloat(this.calculateWinRate()) / 100;
-    const lossRate = 1 - winRate;
-    const avgWin = this.calculateAvgWin();
-    const avgLoss = Math.abs(this.calculateAvgLoss());
-
-    return (winRate * avgWin) - (lossRate * avgLoss);
-  }
 
   calculateHoldTime(openDateStr: string, closeDateStr: string): string {
     if (!openDateStr || !closeDateStr) return '';
