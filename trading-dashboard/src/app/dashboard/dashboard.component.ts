@@ -2002,6 +2002,72 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.tableData ? this.tableData.length : 0;
   }
 
+  calculateAvgWin(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    });
+
+    if (winningTrades.length === 0) return 0;
+
+    const totalWinnings = winningTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalWinnings / winningTrades.length;
+  }
+
+  calculateAvgLoss(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const losingTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    });
+
+    if (losingTrades.length === 0) return 0;
+
+    const totalLosses = losingTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalLosses / losingTrades.length;
+  }
+
+  calculateExpectancy(): number {
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return 0;
+
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    return (winRate * avgWin) - ((1 - winRate) * avgLoss);
+  }
+
+  calculateProfitFactor(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0.00';
+
+    const grossProfit = this.tableData
+      .filter(trade => (parseFloat(trade.netProfit) || 0) > 0)
+      .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0);
+
+    const grossLoss = Math.abs(this.tableData
+      .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
+      .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
+
+    if (grossLoss === 0) return grossProfit > 0 ? '���' : '0.00';
+
+    return (grossProfit / grossLoss).toFixed(2);
+  }
+
+  calculateBestProfit(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const profits = this.tableData.map(trade => parseFloat(trade.netProfit) || 0);
+    return Math.max(...profits, 0);
+  }
+
   // Emotional tracking methods for individual trades
   getTradeKey(trade: Table): string {
     return `${trade.openDate}_${trade.symbol}_${trade.volume}`;
