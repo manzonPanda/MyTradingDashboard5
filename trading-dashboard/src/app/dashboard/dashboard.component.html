@@ -261,59 +261,88 @@
 
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
-    <div class="metrics-grid">
-      <div class="metric-card profit-loss">
-        <div class="metric-header">
-          <h3 class="metric-title">Net P&L</h3>
-          <mat-icon class="metric-icon">trending_up</mat-icon>
+    <div class="metrics-container">
+      <div class="metrics-grid">
+        <div class="metric-card profit-loss">
+          <div class="metric-header">
+            <h3 class="metric-title">Net P&L</h3>
+            <mat-icon class="metric-icon">trending_up</mat-icon>
+          </div>
+          <div class="metric-value positive">{{ calculateTotalPnL() | currency }}</div>
+          <div class="metric-change">+{{ calculatePnLChangePercent() }}%</div>
         </div>
-        <div class="metric-value positive">{{ calculateTotalPnL() | currency }}</div>
-        <div class="metric-change">+{{ calculatePnLChangePercent() }}%</div>
+
+        <div class="metric-card win-rate">
+          <div class="metric-header">
+            <h3 class="metric-title">Win Rate</h3>
+            <mat-icon class="metric-icon">donut_small</mat-icon>
+          </div>
+          <div class="metric-value">{{ calculateWinRate() }}%</div>
+          <div class="metric-subtitle">{{ getWinCount() }}/{{ getTotalTrades() }} trades</div>
+        </div>
+
+        <div class="metric-card average-win">
+          <div class="metric-header">
+            <h3 class="metric-title">Avg Win</h3>
+            <mat-icon class="metric-icon">add_circle</mat-icon>
+          </div>
+          <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
+          <div class="metric-subtitle">Per winning trade</div>
+        </div>
+
+        <div class="metric-card average-loss">
+          <div class="metric-header">
+            <h3 class="metric-title">Avg Loss</h3>
+            <mat-icon class="metric-icon">remove_circle</mat-icon>
+          </div>
+          <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
+          <div class="metric-subtitle">Per losing trade</div>
+        </div>
+
+        <div class="metric-card trade-expectancy">
+          <div class="metric-header">
+            <h3 class="metric-title">Expectancy</h3>
+            <mat-icon class="metric-icon">analytics</mat-icon>
+          </div>
+          <div class="metric-value">{{ calculateExpectancy() | currency }}</div>
+          <div class="metric-subtitle">Per trade</div>
+        </div>
+
+        <div class="metric-card total-trades">
+          <div class="metric-header">
+            <h3 class="metric-title">Total Trades</h3>
+            <mat-icon class="metric-icon">list_alt</mat-icon>
+          </div>
+          <div class="metric-value">{{ getTotalTrades() }}</div>
+          <div class="metric-subtitle">This period</div>
+        </div>
+
+        <div class="metric-card profit-factor">
+          <div class="metric-header">
+            <h3 class="metric-title">Profit Factor</h3>
+            <mat-icon class="metric-icon">trending_up</mat-icon>
+          </div>
+          <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() }}</div>
+          <div class="metric-subtitle">Gross win / Gross loss</div>
+        </div>
+
+        <div class="metric-card best-profit">
+          <div class="metric-header">
+            <h3 class="metric-title">Best Profit</h3>
+            <mat-icon class="metric-icon">star</mat-icon>
+          </div>
+          <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
+          <div class="metric-subtitle">Largest single win</div>
+        </div>
       </div>
 
-      <div class="metric-card win-rate">
-        <div class="metric-header">
-          <h3 class="metric-title">Win Rate</h3>
-          <mat-icon class="metric-icon">donut_small</mat-icon>
+      <div class="chart-placeholder">
+        <!-- Graph will be displayed here -->
+        <div class="chart-placeholder-content">
+          <mat-icon>analytics</mat-icon>
+          <p>Chart Area</p>
+          <span>Graph will be displayed here</span>
         </div>
-        <div class="metric-value">{{ calculateWinRate() }}%</div>
-        <div class="metric-subtitle">{{ getWinCount() }}/{{ getTotalTrades() }} trades</div>
-      </div>
-
-      <div class="metric-card average-win">
-        <div class="metric-header">
-          <h3 class="metric-title">Avg Win</h3>
-          <mat-icon class="metric-icon">add_circle</mat-icon>
-        </div>
-        <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
-        <div class="metric-subtitle">Per winning trade</div>
-      </div>
-
-      <div class="metric-card average-loss">
-        <div class="metric-header">
-          <h3 class="metric-title">Avg Loss</h3>
-          <mat-icon class="metric-icon">remove_circle</mat-icon>
-        </div>
-        <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
-        <div class="metric-subtitle">Per losing trade</div>
-      </div>
-
-      <div class="metric-card trade-expectancy">
-        <div class="metric-header">
-          <h3 class="metric-title">Expectancy</h3>
-          <mat-icon class="metric-icon">analytics</mat-icon>
-        </div>
-        <div class="metric-value">{{ calculateExpectancy() | currency }}</div>
-        <div class="metric-subtitle">Per trade</div>
-      </div>
-
-      <div class="metric-card total-trades">
-        <div class="metric-header">
-          <h3 class="metric-title">Total Trades</h3>
-          <mat-icon class="metric-icon">list_alt</mat-icon>
-        </div>
-        <div class="metric-value">{{ getTotalTrades() }}</div>
-        <div class="metric-subtitle">This period</div>
       </div>
     </div>
   </section>
