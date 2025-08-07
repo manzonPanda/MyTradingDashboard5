@@ -1458,14 +1458,58 @@ table.simple-table {
 
 // Metrics Section
 .metrics-section {
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
 
+  .metrics-container {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .chart-placeholder {
+    flex: 2;
+    min-height: 500px;
+    background: var(--tf-bg-card);
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .chart-placeholder-content {
+      text-align: center;
+      color: var(--tf-text-muted);
+
+      mat-icon {
+        font-size: 4rem;
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+      }
+
+      span {
+        font-size: 1rem;
+        opacity: 0.7;
+      }
+    }
+  }
+
   .metrics-grid {
+    flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 0.75rem;
+    max-width: 400px;
   }
 }
 
