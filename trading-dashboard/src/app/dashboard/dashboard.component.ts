@@ -1503,7 +1503,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     if (results.length === 0) {
-      console.log('📭 No pages found in your Notion database');
+      console.log('��� No pages found in your Notion database');
       return [];
     }
 
@@ -1912,7 +1912,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       let errorMessage = '❌ Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
-        errorMessage += '🔌 Connection Error: Cannot reach the server\n\n';
+        errorMessage += '���� Connection Error: Cannot reach the server\n\n';
         errorMessage += 'The backend server is not running.\n\n';
         errorMessage += 'To start the backend server:\n';
         errorMessage += '1. Open a new terminal window\n';
@@ -2000,6 +2000,72 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getTotalTrades(): number {
     return this.tableData ? this.tableData.length : 0;
+  }
+
+  calculateAvgWin(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    });
+
+    if (winningTrades.length === 0) return 0;
+
+    const totalWinnings = winningTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalWinnings / winningTrades.length;
+  }
+
+  calculateAvgLoss(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const losingTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    });
+
+    if (losingTrades.length === 0) return 0;
+
+    const totalLosses = losingTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalLosses / losingTrades.length;
+  }
+
+  calculateExpectancy(): number {
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return 0;
+
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    return (winRate * avgWin) - ((1 - winRate) * avgLoss);
+  }
+
+  calculateProfitFactor(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const grossProfit = this.tableData
+      .filter(trade => (parseFloat(trade.netProfit) || 0) > 0)
+      .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0);
+
+    const grossLoss = Math.abs(this.tableData
+      .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
+      .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
+
+    if (grossLoss === 0) return grossProfit > 0 ? 999 : 0;
+
+    return parseFloat((grossProfit / grossLoss).toFixed(2));
+  }
+
+  calculateBestProfit(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const profits = this.tableData.map(trade => parseFloat(trade.netProfit) || 0);
+    return Math.max(...profits, 0);
   }
 
   // Emotional tracking methods for individual trades
@@ -2453,47 +2519,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return entry?.intensity || 5;
   }
 
-  calculateAvgWin(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const winningTrades = this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit > 0;
-    });
 
-    if (winningTrades.length === 0) return 0;
 
-    const totalWinAmount = winningTrades.reduce((total, trade) => {
-      return total + (parseFloat(trade.netProfit) || 0);
-    }, 0);
-
-    return totalWinAmount / winningTrades.length;
-  }
-
-  calculateAvgLoss(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const losingTrades = this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit < 0;
-    });
-
-    if (losingTrades.length === 0) return 0;
-
-    const totalLossAmount = losingTrades.reduce((total, trade) => {
-      return total + (parseFloat(trade.netProfit) || 0);
-    }, 0);
-
-    return totalLossAmount / losingTrades.length;
-  }
-
-  calculateExpectancy(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const winRate = parseFloat(this.calculateWinRate()) / 100;
-    const lossRate = 1 - winRate;
-    const avgWin = this.calculateAvgWin();
-    const avgLoss = Math.abs(this.calculateAvgLoss());
-
-    return (winRate * avgWin) - (lossRate * avgLoss);
-  }
 
   calculateHoldTime(openDateStr: string, closeDateStr: string): string {
     if (!openDateStr || !closeDateStr) return '';

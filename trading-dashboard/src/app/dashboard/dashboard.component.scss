@@ -1458,75 +1458,130 @@ table.simple-table {
 
 // Metrics Section
 .metrics-section {
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
-  
+
+  .metrics-container {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .chart-placeholder {
+    flex: 2;
+    min-height: 500px;
+    background: var(--tf-bg-card);
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .chart-placeholder-content {
+      text-align: center;
+      color: var(--tf-text-muted);
+
+      mat-icon {
+        font-size: 4rem;
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+      }
+
+      span {
+        font-size: 1rem;
+        opacity: 0.7;
+      }
+    }
+  }
+
   .metrics-grid {
+    flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 0.75rem;
+    max-width: 400px;
   }
 }
 
 .metric-card {
   background: var(--tf-bg-card);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 8px;
+  padding: 0.75rem;
   border: 1px solid var(--tf-border-primary);
   transition: all 0.2s ease;
-  
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
   &:hover {
     border-color: var(--tf-border-secondary);
-    transform: translateY(-2px);
-    box-shadow: var(--tf-shadow-lg);
+    transform: translateY(-1px);
+    box-shadow: var(--tf-shadow-md);
   }
-  
+
   .metric-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
-  
+
   .metric-title {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.7rem;
+    font-weight: 600;
     color: var(--tf-text-secondary);
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    line-height: 1;
   }
-  
+
   .metric-icon {
     color: var(--tf-text-muted);
     opacity: 0.7;
+    font-size: 0.9rem;
+    width: 0.9rem;
+    height: 0.9rem;
   }
-  
+
   .metric-value {
-    font-size: 2rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     color: var(--tf-text-primary);
-    
+    line-height: 1.1;
+
     &.positive {
       color: var(--tf-positive);
     }
-    
+
     &.negative {
       color: var(--tf-negative);
     }
   }
-  
+
   .metric-change {
-    font-size: 0.875rem;
+    font-size: 0.65rem;
     color: var(--tf-positive);
     font-weight: 500;
+    line-height: 1;
   }
-  
+
   .metric-subtitle {
-    font-size: 0.875rem;
+    font-size: 0.65rem;
     color: var(--tf-text-muted);
+    line-height: 1.2;
   }
 }
 
@@ -4490,9 +4545,56 @@ table.simple-table {
 
 // 🚀 HERO ANALYTICS SECTION - ENHANCED DESIGN
 .hero-analytics-section {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  @media (max-width: 1200px) {
+    .metrics-container {
+      flex-direction: column;
+    }
+
+    .chart-placeholder {
+      min-height: 350px;
+      margin-bottom: 1.5rem;
+    }
+
+    .metrics-grid {
+      max-width: none;
+      justify-self: center;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .metrics-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(8, 1fr);
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .chart-placeholder {
+      min-height: 300px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .metrics-container {
+      gap: 1rem;
+    }
+
+    .metrics-grid {
+      gap: 0.5rem;
+      max-width: 250px;
+    }
+
+    .metric-card {
+      min-height: 80px;
+      padding: 0.5rem;
+
+      .metric-value {
+        font-size: 1.1rem;
+      }
+    }
+  }
   background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
   border-radius: 20px;
   margin-bottom: 2rem;
