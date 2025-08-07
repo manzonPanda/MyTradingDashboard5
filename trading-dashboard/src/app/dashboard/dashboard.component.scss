@@ -384,17 +384,14 @@ table.simple-table {
         }
 
         .enhanced-news-list {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.375rem;
+          display: flex;
+          flex-direction: row;
+          gap: 0.25rem;
+          flex-wrap: wrap;
 
-          // For single time group, center it
-          .time-group-container:only-child {
-            grid-column: 1 / -1;
-          }
-          padding: 0.4rem;
-          min-height: 70px;
-          max-height: 250px;
+          padding: 0.3rem;
+          min-height: 50px;
+          max-height: 180px;
           overflow-y: auto;
           overflow-x: hidden;
           scrollbar-width: thin;
