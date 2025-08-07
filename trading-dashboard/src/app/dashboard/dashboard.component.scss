@@ -464,11 +464,14 @@ table.simple-table {
           }
 
           .time-group-container {
-            border-radius: 8px;
+            border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 0.375rem;
+            margin-bottom: 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid var(--tf-border-primary);
+            flex: 1;
+            min-width: 140px;
+            max-width: 160px;
 
             &:hover {
               transform: translateY(-1px);
