@@ -2056,9 +2056,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
       .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
 
-    if (grossLoss === 0) return grossProfit > 0 ? '���' : '0.00';
+    if (grossLoss === 0) return grossProfit > 0 ? 999 : 0;
 
-    return (grossProfit / grossLoss).toFixed(2);
+    return parseFloat((grossProfit / grossLoss).toFixed(2));
   }
 
   calculateBestProfit(): number {
