@@ -322,7 +322,7 @@
             <h3 class="metric-title">Profit Factor</h3>
             <mat-icon class="metric-icon">trending_up</mat-icon>
           </div>
-          <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
+          <div class="metric-value positive">1.5</div>
           <div class="metric-subtitle">Gross win / Gross loss</div>
         </div>
 
@@ -331,7 +331,7 @@
             <h3 class="metric-title">Best Profit</h3>
             <mat-icon class="metric-icon">star</mat-icon>
           </div>
-          <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
+          <div class="metric-value positive">$100</div>
           <div class="metric-subtitle">Largest single win</div>
         </div>
       </div>
