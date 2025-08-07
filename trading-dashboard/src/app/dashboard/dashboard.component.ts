@@ -1998,6 +1998,42 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }).length;
   }
 
+  calculateAccountSize(): number {
+    // For prop firm challenge, assume starting balance + total P&L
+    const startingBalance = 5000; // Typical 5k challenge
+    const totalPnL = this.calculateTotalPnL();
+    return startingBalance + totalPnL;
+  }
+
+  calculateAvgTradeDuration(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0h 0m';
+
+    let totalDurationMinutes = 0;
+    let validTrades = 0;
+
+    this.tableData.forEach(trade => {
+      if (trade.openDate && trade.closeDate && trade.closeDate !== '-') {
+        const openDate = this.parseTradeDate(trade.openDate);
+        const closeDate = this.parseTradeDate(trade.closeDate);
+
+        if (openDate && closeDate) {
+          const durationMs = closeDate.getTime() - openDate.getTime();
+          const durationMinutes = durationMs / (1000 * 60); // Convert to minutes
+          totalDurationMinutes += durationMinutes;
+          validTrades++;
+        }
+      }
+    });
+
+    if (validTrades === 0) return '0h 0m';
+
+    const avgMinutes = totalDurationMinutes / validTrades;
+    const hours = Math.floor(avgMinutes / 60);
+    const minutes = Math.floor(avgMinutes % 60);
+
+    return `${hours}h ${minutes}m`;
+  }
+
   getTotalTrades(): number {
     return this.tableData ? this.tableData.length : 0;
   }
