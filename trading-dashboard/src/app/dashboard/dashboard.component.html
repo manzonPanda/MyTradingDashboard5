@@ -88,7 +88,12 @@
                 </div>
 
                 <!-- Empty state -->
-                <div *ngIf="!isLoadingNews() && getNewsForDay(day.day).length === 0" class="no-news">—</div>
+                <div *ngIf="!isLoadingNews() && getNewsForDay(day.day).length === 0"
+                     class="no-news"
+                     [ngClass]="{'current-day-no-news': day.day === getCurrentDay() && !currentDayHasNews()}">
+                  <div class="no-news-text">No news</div>
+                  <div class="no-news-subtitle">Quiet trading day</div>
+                </div>
               </div>
             </div>
           </div>
