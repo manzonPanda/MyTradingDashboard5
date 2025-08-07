@@ -167,6 +167,9 @@ export class DashboardComponent {
   newsData: any[] = [];
   isNewsLoading: boolean = true;
   selectedDay: number = new Date().getDay(); // Current day
+  timeGroupStates: { [key: string]: boolean } = {}; // Track expanded states
+  showNewsModal: boolean = false;
+  selectedTimeGroup: any = null;
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -749,7 +752,7 @@ onUpload(): void {
     const collectionRef = collection(this.firestore, 'trades');
     onSnapshot(collectionRef, (querySnapshot) => {
       const loadedData: any[] = [];
-  
+
       querySnapshot.forEach((doc) => {
         loadedData.push({
           id: doc.id,
@@ -758,6 +761,9 @@ onUpload(): void {
       });
       console.log('Real-time trades:', loadedData);
       this.tableData = loadedData;
+    }, (error) => {
+      console.warn('⚠️ Firestore realtime listener error - continuing in offline mode:', error.message);
+      // Keep existing data, don't update
     });
   }
 
@@ -780,8 +786,15 @@ onUpload(): void {
         console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
-        console.error('Error loading trades:', error);
-        reject(error);
+        console.warn('⚠️ Firestore connection issue - operating in offline mode:', error.message);
+        // Continue with existing data or empty array
+        if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
+          this.tableData = [...this.mt5LiveTrades];
+          console.log("📊 Using MT5 data only:", this.tableData.length);
+        } else {
+          this.tableData = [];
+        }
+        resolve(); // Don't reject, just continue with available data
       });
     });
   }
@@ -1441,7 +1454,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
-        console.log('📝 First entry structure:', allResults[0]);
+        console.log('��� First entry structure:', allResults[0]);
         console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
 
         this.notionPerformanceData = this.parseNotionResponse(allResults);
@@ -2024,12 +2037,69 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (!this.newsData || !Array.isArray(this.newsData)) {
       return [];
     }
-    return this.newsData.slice(0, 3);
+    // Show all news for Monday to Friday
+    return this.newsData;
   }
 
-  getNewsTitle(title: string): string {
-    if (!title || typeof title !== 'string') return 'No title available';
-    return title.length > 50 ? title.slice(0, 50) + '...' : title;
+  getNewsForDay(dayNumber: number): any[] {
+    if (!this.newsData || !Array.isArray(this.newsData)) {
+      return [];
+    }
+
+    // Filter news by actual date
+    const dayNews = this.newsData.filter(news => {
+      if (!news.date) return false;
+
+      // Parse the date string like "Tue Aug 5" or "Thu Aug 7"
+      const dayAbbr = news.date.split(' ')[0]; // Get "Tue", "Thu", etc.
+
+      // Map day abbreviations to day numbers (1=Monday, 2=Tuesday, etc.)
+      const dayMap: { [key: string]: number } = {
+        'Mon': 1,
+        'Tue': 2,
+        'Wed': 3,
+        'Thu': 4,
+        'Fri': 5
+      };
+
+      return dayMap[dayAbbr] === dayNumber;
+    });
+
+    return dayNews;
+  }
+
+  getGroupedNewsForDay(dayNumber: number): any[] {
+    const dayNews = this.getNewsForDay(dayNumber);
+
+    // Group news by time
+    const timeGroups: { [key: string]: any[] } = {};
+
+    dayNews.forEach(news => {
+      const time = news.time || 'Unknown';
+      if (!timeGroups[time]) {
+        timeGroups[time] = [];
+      }
+      timeGroups[time].push(news);
+    });
+
+    // Convert to array of time groups with metadata
+    return Object.keys(timeGroups).map(time => ({
+      time,
+      events: timeGroups[time],
+      isMultiple: timeGroups[time].length > 1,
+      expanded: false // For expandable UI
+    })).sort((a, b) => {
+      // Sort by time (basic string comparison works for most time formats)
+      return a.time.localeCompare(b.time);
+    });
+  }
+
+  getNewsTitle(news: any): string {
+    const event = news?.event;
+    if (!event || typeof event !== 'string') {
+      return 'No event available';
+    }
+    return event.length > 50 ? event.slice(0, 50) + '...' : event;
   }
 
   getNewsImpact(news: any): string {
@@ -2122,11 +2192,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const today = new Date().getDay();
     let classes: string[] = [];
 
-    // Selected state
-    if (this.selectedDay === day.day) {
-      classes.push('selected');
-    }
-
     // Current day
     if (day.day === today) {
       classes.push('current');
@@ -2145,8 +2210,114 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return classes.join(' ');
   }
 
-  selectDay(day: any): void {
-    this.selectedDay = day.day;
+  // Removed selectDay functionality - showing all weekday news
+
+
+  getCurrentDay(): number {
+    return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+  }
+
+  currentDayHasNews(): boolean {
+    const currentDay = this.getCurrentDay();
+    const newsForToday = this.getNewsForDay(currentDay);
+    return newsForToday.length > 0;
+  }
+
+  getEnhancedNewsClasses(news: any, dayNumber: number): any {
+    const impact = this.getNewsImpact(news);
+    const isCurrentDay = dayNumber === this.getCurrentDay();
+
+    return {
+      'high-impact': impact === 'High',
+      'medium-impact': impact === 'Medium',
+      'low-impact': impact === 'Low',
+      'current-day-item': isCurrentDay
+    };
+  }
+
+  getGroupedNewsByTime(dayNumber: number): any[] {
+    const dayNews = this.getNewsForDay(dayNumber);
+
+    // Group news by time
+    const timeGroups: { [key: string]: any[] } = {};
+
+    dayNews.forEach(news => {
+      const time = news.time || 'Unknown';
+      if (!timeGroups[time]) {
+        timeGroups[time] = [];
+      }
+      timeGroups[time].push(news);
+    });
+
+    // Convert to array of time groups with metadata
+    return Object.keys(timeGroups).map(time => {
+      const events = timeGroups[time];
+      const isMultiple = events.length > 1;
+      const groupId = `day-${dayNumber}-time-${time}`;
+
+
+      return {
+        time,
+        events,
+        isMultiple,
+        expanded: this.timeGroupStates[groupId] || false, // Use persistent state
+        currencies: [...new Set(events.map(event => event.currency))], // Unique currencies
+        dominantCurrency: this.getDominantCurrency(events),
+        id: groupId // Consistent ID for tracking
+      };
+    }).sort((a, b) => {
+      // Sort by time (basic string comparison works for most time formats)
+      return a.time.localeCompare(b.time);
+    });
+  }
+
+  getDominantCurrency(events: any[]): string {
+    // Count currency occurrences
+    const currencyCount: { [key: string]: number } = {};
+    events.forEach(event => {
+      const currency = event.currency || 'USD';
+      currencyCount[currency] = (currencyCount[currency] || 0) + 1;
+    });
+
+    // Return the most frequent currency
+    return Object.keys(currencyCount).reduce((a, b) =>
+      currencyCount[a] > currencyCount[b] ? a : b
+    );
+  }
+
+  onTimeGroupClick(timeGroup: any): void {
+    if (timeGroup.isMultiple) {
+      // Show modal with grouped news details
+      this.selectedTimeGroup = timeGroup;
+      this.showNewsModal = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  closeNewsModal(): void {
+    this.showNewsModal = false;
+    this.selectedTimeGroup = null;
+    this.cdr.detectChanges();
+  }
+
+  toggleTimeGroup(timeGroup: any): void {
+    timeGroup.expanded = !timeGroup.expanded;
+    this.cdr.detectChanges(); // Force change detection
+  }
+
+  getCurrencyBackgroundClass(currency: string): string {
+    const currencyMap: { [key: string]: string } = {
+      'USD': 'currency-usd',
+      'EUR': 'currency-eur',
+      'GBP': 'currency-gbp',
+      'JPY': 'currency-jpy',
+      'AUD': 'currency-aud',
+      'CAD': 'currency-cad',
+      'CHF': 'currency-chf',
+      'NZD': 'currency-nzd'
+    };
+
+    return currencyMap[currency] || 'currency-default';
   }
 
   trackByDayIndex(index: number, item: any): number {
@@ -3304,7 +3475,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    console.log('🔄 updateTableData called');
+    console.log('��� updateTableData called');
     console.log('📊 Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('🔴 Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
