@@ -714,9 +714,26 @@ table.simple-table {
 
               .expanded-events {
                 padding: 0.5rem 0.75rem;
-                display: flex;
-                flex-direction: column;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
                 gap: 0.375rem;
+
+                // For single item, center it
+                &:has(.expanded-event:only-child) {
+                  grid-template-columns: 1fr;
+                  justify-items: center;
+                }
+
+                // For 2 items, use 2 columns
+                &:has(.expanded-event:nth-child(2):last-child) {
+                  grid-template-columns: 1fr 1fr;
+                }
+
+                // For 3+ items, use 2 columns with wrapping
+                .expanded-event:nth-child(3) ~ .expanded-event,
+                .expanded-event:nth-child(n+3) {
+                  grid-column: span 1;
+                }
 
                 .expanded-event {
                   display: flex;
