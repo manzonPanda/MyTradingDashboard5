@@ -2287,8 +2287,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   onTimeGroupClick(timeGroup: any): void {
     if (timeGroup.isMultiple) {
-      // Toggle inline expansion of events
-      timeGroup.expanded = !timeGroup.expanded;
+      // Show modal with grouped news details
+      this.selectedTimeGroup = timeGroup;
+      this.showNewsModal = true;
       this.cdr.detectChanges();
     }
   }
