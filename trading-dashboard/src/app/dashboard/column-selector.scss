@@ -1,11 +1,11 @@
-/* Column Selector Styles - FIXED */
+/* Column Selector Styles */
 .column-selector {
-  background: var(--tf-bg-card);
-  border: 1px solid var(--tf-border-primary);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   margin: 1rem 0;
   padding: 1.5rem;
-  box-shadow: var(--tf-shadow-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .column-selector-header {
@@ -14,11 +14,11 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--tf-border-primary);
+  border-bottom: 1px solid var(--border-color);
 
   h3 {
     margin: 0;
-    color: var(--tf-text-primary);
+    color: var(--text-primary);
     font-weight: 600;
     font-size: 1.1rem;
   }
@@ -32,9 +32,9 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
     border-radius: 6px;
-    border: 1px solid var(--tf-border-primary);
-    background: var(--tf-bg-card);
-    color: var(--tf-text-primary);
+    border: 1px solid var(--border-color);
+    background: var(--background-color);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -48,19 +48,19 @@
     }
 
     &:hover {
-      background: var(--tf-accent-primary);
+      background: var(--primary-color);
       color: white;
-      border-color: var(--tf-accent-primary);
+      border-color: var(--primary-color);
     }
 
     &.btn-secondary {
-      background: var(--tf-accent-secondary);
+      background: var(--secondary-color);
       color: white;
-      border-color: var(--tf-accent-secondary);
+      border-color: var(--secondary-color);
 
       &:hover {
-        background: rgba(139, 92, 246, 0.9);
-        border-color: rgba(139, 92, 246, 0.9);
+        background: var(--secondary-hover);
+        border-color: var(--secondary-hover);
       }
     }
   }
@@ -74,21 +74,22 @@
   overflow-y: auto;
   padding-right: 0.5rem;
 
+  /* Custom scrollbar */
   &::-webkit-scrollbar {
     width: 6px;
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--tf-bg-secondary);
+    background: var(--background-color);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--tf-border-secondary);
+    background: var(--border-color);
     border-radius: 3px;
 
     &:hover {
-      background: var(--tf-text-secondary);
+      background: var(--text-secondary);
     }
   }
 }
@@ -97,64 +98,49 @@
   display: flex;
   align-items: center;
   padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
 
   &:hover {
-    background: var(--tf-bg-hover);
+    background: rgba(var(--primary-rgb), 0.05);
   }
 
-  // Support for both checkbox and mat-slide-toggle
-  input[type="checkbox"] {
-    margin-right: 0.5rem;
-    cursor: pointer;
-  }
-
-  label {
-    font-size: 0.875rem;
-    color: var(--tf-text-primary);
-    cursor: pointer;
-    user-select: none;
-  }
-
-  // Material slide toggle support
   ::ng-deep .mat-slide-toggle {
     .mat-slide-toggle-label {
       font-size: 0.9rem;
-      color: var(--tf-text-primary);
+      color: var(--text-primary);
       font-weight: 500;
     }
 
     .mat-slide-toggle-bar {
-      background-color: rgba(107, 114, 128, 0.3);
+      background-color: rgba(var(--text-secondary-rgb), 0.3);
     }
 
     &.mat-checked .mat-slide-toggle-bar {
-      background-color: rgba(107, 70, 193, 0.5);
+      background-color: rgba(var(--primary-rgb), 0.5);
     }
 
     .mat-slide-toggle-thumb {
-      background-color: var(--tf-bg-card);
+      background-color: var(--surface-color);
     }
 
     &.mat-checked .mat-slide-toggle-thumb {
-      background-color: var(--tf-accent-primary);
+      background-color: var(--primary-color);
     }
   }
 }
 
 /* Column Button Styles */
 .columns-btn {
-  background: var(--tf-accent-primary) !important;
+  background: var(--accent-color) !important;
   color: white !important;
 
   &:hover {
-    background: var(--tf-accent-secondary) !important;
+    background: var(--accent-hover) !important;
   }
 }
 
-/* Column Styles that might be used */
+/* New Column Styles */
 .col-weekly,
 .col-model-form,
 .col-screenshots,
@@ -178,7 +164,7 @@
 
 .file-badge {
   display: inline-block;
-  background: var(--tf-accent-info);
+  background: var(--info-color);
   color: white;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
