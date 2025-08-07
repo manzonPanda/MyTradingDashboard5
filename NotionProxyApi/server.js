@@ -157,9 +157,8 @@ app.get('/api/news', async (req, res) => {
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 3000)));
 
     const html = await page.content();
-    fs.writeFileSync('calendar_loaded.html', html); // Optional: for debug
+    fs.writeFileSync('calendar_loaded.html', html); // Optional debug
 
-    // ✅ Extract JS object text using regex
     const scriptMatch = html.match(/window\.calendarComponentStates\[1\]\s*=\s*({[\s\S]*?});/);
     if (!scriptMatch) throw new Error('calendarComponentStates[1] not found');
 
@@ -171,13 +170,11 @@ app.get('/api/news', async (req, res) => {
       result;
     `;
 
-    // ✅ Run JavaScript safely using vm
     const sandbox = {};
     const script = new vm.Script(codeToRun);
     const context = vm.createContext(sandbox);
     const { data: calendarData } = script.runInContext(context);
 
-    // ✅ Filter logic
     const allowedCurrencies = ['EUR', 'USD', 'GBP'];
     const allowedImpacts = ['high', 'non-economic'];
     const news = [];
@@ -191,10 +188,17 @@ app.get('/api/news', async (req, res) => {
         const eventName = event.name;
         const time = event.timeLabel;
 
-        if (
+        const isHighOrNonEcon =
           allowedCurrencies.includes(currency) &&
-          allowedImpacts.includes(impact)
-        ) {
+          allowedImpacts.includes(impact);
+
+        const isSpecialMediumEvent =
+          impact === 'medium' &&
+          allowedCurrencies.includes(currency) &&
+          eventName.toLowerCase().includes('president') &&
+          eventName.toLowerCase().includes('speaks');
+
+        if (isHighOrNonEcon || isSpecialMediumEvent) {
           news.push({
             date: dateText,
             time,
@@ -218,7 +222,6 @@ app.get('/api/news', async (req, res) => {
     if (browser) await browser.close();
   }
 });
-
 
 
 
