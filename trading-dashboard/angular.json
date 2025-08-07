@@ -19,7 +19,7 @@
           "options": {
             "outputPath": "dist/trading-dashboard",
             "index": "src/index.html",
-            "browser": "src/main.minimal.ts",
+            "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
