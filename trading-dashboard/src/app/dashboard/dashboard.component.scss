@@ -805,7 +805,6 @@ table.simple-table {
           0 0 0 2px rgba(239, 68, 68, 0.4),
           0 0 20px rgba(239, 68, 68, 0.3),
           0 0 40px rgba(239, 68, 68, 0.15);
-        transform: scale(1.02);
       }
       50% {
         background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08));
@@ -814,7 +813,6 @@ table.simple-table {
           0 0 30px rgba(239, 68, 68, 0.5),
           0 0 60px rgba(239, 68, 68, 0.25),
           0 0 90px rgba(239, 68, 68, 0.1);
-        transform: scale(1.04);
       }
     }
 
@@ -825,7 +823,6 @@ table.simple-table {
           0 0 0 2px rgba(16, 185, 129, 0.4),
           0 0 20px rgba(16, 185, 129, 0.3),
           0 0 40px rgba(16, 185, 129, 0.15);
-        transform: scale(1.02);
       }
       50% {
         background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.08));
@@ -834,7 +831,6 @@ table.simple-table {
           0 0 30px rgba(16, 185, 129, 0.5),
           0 0 60px rgba(16, 185, 129, 0.25),
           0 0 90px rgba(16, 185, 129, 0.1);
-        transform: scale(1.04);
       }
     }
 
@@ -5659,7 +5655,7 @@ table.simple-table {
 // Remove all complex animations for clean look
 
 // =============================================
-// SIMPLE & STUNNING TABLE HEADERS ���
+// SIMPLE & STUNNING TABLE HEADERS ✨
 // =============================================
 
 .header-content {
