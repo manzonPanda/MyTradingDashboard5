@@ -2003,23 +2003,69 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAvgWin(): number {
-    return 0; // Temporarily simplified
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit > 0;
+    });
+
+    if (winningTrades.length === 0) return 0;
+
+    const totalWinnings = winningTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalWinnings / winningTrades.length;
   }
 
   calculateAvgLoss(): number {
-    return 0; // Temporarily simplified
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const losingTrades = this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    });
+
+    if (losingTrades.length === 0) return 0;
+
+    const totalLosses = losingTrades.reduce((total, trade) => {
+      return total + (parseFloat(trade.netProfit) || 0);
+    }, 0);
+
+    return totalLosses / losingTrades.length;
   }
 
   calculateExpectancy(): number {
-    return 0; // Temporarily simplified
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return 0;
+
+    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const avgWin = this.calculateAvgWin();
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+
+    return (winRate * avgWin) - ((1 - winRate) * avgLoss);
   }
 
   calculateProfitFactor(): number {
-    return 1.5; // Temporarily simplified
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const grossProfit = this.tableData
+      .filter(trade => (parseFloat(trade.netProfit) || 0) > 0)
+      .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0);
+
+    const grossLoss = Math.abs(this.tableData
+      .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
+      .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
+
+    if (grossLoss === 0) return grossProfit > 0 ? 999 : 0;
+
+    return parseFloat((grossProfit / grossLoss).toFixed(2));
   }
 
   calculateBestProfit(): number {
-    return 100; // Temporarily simplified
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const profits = this.tableData.map(trade => parseFloat(trade.netProfit) || 0);
+    return Math.max(...profits, 0);
   }
 
   // Emotional tracking methods for individual trades
