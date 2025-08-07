@@ -84,6 +84,18 @@
                         </div>
                       </div>
                     </div>
+
+                    <!-- Expanded Events with 2-column layout -->
+                    <div *ngIf="timeGroup.expanded" class="expanded-events">
+                      <div class="expanded-event"
+                           *ngFor="let event of timeGroup.events; trackBy: trackByNewsIndex"
+                           [ngClass]="getEnhancedNewsClasses(event, day.day)">
+                        <div class="event-meta">
+                          <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
+                        </div>
+                        <div class="event-title">{{ getNewsTitle(event) }}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -783,7 +795,7 @@
               <div class="progress-fill" [style.width]="getRevengeTradingScore() + '%'" [ngClass]="getRevengeTradingClass()"></div>
             </div>
             <div class="indicator-insight" *ngIf="getRevengeTradingScore() > 20">
-              �� High revenge trading detected! You're increasing position sizes after losses.
+              ��� High revenge trading detected! You're increasing position sizes after losses.
             </div>
           </div>
 
