@@ -262,6 +262,15 @@
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
+      <div class="chart-placeholder">
+        <!-- Graph will be displayed here -->
+        <div class="chart-placeholder-content">
+          <mat-icon>analytics</mat-icon>
+          <p>Chart Area</p>
+          <span>Graph will be displayed here</span>
+        </div>
+      </div>
+
       <div class="metrics-grid">
         <div class="metric-card profit-loss">
           <div class="metric-header">
@@ -333,15 +342,6 @@
           </div>
           <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
           <div class="metric-subtitle">Largest single win</div>
-        </div>
-      </div>
-
-      <div class="chart-placeholder">
-        <!-- Graph will be displayed here -->
-        <div class="chart-placeholder-content">
-          <mat-icon>analytics</mat-icon>
-          <p>Chart Area</p>
-          <span>Graph will be displayed here</span>
         </div>
       </div>
     </div>
