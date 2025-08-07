@@ -1471,28 +1471,27 @@ table.simple-table {
 
 .metric-card {
   background: var(--tf-bg-card);
-  border-radius: 8px;
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 1.5rem;
   border: 1px solid var(--tf-border-primary);
   transition: all 0.2s ease;
-  min-height: 120px;
 
   &:hover {
     border-color: var(--tf-border-secondary);
-    transform: translateY(-1px);
-    box-shadow: var(--tf-shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--tf-shadow-lg);
   }
 
   .metric-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .metric-title {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--tf-text-secondary);
     margin: 0;
     text-transform: uppercase;
@@ -1502,17 +1501,13 @@ table.simple-table {
   .metric-icon {
     color: var(--tf-text-muted);
     opacity: 0.7;
-    font-size: 1rem;
-    width: 1rem;
-    height: 1rem;
   }
 
   .metric-value {
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
     color: var(--tf-text-primary);
-    line-height: 1.2;
 
     &.positive {
       color: var(--tf-positive);
@@ -1524,15 +1519,14 @@ table.simple-table {
   }
 
   .metric-change {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--tf-positive);
     font-weight: 500;
   }
 
   .metric-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--tf-text-muted);
-    line-height: 1.3;
   }
 }
 
