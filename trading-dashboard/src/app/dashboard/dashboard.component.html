@@ -262,12 +262,66 @@
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
-      <div class="chart-placeholder">
-        <!-- Graph will be displayed here -->
-        <div class="chart-placeholder-content">
-          <mat-icon>analytics</mat-icon>
-          <p>Chart Area</p>
-          <span>Graph will be displayed here</span>
+      <div class="trading-chart-container">
+        <div class="chart-header">
+          <div class="chart-title-section">
+            <h3 class="chart-title">
+              <mat-icon class="chart-icon">trending_up</mat-icon>
+              Trading Performance Dashboard
+            </h3>
+            <p class="chart-subtitle">Live equity curve and account analytics</p>
+          </div>
+          <div class="chart-stats">
+            <div class="stat-item">
+              <span class="stat-label">Current Balance</span>
+              <span class="stat-value positive">${{ mt5AccountInfo?.starting_balance || 5000 | number:'1.2-2' }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total P&L</span>
+              <span class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
+                {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+              </span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Win Rate</span>
+              <span class="stat-value">{{ calculateWinRate() }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-canvas-wrapper">
+          <canvas
+            baseChart
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="chartType"
+            class="trading-chart">
+          </canvas>
+
+          <div class="chart-overlay-info">
+            <div class="live-indicator">
+              <div class="pulse-dot"></div>
+              <span>Live Trading Data</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-legend-enhanced">
+          <div class="legend-item">
+            <div class="legend-color balance"></div>
+            <span class="legend-label">Account Balance</span>
+            <span class="legend-description">Your total account equity over time</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color pnl"></div>
+            <span class="legend-label">Cumulative P&L</span>
+            <span class="legend-description">Running profit/loss from all trades</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color drawdown"></div>
+            <span class="legend-label">Drawdown %</span>
+            <span class="legend-description">Peak-to-trough decline percentage</span>
+          </div>
         </div>
       </div>
 
