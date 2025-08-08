@@ -459,7 +459,7 @@ export class DashboardComponent implements AfterViewInit {
 
   async ngOnInit() {
     const socket = io("http://localhost:5000",{
-      transports: ['websocket'], // 🔥 Force WebSocket to avoid polling
+      transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
@@ -3925,6 +3925,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       //     this.recentlyAddedTrades.splice(index, 1);
       //   }
       // }, 5000);
+
+      // Update the beautiful chart with new data
+      this.updateChartWithNewTrade(newTrade);
 
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
