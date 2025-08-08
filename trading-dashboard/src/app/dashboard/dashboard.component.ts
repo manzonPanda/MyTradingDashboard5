@@ -130,7 +130,7 @@ interface NotionPerformanceData {
 
 // @Injectable({ providedIn: 'root' })
 export class DashboardComponent implements AfterViewInit {
-  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+  // @ViewChild(BaseChartDirective) chart?: BaseChartDirective; // Temporarily disabled
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
   locale: string = 'en';
@@ -192,7 +192,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'Tired', icon: '😴', color: '#6b7280' },
     { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
     { name: 'Focused', icon: '🎯', color: '#3b82f6' },
-    { name: 'Anxious', icon: '��', color: '#f59e0b' },
+    { name: 'Anxious', icon: '😟', color: '#f59e0b' },
     { name: 'Greedy', icon: '🤑', color: '#ef4444' },
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
@@ -2362,7 +2362,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         errorMessage += 'The server encountered an internal error.\n';
         errorMessage += 'Check the backend server console for detailed error messages.';
       } else {
-        errorMessage += `�� HTTP Error: ${error.status}\n\n`;
+        errorMessage += `🚨 HTTP Error: ${error.status}\n\n`;
         errorMessage += `Message: ${error.message}\n`;
         errorMessage += `URL: ${error.url}\n\n`;
         errorMessage += 'Check the backend server logs for more details.';
