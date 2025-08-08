@@ -140,7 +140,7 @@ export class DashboardComponent implements AfterViewInit {
   dtTrigger: Subject<any> = new Subject<any>();
 
   // MT5 Live Trading properties
-  mt5AccountInfo: any = null; // MT5 account info
+  mt5AccountInfo: any = { starting_balance: 5000 }; // MT5 account info with default values
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
@@ -459,7 +459,7 @@ export class DashboardComponent implements AfterViewInit {
 
   async ngOnInit() {
     const socket = io("http://localhost:5000",{
-      transports: ['websocket'], // ��� Force WebSocket to avoid polling
+      transports: ['websocket'], // ����� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
