@@ -3808,6 +3808,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.mt5LiveTrades = mt5Trades;
         console.log("this.mt5LiveTrades", this.mt5LiveTrades);
         this.updateTableData();
+
+        // Generate stunning chart with loaded data
+        setTimeout(() => {
+          this.generateTradingChartData();
+        }, 500);
       }
 
      // Go to last page of the table to show the latest trade
