@@ -1998,6 +1998,78 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }).length;
   }
 
+  calculateAccountSize(): number {
+    // For prop firm challenge, assume starting balance + total P&L
+    const startingBalance = 5000; // Typical 5k challenge
+    const totalPnL = this.calculateTotalPnL();
+    return startingBalance + totalPnL;
+  }
+
+  calculateAvgTradeDuration(): string {
+    if (!this.tableData || this.tableData.length === 0) return '0min';
+
+    let totalMinutes = 0;
+    let validTrades = 0;
+
+    this.tableData.forEach(trade => {
+      // Only calculate for closed trades (not live trades with '-' or empty close dates)
+      if (trade.openDate && trade.closeDate &&
+          trade.closeDate !== '-' &&
+          trade.closeDate !== '' &&
+          trade.closeDate.trim() !== '') {
+
+        // Use the existing calculateHoldTime function logic
+        const holdTimeStr = this.calculateHoldTime(trade.openDate, trade.closeDate);
+
+        if (holdTimeStr && holdTimeStr !== '') {
+          // Parse the hold time string to extract minutes
+          const minutes = this.parseHoldTimeToMinutes(holdTimeStr);
+          if (minutes > 0) {
+            totalMinutes += minutes;
+            validTrades++;
+          }
+        }
+      }
+    });
+
+    if (validTrades === 0) return 'No data';
+
+    const avgMinutes = Math.floor(totalMinutes / validTrades);
+    const hours = Math.floor(avgMinutes / 60);
+    const remainingMinutes = avgMinutes % 60;
+
+    // Format like the existing calculateHoldTime function
+    if (hours > 0 && remainingMinutes > 0) {
+      return `${hours}hrs ${remainingMinutes}min`;
+    } else if (hours > 0) {
+      return `${hours}hrs`;
+    } else if (avgMinutes > 0) {
+      return `${avgMinutes}min`;
+    } else {
+      return '<1min';
+    }
+  }
+
+  private parseHoldTimeToMinutes(holdTimeStr: string): number {
+    if (!holdTimeStr || holdTimeStr === '<1min') return 0;
+
+    let totalMinutes = 0;
+
+    // Extract hours
+    const hoursMatch = holdTimeStr.match(/(\d+)hrs/);
+    if (hoursMatch) {
+      totalMinutes += parseInt(hoursMatch[1]) * 60;
+    }
+
+    // Extract minutes
+    const minutesMatch = holdTimeStr.match(/(\d+)min/);
+    if (minutesMatch) {
+      totalMinutes += parseInt(minutesMatch[1]);
+    }
+
+    return totalMinutes;
+  }
+
   getTotalTrades(): number {
     return this.tableData ? this.tableData.length : 0;
   }

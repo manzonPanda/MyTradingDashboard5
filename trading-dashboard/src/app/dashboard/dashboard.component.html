@@ -343,6 +343,24 @@
           <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
           <div class="metric-subtitle">Largest single win</div>
         </div>
+
+        <div class="metric-card account-size">
+          <div class="metric-header">
+            <h3 class="metric-title">Account Size</h3>
+            <mat-icon class="metric-icon">account_balance</mat-icon>
+          </div>
+          <div class="metric-value">{{ calculateAccountSize() | currency }}</div>
+          <div class="metric-subtitle">Current balance</div>
+        </div>
+
+        <div class="metric-card avg-trade-duration">
+          <div class="metric-header">
+            <h3 class="metric-title">Avg. Trade Duration</h3>
+            <mat-icon class="metric-icon">schedule</mat-icon>
+          </div>
+          <div class="metric-value">{{ calculateAvgTradeDuration() }}</div>
+          <div class="metric-subtitle">Average hold time</div>
+        </div>
       </div>
     </div>
   </section>
