@@ -1672,6 +1672,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  // Refresh chart with beautiful animation
+  refreshChart(): void {
+    const refreshBtn = document.querySelector('.chart-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.classList.add('spinning');
+      setTimeout(() => {
+        refreshBtn.classList.remove('spinning');
+      }, 1000);
+    }
+    this.generateTradingChartData();
+  }
+
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
