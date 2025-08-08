@@ -4012,6 +4012,44 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🎯 Final tableData:', this.tableData);
   }
 
+  // Update chart with real-time trade data
+  updateChartWithNewTrade(newTrade: Table): void {
+    console.log('📈 Updating chart with new trade data...', newTrade);
+
+    // Add animation class temporarily
+    const chartContainer = document.querySelector('.trading-chart-container');
+    if (chartContainer) {
+      chartContainer.classList.add('chart-loading');
+      setTimeout(() => {
+        chartContainer.classList.remove('chart-loading');
+      }, 1000);
+    }
+
+    // Regenerate chart data with new trade included
+    setTimeout(() => {
+      this.generateTradingChartData();
+    }, 300);
+  }
+
+  // Refresh chart when trades are closed
+  updateChartWithClosedTrade(closedTrade: Table): void {
+    console.log('📉 Updating chart with closed trade data...', closedTrade);
+
+    // Add a subtle animation to show the chart is updating
+    const chartContainer = document.querySelector('.trading-chart-container');
+    if (chartContainer) {
+      chartContainer.classList.add('chart-loading');
+      setTimeout(() => {
+        chartContainer.classList.remove('chart-loading');
+      }, 800);
+    }
+
+    // Regenerate chart data
+    setTimeout(() => {
+      this.generateTradingChartData();
+    }, 200);
+  }
+
   // Toggle method for single notion data button
   toggleNotionData(): void {
     this.showNotionData = !this.showNotionData;
@@ -4164,7 +4202,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Step 5: Reinitialize with fresh DataTable
         setTimeout(() => {
-          console.log('🚀 Reinitializing DataTable from scratch');
+          console.log('��� Reinitializing DataTable from scratch');
           this.dtTrigger.next(null);
 
           // Step 6: If still no luck, try direct jQuery DataTable initialization
