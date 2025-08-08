@@ -353,17 +353,7 @@ export class DashboardComponent implements AfterViewInit {
     },
     plugins: {
       legend: {
-        display: true,
-        position: 'top',
-        labels: {
-          font: {
-            size: 14,
-            weight: 'bold'
-          },
-          padding: 20,
-          usePointStyle: true,
-          pointStyle: 'circle'
-        }
+        display: false
       },
       tooltip: {
         enabled: true,
