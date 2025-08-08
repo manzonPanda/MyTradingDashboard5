@@ -3979,7 +3979,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateMT5TradePrice(priceData: any): void {
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      trade.position === priceData.ticket 
+      trade.position === priceData.ticket
     );
 
     if (tradeIndex !== -1) {
@@ -3987,6 +3987,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
       this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
       this.updateTableDataOnly();
+
+      // Add subtle chart pulse on price updates (every 10th update to avoid spam)
+      if (Math.random() < 0.1) {
+        const liveIndicator = document.querySelector('.live-indicator .pulse-dot');
+        if (liveIndicator) {
+          liveIndicator.classList.add('pulse-dot');
+        }
+      }
     }
   }
 
