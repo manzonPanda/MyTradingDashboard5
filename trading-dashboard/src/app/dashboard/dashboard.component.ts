@@ -28,7 +28,8 @@ import { ConnectionStatusComponent } from '../connection-status/connection-statu
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
-import { BaseChartDirective, NgChartsModule } from 'ng2-charts';
+import { BaseChartDirective } from 'ng2-charts';
+import { NgChartsModule } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 
 declare var $: any;
@@ -459,7 +460,7 @@ export class DashboardComponent implements AfterViewInit {
 
   async ngOnInit() {
     const socket = io("http://localhost:5000",{
-      transports: ['websocket'], // ����� Force WebSocket to avoid polling
+      transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
@@ -2069,7 +2070,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           return [];
 
         default:
-          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
+          console.warn(`⚠��� Unknown property type: ${type} for property: ${propertyName}`);
           return null;
       }
     } catch (error) {
