@@ -27,6 +27,9 @@ import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { io, Socket } from "socket.io-client";
+import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 
 declare var $: any;
 
@@ -116,7 +119,8 @@ interface NotionPerformanceData {
     MatInputModule,
     ReactiveFormsModule,
     MatNativeDateModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss']
@@ -124,7 +128,8 @@ interface NotionPerformanceData {
 
 
 // @Injectable({ providedIn: 'root' })
-export class DashboardComponent {
+export class DashboardComponent implements AfterViewInit {
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
   locale: string = 'en';
@@ -135,7 +140,7 @@ export class DashboardComponent {
   dtTrigger: Subject<any> = new Subject<any>();
 
   // MT5 Live Trading properties
-  mt5AccountInfo: any = null; // MT5 account info
+  mt5AccountInfo: any = { starting_balance: 5000 }; // MT5 account info with default values
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
@@ -280,15 +285,171 @@ export class DashboardComponent {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
+  // Chart configuration for beautiful trading visualization
+  public chartType: ChartType = 'line';
+  public chartLabels: string[] = [];
+  public chartData: any = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Account Balance',
+        data: [],
+        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: 'rgb(16, 185, 129)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        shadowOffsetX: 0,
+        shadowOffsetY: 4,
+        shadowBlur: 10,
+        shadowColor: 'rgba(16, 185, 129, 0.3)'
+      },
+      {
+        label: 'Cumulative P&L',
+        data: [],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.3,
+        pointBackgroundColor: 'rgb(59, 130, 246)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      },
+      {
+        label: 'Drawdown',
+        data: [],
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: 'rgb(239, 68, 68)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5
+      }
+    ]
+  };
+
+  public chartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 2000,
+      easing: 'easeInOutQuart'
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: true,
+        padding: 12,
+        titleFont: {
+          size: 16,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 14
+        },
+        callbacks: {
+          title: function(context: any) {
+            return context[0].label;
+          },
+          label: function(context: any) {
+            const value = context.parsed.y;
+            const index = context.dataIndex;
+            const data = context.dataset.data;
+
+            if (index === 0) {
+              return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else {
+              const previousValue = data[index - 1];
+              const change = value - previousValue;
+              const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
+              return [
+                `Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                `Trade P&L: ${changeText}`
+              ];
+            }
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        display: true,
+        grid: {
+          display: true,
+          color: 'rgba(0, 0, 0, 0.08)'
+        },
+        ticks: {
+          font: {
+            size: 14,
+            weight: 'normal'
+          },
+          color: '#64748b'
+        }
+      },
+      y: {
+        display: true,
+        grid: {
+          display: true,
+          color: 'rgba(0, 0, 0, 0.08)'
+        },
+        ticks: {
+          font: {
+            size: 14,
+            weight: 'normal'
+          },
+          color: '#64748b',
+          callback: function(value: any) {
+            return '$' + value.toLocaleString();
+          }
+        },
+        title: {
+          display: true,
+          text: 'Account Balance ($)',
+          color: '#64748b',
+          font: {
+            size: 16,
+            weight: 'bold'
+          }
+        }
+      }
+    }
+  };
+
 
 
   constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
-
+    // Register Chart.js components
+    Chart.register(...registerables);
   }
 
   async ngOnInit() {
     const socket = io("http://localhost:5000",{
-      transports: ['websocket'], // 🔥 Force WebSocket to avoid polling
+      transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
@@ -376,10 +537,15 @@ export class DashboardComponent {
     // Simple table - no DataTables initialization needed!
     console.log('✅ Simple Angular table ready - no DataTables complexity!');
 
+    // Generate initial chart data
+    this.generateTradingChartData();
   }
 
   ngAfterViewInit() {
-    // Manual initialization will be called from ngOnInit
+    // Initialize the stunning trading chart
+    setTimeout(() => {
+      this.generateTradingChartData();
+    }, 1000);
   }
 
   initializeDataTable(): void {
@@ -1492,8 +1658,203 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     } finally {
       this.isLoadingNotionData = false;
-      console.log('🏁 Finished loading your complete Notion data');
+    console.log('🏁 Finished loading your complete Notion data');
     }
+  }
+
+  // Refresh chart with beautiful animation
+  refreshChart(): void {
+    const refreshBtn = document.querySelector('.chart-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.classList.add('spinning');
+      setTimeout(() => {
+        refreshBtn.classList.remove('spinning');
+      }, 1000);
+    }
+    this.generateTradingChartData();
+  }
+
+  // Generate stunning chart data with realistic trading patterns
+  generateTradingChartData(): void {
+    console.log('🎨 Generating beautiful trading chart data...');
+
+    const startingBalance = this.mt5AccountInfo?.starting_balance || 5000;
+    let currentBalance = startingBalance;
+    let cumulativePnL = 0;
+    let peakBalance = startingBalance;
+
+    const labels: string[] = [];
+    const balanceData: number[] = [];
+    const pnlData: number[] = [];
+    const drawdownData: number[] = [];
+
+    // Sort trades by date for proper chart progression
+    const sortedTrades = [...this.tableData].sort((a, b) => {
+      const dateA = new Date(a.openDate || '');
+      const dateB = new Date(b.openDate || '');
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    // Add starting point
+    labels.push('Start');
+    balanceData.push(startingBalance);
+    pnlData.push(0);
+    drawdownData.push(0);
+
+    // Process each trade for chart progression
+    sortedTrades.forEach((trade, index) => {
+      const tradeProfit = parseFloat(trade.netProfit || '0');
+      currentBalance += tradeProfit;
+      cumulativePnL += tradeProfit;
+
+      // Update peak for drawdown calculation
+      if (currentBalance > peakBalance) {
+        peakBalance = currentBalance;
+      }
+
+      // Calculate drawdown percentage
+      const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
+
+      // Format date for label
+      const tradeDate = new Date(trade.openDate || '');
+      const dateLabel = tradeDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+
+      labels.push(`${dateLabel} #${index + 1}`);
+      balanceData.push(currentBalance);
+      pnlData.push(cumulativePnL);
+      drawdownData.push(drawdown);
+    });
+
+    // If no trades, generate sample data for demonstration
+    if (sortedTrades.length === 0) {
+      console.log('📊 No trade data found, generating sample trading chart...');
+      this.generateSampleTradingData(startingBalance);
+      return;
+    }
+
+    // Simple chart showing just account balance progression
+    this.chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Account Balance',
+          data: balanceData,
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: (ctx: any) => {
+            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+            return gradient;
+          },
+          borderWidth: 4,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: balanceData.map((val, i, arr) => {
+            if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
+            if (i === arr.length - 1) return 'rgb(34, 197, 94)'; // End point - bright green
+            const profit = val - arr[i-1];
+            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
+          }),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 3,
+          pointRadius: balanceData.map((_, i, arr) => {
+            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
+            return 6;
+          }),
+          pointHoverRadius: 12
+        }
+      ]
+    };
+
+    console.log('✨ Beautiful trading chart generated with', labels.length, 'data points!');
+
+    // Trigger chart update with animation
+    if (this.chart) {
+      this.chart.update('active');
+    }
+  }
+
+  // Generate sample trading data for demonstration
+  generateSampleTradingData(startingBalance: number): void {
+    const labels: string[] = [];
+    const balanceData: number[] = [];
+    const pnlData: number[] = [];
+    const drawdownData: number[] = [];
+
+    let currentBalance = startingBalance;
+    let cumulativePnL = 0;
+    let peakBalance = startingBalance;
+
+    // Generate 30 days of sample trading data
+    for (let i = 0; i <= 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (30 - i));
+
+      if (i === 0) {
+        labels.push('Start');
+        balanceData.push(startingBalance);
+        pnlData.push(0);
+        drawdownData.push(0);
+        continue;
+      }
+
+      // Simulate realistic trading with 60% win rate
+      const isWin = Math.random() < 0.6;
+      const tradeSize = 10 + Math.random() * 40; // $10-50 trades
+      const tradeResult = isWin ? tradeSize : -tradeSize * 0.8; // Risk:Reward 1:1.25
+
+      currentBalance += tradeResult;
+      cumulativePnL += tradeResult;
+
+      if (currentBalance > peakBalance) {
+        peakBalance = currentBalance;
+      }
+
+      const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
+
+      labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      balanceData.push(currentBalance);
+      pnlData.push(cumulativePnL);
+      drawdownData.push(drawdown);
+    }
+
+    this.chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Account Balance',
+          data: balanceData,
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: (ctx: any) => {
+            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+            return gradient;
+          },
+          borderWidth: 4,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: balanceData.map((val, i, arr) => {
+            if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
+            if (i === arr.length - 1) return 'rgb(34, 197, 94)'; // End point - bright green
+            const profit = val - arr[i-1];
+            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
+          }),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 3,
+          pointRadius: balanceData.map((_, i, arr) => {
+            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
+            return 6;
+          }),
+          pointHoverRadius: 12
+        }
+      ]
+    };
+
+    console.log('🎯 Sample trading chart generated for demonstration!');
   }
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
@@ -1830,7 +2191,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's any other error but not connection error, server might be running
       if (error.status && error.status !== 0) {
-        console.log('⚠️ Backend is running but has issues with the API');
+        console.log('��️ Backend is running but has issues with the API');
         return true; // Server is running, just has issues
       }
 
@@ -3395,6 +3756,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.mt5LiveTrades = mt5Trades;
         console.log("this.mt5LiveTrades", this.mt5LiveTrades);
         this.updateTableData();
+
+        // Generate stunning chart with loaded data
+        setTimeout(() => {
+          this.generateTradingChartData();
+        }, 500);
       }
 
      // Go to last page of the table to show the latest trade
@@ -3513,6 +3879,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       //   }
       // }, 5000);
 
+      // Update the beautiful chart with new data
+      this.updateChartWithNewTrade(newTrade);
+
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
 
@@ -3553,13 +3922,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
+
+      // Update the beautiful chart with closed trade
+      this.updateChartWithClosedTrade(closedTrade);
+
       console.log('✅ MT5 trade closed');
     }
   }
 
   updateMT5TradePrice(priceData: any): void {
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      trade.position === priceData.ticket 
+      trade.position === priceData.ticket
     );
 
     if (tradeIndex !== -1) {
@@ -3567,6 +3940,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
       this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
       this.updateTableDataOnly();
+
+      // Add subtle chart pulse on price updates (every 10th update to avoid spam)
+      if (Math.random() < 0.1) {
+        const liveIndicator = document.querySelector('.live-indicator .pulse-dot');
+        if (liveIndicator) {
+          liveIndicator.classList.add('pulse-dot');
+        }
+      }
     }
   }
 
@@ -3576,8 +3957,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateTableData(): void {
     console.log('��� updateTableData called');
-    console.log('📊 Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('🔴 Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
@@ -3594,6 +3975,44 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
+  }
+
+  // Update chart with real-time trade data
+  updateChartWithNewTrade(newTrade: Table): void {
+    console.log('📈 Updating chart with new trade data...', newTrade);
+
+    // Add animation class temporarily
+    const chartContainer = document.querySelector('.trading-chart-container');
+    if (chartContainer) {
+      chartContainer.classList.add('chart-loading');
+      setTimeout(() => {
+        chartContainer.classList.remove('chart-loading');
+      }, 1000);
+    }
+
+    // Regenerate chart data with new trade included
+    setTimeout(() => {
+      this.generateTradingChartData();
+    }, 300);
+  }
+
+  // Refresh chart when trades are closed
+  updateChartWithClosedTrade(closedTrade: Table): void {
+    console.log('📉 Updating chart with closed trade data...', closedTrade);
+
+    // Add a subtle animation to show the chart is updating
+    const chartContainer = document.querySelector('.trading-chart-container');
+    if (chartContainer) {
+      chartContainer.classList.add('chart-loading');
+      setTimeout(() => {
+        chartContainer.classList.remove('chart-loading');
+      }, 800);
+    }
+
+    // Regenerate chart data
+    setTimeout(() => {
+      this.generateTradingChartData();
+    }, 200);
   }
 
   // Toggle method for single notion data button
@@ -3733,7 +4152,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑️ Destroying existing DataTable completely');
+        console.log('🗑��� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
