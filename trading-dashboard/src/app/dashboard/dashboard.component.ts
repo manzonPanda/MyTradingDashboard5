@@ -135,6 +135,7 @@ export class DashboardComponent {
   dtTrigger: Subject<any> = new Subject<any>();
 
   // MT5 Live Trading properties
+  mt5AccountInfo: any = null; // MT5 account info
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
@@ -296,6 +297,7 @@ export class DashboardComponent {
   });
 
   socket.on("account_info", (data) => {
+    this.mt5AccountInfo = data;
     console.warn("📊 Account Info Received:", data);
   });
 
@@ -367,9 +369,9 @@ export class DashboardComponent {
 
     localStorage.clear();
 
-    await this.loadTrades(); // Load trades from Firestore
+    // await this.loadTrades(); // Load trades from Firestore
     await this.loadMT5Data(); // Load MT5 trades
-    this.addTradesToCalendar(); // Add trades to calendar events
+    // this.addTradesToCalendar(); // Add trades to calendar events
 
     // Simple table - no DataTables initialization needed!
     console.log('✅ Simple Angular table ready - no DataTables complexity!');
@@ -1999,10 +2001,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAccountSize(): number {
-    // For prop firm challenge, assume starting balance + total P&L
-    const startingBalance = 5000; // Typical 5k challenge
+    const balanceFromMt5 = this.mt5AccountInfo.balance; // Typical 5k challenge
     const totalPnL = this.calculateTotalPnL();
-    return startingBalance + totalPnL;
+    return balanceFromMt5 - totalPnL;
   }
 
   calculateAvgTradeDuration(): string {

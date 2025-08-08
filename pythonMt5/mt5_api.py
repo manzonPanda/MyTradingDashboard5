@@ -306,7 +306,9 @@ def on_connect():
         socketio.emit('account_info', {
             'login': info.login,
             'name': info.name,
-            'server': info.server
+            'server': info.server,
+            'balance': info.balance,
+            'info':info
         })
 
 
