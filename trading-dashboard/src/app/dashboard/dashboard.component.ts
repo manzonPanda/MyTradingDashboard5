@@ -497,7 +497,7 @@ export class DashboardComponent implements AfterViewInit {
       this.http.get("http://localhost:3000/api/news")
     );
     this.newsData = Array.isArray(news) ? news : [];
-    console.log("📈 Forex Factory News Data:", this.newsData);
+    console.log("��� Forex Factory News Data:", this.newsData);
   } catch (error) {
     console.warn("⚠️ Failed to load forex news:", error);
     this.newsData = [];
@@ -1745,7 +1745,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return;
     }
 
-    // Update chart data with beautiful animations
+    // Simple chart showing just account balance progression
     this.chartData = {
       labels: labels,
       datasets: [
@@ -1759,50 +1759,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
             return gradient;
           },
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: balanceData.map((_, i) =>
-            i === balanceData.length - 1 ? 'rgb(34, 197, 94)' : 'rgb(16, 185, 129)'
-          ),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          pointRadius: balanceData.map((_, i) => i === balanceData.length - 1 ? 8 : 5),
-          pointHoverRadius: 10
-        },
-        {
-          label: 'Cumulative P&L',
-          data: pnlData,
-          borderColor: 'rgb(59, 130, 246)',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderWidth: 2,
-          fill: false,
-          tension: 0.3,
-          pointBackgroundColor: pnlData.map(val => val >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        },
-        {
-          label: 'Drawdown',
-          data: drawdownData,
-          borderColor: 'rgb(239, 68, 68)',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
-            gradient.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
-            return gradient;
-          },
-          borderWidth: 2,
+          borderWidth: 4,
           fill: true,
           tension: 0.3,
-          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBackgroundColor: balanceData.map((val, i, arr) => {
+            if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
+            if (i === arr.length - 1) return 'rgb(34, 197, 94)'; // End point - bright green
+            const profit = val - arr[i-1];
+            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
+          }),
           pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          pointRadius: 3,
-          pointHoverRadius: 5,
-          yAxisID: 'y1'
+          pointBorderWidth: 3,
+          pointRadius: balanceData.map((_, i, arr) => {
+            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
+            return 6;
+          }),
+          pointHoverRadius: 12
         }
       ]
     };
@@ -4021,7 +3993,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateTableData(): void {
     console.log('��� updateTableData called');
-    console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('������ Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
