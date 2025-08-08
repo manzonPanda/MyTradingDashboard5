@@ -455,7 +455,7 @@ export class DashboardComponent implements AfterViewInit {
 
   constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
     // Register Chart.js components
-    Chart.register(...registerables);
+    // Chart.register(...registerables); // Temporarily disabled
   }
 
   async ngOnInit() {
@@ -4217,7 +4217,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑️ Destroying existing DataTable completely');
+        console.log('🗑��� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
