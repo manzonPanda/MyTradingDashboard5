@@ -2006,9 +2006,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAvgTradeDuration(): string {
-    if (!this.tableData || this.tableData.length === 0) return '0h 0m';
+    if (!this.tableData || this.tableData.length === 0) return '0min';
 
-    let totalDurationMinutes = 0;
+    let totalMinutes = 0;
     let validTrades = 0;
 
     this.tableData.forEach(trade => {
@@ -2018,37 +2018,56 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           trade.closeDate !== '' &&
           trade.closeDate.trim() !== '') {
 
-        const openDate = this.parseTradeDate(trade.openDate);
-        const closeDate = this.parseTradeDate(trade.closeDate);
+        // Use the existing calculateHoldTime function logic
+        const holdTimeStr = this.calculateHoldTime(trade.openDate, trade.closeDate);
 
-        if (openDate && closeDate && closeDate.getTime() > openDate.getTime()) {
-          const durationMs = closeDate.getTime() - openDate.getTime();
-          const durationMinutes = durationMs / (1000 * 60); // Convert to minutes
-
-          // Only count reasonable trade durations (between 1 minute and 30 days)
-          if (durationMinutes > 1 && durationMinutes < (30 * 24 * 60)) {
-            totalDurationMinutes += durationMinutes;
+        if (holdTimeStr && holdTimeStr !== '') {
+          // Parse the hold time string to extract minutes
+          const minutes = this.parseHoldTimeToMinutes(holdTimeStr);
+          if (minutes > 0) {
+            totalMinutes += minutes;
             validTrades++;
           }
         }
       }
     });
 
-    if (validTrades === 0) return 'No closed trades';
+    if (validTrades === 0) return 'No data';
 
-    const avgMinutes = totalDurationMinutes / validTrades;
-    const days = Math.floor(avgMinutes / (24 * 60));
-    const hours = Math.floor((avgMinutes % (24 * 60)) / 60);
-    const minutes = Math.floor(avgMinutes % 60);
+    const avgMinutes = Math.floor(totalMinutes / validTrades);
+    const hours = Math.floor(avgMinutes / 60);
+    const remainingMinutes = avgMinutes % 60;
 
-    // Format based on duration length
-    if (days > 0) {
-      return `${days}d ${hours}h`;
+    // Format like the existing calculateHoldTime function
+    if (hours > 0 && remainingMinutes > 0) {
+      return `${hours}hrs ${remainingMinutes}min`;
     } else if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}hrs`;
+    } else if (avgMinutes > 0) {
+      return `${avgMinutes}min`;
     } else {
-      return `${minutes}m`;
+      return '<1min';
     }
+  }
+
+  private parseHoldTimeToMinutes(holdTimeStr: string): number {
+    if (!holdTimeStr || holdTimeStr === '<1min') return 0;
+
+    let totalMinutes = 0;
+
+    // Extract hours
+    const hoursMatch = holdTimeStr.match(/(\d+)hrs/);
+    if (hoursMatch) {
+      totalMinutes += parseInt(hoursMatch[1]) * 60;
+    }
+
+    // Extract minutes
+    const minutesMatch = holdTimeStr.match(/(\d+)min/);
+    if (minutesMatch) {
+      totalMinutes += parseInt(minutesMatch[1]);
+    }
+
+    return totalMinutes;
   }
 
   getTotalTrades(): number {
