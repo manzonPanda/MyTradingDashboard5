@@ -335,6 +335,15 @@
           <div class="metric-subtitle">Gross win / Gross loss</div>
         </div>
 
+        <div class="metric-card best-profit">
+          <div class="metric-header">
+            <h3 class="metric-title">Best Profit</h3>
+            <mat-icon class="metric-icon">star</mat-icon>
+          </div>
+          <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
+          <div class="metric-subtitle">Largest single win</div>
+        </div>
+
         <div class="metric-card account-size">
           <div class="metric-header">
             <h3 class="metric-title">Account Size</h3>
@@ -351,15 +360,6 @@
           </div>
           <div class="metric-value">{{ calculateAvgTradeDuration() }}</div>
           <div class="metric-subtitle">Average hold time</div>
-        </div>
-
-        <div class="metric-card best-profit">
-          <div class="metric-header">
-            <h3 class="metric-title">Best Profit</h3>
-            <mat-icon class="metric-icon">star</mat-icon>
-          </div>
-          <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
-          <div class="metric-subtitle">Largest single win</div>
         </div>
       </div>
     </div>
