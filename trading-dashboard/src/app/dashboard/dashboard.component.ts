@@ -373,15 +373,25 @@ export class DashboardComponent implements AfterViewInit {
           size: 14
         },
         callbacks: {
+          title: function(context: any) {
+            return context[0].label;
+          },
           label: function(context: any) {
-            const label = context.dataset.label || '';
             const value = context.parsed.y;
-            if (label === 'Account Balance' || label === 'Cumulative P&L') {
-              return `${label}: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            } else if (label === 'Drawdown') {
-              return `${label}: ${value.toFixed(2)}%`;
+            const index = context.dataIndex;
+            const data = context.dataset.data;
+
+            if (index === 0) {
+              return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else {
+              const previousValue = data[index - 1];
+              const change = value - previousValue;
+              const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
+              return [
+                `Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                `Trade P&L: ${changeText}`
+              ];
             }
-            return `${label}: ${value}`;
           }
         }
       }
