@@ -2010,9 +2010,69 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAccountSize(): number {
-    const balanceFromMt5 = this.mt5AccountInfo.balance; // Typical 5k challenge
+    // For chart display - use starting balance + total P&L
+    const startingBalance = 5000; // Starting balance for prop firm challenge
     const totalPnL = this.calculateTotalPnL();
-    return balanceFromMt5 - totalPnL;
+    return startingBalance + totalPnL;
+  }
+
+  // Chart calculation methods
+  calculateAccountGrowthPercent(): number {
+    const startingBalance = 5000;
+    const currentBalance = this.calculateAccountSize();
+    const growthPercent = ((currentBalance - startingBalance) / startingBalance) * 100;
+    return Math.round(growthPercent * 100) / 100; // Round to 2 decimal places
+  }
+
+  getChartMaxValue(): number {
+    const currentBalance = this.calculateAccountSize();
+    const startingBalance = 5000;
+    const maxValue = Math.max(currentBalance, startingBalance) * 1.2; // Add 20% padding
+    return Math.ceil(maxValue / 500) * 500; // Round up to nearest 500
+  }
+
+  getAccountBalanceChartY(): number {
+    const currentBalance = this.calculateAccountSize();
+    const maxValue = this.getChartMaxValue();
+    const minY = 60;
+    const maxY = 270;
+    const percentage = 1 - (currentBalance / maxValue); // Invert because SVG Y increases downward
+    return minY + (percentage * (maxY - minY));
+  }
+
+  getBestWeekPerformance(): string {
+    // Calculate best week performance - simplified calculation
+    const growthPercent = this.calculateAccountGrowthPercent();
+    const estimatedWeeks = 4; // Assuming 4 weeks of data
+    const bestWeek = Math.max(growthPercent / estimatedWeeks * 1.5, 0); // Estimate best week
+    return (Math.round(bestWeek * 100) / 100).toFixed(1);
+  }
+
+  getAverageWeeklyGrowth(): string {
+    const growthPercent = this.calculateAccountGrowthPercent();
+    const estimatedWeeks = 4; // Assuming 4 weeks of data
+    const averageWeekly = growthPercent / estimatedWeeks;
+    return (Math.round(averageWeekly * 100) / 100).toFixed(1);
+  }
+
+  setChartTimeframe(timeframe: string): void {
+    this.selectedTimeframe = timeframe;
+    // Update chart data based on timeframe
+    console.log('Chart timeframe set to:', timeframe);
+  }
+
+  // Chart interaction methods
+  onChartHover(event: MouseEvent, date: string, value: number, change: string): void {
+    this.showTooltip = true;
+    this.tooltipX = event.clientX;
+    this.tooltipY = event.clientY;
+    this.tooltipDate = date;
+    this.tooltipValue = value;
+    this.tooltipChange = change;
+  }
+
+  onChartLeave(): void {
+    this.showTooltip = false;
   }
 
   calculateAvgTradeDuration(): string {
@@ -3697,7 +3757,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Add the row and redraw
         const rowNode = table.row.add(rowData).draw(false);
-        console.log('�� Row added directly to DataTable');
+        console.log('✅ Row added directly to DataTable');
 
         // Scroll to top to show the new row
         $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
