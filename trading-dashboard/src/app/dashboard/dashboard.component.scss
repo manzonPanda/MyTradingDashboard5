@@ -6333,6 +6333,15 @@ table.simple-table {
   }
 }
 
+@keyframes spin-refresh {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 // Interactive chart hover effects and mobile responsiveness
 .trading-chart-container {
   .chart-canvas-wrapper:hover {
