@@ -287,7 +287,7 @@ export class DashboardComponent implements AfterViewInit {
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
   // Chart configuration for beautiful trading visualization
-  public chartType: ChartType = 'line';
+  public chartType: any = 'line'; // ChartType temporarily changed to any
   public chartLabels: string[] = [];
   public chartData: any = {
     labels: [],
