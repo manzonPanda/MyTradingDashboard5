@@ -2012,26 +2012,43 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     let validTrades = 0;
 
     this.tableData.forEach(trade => {
-      if (trade.openDate && trade.closeDate && trade.closeDate !== '-') {
+      // Only calculate for closed trades (not live trades with '-' or empty close dates)
+      if (trade.openDate && trade.closeDate &&
+          trade.closeDate !== '-' &&
+          trade.closeDate !== '' &&
+          trade.closeDate.trim() !== '') {
+
         const openDate = this.parseTradeDate(trade.openDate);
         const closeDate = this.parseTradeDate(trade.closeDate);
 
-        if (openDate && closeDate) {
+        if (openDate && closeDate && closeDate.getTime() > openDate.getTime()) {
           const durationMs = closeDate.getTime() - openDate.getTime();
           const durationMinutes = durationMs / (1000 * 60); // Convert to minutes
-          totalDurationMinutes += durationMinutes;
-          validTrades++;
+
+          // Only count reasonable trade durations (between 1 minute and 30 days)
+          if (durationMinutes > 1 && durationMinutes < (30 * 24 * 60)) {
+            totalDurationMinutes += durationMinutes;
+            validTrades++;
+          }
         }
       }
     });
 
-    if (validTrades === 0) return '0h 0m';
+    if (validTrades === 0) return 'No closed trades';
 
     const avgMinutes = totalDurationMinutes / validTrades;
-    const hours = Math.floor(avgMinutes / 60);
+    const days = Math.floor(avgMinutes / (24 * 60));
+    const hours = Math.floor((avgMinutes % (24 * 60)) / 60);
     const minutes = Math.floor(avgMinutes % 60);
 
-    return `${hours}h ${minutes}m`;
+    // Format based on duration length
+    if (days > 0) {
+      return `${days}d ${hours}h`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
   }
 
   getTotalTrades(): number {
