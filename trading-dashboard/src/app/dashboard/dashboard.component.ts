@@ -359,7 +359,7 @@ export class DashboardComponent implements AfterViewInit {
         labels: {
           font: {
             size: 14,
-            weight: '600'
+            weight: 'bold'
           },
           padding: 20,
           usePointStyle: true,
@@ -2318,7 +2318,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         const resultCount = (testResponse as any).results.length;
         alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
       } else {
-        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+        alert('��� Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
       }
 
       return true;
