@@ -302,13 +302,29 @@ def full_history():
 @socketio.on('connect')
 def on_connect():
     info = mt5.account_info()
+    starting_balance = None
+
     if info:
+        # Get starting balance from history
+        from datetime import datetime
+        utc_from = datetime(2000, 1, 1)
+        utc_to = datetime.now()
+
+        deals = mt5.history_deals_get(utc_from, utc_to)
+        if deals:
+            for deal in deals:
+                # DEAL_TYPE_BALANCE means deposit/withdrawal
+                if deal.type == mt5.DEAL_TYPE_BALANCE and deal.profit > 0:
+                    starting_balance = deal.profit
+                    break  # first deposit found
+
         socketio.emit('account_info', {
             'login': info.login,
             'name': info.name,
             'server': info.server,
             'balance': info.balance,
-            'info':info
+            'starting_balance': starting_balance,
+            'info': info._asdict()  # convert namedtuple to dict for JSON
         })
 
 

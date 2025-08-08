@@ -349,8 +349,8 @@
             <h3 class="metric-title">Account Size</h3>
             <mat-icon class="metric-icon">account_balance</mat-icon>
           </div>
-          <div class="metric-value">{{ calculateAccountSize() | currency }}</div>
-          <div class="metric-subtitle">Current balance</div>
+          <div class="metric-value">{{ mt5AccountInfo.starting_balance | currency }}</div>
+          <div class="metric-subtitle">Starting balance</div>
         </div>
 
         <div class="metric-card avg-trade-duration">
