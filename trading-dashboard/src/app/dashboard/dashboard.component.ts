@@ -340,7 +340,7 @@ export class DashboardComponent implements AfterViewInit {
     ]
   };
 
-  public chartOptions: any = { // ChartOptions temporarily changed to any
+  public chartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
