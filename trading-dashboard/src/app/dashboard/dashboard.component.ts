@@ -454,7 +454,7 @@ export class DashboardComponent implements AfterViewInit {
 
   constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
     // Register Chart.js components
-    // Chart.register(...registerables); // Temporarily disabled
+    Chart.register(...registerables);
   }
 
   async ngOnInit() {
@@ -2297,7 +2297,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   async testBackendConnection(): Promise<boolean> {
-    console.log('��� Testing backend connection...');
+    console.log('🔍 Testing backend connection...');
     console.log('Backend URL:', this.BACKEND_URL);
 
     try {
@@ -4237,7 +4237,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           // Step 6: If still no luck, try direct jQuery DataTable initialization
           setTimeout(() => {
             if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
-              console.log('�� Fallback: Direct jQuery DataTable initialization');
+              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
               $('#myTable').DataTable(this.dtOptions);
             }
           }, 300);
