@@ -1811,9 +1811,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('✨ Beautiful trading chart generated with', labels.length, 'data points!');
 
     // Trigger chart update with animation
-    if (this.chart) {
-      this.chart.update('active');
-    }
+    // if (this.chart) {
+    //   this.chart.update('active');
+    // } // Temporarily disabled
   }
 
   // Generate sample trading data for demonstration
@@ -2010,7 +2010,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
 
-      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`��� Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
