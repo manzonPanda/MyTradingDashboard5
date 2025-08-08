@@ -10,7 +10,7 @@ import { getAnalytics } from "firebase/analytics";
 import { provideFirebaseApp } from '@angular/fire/app';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { provideHttpClient } from '@angular/common/http';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+// import { provideCharts, withDefaultRegisterables } from 'ng2-charts'; // Temporarily disabled
 
 const firebaseConfig = {
   apiKey: "AIzaSyB5-Z3aLRr-HyopLGF6kXDPR1DdOKoEI_Q",
