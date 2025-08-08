@@ -280,6 +280,15 @@ export class DashboardComponent {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
+  // Chart properties
+  showTooltip = false;
+  tooltipX = 0;
+  tooltipY = 0;
+  tooltipDate = '';
+  tooltipValue = 0;
+  tooltipChange = '';
+  selectedTimeframe = '7D';
+
 
 
   constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
@@ -3688,7 +3697,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Add the row and redraw
         const rowNode = table.row.add(rowData).draw(false);
-        console.log('✅ Row added directly to DataTable');
+        console.log('�� Row added directly to DataTable');
 
         // Scroll to top to show the new row
         $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
