@@ -29,7 +29,6 @@ import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.c
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { NgChartsModule } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 
 declare var $: any;
@@ -582,7 +581,7 @@ export class DashboardComponent implements AfterViewInit {
       // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
         if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('🗑️ Destroying existing Angular DataTable');
+          console.log('🗑��� Destroying existing Angular DataTable');
           $('#myTable').DataTable().destroy();
         }
 
@@ -2318,7 +2317,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         const resultCount = (testResponse as any).results.length;
         alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
       } else {
-        alert('��� Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
       }
 
       return true;
