@@ -27,8 +27,9 @@ import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { io, Socket } from "socket.io-client";
-import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+// Temporarily disabled for debugging
+// import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
+// import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 
 declare var $: any;
@@ -1399,7 +1400,7 @@ isRowAlreadySelected(row: any): boolean {
             row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
               trade
             );
-            console.log('⚠️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
+            console.log('���️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
         }
         completed++;
         this.progressComparing = Math.floor((completed / total) * 100);
@@ -2967,7 +2968,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tradeEmotionalStates[tradeKey].isExpanded = false;
 
     // TODO: In the future, send to Notion API
-    console.log('💭 Emotional entry recorded for trade:', entry);
+    console.log('�� Emotional entry recorded for trade:', entry);
 
     // Show confirmation
     alert(`Emotional state "${emotion}" recorded for ${trade.symbol} trade! This will be synced to Notion in the future.`);
