@@ -407,7 +407,7 @@ export class DashboardComponent implements AfterViewInit {
         ticks: {
           font: {
             size: 12,
-            weight: '500'
+            weight: 'normal'
           },
           color: '#64748b'
         }
@@ -422,7 +422,7 @@ export class DashboardComponent implements AfterViewInit {
         ticks: {
           font: {
             size: 12,
-            weight: '500'
+            weight: 'normal'
           },
           color: '#64748b',
           callback: function(value: any) {
@@ -440,7 +440,7 @@ export class DashboardComponent implements AfterViewInit {
         ticks: {
           font: {
             size: 12,
-            weight: '500'
+            weight: 'normal'
           },
           color: '#ef4444',
           callback: function(value: any) {
@@ -2070,7 +2070,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           return [];
 
         default:
-          console.warn(`⚠��� Unknown property type: ${type} for property: ${propertyName}`);
+          console.warn(`⚠️ Unknown property type: ${type} for property: ${propertyName}`);
           return null;
       }
     } catch (error) {
