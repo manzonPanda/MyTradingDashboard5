@@ -401,11 +401,11 @@ export class DashboardComponent implements AfterViewInit {
         display: true,
         grid: {
           display: true,
-          color: 'rgba(0, 0, 0, 0.05)'
+          color: 'rgba(0, 0, 0, 0.08)'
         },
         ticks: {
           font: {
-            size: 12,
+            size: 14,
             weight: 'normal'
           },
           color: '#64748b'
@@ -413,37 +413,27 @@ export class DashboardComponent implements AfterViewInit {
       },
       y: {
         display: true,
-        position: 'left',
         grid: {
           display: true,
-          color: 'rgba(0, 0, 0, 0.05)'
+          color: 'rgba(0, 0, 0, 0.08)'
         },
         ticks: {
           font: {
-            size: 12,
+            size: 14,
             weight: 'normal'
           },
           color: '#64748b',
           callback: function(value: any) {
             return '$' + value.toLocaleString();
           }
-        }
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        grid: {
-          drawOnChartArea: false
         },
-        ticks: {
+        title: {
+          display: true,
+          text: 'Account Balance ($)',
+          color: '#64748b',
           font: {
-            size: 12,
-            weight: 'normal'
-          },
-          color: '#ef4444',
-          callback: function(value: any) {
-            return value.toFixed(1) + '%';
+            size: 16,
+            weight: 'bold'
           }
         }
       }
@@ -497,7 +487,7 @@ export class DashboardComponent implements AfterViewInit {
       this.http.get("http://localhost:3000/api/news")
     );
     this.newsData = Array.isArray(news) ? news : [];
-    console.log("��� Forex Factory News Data:", this.newsData);
+    console.log("📈 Forex Factory News Data:", this.newsData);
   } catch (error) {
     console.warn("⚠️ Failed to load forex news:", error);
     this.newsData = [];
@@ -3993,7 +3983,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateTableData(): void {
     console.log('��� updateTableData called');
-    console.log('������ Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
