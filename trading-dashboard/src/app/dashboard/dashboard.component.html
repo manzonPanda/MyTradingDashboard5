@@ -286,6 +286,11 @@
               <span class="stat-label">Win Rate</span>
               <span class="stat-value">{{ calculateWinRate() }}%</span>
             </div>
+            <div class="chart-controls">
+              <button class="chart-refresh-btn" (click)="generateTradingChartData()" title="Refresh Chart">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
           </div>
         </div>
 
