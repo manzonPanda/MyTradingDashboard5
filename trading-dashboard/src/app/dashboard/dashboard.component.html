@@ -274,7 +274,7 @@
           <div class="chart-stats">
             <div class="stat-item">
               <span class="stat-label">Current Balance</span>
-              <span class="stat-value positive">${{ mt5AccountInfo?.starting_balance || 5000 | number:'1.2-2' }}</span>
+              <span class="stat-value positive">${{ (mt5AccountInfo?.starting_balance || 5000) | number:'1.2-2' }}</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">Total P&L</span>
