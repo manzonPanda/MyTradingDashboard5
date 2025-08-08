@@ -120,8 +120,8 @@ interface NotionPerformanceData {
     MatInputModule,
     ReactiveFormsModule,
     MatNativeDateModule,
-    MatProgressSpinnerModule,
-    BaseChartDirective
+    MatProgressSpinnerModule
+    // BaseChartDirective // Temporarily disabled
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss']
@@ -192,7 +192,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'Tired', icon: '😴', color: '#6b7280' },
     { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
     { name: 'Focused', icon: '🎯', color: '#3b82f6' },
-    { name: 'Anxious', icon: '😟', color: '#f59e0b' },
+    { name: 'Anxious', icon: '��', color: '#f59e0b' },
     { name: 'Greedy', icon: '🤑', color: '#ef4444' },
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
@@ -1400,7 +1400,7 @@ isRowAlreadySelected(row: any): boolean {
             row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
               trade
             );
-            console.log('���️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
+            console.log('⚠️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
         }
         completed++;
         this.progressComparing = Math.floor((completed / total) * 100);
@@ -2362,7 +2362,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         errorMessage += 'The server encountered an internal error.\n';
         errorMessage += 'Check the backend server console for detailed error messages.';
       } else {
-        errorMessage += `🚨 HTTP Error: ${error.status}\n\n`;
+        errorMessage += `�� HTTP Error: ${error.status}\n\n`;
         errorMessage += `Message: ${error.message}\n`;
         errorMessage += `URL: ${error.url}\n\n`;
         errorMessage += 'Check the backend server logs for more details.';
@@ -2968,7 +2968,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tradeEmotionalStates[tradeKey].isExpanded = false;
 
     // TODO: In the future, send to Notion API
-    console.log('�� Emotional entry recorded for trade:', entry);
+    console.log('💭 Emotional entry recorded for trade:', entry);
 
     // Show confirmation
     alert(`Emotional state "${emotion}" recorded for ${trade.symbol} trade! This will be synced to Notion in the future.`);
