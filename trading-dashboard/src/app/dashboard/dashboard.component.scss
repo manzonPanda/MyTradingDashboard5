@@ -1580,6 +1580,48 @@ table.simple-table {
             }
           }
         }
+
+        .chart-controls {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          .chart-refresh-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--tf-accent-primary), var(--tf-accent-secondary));
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+
+            &:hover {
+              transform: scale(1.1) rotate(180deg);
+              box-shadow: 0 6px 20px rgba(107, 70, 193, 0.5);
+              background: linear-gradient(135deg, var(--tf-accent-secondary), var(--tf-accent-primary));
+            }
+
+            &:active {
+              transform: scale(0.95) rotate(360deg);
+            }
+
+            mat-icon {
+              font-size: 20px;
+              width: 20px;
+              height: 20px;
+              transition: transform 0.3s ease;
+            }
+
+            &:hover mat-icon {
+              animation: spin-refresh 1s ease-in-out;
+            }
+          }
+        }
       }
     }
 
