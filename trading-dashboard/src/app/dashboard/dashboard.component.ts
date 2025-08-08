@@ -3969,6 +3969,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
+
+      // Update the beautiful chart with closed trade
+      this.updateChartWithClosedTrade(closedTrade);
+
       console.log('✅ MT5 trade closed');
     }
   }
@@ -4202,7 +4206,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Step 5: Reinitialize with fresh DataTable
         setTimeout(() => {
-          console.log('��� Reinitializing DataTable from scratch');
+          console.log('🚀 Reinitializing DataTable from scratch');
           this.dtTrigger.next(null);
 
           // Step 6: If still no luck, try direct jQuery DataTable initialization
