@@ -1810,9 +1810,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('✨ Beautiful trading chart generated with', labels.length, 'data points!');
 
     // Trigger chart update with animation
-    // if (this.chart) {
-    //   this.chart.update('active');
-    // } // Temporarily disabled
+    if (this.chart) {
+      this.chart.update('active');
+    }
   }
 
   // Generate sample trading data for demonstration
