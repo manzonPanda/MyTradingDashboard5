@@ -32,6 +32,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
-    provideHttpClient()
+    provideHttpClient(),
+    provideCharts(withDefaultRegisterables())
   ]
 };
