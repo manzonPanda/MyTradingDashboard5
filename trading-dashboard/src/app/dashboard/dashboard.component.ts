@@ -27,9 +27,8 @@ import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { io, Socket } from "socket.io-client";
-// Temporarily disabled for debugging
-// import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
-// import { BaseChartDirective } from 'ng2-charts';
+import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 
 declare var $: any;
@@ -2010,7 +2009,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
 
-      // console.log(`��� Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
