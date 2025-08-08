@@ -295,12 +295,13 @@
         </div>
 
         <div class="chart-canvas-wrapper">
-          <!-- Chart temporarily disabled for debugging -->
-          <div class="chart-placeholder-temp">
-            <mat-icon style="font-size: 4rem; opacity: 0.5;">analytics</mat-icon>
-            <p>Chart temporarily disabled</p>
-            <small>Debugging build issues...</small>
-          </div>
+          <canvas
+            baseChart
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="chartType"
+            class="trading-chart">
+          </canvas>
 
           <div class="chart-overlay-info">
             <div class="live-indicator">
