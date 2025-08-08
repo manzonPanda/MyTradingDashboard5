@@ -32,7 +32,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
-    provideHttpClient(),
-    provideCharts(withDefaultRegisterables())
+    provideHttpClient()
+    // provideCharts(withDefaultRegisterables()) // Temporarily disabled
   ]
 };
