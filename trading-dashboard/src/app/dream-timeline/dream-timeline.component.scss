@@ -1,5 +1,28 @@
 // 🎨 Beautiful Vertical Dream Timeline Design
 .dream-time-minimal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .start-date-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(99, 102, 241, 0.8);
+    background: linear-gradient(135deg,
+      rgba(99, 102, 241, 0.1) 0%,
+      rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+  }
+
   .time-units {
     display: flex;
     flex-direction: column;
