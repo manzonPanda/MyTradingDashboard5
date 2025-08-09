@@ -1,0 +1,340 @@
+// =============================================
+// DREAM TIMELINE HEADER WIDGET STYLES 🌟
+// =============================================
+
+.header-right-section {
+  display: flex;
+  align-items: stretch;
+  gap: 2rem;
+  height: 100%;
+  
+  .dream-timeline-header-widget {
+    display: flex;
+    align-items: center;
+    min-width: 400px;
+    
+    // Override the Dream Timeline styles for header placement
+    app-dream-timeline {
+      .dream-timeline-container {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        
+        .dream-timeline-card {
+          background: linear-gradient(135deg, 
+            rgba(16, 185, 129, 0.08) 0%,
+            rgba(59, 130, 246, 0.08) 50%,
+            rgba(139, 92, 246, 0.08) 100%);
+          border: 1px solid rgba(16, 185, 129, 0.15);
+          border-radius: 16px;
+          padding: 16px 20px;
+          margin: 0;
+          backdrop-filter: blur(10px);
+          box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+              transparent,
+              rgba(16, 185, 129, 0.6),
+              rgba(59, 130, 246, 0.6),
+              rgba(139, 92, 246, 0.6),
+              transparent);
+            animation: shimmer 2s ease-in-out infinite;
+          }
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+              0 12px 40px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+          }
+        }
+
+        .card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+          
+          .header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            
+            .dream-icon {
+              font-size: 28px;
+              width: 28px;
+              height: 28px;
+              background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              animation: glow 2s ease-in-out infinite alternate;
+            }
+            
+            .header-text {
+              .dream-title {
+                margin: 0;
+                font-size: 16px;
+                font-weight: 700;
+                background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                letter-spacing: -0.3px;
+              }
+              
+              .dream-subtitle {
+                margin: 2px 0 0 0;
+                color: rgba(59, 130, 246, 0.7);
+                font-size: 10px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+            }
+          }
+          
+          .anniversary-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa726);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            animation: bounce 2s ease-in-out infinite;
+            
+            mat-icon {
+              font-size: 12px;
+              width: 12px;
+              height: 12px;
+            }
+          }
+        }
+
+        .time-display {
+          margin-bottom: 12px;
+          
+          .time-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            
+            .time-unit {
+              text-align: center;
+              padding: 8px 4px;
+              background: rgba(255, 255, 255, 0.03);
+              border: 1px solid rgba(16, 185, 129, 0.15);
+              border-radius: 8px;
+              backdrop-filter: blur(5px);
+              transition: all 0.2s ease;
+              position: relative;
+              overflow: hidden;
+              
+              &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, 
+                  transparent, 
+                  rgba(16, 185, 129, 0.08), 
+                  transparent);
+                transition: left 0.4s ease;
+              }
+              
+              &:hover::before {
+                left: 100%;
+              }
+              
+              &.highlight {
+                background: linear-gradient(135deg, 
+                  rgba(16, 185, 129, 0.15), 
+                  rgba(59, 130, 246, 0.15));
+                border-color: rgba(16, 185, 129, 0.3);
+                transform: scale(1.05);
+              }
+              
+              &.pulse {
+                animation: pulse 1s ease-in-out infinite;
+              }
+              
+              .time-value {
+                font-size: 14px;
+                font-weight: 800;
+                background: linear-gradient(135deg, #10b981, #3b82f6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 2px;
+                line-height: 1;
+              }
+              
+              .time-label {
+                font-size: 8px;
+                font-weight: 600;
+                color: rgba(59, 130, 246, 0.6);
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+              }
+            }
+          }
+        }
+
+        .dream-start-info {
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 8px;
+          padding: 8px 12px;
+          margin-bottom: 0;
+          border: 1px solid rgba(16, 185, 129, 0.1);
+          
+          .start-date {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            color: rgba(59, 130, 246, 0.8);
+            font-weight: 500;
+            font-size: 11px;
+            
+            mat-icon {
+              color: #10b981;
+              font-size: 14px;
+              width: 14px;
+              height: 14px;
+            }
+          }
+          
+          .motivation-quote {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            color: rgba(59, 130, 246, 0.9);
+            font-style: italic;
+            font-size: 10px;
+            line-height: 1.4;
+            
+            mat-icon {
+              color: #8b5cf6;
+              margin-top: 1px;
+              font-size: 12px;
+              width: 12px;
+              height: 12px;
+            }
+          }
+        }
+
+        // Hide progress section in header mode
+        .progress-section {
+          display: none;
+        }
+      }
+    }
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.3)); }
+  100% { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  60% { transform: translateY(-2px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+// Responsive adjustments for header widget
+@media (max-width: 1200px) {
+  .header-right-section {
+    .dream-timeline-header-widget {
+      min-width: 350px;
+      
+      app-dream-timeline {
+        .dream-timeline-container .time-display .time-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+          
+          .time-unit:nth-child(n+4) {
+            display: none; // Hide hours, minutes, seconds on smaller screens
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .header-right-section {
+    flex-direction: column;
+    gap: 1rem;
+    
+    .dream-timeline-header-widget {
+      min-width: 100%;
+      order: 2;
+      
+      app-dream-timeline {
+        .dream-timeline-container {
+          .dream-timeline-card {
+            padding: 12px 16px;
+          }
+          
+          .time-display .time-grid {
+            grid-template-columns: repeat(3, 1fr);
+            
+            .time-unit:nth-child(n+4) {
+              display: none;
+            }
+          }
+          
+          .dream-start-info {
+            .motivation-quote {
+              display: none; // Hide quote on mobile
+            }
+          }
+        }
+      }
+    }
+    
+    .header-actions {
+      order: 1;
+      justify-content: flex-end;
+    }
+  }
+}
