@@ -797,43 +797,80 @@
   }
 }
 
-// Responsive Design
-@media (max-width: 768px) {
-  .dream-timeline-container {
-    padding: 16px;
+// 🌟 RESPONSIVE MAGIC 🌟
+@media (max-width: 1200px) {
+  .dream-time-minimal .time-units {
+    gap: 12px;
+    padding: 12px 18px;
+
+    .time-unit:nth-child(5),
+    .time-unit:nth-child(6) {
+      display: none;
+    }
+
+    .time-unit .value {
+      font-size: 18px;
+    }
   }
-  
+}
+
+@media (max-width: 768px) {
+  .dream-time-minimal .time-units {
+    gap: 8px;
+    padding: 8px 12px;
+
+    .time-unit:nth-child(n+4) {
+      display: none;
+    }
+
+    .time-unit {
+      padding: 6px 8px;
+
+      .value {
+        font-size: 16px;
+      }
+
+      .label {
+        font-size: 8px;
+        padding: 1px 4px;
+      }
+    }
+  }
+}
+
+// Legacy styles for other components
+.dream-timeline-container {
   .dream-timeline-card {
     padding: 24px;
   }
-  
+
   .time-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 12px;
   }
-  
+
   .time-unit .time-value {
     font-size: 24px;
   }
-  
+
   .celebration-content {
     margin: 20px;
     padding: 32px 24px;
-    
+
     .celebration-header h1 {
       font-size: 24px;
     }
-    
+
     .celebration-stats {
       flex-direction: column;
       gap: 16px;
     }
   }
-  
+
   .milestone-track {
     flex-direction: column;
     gap: 12px;
-    
+
     .milestone {
       flex-direction: row;
       justify-content: flex-start;
