@@ -676,45 +676,63 @@
 
 // 📱 Responsive vertical layout
 @media (max-width: 1200px) {
-  .dream-time-minimal .time-units {
-    gap: 4px;
-    padding: 10px 14px;
-    min-width: 100px;
+  .dream-time-minimal {
+    gap: 8px;
 
-    .time-unit:nth-child(5),
-    .time-unit:nth-child(6) {
-      display: none; // Hide minutes and seconds
+    .start-date-vertical {
+      font-size: 9px;
+      padding: 6px 3px;
     }
 
-    .time-unit {
-      padding: 3px 6px;
+    .time-units {
+      gap: 4px;
+      padding: 10px 14px;
+      min-width: 100px;
 
-      .value {
-        font-size: 14px;
+      .time-unit:nth-child(5),
+      .time-unit:nth-child(6) {
+        display: none; // Hide minutes and seconds
+      }
+
+      .time-unit {
+        padding: 3px 6px;
+
+        .value {
+          font-size: 14px;
+        }
       }
     }
   }
 }
 
 @media (max-width: 768px) {
-  .dream-time-minimal .time-units {
-    gap: 3px;
-    padding: 8px 12px;
-    min-width: 80px;
+  .dream-time-minimal {
+    gap: 6px;
 
-    .time-unit:nth-child(n+4) {
-      display: none; // Only show years, months, days
+    .start-date-vertical {
+      font-size: 8px;
+      padding: 4px 2px;
     }
 
-    .time-unit {
-      padding: 2px 4px;
+    .time-units {
+      gap: 3px;
+      padding: 8px 12px;
+      min-width: 80px;
 
-      .value {
-        font-size: 12px;
+      .time-unit:nth-child(n+4) {
+        display: none; // Only show years, months, days
       }
 
-      .label {
-        font-size: 8px;
+      .time-unit {
+        padding: 2px 4px;
+
+        .value {
+          font-size: 12px;
+        }
+
+        .label {
+          font-size: 8px;
+        }
       }
     }
   }
