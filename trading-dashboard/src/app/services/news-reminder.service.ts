@@ -41,62 +41,110 @@ export class NewsReminderService {
     // Filter for current day news only
     const currentDayNews = this.filterCurrentDayNews(newsData);
 
-    // Schedule new reminders only for current day
-    currentDayNews.forEach(news => {
-      this.scheduleRemindersForNews(news);
-    });
+    // Group events by date/time to combine reminders
+    this.scheduleGroupedReminders(currentDayNews);
 
     console.log(`📅 Scheduled reminders for ${currentDayNews.length} current day news events (out of ${newsData.length} total)`);
   }
 
   /**
-   * Schedule reminders for a single news event
+   * Schedule reminders for grouped events (combines same-time events)
    */
-  private scheduleRemindersForNews(newsEvent: NewsEvent) {
-    const newsDateTime = this.parseNewsDateTime(newsEvent);
-    
-    if (!newsDateTime) {
-      console.warn('⚠️ Could not parse date/time for news:', newsEvent);
-      return;
-    }
+  private scheduleGroupedReminders(newsEvents: NewsEvent[]) {
+    // Group events by date/time
+    const groupedByTime = this.groupEventsByDateTime(newsEvents);
 
-    const now = new Date();
-    
-    // Only schedule reminders for future events
-    if (newsDateTime <= now) {
-      return;
-    }
+    Object.entries(groupedByTime).forEach(([dateTimeKey, events]) => {
+      const firstEvent = events[0];
+      const newsDateTime = this.parseNewsDateTime(firstEvent);
 
-    this.reminderIntervals.forEach(intervalMinutes => {
-      const reminderTime = new Date(newsDateTime.getTime() - (intervalMinutes * 60 * 1000));
-      
-      // Only schedule if reminder time is in the future
-      if (reminderTime > now) {
-        const timeoutDuration = reminderTime.getTime() - now.getTime();
-        
-        const timeoutId = window.setTimeout(() => {
-          this.sendReminder(newsEvent, intervalMinutes);
-        }, timeoutDuration);
-
-        this.reminderTimeouts.push({
-          timeoutId,
-          newsEvent,
-          reminderInterval: intervalMinutes
-        });
-
-        console.log(`⏰ Scheduled ${intervalMinutes}min reminder for ${newsEvent.event} at ${reminderTime.toLocaleTimeString()}`);
+      if (!newsDateTime) {
+        console.warn('⚠️ Could not parse date/time for news group:', events);
+        return;
       }
+
+      const now = new Date();
+
+      // Only schedule reminders for future events
+      if (newsDateTime <= now) {
+        return;
+      }
+
+      this.reminderIntervals.forEach(intervalMinutes => {
+        const reminderTime = new Date(newsDateTime.getTime() - (intervalMinutes * 60 * 1000));
+
+        // Only schedule if reminder time is in the future
+        if (reminderTime > now) {
+          const timeoutDuration = reminderTime.getTime() - now.getTime();
+
+          const timeoutId = window.setTimeout(() => {
+            this.sendCombinedReminder(events, intervalMinutes);
+          }, timeoutDuration);
+
+          // Store with first event as reference
+          this.reminderTimeouts.push({
+            timeoutId,
+            newsEvent: firstEvent,
+            reminderInterval: intervalMinutes
+          });
+
+          if (events.length === 1) {
+            console.log(`⏰ Scheduled ${intervalMinutes}min reminder for ${firstEvent.event} at ${reminderTime.toLocaleTimeString()}`);
+          } else {
+            console.log(`⏰ Scheduled ${intervalMinutes}min combined reminder for ${events.length} events at ${reminderTime.toLocaleTimeString()}`);
+          }
+        }
+      });
     });
   }
 
   /**
-   * Send a reminder notification
+   * Group events by their date/time
    */
-  private sendReminder(newsEvent: NewsEvent, minutesBefore: number) {
-    const title = `📈 Forex News Alert - ${minutesBefore}min`;
-    const body = `${newsEvent.currency} | ${newsEvent.event} in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''} (${newsEvent.time})`;
+  private groupEventsByDateTime(newsEvents: NewsEvent[]): { [key: string]: NewsEvent[] } {
+    const grouped: { [key: string]: NewsEvent[] } = {};
 
-    console.log(`🔔 Sending reminder: ${title} - ${body}`);
+    newsEvents.forEach(event => {
+      const key = `${event.date}-${event.time}`;
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(event);
+    });
+
+    return grouped;
+  }
+
+  /**
+   * Send a combined reminder notification for multiple events at the same time
+   */
+  private sendCombinedReminder(events: NewsEvent[], minutesBefore: number) {
+    let title: string;
+    let body: string;
+
+    if (events.length === 1) {
+      // Single event - use original format
+      const event = events[0];
+      title = `📈 Forex News Alert - ${minutesBefore}min`;
+      body = `${event.currency} | ${event.event} in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''} (${event.time})`;
+    } else {
+      // Multiple events - create combined notification
+      const currencies = [...new Set(events.map(e => e.currency))].join(', ');
+      const time = events[0].time; // All events have same time
+
+      title = `📈 ${events.length} Forex News Events - ${minutesBefore}min`;
+
+      // Create compact body with all events
+      const eventTitles = events.map(e => `${e.currency}: ${e.event}`).join(' | ');
+      body = `${eventTitles} in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''} (${time})`;
+
+      // If body is too long, create a shorter version
+      if (body.length > 150) {
+        body = `${currencies} | ${events.length} events in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''} (${time})`;
+      }
+    }
+
+    console.log(`🔔 Sending ${events.length > 1 ? 'combined ' : ''}reminder: ${title} - ${body}`);
 
     if (this.sendNotificationCallback) {
       this.sendNotificationCallback(title, body);
@@ -104,9 +152,10 @@ export class NewsReminderService {
       console.warn('⚠️ No notification callback set');
     }
 
-    // Remove this timeout from our tracking array
+    // Remove timeouts for this reminder interval
     this.reminderTimeouts = this.reminderTimeouts.filter(
-      timeout => !(timeout.newsEvent === newsEvent && timeout.reminderInterval === minutesBefore)
+      timeout => timeout.reminderInterval !== minutesBefore ||
+                !events.some(event => timeout.newsEvent.date === event.date && timeout.newsEvent.time === event.time)
     );
   }
 
@@ -244,11 +293,10 @@ export class NewsReminderService {
 
     if (!isSameDay) return false;
 
-    // Check if we have any scheduled timeouts for this news
+    // Check if we have any scheduled timeouts for this news time slot
     return this.reminderTimeouts.some(timeout =>
       timeout.newsEvent.date === newsEvent.date &&
-      timeout.newsEvent.time === newsEvent.time &&
-      timeout.newsEvent.event === newsEvent.event
+      timeout.newsEvent.time === newsEvent.time
     );
   }
 
