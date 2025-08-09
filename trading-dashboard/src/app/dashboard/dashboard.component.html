@@ -275,7 +275,6 @@
               <mat-icon class="chart-icon">trending_up</mat-icon>
               Trading Performance Dashboard
             </h3>
-            <p class="chart-subtitle">Live equity curve and account analytics</p>
           </div>
           <div class="chart-stats">
             <div class="stat-item">
@@ -297,6 +296,14 @@
         </div>
 
         <div class="chart-canvas-wrapper">
+          <!-- Loading spinner when data is not ready -->
+          <div *ngIf="isLoadingMT5Data || !chartData?.labels?.length" class="chart-loading-overlay">
+            <div class="loading-spinner">
+              <mat-icon class="spinning">refresh</mat-icon>
+            </div>
+            <p class="loading-text">Loading chart data...</p>
+          </div>
+
           <canvas
             baseChart
             [data]="chartData"
