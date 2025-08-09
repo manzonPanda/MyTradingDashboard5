@@ -1,0 +1,55 @@
+// =============================================
+// DREAM TIMELINE SECTION INTEGRATION ✨
+// =============================================
+
+.dream-timeline-section {
+  margin: 3rem 0;
+  padding: 0 1rem;
+  position: relative;
+  
+  // Add a beautiful section divider
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(107, 70, 193, 0.6), 
+      rgba(142, 68, 173, 0.6), 
+      rgba(107, 70, 193, 0.6), 
+      transparent);
+    border-radius: 1px;
+  }
+  
+  // Integration with dashboard theme
+  app-dream-timeline {
+    display: block;
+    animation: dream-section-appear 1s ease-out;
+    animation-fill-mode: both;
+  }
+  
+  @media (max-width: 768px) {
+    margin: 2rem 0;
+    padding: 0 0.5rem;
+    
+    &::before {
+      width: 60px;
+      top: -1rem;
+    }
+  }
+}
+
+@keyframes dream-section-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
