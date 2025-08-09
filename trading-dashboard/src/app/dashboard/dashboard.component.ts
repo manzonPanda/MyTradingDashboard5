@@ -125,7 +125,7 @@ interface NotionPerformanceData {
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', '../dream-timeline/dream-timeline-integration.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
 })
 
 
