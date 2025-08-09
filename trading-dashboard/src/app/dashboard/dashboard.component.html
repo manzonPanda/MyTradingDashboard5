@@ -67,6 +67,22 @@
                     <div class="event-content" [ngClass]="getEnhancedNewsClasses(timeGroup.events[0], day.day)">
                       <div class="event-meta">
                         <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
+                        <!-- Reminder Status Indicator -->
+                        <div class="reminder-status-indicator"
+                             [ngClass]="{
+                               'reminder-active': isCurrentDayNews(timeGroup.events[0]) && isNewsReminderActive(timeGroup.events[0]),
+                               'reminder-inactive': !isCurrentDayNews(timeGroup.events[0]) || !isNewsReminderActive(timeGroup.events[0]),
+                               'reminder-disabled': !isCurrentDayNews(timeGroup.events[0])
+                             }"
+                             [title]="isCurrentDayNews(timeGroup.events[0]) ?
+                               (isNewsReminderActive(timeGroup.events[0]) ? 'Reminders Active' : 'Reminders Available') :
+                               'Reminders Disabled (Not Current Day)'">
+                          <mat-icon class="reminder-icon">
+                            {{ isCurrentDayNews(timeGroup.events[0]) ?
+                               (isNewsReminderActive(timeGroup.events[0]) ? 'notifications_active' : 'notifications') :
+                               'notifications_off' }}
+                          </mat-icon>
+                        </div>
                       </div>
                       <div class="event-title">{{ getNewsTitle(timeGroup.events[0]) }}</div>
                     </div>
