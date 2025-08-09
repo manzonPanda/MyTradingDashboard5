@@ -19,7 +19,7 @@ interface ReminderTimeout {
 })
 export class NewsReminderService {
   private reminderTimeouts: ReminderTimeout[] = [];
-  private reminderIntervals = [60, 30, 5, 3, 2, 1]; // minutes before news
+  private reminderIntervals = [60, 30, 15, 10, 8, 5, 3, 1]; // minutes before news
   private sendNotificationCallback: ((title: string, body: string) => void) | null = null;
 
   constructor() {}
