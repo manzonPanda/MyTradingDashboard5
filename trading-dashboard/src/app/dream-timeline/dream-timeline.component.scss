@@ -600,42 +600,35 @@
   }
 }
 
-// 🌟 RESPONSIVE MAGIC 🌟
+// Responsive adjustments
 @media (max-width: 1200px) {
   .dream-time-minimal .time-units {
-    gap: 12px;
-    padding: 12px 18px;
+    gap: 6px;
+    padding: 6px 10px;
 
     .time-unit:nth-child(5),
     .time-unit:nth-child(6) {
-      display: none;
-    }
-
-    .time-unit .value {
-      font-size: 18px;
+      display: none; // Hide minutes and seconds
     }
   }
 }
 
 @media (max-width: 768px) {
   .dream-time-minimal .time-units {
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 4px;
+    padding: 4px 8px;
 
     .time-unit:nth-child(n+4) {
-      display: none;
+      display: none; // Only show years, months, days
     }
 
     .time-unit {
-      padding: 6px 8px;
-
       .value {
-        font-size: 16px;
+        font-size: 12px;
       }
 
       .label {
-        font-size: 8px;
-        padding: 1px 4px;
+        font-size: 9px;
       }
     }
   }
