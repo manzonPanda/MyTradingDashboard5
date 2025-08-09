@@ -105,14 +105,6 @@
         border-left-color: #ef4444;
         .value { color: #ef4444; }
         .label { color: #f87171; }
-
-        &.pulse {
-          animation: pulse 1.5s ease-in-out infinite;
-
-          .value {
-            animation: glow 2s ease-in-out infinite alternate;
-          }
-        }
       }
     }
   }
