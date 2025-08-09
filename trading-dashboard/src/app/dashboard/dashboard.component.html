@@ -67,6 +67,19 @@
                     <div class="event-content" [ngClass]="getEnhancedNewsClasses(timeGroup.events[0], day.day)">
                       <div class="event-meta">
                         <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
+                        <!-- Reminder Status Indicator -->
+                        <div class="reminder-status-indicator"
+                             [ngClass]="{
+                               'reminder-active': isCurrentDayNews(timeGroup.events[0]),
+                               'reminder-disabled': !isCurrentDayNews(timeGroup.events[0])
+                             }"
+                             [title]="isCurrentDayNews(timeGroup.events[0]) ?
+                               'Reminders Active (Current Day)' :
+                               'Reminders Disabled (Future Day)'">
+                          <mat-icon class="reminder-icon">
+                            {{ isCurrentDayNews(timeGroup.events[0]) ? 'notifications_active' : 'notifications_off' }}
+                          </mat-icon>
+                        </div>
                       </div>
                       <div class="event-title">{{ getNewsTitle(timeGroup.events[0]) }}</div>
                     </div>
@@ -1351,7 +1364,7 @@
               <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
               <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
               <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
-              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated ����</th>
+              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated �����</th>
               <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
               <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
               <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
