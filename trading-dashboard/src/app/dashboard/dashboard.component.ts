@@ -461,7 +461,7 @@ export class DashboardComponent implements AfterViewInit {
 
   socket.on("account_info", (data) => {
     this.mt5AccountInfo = data;
-    console.warn("📊 Account Info Received:", data);
+    console.warn("���� Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
@@ -1730,10 +1730,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       drawdownData.push(drawdown);
     });
 
-    // If no trades, generate sample data for demonstration
+    // If no trades, show empty chart with just starting balance
     if (sortedTrades.length === 0) {
-      console.log('📊 No trade data found, generating sample trading chart...');
-      this.generateSampleTradingData(startingBalance);
+      console.log('📊 No trade data found, showing empty chart...');
+      this.chartData = {
+        labels: ['Start'],
+        datasets: [
+          {
+            label: 'Account Balance',
+            data: [startingBalance],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 4,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointRadius: 8,
+            pointHoverRadius: 12
+          }
+        ]
+      };
       return;
     }
 
@@ -1779,85 +1797,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Generate sample trading data for demonstration
-  generateSampleTradingData(startingBalance: number): void {
-    const labels: string[] = [];
-    const balanceData: number[] = [];
-    const pnlData: number[] = [];
-    const drawdownData: number[] = [];
-
-    let currentBalance = startingBalance;
-    let cumulativePnL = 0;
-    let peakBalance = startingBalance;
-
-    // Generate 30 days of sample trading data
-    for (let i = 0; i <= 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - (30 - i));
-
-      if (i === 0) {
-        labels.push('Start');
-        balanceData.push(startingBalance);
-        pnlData.push(0);
-        drawdownData.push(0);
-        continue;
-      }
-
-      // Simulate realistic trading with 60% win rate
-      const isWin = Math.random() < 0.6;
-      const tradeSize = 10 + Math.random() * 40; // $10-50 trades
-      const tradeResult = isWin ? tradeSize : -tradeSize * 0.8; // Risk:Reward 1:1.25
-
-      currentBalance += tradeResult;
-      cumulativePnL += tradeResult;
-
-      if (currentBalance > peakBalance) {
-        peakBalance = currentBalance;
-      }
-
-      const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
-
-      labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-      balanceData.push(currentBalance);
-      pnlData.push(cumulativePnL);
-      drawdownData.push(drawdown);
-    }
-
-    this.chartData = {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Account Balance',
-          data: balanceData,
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
-            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-            return gradient;
-          },
-          borderWidth: 4,
-          fill: true,
-          tension: 0.3,
-          pointBackgroundColor: balanceData.map((val, i, arr) => {
-            if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
-            if (i === arr.length - 1) return 'rgb(34, 197, 94)'; // End point - bright green
-            const profit = val - arr[i-1];
-            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
-          }),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 3,
-          pointRadius: balanceData.map((_, i, arr) => {
-            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
-            return 6;
-          }),
-          pointHoverRadius: 12
-        }
-      ]
-    };
-
-    console.log('🎯 Sample trading chart generated for demonstration!');
-  }
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
     console.log('🔄 Parsing your Notion response. Results count:', results?.length || 0);
