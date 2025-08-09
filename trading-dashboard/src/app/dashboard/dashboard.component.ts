@@ -461,7 +461,7 @@ export class DashboardComponent implements AfterViewInit {
 
   socket.on("account_info", (data) => {
     this.mt5AccountInfo = data;
-    console.warn("📊 Account Info Received:", data);
+    console.warn("���� Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
@@ -1730,10 +1730,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       drawdownData.push(drawdown);
     });
 
-    // If no trades, generate sample data for demonstration
+    // If no trades, show empty chart with just starting balance
     if (sortedTrades.length === 0) {
-      console.log('📊 No trade data found, generating sample trading chart...');
-      this.generateSampleTradingData(startingBalance);
+      console.log('📊 No trade data found, showing empty chart...');
+      this.chartData = {
+        labels: ['Start'],
+        datasets: [
+          {
+            label: 'Account Balance',
+            data: [startingBalance],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 4,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointRadius: 8,
+            pointHoverRadius: 12
+          }
+        ]
+      };
       return;
     }
 
