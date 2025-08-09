@@ -668,63 +668,54 @@
 
 // 📱 Responsive vertical layout
 @media (max-width: 1200px) {
-  .dream-time-minimal {
-    gap: 8px;
+  .dream-time-minimal .time-units {
+    gap: 4px;
+    padding: 10px 14px;
+    min-width: 100px;
 
-    .start-date-vertical {
-      font-size: 9px;
-      padding: 6px 3px;
+    .start-date-header {
+      font-size: 8px;
+      padding: 3px 6px;
     }
 
-    .time-units {
-      gap: 4px;
-      padding: 10px 14px;
-      min-width: 100px;
+    .time-unit:nth-child(n+6) { // Adjusted selector since start-date-header is now first child
+      display: none; // Hide minutes and seconds
+    }
 
-      .time-unit:nth-child(5),
-      .time-unit:nth-child(6) {
-        display: none; // Hide minutes and seconds
-      }
+    .time-unit {
+      padding: 3px 6px;
 
-      .time-unit {
-        padding: 3px 6px;
-
-        .value {
-          font-size: 14px;
-        }
+      .value {
+        font-size: 14px;
       }
     }
   }
 }
 
 @media (max-width: 768px) {
-  .dream-time-minimal {
-    gap: 6px;
+  .dream-time-minimal .time-units {
+    gap: 3px;
+    padding: 8px 12px;
+    min-width: 80px;
 
-    .start-date-vertical {
-      font-size: 8px;
-      padding: 4px 2px;
+    .start-date-header {
+      font-size: 7px;
+      padding: 2px 4px;
     }
 
-    .time-units {
-      gap: 3px;
-      padding: 8px 12px;
-      min-width: 80px;
+    .time-unit:nth-child(n+5) { // Adjusted selector since start-date-header is now first child
+      display: none; // Only show years, months, days
+    }
 
-      .time-unit:nth-child(n+4) {
-        display: none; // Only show years, months, days
+    .time-unit {
+      padding: 2px 4px;
+
+      .value {
+        font-size: 12px;
       }
 
-      .time-unit {
-        padding: 2px 4px;
-
-        .value {
-          font-size: 12px;
-        }
-
-        .label {
-          font-size: 8px;
-        }
+      .label {
+        font-size: 8px;
       }
     }
   }
