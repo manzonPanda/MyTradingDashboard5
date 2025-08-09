@@ -1774,7 +1774,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           tension: 0.3,
           pointBackgroundColor: balanceData.map((val, i, arr) => {
             if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
-            if (i === arr.length - 1) return 'rgb(34, 197, 94)'; // End point - bright green
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
