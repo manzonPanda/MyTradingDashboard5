@@ -144,64 +144,6 @@
           </div>
         </div>
 
-        <!-- News Reminder Status -->
-        <div class="news-reminder-status">
-          <div class="reminder-header">
-            <mat-icon class="reminder-icon">notifications_active</mat-icon>
-            <span class="reminder-title">News Reminders</span>
-            <button mat-icon-button
-                    (click)="toggleReminderDetails()"
-                    class="reminder-toggle">
-              <mat-icon>{{ showReminderDetails ? 'expand_less' : 'expand_more' }}</mat-icon>
-            </button>
-          </div>
-
-          <div class="reminder-status-badges">
-            <div class="status-badge active" [attr.title]="getReminderStatusText()">
-              <span class="badge-label">Active</span>
-              <span class="badge-count">{{ getReminderStatus().scheduled }}</span>
-            </div>
-            <div class="status-badge intervals">
-              <span class="badge-label">Intervals</span>
-              <span class="badge-count">1h, 30m, 15m, 10m, 8m, 5m, 3m, 1m</span>
-            </div>
-          </div>
-
-          <div *ngIf="showReminderDetails" class="reminder-details">
-            <div class="reminder-actions">
-              <button mat-raised-button
-                      color="primary"
-                      (click)="refreshNewsReminders()"
-                      class="action-button">
-                <mat-icon>refresh</mat-icon>
-                Refresh Reminders
-              </button>
-
-              <button mat-raised-button
-                      color="warn"
-                      (click)="clearAllReminders()"
-                      class="action-button">
-                <mat-icon>clear_all</mat-icon>
-                Clear All
-              </button>
-            </div>
-
-            <div class="reminder-info">
-              <div class="info-item">
-                <mat-icon class="info-icon">today</mat-icon>
-                <span>Reminders are only active for current day news events</span>
-              </div>
-              <div class="info-item">
-                <mat-icon class="info-icon">schedule</mat-icon>
-                <span>You'll receive notifications at 1hr, 30min, 15min, 10min, 8min, 5min, 3min, and 1min before each current day event</span>
-              </div>
-              <div class="info-item">
-                <mat-icon class="info-icon">notifications_off</mat-icon>
-                <span>News events from other days are automatically disabled for reminders</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- News Modal Overlay -->
         <div *ngIf="showNewsModal" class="news-modal-overlay" (click)="closeNewsModal()">
