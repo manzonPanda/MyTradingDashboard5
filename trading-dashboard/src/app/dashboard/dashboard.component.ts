@@ -4185,5 +4185,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  // News Reminder Control Methods
+  toggleReminderDetails(): void {
+    this.showReminderDetails = !this.showReminderDetails;
+  }
+
+  getReminderStatus(): { total: number; scheduled: number } {
+    return this.newsReminder.getReminderStatus();
+  }
+
+  getReminderStatusText(): string {
+    const status = this.getReminderStatus();
+    return `${status.scheduled} active reminders scheduled for upcoming news events`;
+  }
+
+  refreshNewsReminders(): void {
+    console.log('🔄 Refreshing news reminders...');
+    this.newsReminder.scheduleAllReminders(this.newsData);
+  }
+
+  clearAllReminders(): void {
+    console.log('🧹 Clearing all news reminders...');
+    this.newsReminder.clearAllReminders();
+  }
+
 
 }
