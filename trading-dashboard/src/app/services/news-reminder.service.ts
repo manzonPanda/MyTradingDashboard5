@@ -32,18 +32,21 @@ export class NewsReminderService {
   }
 
   /**
-   * Schedule reminders for all news events
+   * Schedule reminders for all news events (only current day)
    */
   scheduleAllReminders(newsData: NewsEvent[]) {
     // Clear existing reminders
     this.clearAllReminders();
 
-    // Schedule new reminders
-    newsData.forEach(news => {
+    // Filter for current day news only
+    const currentDayNews = this.filterCurrentDayNews(newsData);
+
+    // Schedule new reminders only for current day
+    currentDayNews.forEach(news => {
       this.scheduleRemindersForNews(news);
     });
 
-    console.log(`📅 Scheduled reminders for ${newsData.length} news events`);
+    console.log(`📅 Scheduled reminders for ${currentDayNews.length} current day news events (out of ${newsData.length} total)`);
   }
 
   /**
@@ -201,6 +204,52 @@ export class NewsReminderService {
     });
     this.reminderTimeouts = [];
     console.log('🧹 Cleared all news reminders');
+  }
+
+  /**
+   * Filter news events for current day only
+   */
+  private filterCurrentDayNews(newsData: NewsEvent[]): NewsEvent[] {
+    const today = new Date();
+    const todayDay = today.getDay(); // 0=Sunday, 1=Monday, etc.
+
+    return newsData.filter(news => {
+      const newsDateTime = this.parseNewsDateTime(news);
+      if (!newsDateTime) return false;
+
+      // Check if news is for today
+      const newsDay = newsDateTime.getDay();
+      const isSameDay = newsDay === todayDay;
+
+      // Also check if news date string contains "Today"
+      const isToday = news.date.includes('Today') || isSameDay;
+
+      return isToday;
+    });
+  }
+
+  /**
+   * Check if a specific news event has active reminders
+   */
+  isNewsReminderActive(newsEvent: NewsEvent): boolean {
+    const newsDateTime = this.parseNewsDateTime(newsEvent);
+    if (!newsDateTime) return false;
+
+    const today = new Date();
+    const newsDay = newsDateTime.getDay();
+    const todayDay = today.getDay();
+
+    // Only current day news can have active reminders
+    const isSameDay = newsDay === todayDay || newsEvent.date.includes('Today');
+
+    if (!isSameDay) return false;
+
+    // Check if we have any scheduled timeouts for this news
+    return this.reminderTimeouts.some(timeout =>
+      timeout.newsEvent.date === newsEvent.date &&
+      timeout.newsEvent.time === newsEvent.time &&
+      timeout.newsEvent.event === newsEvent.event
+    );
   }
 
   /**
