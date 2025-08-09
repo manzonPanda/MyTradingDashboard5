@@ -830,12 +830,6 @@ table.simple-table {
               letter-spacing: 0.5px;
             }
 
-            .no-news-subtitle {
-              font-size: 0.65rem;
-              color: var(--tf-text-muted);
-              font-style: italic;
-              opacity: 0.7;
-            }
 
             // Special styling for current day with no news
             &.current-day-no-news {
