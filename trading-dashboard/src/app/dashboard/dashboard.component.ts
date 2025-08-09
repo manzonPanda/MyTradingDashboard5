@@ -106,6 +106,7 @@ interface NotionPerformanceData {
   imports: [
     ConnectionStatusComponent,
     TradingCalendarComponent,
+    DreamTimelineComponent,
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
