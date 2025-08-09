@@ -813,6 +813,7 @@ table.simple-table {
             color: var(--tf-text-muted);
             text-align: center;
             position: relative;
+            grid-column: 1 / -1; /* Span across both grid columns */
 
             &::before {
               content: '📰';
