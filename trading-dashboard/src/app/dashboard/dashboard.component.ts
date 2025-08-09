@@ -492,6 +492,14 @@ async ngOnInit() {
     );
     this.newsData = Array.isArray(news) ? news : [];
     console.log("📈 Forex Factory News Data:", this.newsData);
+
+    // Schedule news reminders if FCM is ready
+    if (this.newsData.length > 0) {
+      // Delay scheduling to ensure FCM is set up
+      setTimeout(() => {
+        this.newsReminder.scheduleAllReminders(this.newsData);
+      }, 1000);
+    }
   } catch (error) {
     console.warn("⚠️ Failed to load forex news:", error);
     this.newsData = [];
@@ -1566,20 +1574,32 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return res;
   }
 
-  async sendNotif(token:string){
-    const body = {
-      "token":token,
-      "title":"Notif TitleTest",
-      "body":"Notif BodyTest",
-      // "icon":"https://raw.githubusercontent.com/5ers-4-5k/5ers4-5k/main/src/assets/logo.png",
-      // "click_action":"https://5ers4-5k.vercel.app/"
-    } 
-    const res: any = await firstValueFrom(
-      this.http.post("http://localhost:3000/api/sendNotif", body)
-    );
-    if (res) {
-      alert(token)
-    } 
+  async sendNotif(title: string, body: string): Promise<void> {
+    try {
+      const token = localStorage.getItem('fcm_token');
+      if (!token) {
+        console.warn('⚠️ No FCM token available for notification');
+        return;
+      }
+
+      const payload = {
+        "token": token,
+        "title": title,
+        "body": body,
+        "icon": "https://raw.githubusercontent.com/5ers-4-5k/5ers4-5k/main/src/assets/logo.png",
+        "click_action": "https://5ers4-5k.vercel.app/"
+      };
+
+      const res: any = await firstValueFrom(
+        this.http.post("http://localhost:3000/api/sendNotif", payload)
+      );
+
+      if (res) {
+        console.log('✅ News reminder notification sent:', title);
+      }
+    } catch (error) {
+      console.error('❌ Error sending notification:', error);
+    }
   }
 
   async loadNotionPerformanceData(): Promise<void> {
