@@ -188,6 +188,9 @@ export class DashboardComponent implements AfterViewInit {
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
 
+  // News reminder properties
+  showReminderDetails: boolean = false;
+
   // Emotional tracking properties for individual trades
   predefinedEmotions = [
     { name: 'FOMO', icon: '😰', color: '#f59e0b' },
