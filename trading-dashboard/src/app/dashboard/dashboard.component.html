@@ -175,6 +175,22 @@
                       <span class="impact-text" [ngClass]="getNewsImpactBadgeClass(event)">
                         {{ getNewsImpact(event) }} Impact
                       </span>
+                      <!-- Modal Reminder Status Indicator -->
+                      <div class="modal-reminder-status"
+                           [ngClass]="{
+                             'reminder-active': isCurrentDayNews(event),
+                             'reminder-disabled': !isCurrentDayNews(event)
+                           }"
+                           [title]="isCurrentDayNews(event) ?
+                             'Reminders Active (Current Day)' :
+                             'Reminders Disabled (Future Day)'">
+                        <mat-icon class="modal-reminder-icon">
+                          {{ isCurrentDayNews(event) ? 'notifications_active' : 'notifications_off' }}
+                        </mat-icon>
+                        <span class="modal-reminder-text">
+                          {{ isCurrentDayNews(event) ? 'Active' : 'Disabled' }}
+                        </span>
+                      </div>
                     </div>
 
                     <div class="event-title-full">{{ getNewsTitle(event) }}</div>
