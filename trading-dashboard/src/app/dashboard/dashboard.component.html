@@ -67,6 +67,19 @@
                     <div class="event-content" [ngClass]="getEnhancedNewsClasses(timeGroup.events[0], day.day)">
                       <div class="event-meta">
                         <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
+                        <!-- Reminder Status Indicator -->
+                        <div class="reminder-status-indicator"
+                             [ngClass]="{
+                               'reminder-active': isCurrentDayNews(timeGroup.events[0]),
+                               'reminder-disabled': !isCurrentDayNews(timeGroup.events[0])
+                             }"
+                             [title]="isCurrentDayNews(timeGroup.events[0]) ?
+                               'Reminders Active (Current Day)' :
+                               'Reminders Disabled (Future Day)'">
+                          <mat-icon class="reminder-icon">
+                            {{ isCurrentDayNews(timeGroup.events[0]) ? 'notifications_active' : 'notifications_off' }}
+                          </mat-icon>
+                        </div>
                       </div>
                       <div class="event-title">{{ getNewsTitle(timeGroup.events[0]) }}</div>
                     </div>
@@ -94,6 +107,19 @@
                            [ngClass]="getEnhancedNewsClasses(event, day.day)">
                         <div class="event-meta">
                           <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
+                          <!-- Reminder Status Indicator -->
+                          <div class="reminder-status-indicator"
+                               [ngClass]="{
+                                 'reminder-active': isCurrentDayNews(event),
+                                 'reminder-disabled': !isCurrentDayNews(event)
+                               }"
+                               [title]="isCurrentDayNews(event) ?
+                                 'Reminders Active (Current Day)' :
+                                 'Reminders Disabled (Future Day)'">
+                            <mat-icon class="reminder-icon">
+                              {{ isCurrentDayNews(event) ? 'notifications_active' : 'notifications_off' }}
+                            </mat-icon>
+                          </div>
                         </div>
                         <div class="event-title">{{ getNewsTitle(event) }}</div>
                       </div>
@@ -111,6 +137,7 @@
             </div>
           </div>
         </div>
+
 
         <!-- News Modal Overlay -->
         <div *ngIf="showNewsModal" class="news-modal-overlay" (click)="closeNewsModal()">
@@ -148,6 +175,22 @@
                       <span class="impact-text" [ngClass]="getNewsImpactBadgeClass(event)">
                         {{ getNewsImpact(event) }} Impact
                       </span>
+                      <!-- Modal Reminder Status Indicator -->
+                      <div class="modal-reminder-status"
+                           [ngClass]="{
+                             'reminder-active': isCurrentDayNews(event),
+                             'reminder-disabled': !isCurrentDayNews(event)
+                           }"
+                           [title]="isCurrentDayNews(event) ?
+                             'Reminders Active (Current Day)' :
+                             'Reminders Disabled (Future Day)'">
+                        <mat-icon class="modal-reminder-icon">
+                          {{ isCurrentDayNews(event) ? 'notifications_active' : 'notifications_off' }}
+                        </mat-icon>
+                        <span class="modal-reminder-text">
+                          {{ isCurrentDayNews(event) ? 'Active' : 'Disabled' }}
+                        </span>
+                      </div>
                     </div>
 
                     <div class="event-title-full">{{ getNewsTitle(event) }}</div>

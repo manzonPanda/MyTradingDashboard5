@@ -6417,3 +6417,314 @@ table.simple-table {
     }
   }
 }
+
+// News Reminder Status Styles
+.news-reminder-status {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  backdrop-filter: blur(10px);
+
+  .reminder-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .reminder-icon {
+      color: #3b82f6;
+      font-size: 20px;
+    }
+
+    .reminder-title {
+      font-weight: 600;
+      color: #1f2937;
+      flex: 1;
+    }
+
+    .reminder-toggle {
+      color: #6b7280;
+
+      &:hover {
+        color: #3b82f6;
+      }
+    }
+  }
+
+  .reminder-status-badges {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+
+      &.active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+
+        .badge-count {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+      }
+
+      &.intervals {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+
+        .badge-count {
+          font-size: 10px;
+          font-weight: 400;
+        }
+      }
+    }
+  }
+
+  .reminder-details {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 12px;
+    animation: slideDown 0.3s ease-out;
+
+    .reminder-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+
+      .action-button {
+        height: 36px;
+        font-size: 12px;
+        border-radius: 8px;
+
+        mat-icon {
+          font-size: 16px;
+          margin-right: 4px;
+        }
+      }
+    }
+
+    .reminder-info {
+      .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #6b7280;
+
+        .info-icon {
+          font-size: 16px;
+          color: #9ca3af;
+          margin-top: 1px;
+        }
+
+        span {
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Beautiful reminder status indicators for individual news events
+.reminder-status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-left: 6px;
+  transition: all 0.3s ease;
+  cursor: help;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+
+  .reminder-icon {
+    font-size: 12px;
+    transition: all 0.3s ease;
+  }
+
+  &.reminder-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), 0 0 24px rgba(16, 185, 129, 0.3);
+    border-color: rgba(16, 185, 129, 0.6);
+
+    .reminder-icon {
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    &:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8), 0 0 32px rgba(16, 185, 129, 0.4);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      opacity: 0.3;
+      animation: pulse 2s infinite;
+      z-index: -1;
+    }
+  }
+
+  &.reminder-inactive {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+    border-color: rgba(245, 158, 11, 0.4);
+
+    .reminder-icon {
+      color: white;
+    }
+
+    &:hover {
+      transform: scale(1.15);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+    }
+  }
+
+  &.reminder-disabled {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    box-shadow: 0 0 4px rgba(107, 114, 128, 0.3);
+    border-color: rgba(107, 114, 128, 0.3);
+    opacity: 0.6;
+
+    .reminder-icon {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    &:hover {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Modal reminder status indicators with enhanced styling
+.modal-reminder-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  .modal-reminder-icon {
+    font-size: 16px;
+    z-index: 2;
+  }
+
+  .modal-reminder-text {
+    font-size: 10px;
+    z-index: 2;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  &.reminder-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    border-color: rgba(16, 185, 129, 0.6);
+
+    .modal-reminder-icon {
+      animation: pulse 2s infinite;
+    }
+
+    &:hover::before {
+      left: 100%;
+    }
+  }
+
+  &.reminder-inactive {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    border-color: rgba(245, 158, 11, 0.4);
+
+    &:hover::before {
+      left: 100%;
+    }
+  }
+
+  &.reminder-disabled {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 16px rgba(107, 114, 128, 0.2);
+    border-color: rgba(107, 114, 128, 0.3);
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Enhanced pulse animation for active reminders
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -28,6 +28,8 @@ export class FcmService {
 
       if (token) {
         console.log('✅ FCM Token:', token);
+        // Store token in localStorage for later use
+        localStorage.setItem('fcm_token', token);
         return token;
       } else {
         console.warn('No FCM token received.');

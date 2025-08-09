@@ -32,6 +32,7 @@ import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } fro
 import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
+import { NewsReminderService } from '../services/news-reminder.service';
 
 declare var $: any;
 
@@ -186,6 +187,9 @@ export class DashboardComponent implements AfterViewInit {
 
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
+
+  // News reminder properties
+  showReminderDetails: boolean = false;
 
   // Emotional tracking properties for individual trades
   predefinedEmotions = [
@@ -445,7 +449,7 @@ export class DashboardComponent implements AfterViewInit {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
@@ -491,6 +495,14 @@ async ngOnInit() {
     );
     this.newsData = Array.isArray(news) ? news : [];
     console.log("📈 Forex Factory News Data:", this.newsData);
+
+    // Schedule news reminders if FCM is ready
+    if (this.newsData.length > 0) {
+      // Delay scheduling to ensure FCM is set up
+      setTimeout(() => {
+        this.newsReminder.scheduleAllReminders(this.newsData);
+      }, 1000);
+    }
   } catch (error) {
     console.warn("⚠️ Failed to load forex news:", error);
     this.newsData = [];
@@ -503,7 +515,16 @@ async ngOnInit() {
   if (token) {
     // You would store this token in your backend DB tied to the user
     this.fcm.listen();
-    this.sendNotif(token)
+
+    // Set up news reminder callback
+    this.newsReminder.setSendNotificationCallback((title: string, body: string) => {
+      this.sendNotif(title, body);
+    });
+
+    // Schedule reminders for loaded news
+    if (this.newsData && this.newsData.length > 0) {
+      this.newsReminder.scheduleAllReminders(this.newsData);
+    }
   }
 
   this.dtOptions = {
@@ -1556,20 +1577,32 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return res;
   }
 
-  async sendNotif(token:string){
-    const body = {
-      "token":token,
-      "title":"Notif TitleTest",
-      "body":"Notif BodyTest",
-      // "icon":"https://raw.githubusercontent.com/5ers-4-5k/5ers4-5k/main/src/assets/logo.png",
-      // "click_action":"https://5ers4-5k.vercel.app/"
-    } 
-    const res: any = await firstValueFrom(
-      this.http.post("http://localhost:3000/api/sendNotif", body)
-    );
-    if (res) {
-      alert(token)
-    } 
+  async sendNotif(title: string, body: string): Promise<void> {
+    try {
+      const token = localStorage.getItem('fcm_token');
+      if (!token) {
+        console.warn('⚠️ No FCM token available for notification');
+        return;
+      }
+
+      const payload = {
+        "token": token,
+        "title": title,
+        "body": body,
+        "icon": "https://raw.githubusercontent.com/5ers-4-5k/5ers4-5k/main/src/assets/logo.png",
+        "click_action": "https://5ers4-5k.vercel.app/"
+      };
+
+      const res: any = await firstValueFrom(
+        this.http.post("http://localhost:3000/api/sendNotif", payload)
+      );
+
+      if (res) {
+        console.log('✅ News reminder notification sent:', title);
+      }
+    } catch (error) {
+      console.error('❌ Error sending notification:', error);
+    }
   }
 
   async loadNotionPerformanceData(): Promise<void> {
@@ -2218,7 +2251,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         const resultCount = (testResponse as any).results.length;
         alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
       } else {
-        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+        alert('��� Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
       }
 
       return true;
@@ -4150,6 +4183,86 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Last resort fallback
       this.dtTrigger.next(null);
     }
+  }
+
+  // News Reminder Control Methods
+  toggleReminderDetails(): void {
+    this.showReminderDetails = !this.showReminderDetails;
+  }
+
+  getReminderStatus(): { total: number; scheduled: number } {
+    return this.newsReminder.getReminderStatus();
+  }
+
+  getReminderStatusText(): string {
+    const status = this.getReminderStatus();
+    if (status.scheduled === 0) {
+      return 'No active reminders - only current day news will have reminders';
+    }
+    return `${status.scheduled} active reminders for current day news`;
+  }
+
+  refreshNewsReminders(): void {
+    console.log('🔄 Refreshing news reminders...');
+    this.newsReminder.scheduleAllReminders(this.newsData);
+  }
+
+  clearAllReminders(): void {
+    console.log('🧹 Clearing all news reminders...');
+    this.newsReminder.clearAllReminders();
+  }
+
+  /**
+   * Check if a specific news event has active reminders
+   */
+  isNewsReminderActive(newsEvent: any): boolean {
+    return this.newsReminder.isNewsReminderActive(newsEvent);
+  }
+
+  /**
+   * Check if a news event is for the current day
+   */
+  isCurrentDayNews(newsEvent: any): boolean {
+    const today = new Date();
+    const todayDay = today.getDay();
+
+    // Check date string patterns
+    if (newsEvent.date.includes('Today')) {
+      return true;
+    }
+
+    // Parse the date and compare days
+    try {
+      const dateParts = newsEvent.date.trim().split(' ');
+      if (dateParts.length >= 3) {
+        const monthName = dateParts[1];
+        const day = parseInt(dateParts[2]);
+        const monthIndex = this.getMonthIndex(monthName);
+
+        if (monthIndex !== -1) {
+          const newsDate = new Date(today.getFullYear(), monthIndex, day);
+          return newsDate.getDay() === todayDay;
+        }
+      }
+    } catch (error) {
+      console.warn('Error parsing news date:', error);
+    }
+
+    return false;
+  }
+
+  /**
+   * Get month index from month name (helper method)
+   */
+  private getMonthIndex(monthName: string): number {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    return months.findIndex(month =>
+      month.toLowerCase() === monthName.toLowerCase()
+    );
   }
 
 
