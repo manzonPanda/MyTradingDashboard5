@@ -106,7 +106,6 @@
                      class="no-news"
                      [ngClass]="{'current-day-no-news': day.day === getCurrentDay() && !currentDayHasNews()}">
                   <div class="no-news-text">No news</div>
-                  <div class="no-news-subtitle">Quiet trading day</div>
                 </div>
               </div>
             </div>
@@ -280,10 +279,6 @@
           </div>
           <div class="chart-stats">
             <div class="stat-item">
-              <span class="stat-label">Current Balance</span>
-              <span class="stat-value positive">${{ (mt5AccountInfo?.starting_balance || 5000) | number:'1.2-2' }}</span>
-            </div>
-            <div class="stat-item">
               <span class="stat-label">Total P&L</span>
               <span class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
                 {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
@@ -318,21 +313,6 @@
           </div>
         </div>
 
-        <div class="chart-legend-enhanced">
-          <div class="legend-item">
-            <div class="legend-color balance"></div>
-            <span class="legend-label">Account Balance Progression</span>
-            <span class="legend-description">How your balance changes with each trade (profits and losses)</span>
-          </div>
-          <div class="legend-explanation">
-            <div class="legend-points">
-              <span class="point-indicator start">🔵 Starting Balance</span>
-              <span class="point-indicator profit">🟢 Winning Trades</span>
-              <span class="point-indicator loss">🔴 Losing Trades</span>
-              <span class="point-indicator current">✨ Current Balance</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="metrics-grid">
@@ -1093,7 +1073,7 @@
         </div>
       </div>
 
-      <!-- 🔍 Performance Insights & AI Recommendations -->
+      <!-- ��� Performance Insights & AI Recommendations -->
       <div class="insights-analytics-card">
         <div class="card-header-enhanced">
           <div class="header-content">
