@@ -142,8 +142,8 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
     }, 10000); // Show for 10 seconds
   }
 
-  getRandomQuote(): string {
-    return this.motivationalQuotes[Math.floor(Math.random() * this.motivationalQuotes.length)];
+  setRandomQuote(): void {
+    this.currentQuote = this.motivationalQuotes[Math.floor(Math.random() * this.motivationalQuotes.length)];
   }
 
   getDreamAge(): string {
