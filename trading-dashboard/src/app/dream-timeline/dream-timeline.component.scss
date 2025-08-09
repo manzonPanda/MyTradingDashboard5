@@ -677,35 +677,47 @@
   }
 }
 
-// Responsive adjustments
+// 📱 Responsive vertical layout
 @media (max-width: 1200px) {
   .dream-time-minimal .time-units {
-    gap: 6px;
-    padding: 6px 10px;
+    gap: 4px;
+    padding: 10px 14px;
+    min-width: 100px;
 
     .time-unit:nth-child(5),
     .time-unit:nth-child(6) {
       display: none; // Hide minutes and seconds
+    }
+
+    .time-unit {
+      padding: 3px 6px;
+
+      .value {
+        font-size: 14px;
+      }
     }
   }
 }
 
 @media (max-width: 768px) {
   .dream-time-minimal .time-units {
-    gap: 4px;
-    padding: 4px 8px;
+    gap: 3px;
+    padding: 8px 12px;
+    min-width: 80px;
 
     .time-unit:nth-child(n+4) {
       display: none; // Only show years, months, days
     }
 
     .time-unit {
+      padding: 2px 4px;
+
       .value {
         font-size: 12px;
       }
 
       .label {
-        font-size: 9px;
+        font-size: 8px;
       }
     }
   }
