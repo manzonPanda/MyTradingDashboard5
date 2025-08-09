@@ -252,9 +252,16 @@
         </div>
       </div>
 
-      <div class="header-actions">
-        <app-connection-status></app-connection-status>
-        <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;" />
+      <!-- Dream Timeline Header Widget -->
+      <div class="header-right-section">
+        <div class="dream-timeline-header-widget">
+          <app-dream-timeline></app-dream-timeline>
+        </div>
+
+        <div class="header-actions">
+          <app-connection-status></app-connection-status>
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;" />
+        </div>
       </div>
     </div>
   </header>
@@ -1125,6 +1132,7 @@
     </div>
   </section>
 
+
   <!-- Manual Data Update to Notion Section -->
   <section class="upload-section">
     <div class="upload-card">
@@ -1361,7 +1369,7 @@
               <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
               <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
               <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
-              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated 🛑</th>
+              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated ����</th>
               <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
               <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
               <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
