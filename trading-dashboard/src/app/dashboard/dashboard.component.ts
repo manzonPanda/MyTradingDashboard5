@@ -32,6 +32,7 @@ import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } fro
 import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
+import { NewsReminderService } from '../services/news-reminder.service';
 
 declare var $: any;
 
@@ -445,7 +446,7 @@ export class DashboardComponent implements AfterViewInit {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
@@ -503,7 +504,16 @@ async ngOnInit() {
   if (token) {
     // You would store this token in your backend DB tied to the user
     this.fcm.listen();
-    this.sendNotif(token)
+
+    // Set up news reminder callback
+    this.newsReminder.setSendNotificationCallback((title: string, body: string) => {
+      this.sendNotif(title, body);
+    });
+
+    // Schedule reminders for loaded news
+    if (this.newsData && this.newsData.length > 0) {
+      this.newsReminder.scheduleAllReminders(this.newsData);
+    }
   }
 
   this.dtOptions = {
