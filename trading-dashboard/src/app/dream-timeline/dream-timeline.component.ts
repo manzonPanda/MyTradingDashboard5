@@ -51,6 +51,9 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
     "The best time to plant a tree was 20 years ago. The second best time is now."
   ];
 
+  currentQuote = this.motivationalQuotes[0]; // Store current quote to avoid change detection errors
+  private quoteChangeCounter = 0;
+
   constructor(private dialog: MatDialog) {}
 
   ngOnInit() {
