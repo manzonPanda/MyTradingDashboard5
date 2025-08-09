@@ -6417,3 +6417,133 @@ table.simple-table {
     }
   }
 }
+
+// News Reminder Status Styles
+.news-reminder-status {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  backdrop-filter: blur(10px);
+
+  .reminder-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .reminder-icon {
+      color: #3b82f6;
+      font-size: 20px;
+    }
+
+    .reminder-title {
+      font-weight: 600;
+      color: #1f2937;
+      flex: 1;
+    }
+
+    .reminder-toggle {
+      color: #6b7280;
+
+      &:hover {
+        color: #3b82f6;
+      }
+    }
+  }
+
+  .reminder-status-badges {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+
+      &.active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+
+        .badge-count {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+      }
+
+      &.intervals {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+
+        .badge-count {
+          font-size: 10px;
+          font-weight: 400;
+        }
+      }
+    }
+  }
+
+  .reminder-details {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 12px;
+    animation: slideDown 0.3s ease-out;
+
+    .reminder-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+
+      .action-button {
+        height: 36px;
+        font-size: 12px;
+        border-radius: 8px;
+
+        mat-icon {
+          font-size: 16px;
+          margin-right: 4px;
+        }
+      }
+    }
+
+    .reminder-info {
+      .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #6b7280;
+
+        .info-icon {
+          font-size: 16px;
+          color: #9ca3af;
+          margin-top: 1px;
+        }
+
+        span {
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
