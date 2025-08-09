@@ -1,134 +1,29 @@
-<div class="dream-timeline-container" [class.celebration-mode]="showCelebration">
-  <!-- Main Dream Timeline Card -->
-  <mat-card class="dream-timeline-card">
-    <div class="card-header">
-      <div class="header-content">
-        <mat-icon class="dream-icon">auto_awesome</mat-icon>
-        <div class="header-text">
-          <h2 class="dream-title">Dream Journey</h2>
-          <p class="dream-subtitle">{{ getDreamAge() }}</p>
-        </div>
-      </div>
-      <div class="anniversary-badge" *ngIf="isAnniversary">
-        <mat-icon>celebration</mat-icon>
-        <span>Anniversary!</span>
-      </div>
+<!-- Minimal Dream Timeline - Just the Time -->
+<div class="dream-time-minimal">
+  <div class="time-units">
+    <div class="time-unit" *ngIf="timeElapsed.years > 0">
+      <span class="value">{{ timeElapsed.years }}</span>
+      <span class="label">y</span>
     </div>
-
-    <!-- Time Elapsed Display -->
-    <div class="time-display">
-      <div class="time-grid">
-        <div class="time-unit" [class.highlight]="timeElapsed.years > 0">
-          <div class="time-value">{{ timeElapsed.years }}</div>
-          <div class="time-label">{{ timeElapsed.years === 1 ? 'Year' : 'Years' }}</div>
-        </div>
-        <div class="time-unit" [class.highlight]="timeElapsed.months > 0">
-          <div class="time-value">{{ timeElapsed.months }}</div>
-          <div class="time-label">{{ timeElapsed.months === 1 ? 'Month' : 'Months' }}</div>
-        </div>
-        <div class="time-unit" [class.highlight]="timeElapsed.days > 0">
-          <div class="time-value">{{ timeElapsed.days }}</div>
-          <div class="time-label">{{ timeElapsed.days === 1 ? 'Day' : 'Days' }}</div>
-        </div>
-        <div class="time-unit">
-          <div class="time-value">{{ timeElapsed.hours }}</div>
-          <div class="time-label">{{ timeElapsed.hours === 1 ? 'Hour' : 'Hours' }}</div>
-        </div>
-        <div class="time-unit">
-          <div class="time-value">{{ timeElapsed.minutes }}</div>
-          <div class="time-label">{{ timeElapsed.minutes === 1 ? 'Minute' : 'Minutes' }}</div>
-        </div>
-        <div class="time-unit pulse">
-          <div class="time-value">{{ timeElapsed.seconds }}</div>
-          <div class="time-label">{{ timeElapsed.seconds === 1 ? 'Second' : 'Seconds' }}</div>
-        </div>
-      </div>
+    <div class="time-unit" *ngIf="timeElapsed.months > 0 || timeElapsed.years > 0">
+      <span class="value">{{ timeElapsed.months }}</span>
+      <span class="label">m</span>
     </div>
-
-    <!-- Dream Start Info -->
-    <div class="dream-start-info">
-      <div class="start-date">
-        <mat-icon>schedule</mat-icon>
-        <span>Started: August 11, 2023 at 6:41 AM</span>
-      </div>
-      <div class="motivation-quote">
-        <mat-icon>format_quote</mat-icon>
-        <span>{{ currentQuote }}</span>
-      </div>
+    <div class="time-unit">
+      <span class="value">{{ timeElapsed.days }}</span>
+      <span class="label">d</span>
     </div>
-
-    <!-- Progress Visualization -->
-    <div class="progress-section">
-      <h3>Journey Milestones</h3>
-      <div class="milestone-track">
-        <div class="milestone" [class.achieved]="timeElapsed.days >= 30">
-          <div class="milestone-icon">
-            <mat-icon>{{ timeElapsed.days >= 30 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-          </div>
-          <span>First Month</span>
-        </div>
-        <div class="milestone" [class.achieved]="timeElapsed.days >= 100">
-          <div class="milestone-icon">
-            <mat-icon>{{ timeElapsed.days >= 100 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-          </div>
-          <span>100 Days</span>
-        </div>
-        <div class="milestone" [class.achieved]="timeElapsed.years >= 1">
-          <div class="milestone-icon">
-            <mat-icon>{{ timeElapsed.years >= 1 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-          </div>
-          <span>First Year</span>
-        </div>
-        <div class="milestone" [class.achieved]="timeElapsed.years >= 5">
-          <div class="milestone-icon">
-            <mat-icon>{{ timeElapsed.years >= 5 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-          </div>
-          <span>5 Years</span>
-        </div>
-      </div>
+    <div class="time-unit">
+      <span class="value">{{ timeElapsed.hours }}</span>
+      <span class="label">h</span>
     </div>
-  </mat-card>
-
-  <!-- Anniversary Celebration Overlay -->
-  <div class="celebration-overlay" *ngIf="showCelebration">
-    <div class="celebration-content">
-      <div class="celebration-header">
-        <mat-icon class="celebration-icon">celebration</mat-icon>
-        <h1>🎉 Dream Anniversary! 🎉</h1>
-        <p>Celebrating {{ timeElapsed.years }} {{ timeElapsed.years === 1 ? 'year' : 'years' }} of pursuing your dreams!</p>
-      </div>
-      
-      <div class="why-started-section">
-        <h2>Why You Started This Journey</h2>
-        <div class="reminder-card">
-          <mat-icon>lightbulb</mat-icon>
-          <p>To build financial freedom through disciplined trading and turn dreams into reality, one trade at a time.</p>
-        </div>
-      </div>
-
-      <div class="celebration-stats">
-        <div class="stat">
-          <div class="stat-value">{{ timeElapsed.years * 365 + timeElapsed.days }}</div>
-          <div class="stat-label">Days of Dedication</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value">{{ timeElapsed.years * 12 + timeElapsed.months }}</div>
-          <div class="stat-label">Months of Growth</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value">∞</div>
-          <div class="stat-label">Dreams Ahead</div>
-        </div>
-      </div>
-
-      <button mat-raised-button color="primary" (click)="showCelebration = false">
-        Continue the Journey
-      </button>
+    <div class="time-unit">
+      <span class="value">{{ timeElapsed.minutes }}</span>
+      <span class="label">m</span>
     </div>
-    
-    <!-- Floating particles for celebration -->
-    <div class="particles">
-      <div class="particle" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
+    <div class="time-unit pulse">
+      <span class="value">{{ timeElapsed.seconds }}</span>
+      <span class="label">s</span>
     </div>
   </div>
 </div>
