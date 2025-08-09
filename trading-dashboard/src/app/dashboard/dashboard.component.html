@@ -107,6 +107,19 @@
                            [ngClass]="getEnhancedNewsClasses(event, day.day)">
                         <div class="event-meta">
                           <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
+                          <!-- Reminder Status Indicator -->
+                          <div class="reminder-status-indicator"
+                               [ngClass]="{
+                                 'reminder-active': isCurrentDayNews(event),
+                                 'reminder-disabled': !isCurrentDayNews(event)
+                               }"
+                               [title]="isCurrentDayNews(event) ?
+                                 'Reminders Active (Current Day)' :
+                                 'Reminders Disabled (Future Day)'">
+                            <mat-icon class="reminder-icon">
+                              {{ isCurrentDayNews(event) ? 'notifications_active' : 'notifications_off' }}
+                            </mat-icon>
+                          </div>
                         </div>
                         <div class="event-title">{{ getNewsTitle(event) }}</div>
                       </div>
@@ -1364,7 +1377,7 @@
               <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
               <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
               <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
-              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated �����</th>
+              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated ����</th>
               <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
               <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
               <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
