@@ -11,6 +11,10 @@
 npm-debug.log
 yarn-error.log
 
+
+#Firebase Admin SDK
+/src/serviceAccountKey.json
+
 # IDEs and editors
 .idea/
 .project

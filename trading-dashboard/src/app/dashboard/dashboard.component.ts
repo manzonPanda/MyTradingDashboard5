@@ -31,6 +31,7 @@ import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { FcmService } from '../services/fcm.service';
 
 declare var $: any;
 
@@ -444,12 +445,12 @@ export class DashboardComponent implements AfterViewInit {
 
 
 
-  constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
 
-  async ngOnInit() {
+async ngOnInit() {
     const socket = io("http://localhost:5000",{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
@@ -497,22 +498,30 @@ export class DashboardComponent implements AfterViewInit {
     this.isNewsLoading = false;
   }
 
-    this.dtOptions = {
-      paging: true,
-      searching: true,
-      ordering: true,
-      pageLength: 10,
-      processing: false,
-      responsive: true,
-      keys: true,
-      retrieve: true,
-      language: {
-        emptyTable: "No trading data available",
-        info: "Showing _START_ to _END_ of _TOTAL_ trades",
-        infoEmpty: "Showing 0 to 0 of 0 trades",
-        lengthMenu: "Show _MENU_ trades per page"
-      }
-    };
+  //Firebase Cloud Messaging setup
+  const token = await this.fcm.requestPermission();
+  if (token) {
+    // You would store this token in your backend DB tied to the user
+    this.fcm.listen();
+    this.sendNotif(token)
+  }
+
+  this.dtOptions = {
+    paging: true,
+    searching: true,
+    ordering: true,
+    pageLength: 10,
+    processing: false,
+    responsive: true,
+    keys: true,
+    retrieve: true,
+    language: {
+      emptyTable: "No trading data available",
+      info: "Showing _START_ to _END_ of _TOTAL_ trades",
+      infoEmpty: "Showing 0 to 0 of 0 trades",
+      lengthMenu: "Show _MENU_ trades per page"
+    }
+  };
 
     this.dtOptionsNotion = {
       destroy: true,
@@ -1545,6 +1554,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
     console.warn(res)
     return res;
+  }
+
+  async sendNotif(token:string){
+    const body = {
+      "token":token,
+      "title":"Notif TitleTest",
+      "body":"Notif BodyTest",
+      // "icon":"https://raw.githubusercontent.com/5ers-4-5k/5ers4-5k/main/src/assets/logo.png",
+      // "click_action":"https://5ers4-5k.vercel.app/"
+    } 
+    const res: any = await firstValueFrom(
+      this.http.post("http://localhost:3000/api/sendNotif", body)
+    );
+    if (res) {
+      alert(token)
+    } 
   }
 
   async loadNotionPerformanceData(): Promise<void> {
