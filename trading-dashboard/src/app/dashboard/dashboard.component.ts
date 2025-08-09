@@ -2251,7 +2251,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         const resultCount = (testResponse as any).results.length;
         alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
       } else {
-        alert('✅ Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
+        alert('��� Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
       }
 
       return true;
@@ -4196,7 +4196,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getReminderStatusText(): string {
     const status = this.getReminderStatus();
-    return `${status.scheduled} active reminders scheduled for upcoming news events`;
+    if (status.scheduled === 0) {
+      return 'No active reminders - only current day news will have reminders';
+    }
+    return `${status.scheduled} active reminders for current day news`;
   }
 
   refreshNewsReminders(): void {
@@ -4207,6 +4210,59 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   clearAllReminders(): void {
     console.log('🧹 Clearing all news reminders...');
     this.newsReminder.clearAllReminders();
+  }
+
+  /**
+   * Check if a specific news event has active reminders
+   */
+  isNewsReminderActive(newsEvent: any): boolean {
+    return this.newsReminder.isNewsReminderActive(newsEvent);
+  }
+
+  /**
+   * Check if a news event is for the current day
+   */
+  isCurrentDayNews(newsEvent: any): boolean {
+    const today = new Date();
+    const todayDay = today.getDay();
+
+    // Check date string patterns
+    if (newsEvent.date.includes('Today')) {
+      return true;
+    }
+
+    // Parse the date and compare days
+    try {
+      const dateParts = newsEvent.date.trim().split(' ');
+      if (dateParts.length >= 3) {
+        const monthName = dateParts[1];
+        const day = parseInt(dateParts[2]);
+        const monthIndex = this.getMonthIndex(monthName);
+
+        if (monthIndex !== -1) {
+          const newsDate = new Date(today.getFullYear(), monthIndex, day);
+          return newsDate.getDay() === todayDay;
+        }
+      }
+    } catch (error) {
+      console.warn('Error parsing news date:', error);
+    }
+
+    return false;
+  }
+
+  /**
+   * Get month index from month name (helper method)
+   */
+  private getMonthIndex(monthName: string): number {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    return months.findIndex(month =>
+      month.toLowerCase() === monthName.toLowerCase()
+    );
   }
 
 
