@@ -440,8 +440,14 @@
             <h3 class="metric-title">Total Trades</h3>
             <mat-icon class="metric-icon">list_alt</mat-icon>
           </div>
-          <div class="metric-value">{{ getTotalTrades() }}</div>
-          <div class="metric-subtitle">This period</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value">{{ getTotalTrades() }}</div>
+            <div class="metric-subtitle">This period</div>
+          </div>
         </div>
 
         <div class="metric-card profit-factor">
@@ -449,8 +455,14 @@
             <h3 class="metric-title">Profit Factor</h3>
             <mat-icon class="metric-icon">trending_up</mat-icon>
           </div>
-          <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
-          <div class="metric-subtitle">Gross win / Gross loss</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
+            <div class="metric-subtitle">Gross win / Gross loss</div>
+          </div>
         </div>
 
         <div class="metric-card best-profit">
@@ -458,8 +470,14 @@
             <h3 class="metric-title">Best Profit</h3>
             <mat-icon class="metric-icon">star</mat-icon>
           </div>
-          <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
-          <div class="metric-subtitle">Largest single win</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
+            <div class="metric-subtitle">Largest single win</div>
+          </div>
         </div>
 
         <div class="metric-card account-size">
@@ -467,8 +485,14 @@
             <h3 class="metric-title">Account Size</h3>
             <mat-icon class="metric-icon">account_balance</mat-icon>
           </div>
-          <div class="metric-value">{{ (mt5AccountInfo?.starting_balance || 5000) | currency }}</div>
-          <div class="metric-subtitle">Starting balance</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value">{{ (mt5AccountInfo?.starting_balance || 5000) | currency }}</div>
+            <div class="metric-subtitle">Starting balance</div>
+          </div>
         </div>
 
         <div class="metric-card avg-trade-duration">
@@ -476,8 +500,14 @@
             <h3 class="metric-title">Avg. Trade Duration</h3>
             <mat-icon class="metric-icon">schedule</mat-icon>
           </div>
-          <div class="metric-value">{{ calculateAvgTradeDuration() }}</div>
-          <div class="metric-subtitle">Average hold time</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value">{{ calculateAvgTradeDuration() }}</div>
+            <div class="metric-subtitle">Average hold time</div>
+          </div>
         </div>
       </div>
     </div>
