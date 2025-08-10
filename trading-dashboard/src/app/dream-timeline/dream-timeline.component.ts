@@ -141,14 +141,23 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
 
   checkAnniversaryMonth() {
     const now = new Date();
-    const isAugust = now.getMonth() === 7; // August is month 7 (0-indexed)
+    const currentYear = now.getFullYear();
 
-    if (isAugust !== this.isAnniversaryMonth) {
-      this.isAnniversaryMonth = isAugust;
-      this.showConfetti = isAugust;
+    // Anniversary starts on August 11th each year
+    const anniversaryStart = new Date(currentYear, 7, 11); // August 11th
+    const anniversaryEnd = new Date(anniversaryStart);
+    anniversaryEnd.setDate(anniversaryStart.getDate() + 30); // 30 days from August 11th
 
-      if (isAugust) {
-        console.log('🎉 Anniversary Month Activated! Confetti time! 🎊');
+    // Check if current date is within the 30-day anniversary period
+    const isWithinAnniversaryPeriod = now >= anniversaryStart && now <= anniversaryEnd;
+
+    if (isWithinAnniversaryPeriod !== this.isAnniversaryMonth) {
+      this.isAnniversaryMonth = isWithinAnniversaryPeriod;
+      this.showConfetti = isWithinAnniversaryPeriod;
+
+      if (isWithinAnniversaryPeriod) {
+        const daysRemaining = Math.ceil((anniversaryEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        console.log(`🎉 Anniversary Period Activated! ${daysRemaining} days remaining of celebration! 🎊`);
       }
     }
   }
