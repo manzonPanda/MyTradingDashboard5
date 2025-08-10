@@ -1,7 +1,7 @@
 // 🎨 Compact Dream Timeline Design
 .dream-time-minimal {
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   gap: 8px;
   height: 180px;
 
