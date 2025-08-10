@@ -923,24 +923,6 @@
   }
 }
 
-@keyframes emojiFloat {
-  0%, 100% {
-    transform: translateY(0px) rotate(-5deg);
-    opacity: 0.7;
-  }
-  25% {
-    transform: translateY(-10px) rotate(5deg);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(-5px) rotate(-2deg);
-    opacity: 0.9;
-  }
-  75% {
-    transform: translateY(-12px) rotate(3deg);
-    opacity: 1;
-  }
-}
 
 @keyframes celebrationGlow {
   0%, 100% {
