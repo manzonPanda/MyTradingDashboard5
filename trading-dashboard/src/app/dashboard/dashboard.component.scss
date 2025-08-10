@@ -426,6 +426,7 @@ table.simple-table {
             justify-content: center;
             padding: 1.5rem 0.75rem;
             min-height: 120px;
+            grid-column: 1 / -1;
 
             .loading-spinner-wrapper {
               margin-bottom: 0.75rem;
@@ -441,6 +442,7 @@ table.simple-table {
               font-weight: 500;
               margin-bottom: 1rem;
               text-align: center;
+              width: 100%;
             }
 
             .loading-skeleton {
@@ -1870,6 +1872,33 @@ table.simple-table {
     font-size: 0.65rem;
     color: var(--tf-text-muted);
     line-height: 1.2;
+  }
+
+  .metric-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    gap: 0.5rem;
+    flex: 1;
+
+    .loading-text {
+      font-size: 0.7rem;
+      color: var(--tf-text-muted);
+      font-weight: 500;
+    }
+
+    ::ng-deep .mat-mdc-progress-spinner circle {
+      stroke: var(--tf-accent-primary);
+    }
+  }
+
+  .metric-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
   }
 }
 
