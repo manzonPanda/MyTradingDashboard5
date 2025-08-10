@@ -1,6 +1,27 @@
-<!-- Dream Timeline with Date on Right -->
-<div class="dream-time-minimal">
+<!-- Dream Timeline with Magical Confetti Animation -->
+<div class="dream-time-minimal" [ngClass]="{'anniversary-month': isAnniversaryMonth}">
+  <!-- Magical Confetti Overlay -->
+  <div class="confetti-container" *ngIf="showConfetti">
+    <div class="confetti-piece" *ngFor="let i of [].constructor(25); let index = index"
+         [style.animation-delay]="(index * 0.1) + 's'"
+         [ngClass]="'confetti-' + ((index % 6) + 1)">
+    </div>
+    <div class="sparkle" *ngFor="let i of [].constructor(15); let index = index"
+         [style.animation-delay]="(index * 0.15) + 's'"
+         [style.left.%]="(index * 6.67)"
+         [style.animation-duration]="(2 + (index % 3)) + 's'">
+      ⭐
+    </div>
+  </div>
+
   <div class="time-units">
+    <div class="start-date-horizontal">
+      <div class="date-line">August 11, 2023</div>
+      <div class="time-line">6:41am</div>
+      <div class="anniversary-badge" *ngIf="isAnniversaryMonth">
+        Remember why you started
+      </div>
+    </div>
     <div class="time-unit" *ngIf="timeElapsed.years > 0" title="Years of Dreams">
       <span class="value">{{ timeElapsed.years }}</span>
       <span class="label">years</span>
@@ -13,14 +34,5 @@
       <span class="value">{{ timeElapsed.days }}</span>
       <span class="label">days</span>
     </div>
-    <div class="time-unit" title="Hours of Hustle">
-      <span class="value">{{ timeElapsed.hours }}</span>
-      <span class="label">hours</span>
-    </div>
-    <div class="time-unit" title="Minutes of Momentum">
-      <span class="value">{{ timeElapsed.minutes }}</span>
-      <span class="label">mins</span>
-    </div>
   </div>
-  <div class="start-date-vertical">August 11, 2023 6:41am</div>
 </div>

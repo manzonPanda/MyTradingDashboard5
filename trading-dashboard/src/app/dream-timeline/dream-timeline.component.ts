@@ -42,6 +42,8 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   private timerSubscription?: Subscription;
   isAnniversary = false;
   showCelebration = false;
+  isAnniversaryMonth = false;
+  showConfetti = false;
   
   motivationalQuotes = [
     "Every expert was once a beginner. Every pro was once an amateur.",
@@ -59,12 +61,14 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.calculateTimeElapsed();
     this.checkAnniversary();
+    this.checkAnniversaryMonth();
     this.setRandomQuote(); // Set initial quote
 
     // Update every second
     this.timerSubscription = interval(1000).subscribe(() => {
       this.calculateTimeElapsed();
       this.checkAnniversary();
+      this.checkAnniversaryMonth();
 
       // Change quote every 30 seconds
       this.quoteChangeCounter++;
@@ -123,15 +127,38 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   checkAnniversary() {
     const now = new Date();
     const anniversaryThisYear = new Date(now.getFullYear(), 7, 11, 6, 41, 0); // August 11th (month 7 is August)
-    
+
     // Check if today is the anniversary and within the hour
     const isToday = now.toDateString() === anniversaryThisYear.toDateString();
     const isWithinHour = Math.abs(now.getTime() - anniversaryThisYear.getTime()) < 3600000; // 1 hour
-    
+
     if (isToday && isWithinHour && !this.showCelebration) {
       this.isAnniversary = true;
       this.showCelebration = true;
       this.triggerAnniversaryCelebration();
+    }
+  }
+
+  checkAnniversaryMonth() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    // Anniversary starts on August 11th at 6:41am each year
+    const anniversaryStart = new Date(currentYear, 7, 11, 6, 41, 0); // August 11th at 6:41am
+    const anniversaryEnd = new Date(anniversaryStart);
+    anniversaryEnd.setDate(anniversaryStart.getDate() + 30); // 30 days from August 11th 6:41am
+
+    // Check if current date is within the 30-day anniversary period
+    const isWithinAnniversaryPeriod = now >= anniversaryStart && now <= anniversaryEnd;
+
+    if (isWithinAnniversaryPeriod !== this.isAnniversaryMonth) {
+      this.isAnniversaryMonth = isWithinAnniversaryPeriod;
+      this.showConfetti = isWithinAnniversaryPeriod;
+
+      if (isWithinAnniversaryPeriod) {
+        const daysRemaining = Math.ceil((anniversaryEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        console.log(`🎉 Anniversary Period Activated at 6:41am! ${daysRemaining} days remaining of celebration! 🎊`);
+      }
     }
   }
 
