@@ -461,8 +461,11 @@ async ngOnInit() {
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
-  socket.on("connect", () => {
+  socket.on("connect", async () => {
     console.warn("✅ Connected to WebSocket server");
+    // Set metrics loading to false after data is loaded
+    this.isLoadingMetrics = false;
+    await this.loadMT5Data(); // Load MT5 trades
   });
 
   socket.on("account_info", (data) => {
@@ -489,7 +492,6 @@ async ngOnInit() {
     this.updateMT5TradePrice(data);
   });
 
-  this.isNewsLoading = true;
   try {
     const news: any = await firstValueFrom(
       this.http.get("http://localhost:3000/api/news")
@@ -564,11 +566,10 @@ async ngOnInit() {
     localStorage.clear();
 
     // await this.loadTrades(); // Load trades from Firestore
-    await this.loadMT5Data(); // Load MT5 trades
+    // await this.loadMT5Data(); // Load MT5 trades
     // this.addTradesToCalendar(); // Add trades to calendar events
 
-    // Set metrics loading to false after data is loaded
-    this.isLoadingMetrics = false;
+ 
 
     // Simple table - no DataTables initialization needed!
     console.log('✅ Simple Angular table ready - no DataTables complexity!');
