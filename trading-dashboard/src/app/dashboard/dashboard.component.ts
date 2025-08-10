@@ -518,7 +518,7 @@ async ngOnInit() {
 
     // Set up news reminder callback
     this.newsReminder.setSendNotificationCallback((title: string, body: string) => {
-      this.sendNotif(title, body);
+      this.sendNotif(token, title, body);
     });
 
     // Schedule reminders for loaded news
@@ -1577,7 +1577,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return res;
   }
 
-  async sendNotif(title: string, body: string): Promise<void> {
+  async sendNotif(token: string, title: string, body: string): Promise<void> {
     try {
       const token = localStorage.getItem('fcm_token');
       if (!token) {
@@ -1589,8 +1589,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         "token": token,
         "title": title,
         "body": body,
-        "icon": "https://raw.githubusercontent.com/5ers-4-5k/5ers4-5k/main/src/assets/logo.png",
-        "click_action": "https://5ers4-5k.vercel.app/"
       };
 
       const res: any = await firstValueFrom(
