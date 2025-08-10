@@ -3977,6 +3977,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
+
+    // Set metrics loading to false when table data is updated
+    this.isLoadingMetrics = false;
   }
 
   // Update chart with real-time trade data
