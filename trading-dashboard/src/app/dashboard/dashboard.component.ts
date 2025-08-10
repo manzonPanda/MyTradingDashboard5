@@ -147,6 +147,7 @@ export class DashboardComponent implements AfterViewInit {
   mt5AccountInfo: any = { starting_balance: 5000 }; // MT5 account info with default values
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
+  isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
   uploadProgress: number = 0;
@@ -3783,7 +3784,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   mockMT5newTrade(){
     console.log('🚀 Mock button clicked! Current state:');
     console.log('📊 Current tableData length:', this.tableData.length);
-    console.log('🔴 Current mt5LiveTrades length:', this.mt5LiveTrades.length);
+    console.log('�� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
 
     // Generate random mock data for testing
     const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
