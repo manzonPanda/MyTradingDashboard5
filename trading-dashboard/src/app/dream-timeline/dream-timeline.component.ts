@@ -61,12 +61,14 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.calculateTimeElapsed();
     this.checkAnniversary();
+    this.checkAnniversaryMonth();
     this.setRandomQuote(); // Set initial quote
 
     // Update every second
     this.timerSubscription = interval(1000).subscribe(() => {
       this.calculateTimeElapsed();
       this.checkAnniversary();
+      this.checkAnniversaryMonth();
 
       // Change quote every 30 seconds
       this.quoteChangeCounter++;
