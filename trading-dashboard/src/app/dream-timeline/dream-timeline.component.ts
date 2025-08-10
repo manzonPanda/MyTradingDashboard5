@@ -42,6 +42,8 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   private timerSubscription?: Subscription;
   isAnniversary = false;
   showCelebration = false;
+  isAnniversaryMonth = false;
+  showConfetti = false;
   
   motivationalQuotes = [
     "Every expert was once a beginner. Every pro was once an amateur.",
