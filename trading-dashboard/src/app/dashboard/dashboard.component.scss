@@ -1873,6 +1873,33 @@ table.simple-table {
     color: var(--tf-text-muted);
     line-height: 1.2;
   }
+
+  .metric-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    gap: 0.5rem;
+    flex: 1;
+
+    .loading-text {
+      font-size: 0.7rem;
+      color: var(--tf-text-muted);
+      font-weight: 500;
+    }
+
+    ::ng-deep .mat-mdc-progress-spinner circle {
+      stroke: var(--tf-accent-primary);
+    }
+  }
+
+  .metric-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+  }
 }
 
 // Section Styling
