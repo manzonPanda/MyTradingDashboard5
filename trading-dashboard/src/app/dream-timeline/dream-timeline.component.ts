@@ -127,15 +127,29 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   checkAnniversary() {
     const now = new Date();
     const anniversaryThisYear = new Date(now.getFullYear(), 7, 11, 6, 41, 0); // August 11th (month 7 is August)
-    
+
     // Check if today is the anniversary and within the hour
     const isToday = now.toDateString() === anniversaryThisYear.toDateString();
     const isWithinHour = Math.abs(now.getTime() - anniversaryThisYear.getTime()) < 3600000; // 1 hour
-    
+
     if (isToday && isWithinHour && !this.showCelebration) {
       this.isAnniversary = true;
       this.showCelebration = true;
       this.triggerAnniversaryCelebration();
+    }
+  }
+
+  checkAnniversaryMonth() {
+    const now = new Date();
+    const isAugust = now.getMonth() === 7; // August is month 7 (0-indexed)
+
+    if (isAugust !== this.isAnniversaryMonth) {
+      this.isAnniversaryMonth = isAugust;
+      this.showConfetti = isAugust;
+
+      if (isAugust) {
+        console.log('🎉 Anniversary Month Activated! Confetti time! 🎊');
+      }
     }
   }
 
