@@ -567,6 +567,9 @@ async ngOnInit() {
     await this.loadMT5Data(); // Load MT5 trades
     // this.addTradesToCalendar(); // Add trades to calendar events
 
+    // Set metrics loading to false after data is loaded
+    this.isLoadingMetrics = false;
+
     // Simple table - no DataTables initialization needed!
     console.log('✅ Simple Angular table ready - no DataTables complexity!');
 
