@@ -426,6 +426,7 @@ table.simple-table {
             justify-content: center;
             padding: 1.5rem 0.75rem;
             min-height: 120px;
+            grid-column: 1 / -1;
 
             .loading-spinner-wrapper {
               margin-bottom: 0.75rem;
@@ -441,6 +442,7 @@ table.simple-table {
               font-weight: 500;
               margin-bottom: 1rem;
               text-align: center;
+              width: 100%;
             }
 
             .loading-skeleton {

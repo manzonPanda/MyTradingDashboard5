@@ -1,7 +1,7 @@
 // 🎨 Compact Dream Timeline Design
 .dream-time-minimal {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
 
   .start-date-vertical {
@@ -18,6 +18,9 @@
     letter-spacing: 0.3px;
     white-space: nowrap;
     backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .time-units {
