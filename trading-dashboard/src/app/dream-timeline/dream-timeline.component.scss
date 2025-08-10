@@ -1,9 +1,19 @@
-// 🎨 Compact Dream Timeline Design
+// 🎨 Compact Dream Timeline Design with Magical Confetti
 .dream-time-minimal {
   display: flex;
   flex-direction: column;
   gap: 8px;
   height: 180px;
+  position: relative;
+  overflow: hidden;
+
+  &.anniversary-month {
+    animation: celebrationGlow 3s ease-in-out infinite;
+
+    .time-units {
+      animation: gentleBounce 4s ease-in-out infinite;
+    }
+  }
 
   .start-date-horizontal {
     color: rgba(99, 102, 241, 0.8);
