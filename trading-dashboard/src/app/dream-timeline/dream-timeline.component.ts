@@ -143,10 +143,10 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
     const now = new Date();
     const currentYear = now.getFullYear();
 
-    // Anniversary starts on August 11th each year
-    const anniversaryStart = new Date(currentYear, 7, 11); // August 11th
+    // Anniversary starts on August 11th at 6:41am each year
+    const anniversaryStart = new Date(currentYear, 7, 11, 6, 41, 0); // August 11th at 6:41am
     const anniversaryEnd = new Date(anniversaryStart);
-    anniversaryEnd.setDate(anniversaryStart.getDate() + 30); // 30 days from August 11th
+    anniversaryEnd.setDate(anniversaryStart.getDate() + 30); // 30 days from August 11th 6:41am
 
     // Check if current date is within the 30-day anniversary period
     const isWithinAnniversaryPeriod = now >= anniversaryStart && now <= anniversaryEnd;
@@ -157,7 +157,7 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
 
       if (isWithinAnniversaryPeriod) {
         const daysRemaining = Math.ceil((anniversaryEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        console.log(`🎉 Anniversary Period Activated! ${daysRemaining} days remaining of celebration! 🎊`);
+        console.log(`🎉 Anniversary Period Activated at 6:41am! ${daysRemaining} days remaining of celebration! 🎊`);
       }
     }
   }
