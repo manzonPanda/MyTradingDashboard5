@@ -43,6 +43,21 @@
       opacity: 0.8;
       line-height: 1;
     }
+
+    .anniversary-badge {
+      font-size: 9px;
+      font-weight: 700;
+      color: #ff6b6b;
+      background: linear-gradient(135deg, #ff6b6b, #ffa726, #ffeb3b);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 2s ease-in-out infinite, pulse 1.5s ease-in-out infinite;
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+      margin-top: 2px;
+      line-height: 1;
+    }
   }
 
   .time-units {
