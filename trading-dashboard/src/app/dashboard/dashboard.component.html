@@ -380,8 +380,14 @@
             <h3 class="metric-title">Win Rate</h3>
             <mat-icon class="metric-icon">donut_small</mat-icon>
           </div>
-          <div class="metric-value">{{ calculateWinRate() }}%</div>
-          <div class="metric-subtitle">{{ getWinCount() }}/{{ getTotalTrades() }} trades</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value">{{ calculateWinRate() }}%</div>
+            <div class="metric-subtitle">{{ getWinCount() }}/{{ getTotalTrades() }} trades</div>
+          </div>
         </div>
 
         <div class="metric-card average-win">
@@ -389,8 +395,14 @@
             <h3 class="metric-title">Avg Win</h3>
             <mat-icon class="metric-icon">add_circle</mat-icon>
           </div>
-          <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
-          <div class="metric-subtitle">Per winning trade</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
+            <div class="metric-subtitle">Per winning trade</div>
+          </div>
         </div>
 
         <div class="metric-card average-loss">
@@ -398,8 +410,14 @@
             <h3 class="metric-title">Avg Loss</h3>
             <mat-icon class="metric-icon">remove_circle</mat-icon>
           </div>
-          <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
-          <div class="metric-subtitle">Per losing trade</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
+            <div class="metric-subtitle">Per losing trade</div>
+          </div>
         </div>
 
         <div class="metric-card trade-expectancy">
@@ -407,8 +425,14 @@
             <h3 class="metric-title">Expectancy</h3>
             <mat-icon class="metric-icon">analytics</mat-icon>
           </div>
-          <div class="metric-value">{{ calculateExpectancy() | currency }}</div>
-          <div class="metric-subtitle">Per trade</div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="metric-value">{{ calculateExpectancy() | currency }}</div>
+            <div class="metric-subtitle">Per trade</div>
+          </div>
         </div>
 
         <div class="metric-card total-trades">
