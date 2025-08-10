@@ -84,11 +84,7 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "proxyConfig": "proxy.conf.json",
-            "prebundle": false,
-            "hmr": false,
-            "optimization": false,
-            "sourceMap": false
+            "proxyConfig": "proxy.conf.json"
           }
         },
         "extract-i18n": {
