@@ -147,6 +147,7 @@ export class DashboardComponent implements AfterViewInit {
   mt5AccountInfo: any = { starting_balance: 5000 }; // MT5 account info with default values
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
+  isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
   uploadProgress: number = 0;
@@ -565,6 +566,9 @@ async ngOnInit() {
     // await this.loadTrades(); // Load trades from Firestore
     await this.loadMT5Data(); // Load MT5 trades
     // this.addTradesToCalendar(); // Add trades to calendar events
+
+    // Set metrics loading to false after data is loaded
+    this.isLoadingMetrics = false;
 
     // Simple table - no DataTables initialization needed!
     console.log('✅ Simple Angular table ready - no DataTables complexity!');
@@ -3783,7 +3787,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   mockMT5newTrade(){
     console.log('🚀 Mock button clicked! Current state:');
     console.log('📊 Current tableData length:', this.tableData.length);
-    console.log('🔴 Current mt5LiveTrades length:', this.mt5LiveTrades.length);
+    console.log('�� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
 
     // Generate random mock data for testing
     const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
@@ -3973,6 +3977,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
+
+    // Set metrics loading to false when table data is updated
+    this.isLoadingMetrics = false;
   }
 
   // Update chart with real-time trade data
