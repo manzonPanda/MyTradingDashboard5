@@ -143,11 +143,15 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
     const now = new Date();
     const isAugust = now.getMonth() === 7; // August is month 7 (0-indexed)
 
-    if (isAugust !== this.isAnniversaryMonth) {
-      this.isAnniversaryMonth = isAugust;
-      this.showConfetti = isAugust;
+    // 🎉 FORCE ANNIVERSARY MODE FOR DEMO! Remove this line for production
+    const forceAnniversary = true; // Set to false for production
+    const shouldShow = isAugust || forceAnniversary;
 
-      if (isAugust) {
+    if (shouldShow !== this.isAnniversaryMonth) {
+      this.isAnniversaryMonth = shouldShow;
+      this.showConfetti = shouldShow;
+
+      if (shouldShow) {
         console.log('🎉 Anniversary Month Activated! Confetti time! 🎊');
       }
     }
