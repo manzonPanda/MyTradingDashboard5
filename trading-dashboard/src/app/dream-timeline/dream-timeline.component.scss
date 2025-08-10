@@ -3,6 +3,7 @@
   display: flex;
   align-items: stretch;
   gap: 8px;
+  height: 180px;
 
   .start-date-vertical {
     writing-mode: vertical-rl;
@@ -21,6 +22,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 100%;
   }
 
   .time-units {
@@ -39,6 +41,8 @@
       0 2px 8px rgba(99, 102, 241, 0.08),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
     min-width: 80px;
+    height: 100%;
+    justify-content: center;
 
     .time-unit {
       display: flex;
