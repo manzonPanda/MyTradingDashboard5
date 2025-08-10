@@ -1,5 +1,6 @@
 <!-- Dream Timeline with Date on Right -->
 <div class="dream-time-minimal">
+  <div class="start-date-vertical">August 11, 2023 6:41am</div>
   <div class="time-units">
     <div class="time-unit" *ngIf="timeElapsed.years > 0" title="Years of Dreams">
       <span class="value">{{ timeElapsed.years }}</span>
@@ -13,14 +14,5 @@
       <span class="value">{{ timeElapsed.days }}</span>
       <span class="label">days</span>
     </div>
-    <div class="time-unit" title="Hours of Hustle">
-      <span class="value">{{ timeElapsed.hours }}</span>
-      <span class="label">hours</span>
-    </div>
-    <div class="time-unit" title="Minutes of Momentum">
-      <span class="value">{{ timeElapsed.minutes }}</span>
-      <span class="label">mins</span>
-    </div>
   </div>
-  <div class="start-date-vertical">August 11, 2023 6:41am</div>
 </div>
