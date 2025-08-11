@@ -3212,7 +3212,7 @@ table.simple-table {
   }
 }
 
-.risk-section, .rrr-section {
+.risk-section, .rrr-section, .mfe-section {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3220,7 +3220,7 @@ table.simple-table {
   flex: 1;
 }
 
-.risk-label, .rrr-label {
+.risk-label, .rrr-label, .mfe-label {
   display: flex;
   align-items: center;
   gap: 0.2rem;
@@ -3231,7 +3231,7 @@ table.simple-table {
   letter-spacing: 0.5px;
 }
 
-.risk-icon, .rrr-icon {
+.risk-icon, .rrr-icon, .mfe-icon {
   font-size: 11px;
   width: 11px;
   height: 11px;
@@ -3247,6 +3247,13 @@ table.simple-table {
 }
 
 .rrr-value {
+  font-size: 0.875rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.mfe-value {
   font-size: 0.875rem;
   font-family: 'Monaco', 'Menlo', monospace;
   font-weight: 600;
@@ -3331,6 +3338,46 @@ table.simple-table {
       font-weight: 500;
     }
   }
+}
+
+// 🚀 MAXIMUM FAVORABLE EXCURSION (MFE) SECTION
+.mfe-section {
+  position: relative;
+  padding: 0.3rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+
+  .mfe-value {
+    color: #10b981;
+    font-weight: 600;
+  }
+}
+
+.mfe-value-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.mfe-subtitle {
+  font-size: 0.5rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+.risk-percentage, .rrr-percentage, .mfe-percentage, .pnl-percentage {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+  margin-top: 0.15rem;
 }
 
 .rrr-value-container {

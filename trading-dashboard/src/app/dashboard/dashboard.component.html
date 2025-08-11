@@ -824,6 +824,7 @@
                       <span>Risk</span>
                     </div>
                     <div class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    <div class="risk-percentage">{{ getRiskPercentage(row) }}%</div>
                   </div>
 
                   <!-- Separator -->
@@ -845,10 +846,26 @@
                     </div>
                     <div class="rrr-value-container">
                       <div class="rrr-value">{{ row.rrr || 'N/A' }}</div>
+                      <div class="rrr-percentage">{{ getRRRPercentage(row) }}%</div>
                     </div>
                   </div>
 
+                  <!-- Separator -->
+                  <div class="hub-separator">
+                    <mat-icon>trending_flat</mat-icon>
+                  </div>
 
+                  <!-- MFE Section -->
+                  <div class="mfe-section">
+                    <div class="mfe-label">
+                      <mat-icon class="mfe-icon">trending_up</mat-icon>
+                      <span>MUR</span>
+                    </div>
+                    <div class="mfe-value-container">
+                      <div class="mfe-value">{{ getSafeNumber(row.mfe) | currency:'USD':'symbol':'1.2-2' }}</div>
+                      <div class="mfe-percentage">{{ getMURPercentage(row) }}%</div>
+                    </div>
+                  </div>
 
                 </div>
               </td>
@@ -922,6 +939,7 @@
                     }">
                       {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
                     </div>
+                    <div class="pnl-percentage">{{ getNetPnLPercentage(row) }}%</div>
                   </div>
                 </div>
               </td>

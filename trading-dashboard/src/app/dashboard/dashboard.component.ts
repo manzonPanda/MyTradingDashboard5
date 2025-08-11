@@ -66,6 +66,7 @@ interface Table {
   riskPerTrade: string; // New field for risk per trade
   rrr:string;
   mt5status:string;// if trade is live(open) or closed in MT5
+  mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
 }
 
 interface NotionPerformanceData {
@@ -858,7 +859,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       netProfit: row[15],
       riskPerTrade:"0",
       rrr:"0",
-      mt5status:"closed"
+      mt5status:"closed",
+      mfe:"0" // Initialize MFE to 0 for imported trades
     } as Table)); //The 'as Table' makes sure it matches the interface
   }
 
@@ -1681,7 +1683,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`���� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
@@ -2168,7 +2170,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   async isBackendRunning(): Promise<boolean> {
     try {
       // Try a simple POST request to see if backend endpoint is responding
-      console.log('🔍 Quick check if backend is responding...');
+      console.log('��� Quick check if backend is responding...');
 
       const quickTestBody = {}; // Empty body as per your specification
 
@@ -3751,6 +3753,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             riskPerTrade: trade.risk_usd? trade.risk_usd.toString() :'0',
             rrr:trade.reward_risk_ratio ? trade.reward_risk_ratio.toString(): '0',
             mt5status: trade.status || '',
+            mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
           } as Table;
         });
 
@@ -3794,10 +3797,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
     const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
     const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
-    // const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
+    const mockTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
 
     const mock = {
-      "ticket": Math.floor(Math.random() * 999999999) + 100000000,
+      "ticket": mockTicket,
       "symbol": randomSymbol,
       "volume": parseFloat(randomVolume),
       "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
@@ -3811,6 +3814,38 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('🎯 Generated mock trade:', mock);
     this.addMT5LiveTrade(mock);
+
+    // Simulate price updates to show MFE in action
+    setTimeout(() => {
+      this.simulateMFEUpdates(mockTicket);
+    }, 2000);
+  }
+
+  simulateMFEUpdates(ticket: number): void {
+    console.log('📈 Starting MFE simulation for ticket:', ticket);
+    let updateCount = 0;
+    const maxUpdates = 10;
+
+    const interval = setInterval(() => {
+      updateCount++;
+
+      // Simulate increasing profit to show MFE tracking
+      const currentProfit = 10 + (updateCount * 15) + (Math.random() * 10 - 5); // Generally increasing profit
+
+      const priceUpdateData = {
+        ticket: ticket.toString(),
+        profit: currentProfit,
+        price_current: (1.2500 + Math.random() * 0.01).toFixed(5)
+      };
+
+      console.log(`💰 MFE Update ${updateCount}:`, priceUpdateData);
+      this.updateMT5TradePrice(priceUpdateData);
+
+      if (updateCount >= maxUpdates) {
+        clearInterval(interval);
+        console.log('✅ MFE simulation completed');
+      }
+    }, 1000); // Update every second for demo
   }
 
   mockMT5closeTrade(){
@@ -3855,6 +3890,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
       mt5status: trade.status || '',
+      mfe: '0', // Initialize MFE to 0 for new live trades
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
@@ -3937,9 +3973,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
 
     if (tradeIndex !== -1) {
-      // this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
-      this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
-      this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      const trade = this.mt5LiveTrades[tradeIndex];
+      const currentProfit = priceData.profit ? parseFloat(priceData.profit.toString()) : 0;
+
+      // Update current profit values
+      trade.profit = priceData.profit ? priceData.profit.toString() : '0';
+      trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+
+      // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
+      const currentMfe = parseFloat(trade.mfe || '0');
+      if (currentProfit > 0 && currentProfit > currentMfe) {
+        trade.mfe = currentProfit.toString();
+      } else if (!trade.mfe) {
+        // Initialize MFE to 0 if not set
+        trade.mfe = '0';
+      }
+
       this.updateTableDataOnly();
 
       // Add subtle chart pulse on price updates (every 10th update to avoid spam)
@@ -4080,6 +4129,60 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Fallback for any other type
     return 0;
+  }
+
+  getRiskPercentage(row: Table): string {
+    // Calculate risk percentage based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const riskAmount = this.getSafeNumber(row.riskPerTrade);
+
+    if (riskAmount <= 0 || accountSize <= 0) {
+      return '0.0';
+    }
+
+    const percentage = (riskAmount / accountSize) * 100;
+    return percentage.toFixed(1);
+  }
+
+  getRRRPercentage(row: Table): string {
+    // Calculate percentage gained based on R:R ratio and risk amount
+    const rrr = row.rrr ? parseFloat(row.rrr.toString().replace('R', '')) : 0;
+    const riskAmount = this.getSafeNumber(row.riskPerTrade);
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+
+    if (rrr <= 0 || riskAmount <= 0 || accountSize <= 0) {
+      return '0.0';
+    }
+
+    const gainAmount = rrr * riskAmount;
+    const gainPercentage = (gainAmount / accountSize) * 100;
+    return gainPercentage.toFixed(1);
+  }
+
+  getMURPercentage(row: Table): string {
+    // Calculate MUR percentage based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const murAmount = this.getSafeNumber(row.mfe);
+
+    if (murAmount <= 0 || accountSize <= 0) {
+      return '0.0';
+    }
+
+    const percentage = (murAmount / accountSize) * 100;
+    return percentage.toFixed(1);
+  }
+
+  getNetPnLPercentage(row: Table): string {
+    // Calculate Net P&L percentage based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const netPnL = this.getSafeNumber(row.netProfit);
+
+    if (accountSize <= 0) {
+      return '0.0';
+    }
+
+    const percentage = (netPnL / accountSize) * 100;
+    return percentage.toFixed(1);
   }
 
   addRowDirectlyToDataTable(newTrade: Table): void {
