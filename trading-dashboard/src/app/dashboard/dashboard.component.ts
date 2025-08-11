@@ -4131,6 +4131,35 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return 0;
   }
 
+  getRiskPercentage(row: Table): string {
+    // Calculate risk percentage based on account balance or typical account size
+    // Assuming a standard account size of $10,000 for percentage calculation
+    const accountSize = 10000; // This could be made dynamic based on actual account size
+    const riskAmount = this.getSafeNumber(row.riskPerTrade);
+
+    if (riskAmount <= 0 || accountSize <= 0) {
+      return '0.0';
+    }
+
+    const percentage = (riskAmount / accountSize) * 100;
+    return percentage.toFixed(1);
+  }
+
+  getRRRPercentage(row: Table): string {
+    // Calculate percentage gained based on R:R ratio and risk amount
+    const rrr = row.rrr ? parseFloat(row.rrr.toString().replace('R', '')) : 0;
+    const riskAmount = this.getSafeNumber(row.riskPerTrade);
+    const accountSize = 10000; // This could be made dynamic based on actual account size
+
+    if (rrr <= 0 || riskAmount <= 0 || accountSize <= 0) {
+      return '0.0';
+    }
+
+    const gainAmount = rrr * riskAmount;
+    const gainPercentage = (gainAmount / accountSize) * 100;
+    return gainPercentage.toFixed(1);
+  }
+
   addRowDirectlyToDataTable(newTrade: Table): void {
     try {
       console.log('🎯 Adding row directly to DataTable:', newTrade);
