@@ -3371,13 +3371,13 @@ table.simple-table {
   font-weight: 500;
 }
 
-.risk-percentage, .rrr-percentage {
-  font-size: 0.5rem;
-  color: #94a3b8;
+.risk-percentage, .rrr-percentage, .mfe-percentage, .pnl-percentage {
+  font-size: 0.7rem;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  font-weight: 500;
-  margin-top: 0.1rem;
+  font-weight: 600;
+  margin-top: 0.15rem;
 }
 
 .rrr-value-container {
