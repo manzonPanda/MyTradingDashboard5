@@ -301,22 +301,35 @@ def full_history():
 
 @socketio.on('connect')
 def on_connect():
+    from datetime import datetime
     info = mt5.account_info()
     starting_balance = None
 
     if info:
         # Get starting balance from history
-        from datetime import datetime
         utc_from = datetime(2000, 1, 1)
         utc_to = datetime.now()
 
         deals = mt5.history_deals_get(utc_from, utc_to)
+
         if deals:
             for deal in deals:
-                # DEAL_TYPE_BALANCE means deposit/withdrawal
-                if deal.type == mt5.DEAL_TYPE_BALANCE and deal.profit > 0:
-                    starting_balance = deal.profit
-                    break  # first deposit found
+                if deal.type == mt5.DEAL_TYPE_BALANCE:
+                    # Try to get the deposit amount
+                    if deal.profit and deal.profit > 0:
+                        starting_balance = deal.profit
+                    elif deal.price and deal.price > 0:
+                        starting_balance = deal.price
+                    elif deal.volume and deal.volume > 0:
+                        starting_balance = deal.volume
+                    
+                    # Stop after finding first positive balance deal
+                    if starting_balance:
+                        break
+
+        # Fallback: use current balance if no deposit found
+        if starting_balance is None:
+            starting_balance = info.balance
 
         socketio.emit('account_info', {
             'login': info.login,

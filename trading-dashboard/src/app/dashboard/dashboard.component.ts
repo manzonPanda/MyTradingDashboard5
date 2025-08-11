@@ -144,7 +144,7 @@ export class DashboardComponent implements AfterViewInit {
   dtTrigger: Subject<any> = new Subject<any>();
 
   // MT5 Live Trading properties
-  mt5AccountInfo: any = { starting_balance: 5000 }; // MT5 account info with default values
+  mt5AccountInfo: any; // MT5 account info with default values
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   isLoadingMetrics = true; // Loading state for metrics cards
@@ -1741,7 +1741,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
 
-    const startingBalance = this.mt5AccountInfo?.starting_balance || 5000;
+    const startingBalance = this.mt5AccountInfo.starting_balance;
     let currentBalance = startingBalance;
     let cumulativePnL = 0;
     let peakBalance = startingBalance;
