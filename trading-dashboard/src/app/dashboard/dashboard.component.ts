@@ -1683,7 +1683,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`🎉 Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`���� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
@@ -3753,6 +3753,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             riskPerTrade: trade.risk_usd? trade.risk_usd.toString() :'0',
             rrr:trade.reward_risk_ratio ? trade.reward_risk_ratio.toString(): '0',
             mt5status: trade.status || '',
+            mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
           } as Table;
         });
 
