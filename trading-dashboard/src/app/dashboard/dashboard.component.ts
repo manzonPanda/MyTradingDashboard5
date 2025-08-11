@@ -66,6 +66,7 @@ interface Table {
   riskPerTrade: string; // New field for risk per trade
   rrr:string;
   mt5status:string;// if trade is live(open) or closed in MT5
+  mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
 }
 
 interface NotionPerformanceData {
