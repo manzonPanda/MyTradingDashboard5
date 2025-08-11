@@ -2170,7 +2170,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   async isBackendRunning(): Promise<boolean> {
     try {
       // Try a simple POST request to see if backend endpoint is responding
-      console.log('🔍 Quick check if backend is responding...');
+      console.log('��� Quick check if backend is responding...');
 
       const quickTestBody = {}; // Empty body as per your specification
 
@@ -4132,9 +4132,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getRiskPercentage(row: Table): string {
-    // Calculate risk percentage based on account balance or typical account size
-    // Assuming a standard account size of $10,000 for percentage calculation
-    const accountSize = 10000; // This could be made dynamic based on actual account size
+    // Calculate risk percentage based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
     const riskAmount = this.getSafeNumber(row.riskPerTrade);
 
     if (riskAmount <= 0 || accountSize <= 0) {
@@ -4149,7 +4148,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Calculate percentage gained based on R:R ratio and risk amount
     const rrr = row.rrr ? parseFloat(row.rrr.toString().replace('R', '')) : 0;
     const riskAmount = this.getSafeNumber(row.riskPerTrade);
-    const accountSize = 10000; // This could be made dynamic based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
 
     if (rrr <= 0 || riskAmount <= 0 || accountSize <= 0) {
       return '0.0';
@@ -4158,6 +4157,32 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const gainAmount = rrr * riskAmount;
     const gainPercentage = (gainAmount / accountSize) * 100;
     return gainPercentage.toFixed(1);
+  }
+
+  getMURPercentage(row: Table): string {
+    // Calculate MUR percentage based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const murAmount = this.getSafeNumber(row.mfe);
+
+    if (murAmount <= 0 || accountSize <= 0) {
+      return '0.0';
+    }
+
+    const percentage = (murAmount / accountSize) * 100;
+    return percentage.toFixed(1);
+  }
+
+  getNetPnLPercentage(row: Table): string {
+    // Calculate Net P&L percentage based on actual account size
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const netPnL = this.getSafeNumber(row.netProfit);
+
+    if (accountSize <= 0) {
+      return '0.0';
+    }
+
+    const percentage = (netPnL / accountSize) * 100;
+    return percentage.toFixed(1);
   }
 
   addRowDirectlyToDataTable(newTrade: Table): void {
