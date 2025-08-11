@@ -824,6 +824,7 @@
                       <span>Risk</span>
                     </div>
                     <div class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    <div class="risk-percentage">{{ getRiskPercentage(row) }}%</div>
                   </div>
 
                   <!-- Separator -->
