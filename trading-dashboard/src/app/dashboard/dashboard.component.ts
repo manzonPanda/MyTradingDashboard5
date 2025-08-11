@@ -3857,6 +3857,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
       mt5status: trade.status || '',
+      mfe: '0', // Initialize MFE to 0 for new live trades
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
