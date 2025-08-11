@@ -136,7 +136,7 @@ table.simple-table {
         position: relative !important;
 
         &::before {
-          content: '����' !important;
+          content: '🔴' !important;
           position: absolute !important;
           top: 0.25rem !important;
           left: 0.25rem !important;
@@ -2370,7 +2370,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '�� LIVE';
+              content: '🔴 LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;
@@ -3369,6 +3369,15 @@ table.simple-table {
   text-transform: uppercase;
   letter-spacing: 0.3px;
   font-weight: 500;
+}
+
+.risk-percentage, .rrr-percentage {
+  font-size: 0.5rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+  margin-top: 0.1rem;
 }
 
 .rrr-value-container {
