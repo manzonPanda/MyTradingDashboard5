@@ -859,7 +859,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       netProfit: row[15],
       riskPerTrade:"0",
       rrr:"0",
-      mt5status:"closed"
+      mt5status:"closed",
+      mfe:"0" // Initialize MFE to 0 for imported trades
     } as Table)); //The 'as Table' makes sure it matches the interface
   }
 
