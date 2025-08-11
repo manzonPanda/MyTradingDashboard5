@@ -848,7 +848,27 @@
                     </div>
                   </div>
 
+                  <!-- Separator -->
+                  <div class="hub-separator">
+                    <mat-icon>trending_flat</mat-icon>
+                  </div>
 
+                  <!-- MFE Section -->
+                  <div class="mfe-section" [ngClass]="{
+                    'mfe-excellent': getSafeNumber(row.mfe) > 100,
+                    'mfe-good': getSafeNumber(row.mfe) > 50 && getSafeNumber(row.mfe) <= 100,
+                    'mfe-moderate': getSafeNumber(row.mfe) > 0 && getSafeNumber(row.mfe) <= 50,
+                    'mfe-none': getSafeNumber(row.mfe) <= 0
+                  }">
+                    <div class="mfe-label">
+                      <mat-icon class="mfe-icon">trending_up</mat-icon>
+                      <span>MFE</span>
+                    </div>
+                    <div class="mfe-value-container">
+                      <div class="mfe-value">{{ getSafeNumber(row.mfe) | currency:'USD':'symbol':'1.2-2' }}</div>
+                      <div class="mfe-subtitle">Max Gain</div>
+                    </div>
+                  </div>
 
                 </div>
               </td>
