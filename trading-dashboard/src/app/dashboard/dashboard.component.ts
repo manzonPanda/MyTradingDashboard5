@@ -3797,10 +3797,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
     const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
     const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
-    // const randomTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
+    const mockTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
 
     const mock = {
-      "ticket": Math.floor(Math.random() * 999999999) + 100000000,
+      "ticket": mockTicket,
       "symbol": randomSymbol,
       "volume": parseFloat(randomVolume),
       "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
@@ -3814,6 +3814,38 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('🎯 Generated mock trade:', mock);
     this.addMT5LiveTrade(mock);
+
+    // Simulate price updates to show MFE in action
+    setTimeout(() => {
+      this.simulateMFEUpdates(mockTicket);
+    }, 2000);
+  }
+
+  simulateMFEUpdates(ticket: number): void {
+    console.log('📈 Starting MFE simulation for ticket:', ticket);
+    let updateCount = 0;
+    const maxUpdates = 10;
+
+    const interval = setInterval(() => {
+      updateCount++;
+
+      // Simulate increasing profit to show MFE tracking
+      const currentProfit = 10 + (updateCount * 15) + (Math.random() * 10 - 5); // Generally increasing profit
+
+      const priceUpdateData = {
+        ticket: ticket.toString(),
+        profit: currentProfit,
+        price_current: (1.2500 + Math.random() * 0.01).toFixed(5)
+      };
+
+      console.log(`💰 MFE Update ${updateCount}:`, priceUpdateData);
+      this.updateMT5TradePrice(priceUpdateData);
+
+      if (updateCount >= maxUpdates) {
+        clearInterval(interval);
+        console.log('✅ MFE simulation completed');
+      }
+    }, 1000); // Update every second for demo
   }
 
   mockMT5closeTrade(){
