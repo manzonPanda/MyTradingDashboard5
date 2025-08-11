@@ -3938,9 +3938,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
 
     if (tradeIndex !== -1) {
-      // this.mt5LiveTrades[tradeIndex].exit = priceData.price_current ? priceData.price_current.toString() : '0';
-      this.mt5LiveTrades[tradeIndex].profit = priceData.profit ? priceData.profit.toString() : '0';
-      this.mt5LiveTrades[tradeIndex].netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      const trade = this.mt5LiveTrades[tradeIndex];
+      const currentProfit = priceData.profit ? parseFloat(priceData.profit.toString()) : 0;
+
+      // Update current profit values
+      trade.profit = priceData.profit ? priceData.profit.toString() : '0';
+      trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+
+      // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
+      const currentMfe = parseFloat(trade.mfe || '0');
+      if (currentProfit > 0 && currentProfit > currentMfe) {
+        trade.mfe = currentProfit.toString();
+      } else if (!trade.mfe) {
+        // Initialize MFE to 0 if not set
+        trade.mfe = '0';
+      }
+
       this.updateTableDataOnly();
 
       // Add subtle chart pulse on price updates (every 10th update to avoid spam)
