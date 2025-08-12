@@ -3035,10 +3035,10 @@ table.simple-table {
   flex: 1;
 
   &.commission-item {
-    background: rgba(107, 114, 128, 0.05);
+    background: transparent;
     padding: 0.2rem;
     border-radius: 6px;
-    border: 1px solid rgba(107, 114, 128, 0.1);
+    border: 1px solid rgba(107, 114, 128, 0.2);
   }
 
   &.profit-item {
@@ -3046,8 +3046,8 @@ table.simple-table {
     border-radius: 6px;
 
     &.profit-positive {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: transparent;
+      border: 1px solid rgba(107, 114, 128, 0.2);
     }
 
     &.profit-negative {
@@ -3346,8 +3346,8 @@ table.simple-table {
   padding: 0.3rem;
   border-radius: 4px;
   transition: all 0.2s ease;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: transparent;
+  border: 1px solid rgba(107, 114, 128, 0.2);
 
   .mfe-value {
     color: #10b981;
