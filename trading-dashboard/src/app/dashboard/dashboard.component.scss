@@ -6187,27 +6187,39 @@ table.simple-table {
 
 // Remove floating particles completely
 
-// Simple Live Indicator
+// Beautiful Live Trade Indicator
 .live-indicator {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.4rem;
-  background: #ef4444;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: linear-gradient(135deg,
+    rgba(16, 185, 129, 0.95) 0%,
+    rgba(34, 197, 94, 0.85) 100%);
   color: white;
-  border-radius: 4px;
-  font-size: 0.6rem;
-  font-weight: 500;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow:
+    0 4px 12px rgba(16, 185, 129, 0.3),
+    0 2px 6px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: live-glow-pulse 2s ease-in-out infinite;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 
   .live-dot {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
     background: white;
     border-radius: 50%;
+    animation: live-dot-pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
   }
 }
 
