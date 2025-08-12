@@ -6196,27 +6196,27 @@ table.simple-table {
 
 // Remove floating particles completely
 
-// Compact Live Trade Indicator
+// Compact Purple Live Trade Indicator
 .live-indicator {
   position: absolute;
-  top: 0.3rem;
-  right: 0.3rem;
+  top: 0.2rem;
+  right: 0.2rem;
   display: flex;
   align-items: center;
   gap: 0.2rem;
   padding: 0.15rem 0.4rem;
-  background: rgba(59, 130, 246, 0.9);
+  background: rgba(147, 51, 234, 0.9);
   color: white;
   border-radius: 8px;
   font-size: 0.55rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(147, 51, 234, 0.3);
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 1);
+    background: rgba(147, 51, 234, 1);
     transform: translateY(-1px);
   }
 
