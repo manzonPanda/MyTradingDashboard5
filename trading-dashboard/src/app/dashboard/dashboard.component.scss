@@ -4158,29 +4158,12 @@ table.simple-table {
   }
 }
 
-@keyframes live-glow-pulse {
+@keyframes simple-pulse {
   0%, 100% {
-    box-shadow:
-      0 4px 12px rgba(16, 185, 129, 0.3),
-      0 2px 6px rgba(16, 185, 129, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 6px 20px rgba(16, 185, 129, 0.4),
-      0 3px 10px rgba(16, 185, 129, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
-}
-
-@keyframes live-dot-pulse {
-  0%, 100% {
-    transform: scale(1);
     opacity: 1;
   }
   50% {
-    transform: scale(1.2);
-    opacity: 0.8;
+    opacity: 0.6;
   }
 }
 
