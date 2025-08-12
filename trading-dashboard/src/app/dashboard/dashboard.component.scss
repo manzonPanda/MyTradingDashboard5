@@ -3038,7 +3038,7 @@ table.simple-table {
     background: transparent;
     padding: 0.2rem;
     border-radius: 6px;
-    border: 1px solid rgba(107, 114, 128, 0.2);
+    border: none;
   }
 
   &.profit-item {
@@ -3047,12 +3047,12 @@ table.simple-table {
 
     &.profit-positive {
       background: transparent;
-      border: 1px solid rgba(107, 114, 128, 0.2);
+      border: none;
     }
 
     &.profit-negative {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: transparent;
+      border: none;
     }
   }
 
@@ -3347,7 +3347,7 @@ table.simple-table {
   border-radius: 4px;
   transition: all 0.2s ease;
   background: transparent;
-  border: 1px solid rgba(107, 114, 128, 0.2);
+  border: none;
 
   .mfe-value {
     color: #10b981;
