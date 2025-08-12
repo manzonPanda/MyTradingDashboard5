@@ -15,6 +15,8 @@ import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
     importProvidersFrom(
       CalendarModule.forRoot({
         provide: DateAdapter,

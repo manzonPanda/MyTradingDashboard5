@@ -703,6 +703,16 @@
                     <div class="timeline-label">Close</div>
                     <div class="timeline-date">{{ formatDate(row.closeDate) }}</div>
                   </div>
+                  <div class="timeline-entry" *ngIf="!row.closeDate || row.closeDate === '-'">
+                    <div class="timeline-label">Close</div>
+                    <div class="timeline-date" style="position: relative;">
+                      <span>Pending</span>
+                      <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>LIVE</span>
+                      </div>
+                    </div>
+                  </div>
                   <div class="timeline-entry active-trade" *ngIf="!row.closeDate || row.closeDate === '-'">
                     <div class="timeline-label">Active</div>
                     <div class="timeline-date live-indicator">
@@ -803,11 +813,7 @@
                     </div>
                   </div>
 
-                  <!-- Simple Live Indicator -->
-                  <div class="live-indicator" *ngIf="isNewTrade(row)">
-                    <div class="live-dot"></div>
-                    <span>LIVE</span>
-                  </div>
+                  <!-- Live indicator moved to close section -->
                 </div>
               </td>
               <td class="col-risk-hub">

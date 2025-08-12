@@ -1,4 +1,4 @@
-import { Component, importProvidersFrom, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -13,9 +13,7 @@ import { DataTablesModule  } from 'angular-datatables';
 import { Subject } from 'rxjs';
 import * as DataTables from 'datatables.net';
 import 'datatables.net'; // Ensure DataTables functionality is available
-import { provideHttpClient } from '@angular/common/http';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -1616,7 +1614,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('�� Checking backend availability...');
+      console.log('��� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 

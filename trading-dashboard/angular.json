@@ -41,12 +41,7 @@
               "node_modules/datatables.net-buttons-dt/css/buttons.dataTables.css",
               "src/styles.scss"
             ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/datatables.net/js/dataTables.min.js",
-              "node_modules/datatables.net-buttons/js/dataTables.buttons.js",
-              "node_modules/datatables.net-buttons/js/buttons.html5.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
