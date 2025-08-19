@@ -1967,16 +1967,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Process each trade for chart progression
     sortedTrades.forEach((trade, index) => {
       const tradeProfit = parseFloat(trade.netProfit || '0');
-      currentBalance += tradeProfit;
+      chartCurrentBalance += tradeProfit;
       cumulativeProfit += tradeProfit;
 
       // Update high water mark for trailing calculations
-      if (currentBalance > this.highWaterMark) {
-        this.highWaterMark = currentBalance;
+      if (chartCurrentBalance > this.highWaterMark) {
+        this.highWaterMark = chartCurrentBalance;
       }
 
       // Calculate drawdown percentage
-      const drawdown = ((this.highWaterMark - currentBalance) / this.highWaterMark) * 100;
+      const drawdown = ((this.highWaterMark - chartCurrentBalance) / this.highWaterMark) * 100;
 
       // Format date for label
       const tradeDate = new Date(trade.openDate || '');
@@ -1986,14 +1986,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       });
 
       labels.push(`${dateLabel} #${index + 1}`);
-      balanceData.push(currentBalance);
+      balanceData.push(chartCurrentBalance);
       cumulativePnL.push(cumulativeProfit);
       drawdownData.push(drawdown);
 
       // Add futures trading lines (always visible)
       profitTargetData.push(this.calculateProfitTarget(this.startingBalance));
       maxLossData.push(this.calculateMaxLoss(this.startingBalance));
-      trailingDrawdownData.push(this.calculateTrailingDrawdown(currentBalance, this.highWaterMark));
+      trailingDrawdownData.push(this.calculateTrailingDrawdown(chartCurrentBalance, this.highWaterMark));
     });
 
     // Always show futures lines, even with no trades
