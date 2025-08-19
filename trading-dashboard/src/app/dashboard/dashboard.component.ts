@@ -196,7 +196,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'FOMO', icon: '😰', color: '#f59e0b' },
     { name: 'Confident', icon: '😎', color: '#10b981' },
     { name: 'Tired', icon: '😴', color: '#6b7280' },
-    { name: 'Impulsive', icon: '���', color: '#ef4444' },
+    { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
     { name: 'Focused', icon: '🎯', color: '#3b82f6' },
     { name: 'Anxious', icon: '😟', color: '#f59e0b' },
     { name: 'Greedy', icon: '🤑', color: '#ef4444' },
@@ -522,9 +522,9 @@ export class DashboardComponent implements AfterViewInit {
             weight: 'bold'
           }
         },
-        // Tight y-axis scaling focused on futures trading range
-        min: 4700,  // Just below the max loss line
-        max: 5350   // Just above the profit target line
+        // Dynamic y-axis scaling (will be updated in createFuturesChart)
+        min: 4700,
+        max: 5350
       }
     }
   };
@@ -2028,7 +2028,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.highWaterMark = this.startingBalance;
 
     console.log('💰 Starting balance:', this.startingBalance);
-    console.log('���� Table data length:', this.tableData.length);
+    console.log('📊 Table data length:', this.tableData.length);
 
     const labels: string[] = [];
     const balanceData: number[] = [];
@@ -2536,7 +2536,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
 
-      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`�� Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
@@ -2772,7 +2772,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return true;
 
     } catch (error: any) {
-      console.log('���️ Backend quick check failed:', error.status || 'Connection error');
+      console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
 
       // If it's a 404 with GET, but we're using POST now, so any response means server is up
       if (error.status === 404) {
