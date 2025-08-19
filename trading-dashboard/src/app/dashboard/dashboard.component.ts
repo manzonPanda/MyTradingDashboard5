@@ -799,11 +799,11 @@ async ngOnInit() {
   }
 
   ngAfterViewInit() {
-    // Initialize the stunning trading chart with futures lines
+    // Initialize the futures trading chart
     setTimeout(() => {
-      console.log('🎨 ngAfterViewInit: Generating chart...');
-      this.generateTradingChartData();
-    }, 500);
+      console.log('🎨 ngAfterViewInit: Creating futures chart...');
+      this.createFuturesChart();
+    }, 200);
   }
 
   initializeDataTable(): void {
