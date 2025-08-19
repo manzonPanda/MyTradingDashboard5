@@ -704,8 +704,10 @@ export class DashboardComponent implements AfterViewInit {
       const padding = range * 0.05; // 5% padding on each side
 
       // Update chart options with tight scaling
-      this.chartOptions.scales!.y!.min = dataMin - padding;
-      this.chartOptions.scales!.y!.max = dataMax + padding;
+      if (this.chartOptions.scales && this.chartOptions.scales.y) {
+        (this.chartOptions.scales.y as any).min = dataMin - padding;
+        (this.chartOptions.scales.y as any).max = dataMax + padding;
+      }
 
       console.log('✨ Futures chart data set successfully');
       console.log('📊 Y-axis range:', (dataMin - padding).toFixed(0), 'to', (dataMax + padding).toFixed(0));
@@ -2536,7 +2538,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
 
-      // console.log(`�� Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
