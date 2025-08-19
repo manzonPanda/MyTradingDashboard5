@@ -1893,35 +1893,104 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const maxLoss = this.calculateMaxLoss(this.startingBalance);
       const trailingStop = this.calculateTrailingDrawdown(this.startingBalance, this.startingBalance);
 
+      console.log('🎯 Profit Target:', profitTarget);
+      console.log('🛑 Max Loss:', maxLoss);
+      console.log('📉 Trailing Stop:', trailingStop);
+
       this.chartData = {
-        labels: ['Start', 'Current'],
+        labels: ['Start', 'Current', 'Future'],
         datasets: [
           {
-            ...this.chartData.datasets[0],
-            data: [this.startingBalance, this.startingBalance]
+            label: 'Account Balance',
+            data: [this.startingBalance, this.startingBalance, this.startingBalance],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
           },
           {
-            ...this.chartData.datasets[1],
-            data: [0, 0]
+            label: 'Cumulative P&L',
+            data: [0, 0, 0],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
           },
           {
-            ...this.chartData.datasets[2],
-            data: [0, 0]
+            label: 'Drawdown',
+            data: [0, 0, 0],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
           },
           {
-            ...this.chartData.datasets[3],
-            data: [profitTarget, profitTarget]
+            label: 'Profit Target (6%)',
+            data: [profitTarget, profitTarget, profitTarget],
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.02)',
+            borderWidth: 3,
+            borderDash: [8, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointBackgroundColor: 'rgb(34, 197, 94)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
           },
           {
-            ...this.chartData.datasets[4],
-            data: [maxLoss, maxLoss]
+            label: 'Max Loss (Trailing 5%)',
+            data: [maxLoss, maxLoss, maxLoss],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.02)',
+            borderWidth: 3,
+            borderDash: [4, 8],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
           },
           {
-            ...this.chartData.datasets[5],
-            data: [trailingStop, trailingStop]
+            label: 'Trailing Drawdown',
+            data: [trailingStop, trailingStop, trailingStop],
+            borderColor: 'rgb(249, 115, 22)',
+            backgroundColor: 'rgba(249, 115, 22, 0.05)',
+            borderWidth: 2,
+            borderDash: [2, 2],
+            fill: false,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 3,
+            pointBackgroundColor: 'rgb(249, 115, 22)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1
           }
         ]
       };
+
+      console.log('✨ Chart data generated for no trades scenario');
 
       // Force chart update
       if (this.chart) {
@@ -2531,7 +2600,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       let errorMessage = '❌ Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
-        errorMessage += '����� Connection Error: Cannot reach the server\n\n';
+        errorMessage += '���� Connection Error: Cannot reach the server\n\n';
         errorMessage += 'The backend server is not running.\n\n';
         errorMessage += 'To start the backend server:\n';
         errorMessage += '1. Open a new terminal window\n';
