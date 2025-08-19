@@ -1825,6 +1825,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     let currentBalance = this.startingBalance;
     this.highWaterMark = this.startingBalance;
 
+    console.log('💰 Starting balance:', this.startingBalance);
+    console.log('📊 Table data length:', this.tableData.length);
+
     const labels: string[] = [];
     const balanceData: number[] = [];
     const cumulativePnL: number[] = [];
@@ -2528,7 +2531,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       let errorMessage = '❌ Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
-        errorMessage += '���� Connection Error: Cannot reach the server\n\n';
+        errorMessage += '����� Connection Error: Cannot reach the server\n\n';
         errorMessage += 'The backend server is not running.\n\n';
         errorMessage += 'To start the backend server:\n';
         errorMessage += '1. Open a new terminal window\n';
