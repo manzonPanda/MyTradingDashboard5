@@ -2297,12 +2297,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return this.startingBalance;
     }
 
-    let currentBalance = this.startingBalance;
+    let accountBalance = this.startingBalance;
     this.tableData.forEach(trade => {
-      currentBalance += parseFloat(trade.netProfit || '0');
+      accountBalance += parseFloat(trade.netProfit || '0');
     });
 
-    return currentBalance;
+    return accountBalance;
   }
 
   // Determine current trading zone based on MFE-based trailing stop
@@ -2417,7 +2417,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           divergenceValue: this.getNotionProperty(properties, 'Divergence value', 'number') || 0,
           pips: this.getNotionProperty(properties, 'Pips', 'number') || 0,
           formula: this.getNotionProperty(properties, 'Formula', 'formula') || 0,
-          rulesViolated: this.getNotionProperty(properties, 'Rules violated ��', 'multi_select') || [],
+          rulesViolated: this.getNotionProperty(properties, 'Rules violated 🛑', 'multi_select') || [],
           emptySelect: this.getNotionProperty(properties, '', 'select') || '',
           swap: this.getNotionProperty(properties, 'swap', 'number') || 0
         };
