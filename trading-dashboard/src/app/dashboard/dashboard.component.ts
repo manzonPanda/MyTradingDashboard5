@@ -1928,48 +1928,76 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return;
     }
 
-    // Beautiful chart with futures trading lines
+    // Add future projection points to extend futures lines beyond current data
+    const futureLabels = ['Future 1', 'Future 2'];
+    const extendedLabels = [...labels, ...futureLabels];
+    const currentBalance = balanceData[balanceData.length - 1] || this.startingBalance;
+    const currentPnL = cumulativePnL[cumulativePnL.length - 1] || 0;
+    const currentDrawdown = drawdownData[drawdownData.length - 1] || 0;
+
+    // Extend all data arrays with future points
+    const extendedBalanceData = [...balanceData, currentBalance, currentBalance];
+    const extendedCumulativePnL = [...cumulativePnL, currentPnL, currentPnL];
+    const extendedDrawdownData = [...drawdownData, currentDrawdown, currentDrawdown];
+
+    // Futures lines extend into the future
+    const extendedProfitTargetData = [...profitTargetData,
+      this.calculateProfitTarget(this.startingBalance),
+      this.calculateProfitTarget(this.startingBalance)
+    ];
+    const extendedMaxLossData = [...maxLossData,
+      this.calculateMaxLoss(this.startingBalance),
+      this.calculateMaxLoss(this.startingBalance)
+    ];
+    const extendedTrailingDrawdownData = [...trailingDrawdownData,
+      this.calculateTrailingDrawdown(currentBalance, this.highWaterMark),
+      this.calculateTrailingDrawdown(currentBalance, this.highWaterMark)
+    ];
+
+    // Beautiful chart with always-visible futures trading lines
     this.chartData = {
-      labels: labels,
+      labels: extendedLabels,
       datasets: [
         {
           ...this.chartData.datasets[0],
-          data: balanceData,
+          data: extendedBalanceData,
           backgroundColor: (ctx: any) => {
             const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
             return gradient;
           },
-          pointBackgroundColor: balanceData.map((val, i, arr) => {
+          pointBackgroundColor: extendedBalanceData.map((val, i, arr) => {
             if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
+            if (i >= balanceData.length) return 'rgba(59, 130, 246, 0.3)'; // Future points - transparent
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
-          pointRadius: balanceData.map((_, i, arr) => {
-            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
+          pointRadius: extendedBalanceData.map((_, i, arr) => {
+            if (i >= balanceData.length) return 0; // Hide future points
+            if (i === 0 || i === balanceData.length - 1) return 8; // Larger points for start/current
             return 6;
           })
         },
         {
           ...this.chartData.datasets[1],
-          data: cumulativePnL
+          data: extendedCumulativePnL
         },
         {
           ...this.chartData.datasets[2],
-          data: drawdownData
+          data: extendedDrawdownData
         },
         {
           ...this.chartData.datasets[3],
-          data: profitTargetData
+          data: extendedProfitTargetData
         },
         {
           ...this.chartData.datasets[4],
-          data: maxLossData
+          data: extendedMaxLossData
         },
         {
           ...this.chartData.datasets[5],
-          data: trailingDrawdownData
+          data: extendedTrailingDrawdownData
         }
       ]
     };
