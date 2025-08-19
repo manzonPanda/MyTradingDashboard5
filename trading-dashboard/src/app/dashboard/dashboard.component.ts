@@ -2031,45 +2031,105 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       labels: extendedLabels,
       datasets: [
         {
-          ...this.chartData.datasets[0],
+          label: 'Account Balance',
           data: extendedBalanceData,
+          borderColor: 'rgb(16, 185, 129)',
           backgroundColor: (ctx: any) => {
             const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
             return gradient;
           },
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
           pointBackgroundColor: extendedBalanceData.map((val, i, arr) => {
             if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
             if (i >= balanceData.length) return 'rgba(59, 130, 246, 0.3)'; // Future points - transparent
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
           pointRadius: extendedBalanceData.map((_, i, arr) => {
             if (i >= balanceData.length) return 0; // Hide future points
             if (i === 0 || i === balanceData.length - 1) return 8; // Larger points for start/current
             return 6;
-          })
+          }),
+          pointHoverRadius: 8
         },
         {
-          ...this.chartData.datasets[1],
-          data: extendedCumulativePnL
+          label: 'Cumulative P&L',
+          data: extendedCumulativePnL,
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
         },
         {
-          ...this.chartData.datasets[2],
-          data: extendedDrawdownData
+          label: 'Drawdown',
+          data: extendedDrawdownData,
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5
         },
         {
-          ...this.chartData.datasets[3],
-          data: extendedProfitTargetData
+          label: 'Profit Target (6%)',
+          data: extendedProfitTargetData,
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.02)',
+          borderWidth: 3,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(34, 197, 94)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
         },
         {
-          ...this.chartData.datasets[4],
-          data: extendedMaxLossData
+          label: 'Max Loss (Trailing 5%)',
+          data: extendedMaxLossData,
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.02)',
+          borderWidth: 3,
+          borderDash: [4, 8],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
         },
         {
-          ...this.chartData.datasets[5],
-          data: extendedTrailingDrawdownData
+          label: 'Trailing Drawdown',
+          data: extendedTrailingDrawdownData,
+          borderColor: 'rgb(249, 115, 22)',
+          backgroundColor: 'rgba(249, 115, 22, 0.05)',
+          borderWidth: 2,
+          borderDash: [2, 2],
+          fill: false,
+          tension: 0.2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointBackgroundColor: 'rgb(249, 115, 22)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1
         }
       ]
     };
