@@ -28,7 +28,6 @@ import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.compone
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { createFuturesChartConfig, FuturesChartData } from './chart-config';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
@@ -2841,7 +2840,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
 
       // Provide detailed error message based on status
-      let errorMessage = '❌ Backend connection failed!\n\n';
+      let errorMessage = '�� Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
         errorMessage += '���� Connection Error: Cannot reach the server\n\n';
