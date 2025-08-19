@@ -2307,14 +2307,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Determine current trading zone based on MFE-based trailing stop
   getCurrentTradingZone(): string {
-    const currentBalance = this.getCurrentBalance();
+    const activeBalance = this.getCurrentBalance();
     const profitTarget = this.calculateProfitTarget(this.startingBalance);
     const maxLoss = this.calculateMaxLoss(this.startingBalance);
-    const mfeTrailingStop = this.calculateTrailingDrawdown(currentBalance, this.highWaterMark);
+    const mfeTrailingStop = this.calculateTrailingDrawdown(activeBalance, this.highWaterMark);
 
-    if (currentBalance >= profitTarget) {
+    if (activeBalance >= profitTarget) {
       return 'profit-zone';
-    } else if (currentBalance <= Math.max(maxLoss, mfeTrailingStop)) {
+    } else if (activeBalance <= Math.max(maxLoss, mfeTrailingStop)) {
       return 'danger-zone';
     } else {
       return 'safe-zone';
@@ -4500,7 +4500,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableData(): void {
     console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
