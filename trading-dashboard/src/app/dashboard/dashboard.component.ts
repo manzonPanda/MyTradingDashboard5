@@ -2113,7 +2113,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Add future projection points to extend futures lines beyond current data
     const futureLabels = ['Future 1', 'Future 2'];
     const extendedLabels = [...labels, ...futureLabels];
-    const currentBalance = balanceData[balanceData.length - 1] || this.startingBalance;
+    const finalBalance = balanceData[balanceData.length - 1] || this.startingBalance;
     const currentPnL = cumulativePnL[cumulativePnL.length - 1] || 0;
     const currentDrawdown = drawdownData[drawdownData.length - 1] || 0;
 
