@@ -531,6 +531,11 @@ export class DashboardComponent implements AfterViewInit {
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService) {
     // Register Chart.js components
     Chart.register(...registerables);
+
+    // Initialize chart with default values immediately
+    setTimeout(() => {
+      this.generateTradingChartData();
+    }, 100);
   }
 
 async ngOnInit() {
@@ -4612,7 +4617,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   refreshDataTable(): void {
     try {
-      console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
+      console.log('�� Refreshing DataTable with', this.tableData.length, 'rows');
       console.log('📊 TableData contents:', this.tableData);
 
       // Use Angular binding refresh for complex columns
