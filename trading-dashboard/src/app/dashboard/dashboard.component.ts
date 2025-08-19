@@ -28,6 +28,7 @@ import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.compone
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { createFuturesChartConfig, FuturesChartData } from './chart-config';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
@@ -4514,7 +4515,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
-    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('�� Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
 
