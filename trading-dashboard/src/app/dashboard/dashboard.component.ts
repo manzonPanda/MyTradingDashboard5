@@ -349,6 +349,51 @@ export class DashboardComponent implements AfterViewInit {
         pointBorderWidth: 2,
         pointRadius: 3,
         pointHoverRadius: 5
+      },
+      {
+        label: 'Profit Target (6%)',
+        data: [],
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.02)',
+        borderWidth: 3,
+        borderDash: [8, 4],
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointBackgroundColor: 'rgb(34, 197, 94)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Max Loss (Trailing 5%)',
+        data: [],
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.02)',
+        borderWidth: 3,
+        borderDash: [4, 8],
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointBackgroundColor: 'rgb(239, 68, 68)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Trailing Drawdown',
+        data: [],
+        borderColor: 'rgb(249, 115, 22)',
+        backgroundColor: 'rgba(249, 115, 22, 0.05)',
+        borderWidth: 2,
+        borderDash: [2, 2],
+        fill: '+1',
+        tension: 0.2,
+        pointRadius: 0,
+        pointHoverRadius: 3,
+        pointBackgroundColor: 'rgb(249, 115, 22)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 1
       }
     ]
   };
@@ -1699,7 +1744,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
   
       } else {
-        console.warn('⚠�� No results found in your Notion database after pagination');
+        console.warn('⚠️ No results found in your Notion database after pagination');
         this.notionPerformanceData = [];
    
       }
