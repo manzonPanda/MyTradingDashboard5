@@ -463,7 +463,7 @@ export class DashboardComponent implements AfterViewInit {
             } else if (label === 'Max Loss (Trailing 5%)') {
               return `🛑 Max Loss: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else if (label === 'Trailing Drawdown') {
-              return `📉 Trailing Stop: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              return `��� Trailing Stop: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else if (label === 'Account Balance') {
               if (index === 0) {
                 return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -662,10 +662,11 @@ async ngOnInit() {
   }
 
   ngAfterViewInit() {
-    // Initialize the stunning trading chart
+    // Initialize the stunning trading chart with futures lines
     setTimeout(() => {
+      console.log('🎨 ngAfterViewInit: Generating chart...');
       this.generateTradingChartData();
-    }, 1000);
+    }, 500);
   }
 
   initializeDataTable(): void {
@@ -4617,7 +4618,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   refreshDataTable(): void {
     try {
-      console.log('�� Refreshing DataTable with', this.tableData.length, 'rows');
+      console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
       console.log('📊 TableData contents:', this.tableData);
 
       // Use Angular binding refresh for complex columns
