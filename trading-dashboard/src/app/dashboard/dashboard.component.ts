@@ -698,7 +698,7 @@ export class DashboardComponent implements AfterViewInit {
             fill: true
           },
           {
-            label: 'Profit Target (6%)',
+            label: `Profit Target (${this.profitTargetPercentage}%)`,
             data: [profitTarget, profitTarget, profitTarget],
             borderColor: '#22c55e',
             borderWidth: 3,
@@ -707,7 +707,7 @@ export class DashboardComponent implements AfterViewInit {
             pointRadius: 0
           },
           {
-            label: 'Max Loss (5%)',
+            label: `Max Loss (${this.maxLossPercentage}%)`,
             data: [maxLoss, maxLoss, maxLoss],
             borderColor: '#ef4444',
             borderWidth: 3,
@@ -716,7 +716,7 @@ export class DashboardComponent implements AfterViewInit {
             pointRadius: 0
           },
           {
-            label: 'MFE Trailing (5%)',
+            label: `MFE Trailing (${this.maxLossPercentage}%)`,
             data: [trailingStop, trailingStop, trailingStop],
             borderColor: '#f97316',
             borderWidth: 2,
