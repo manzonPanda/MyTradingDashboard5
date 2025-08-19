@@ -463,7 +463,7 @@ export class DashboardComponent implements AfterViewInit {
             } else if (label === 'Max Loss (Trailing 5%)') {
               return `🛑 Max Loss: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else if (label === 'Trailing Drawdown') {
-              return `��� Trailing Stop: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              return `📉 Trailing Stop: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else if (label === 'Account Balance') {
               if (index === 0) {
                 return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -532,10 +532,114 @@ export class DashboardComponent implements AfterViewInit {
     // Register Chart.js components
     Chart.register(...registerables);
 
-    // Initialize chart with default values immediately
+    // Initialize chart data immediately to prevent loading screen
+    this.initializeDefaultChart();
+
+    // Generate proper chart data after a moment
     setTimeout(() => {
       this.generateTradingChartData();
     }, 100);
+  }
+
+  // Initialize chart with default data to prevent loading screen
+  initializeDefaultChart(): void {
+    const defaultBalance = 5000;
+    const profitTarget = defaultBalance * 1.06;
+    const maxLoss = defaultBalance * 0.95;
+    const trailingStop = defaultBalance * 0.95;
+
+    this.chartData = {
+      labels: ['Start', 'Current', 'Future'],
+      datasets: [
+        {
+          label: 'Account Balance',
+          data: [defaultBalance, defaultBalance, defaultBalance],
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: 'rgb(16, 185, 129)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8
+        },
+        {
+          label: 'Cumulative P&L',
+          data: [0, 0, 0],
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'Drawdown',
+          data: [0, 0, 0],
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5
+        },
+        {
+          label: 'Profit Target (6%)',
+          data: [profitTarget, profitTarget, profitTarget],
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.02)',
+          borderWidth: 3,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(34, 197, 94)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Max Loss (Trailing 5%)',
+          data: [maxLoss, maxLoss, maxLoss],
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.02)',
+          borderWidth: 3,
+          borderDash: [4, 8],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Trailing Drawdown',
+          data: [trailingStop, trailingStop, trailingStop],
+          borderColor: 'rgb(249, 115, 22)',
+          backgroundColor: 'rgba(249, 115, 22, 0.05)',
+          borderWidth: 2,
+          borderDash: [2, 2],
+          fill: false,
+          tension: 0.2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointBackgroundColor: 'rgb(249, 115, 22)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1
+        }
+      ]
+    };
   }
 
 async ngOnInit() {
@@ -1699,7 +1803,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('��� Checking backend availability...');
+      console.log('����� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -4403,7 +4507,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
     ) : [];
 
-    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
+    console.log('��� Existing non-MT5 trades:', existingTrades.length);
 
     // Create completely new array reference to trigger Angular change detection
     const previousLength = this.tableData ? this.tableData.length : 0;
