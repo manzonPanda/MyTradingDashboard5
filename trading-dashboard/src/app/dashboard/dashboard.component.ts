@@ -643,6 +643,38 @@ export class DashboardComponent implements AfterViewInit {
     };
   }
 
+  // Create futures chart with always-visible lines
+  createFuturesChart(): void {
+    const startingBalance = 5000;
+    const profitTarget = startingBalance * 1.06; // 6% profit target
+    const maxLoss = startingBalance * 0.95; // 5% max loss
+    const trailingStop = startingBalance * 0.95; // 5% trailing
+
+    const chartData: FuturesChartData = {
+      labels: ['Start', 'Current', 'Future'],
+      balanceData: [startingBalance, startingBalance, startingBalance],
+      profitTargetData: [profitTarget, profitTarget, profitTarget],
+      maxLossData: [maxLoss, maxLoss, maxLoss],
+      trailingDrawdownData: [trailingStop, trailingStop, trailingStop]
+    };
+
+    const config = createFuturesChartConfig(chartData);
+    this.chartData = config.data;
+    this.chartOptions = config.options;
+
+    console.log('✨ Futures chart created with lines:', {
+      profitTarget,
+      maxLoss,
+      trailingStop
+    });
+
+    // Force chart update
+    if (this.chart) {
+      this.chart.update('active');
+    }
+    this.cdr.detectChanges();
+  }
+
 async ngOnInit() {
     const socket = io("http://localhost:5000",{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
@@ -658,7 +690,7 @@ async ngOnInit() {
 
   socket.on("account_info", (data) => {
     this.mt5AccountInfo = data;
-    console.warn("���� Account Info Received:", data);
+    console.warn("������ Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
@@ -4515,7 +4547,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
-    console.log('�� Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
 
