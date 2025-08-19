@@ -411,7 +411,24 @@ export class DashboardComponent implements AfterViewInit {
     },
     plugins: {
       legend: {
-        display: false
+        display: true,
+        position: 'top',
+        align: 'start',
+        labels: {
+          boxWidth: 12,
+          boxHeight: 12,
+          padding: 15,
+          usePointStyle: true,
+          font: {
+            size: 12,
+            weight: '500'
+          },
+          color: '#64748b',
+          filter: (legendItem: any) => {
+            // Show only main lines in legend
+            return ['Account Balance', 'Profit Target (6%)', 'Max Loss (Trailing 5%)', 'Trailing Drawdown'].includes(legendItem.text);
+          }
+        }
       },
       tooltip: {
         enabled: true,
@@ -436,20 +453,31 @@ export class DashboardComponent implements AfterViewInit {
           },
           label: function(context: any) {
             const value = context.parsed.y;
+            const label = context.dataset.label;
             const index = context.dataIndex;
             const data = context.dataset.data;
 
-            if (index === 0) {
-              return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            } else {
-              const previousValue = data[index - 1];
-              const change = value - previousValue;
-              const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
-              return [
-                `Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                `Trade P&L: ${changeText}`
-              ];
+            // Custom tooltips for different line types
+            if (label === 'Profit Target (6%)') {
+              return `🎯 Profit Target: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (label === 'Max Loss (Trailing 5%)') {
+              return `🛑 Max Loss: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (label === 'Trailing Drawdown') {
+              return `📉 Trailing Stop: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (label === 'Account Balance') {
+              if (index === 0) {
+                return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              } else {
+                const previousValue = data[index - 1];
+                const change = value - previousValue;
+                const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
+                return [
+                  `💰 Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  `Trade P&L: ${changeText}`
+                ];
+              }
             }
+            return `${label}: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           }
         }
       }
