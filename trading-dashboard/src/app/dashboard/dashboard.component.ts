@@ -680,10 +680,10 @@ export class DashboardComponent implements AfterViewInit {
     console.log('🎨 Creating simple futures chart...');
 
     try {
-      const startingBalance = 5000;
-      const profitTarget = 5300; // 6% profit target
-      const maxLoss = 4750; // 5% max loss
-      const trailingStop = 4750; // 5% trailing
+      const startingBalance = this.startingBalance || 5000;
+      const profitTarget = startingBalance * (1 + this.profitTargetPercentage / 100);
+      const maxLoss = startingBalance * (1 - this.maxLossPercentage / 100);
+      const trailingStop = startingBalance * (1 - this.maxLossPercentage / 100);
 
       // Set chart data directly with simple structure
       this.chartData = {
