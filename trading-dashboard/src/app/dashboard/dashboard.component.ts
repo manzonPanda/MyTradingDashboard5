@@ -196,7 +196,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'FOMO', icon: '😰', color: '#f59e0b' },
     { name: 'Confident', icon: '😎', color: '#10b981' },
     { name: 'Tired', icon: '😴', color: '#6b7280' },
-    { name: 'Impulsive', icon: '⚡', color: '#ef4444' },
+    { name: 'Impulsive', icon: '���', color: '#ef4444' },
     { name: 'Focused', icon: '🎯', color: '#3b82f6' },
     { name: 'Anxious', icon: '😟', color: '#f59e0b' },
     { name: 'Greedy', icon: '🤑', color: '#ef4444' },
@@ -697,10 +697,20 @@ export class DashboardComponent implements AfterViewInit {
         ]
       };
 
-      console.log('✨ Futures chart data set successfully');
-      console.log('📊 Data range: Min:', Math.min(maxLoss, trailingStop), 'Max:', profitTarget);
+      // Calculate tight y-axis range based on data
+      const dataMin = Math.min(maxLoss, trailingStop);
+      const dataMax = profitTarget;
+      const range = dataMax - dataMin;
+      const padding = range * 0.05; // 5% padding on each side
 
-      // Force chart update to recalculate y-axis
+      // Update chart options with tight scaling
+      this.chartOptions.scales!.y!.min = dataMin - padding;
+      this.chartOptions.scales!.y!.max = dataMax + padding;
+
+      console.log('✨ Futures chart data set successfully');
+      console.log('📊 Y-axis range:', (dataMin - padding).toFixed(0), 'to', (dataMax + padding).toFixed(0));
+
+      // Force chart update to apply new y-axis range
       setTimeout(() => {
         if (this.chart) {
           this.chart.update('resize');
@@ -2018,7 +2028,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.highWaterMark = this.startingBalance;
 
     console.log('💰 Starting balance:', this.startingBalance);
-    console.log('📊 Table data length:', this.tableData.length);
+    console.log('���� Table data length:', this.tableData.length);
 
     const labels: string[] = [];
     const balanceData: number[] = [];
@@ -2762,7 +2772,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return true;
 
     } catch (error: any) {
-      console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
+      console.log('���️ Backend quick check failed:', error.status || 'Connection error');
 
       // If it's a 404 with GET, but we're using POST now, so any response means server is up
       if (error.status === 404) {
