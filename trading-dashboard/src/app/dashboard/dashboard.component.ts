@@ -2063,16 +2063,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return currentBalance;
   }
 
-  // Determine current trading zone
+  // Determine current trading zone based on MFE-based trailing stop
   getCurrentTradingZone(): string {
     const currentBalance = this.getCurrentBalance();
     const profitTarget = this.calculateProfitTarget(this.startingBalance);
     const maxLoss = this.calculateMaxLoss(this.startingBalance);
-    const trailingStop = this.calculateTrailingDrawdown(currentBalance, this.highWaterMark);
+    const mfeTrailingStop = this.calculateTrailingDrawdown(currentBalance, this.highWaterMark);
 
     if (currentBalance >= profitTarget) {
       return 'profit-zone';
-    } else if (currentBalance <= Math.max(maxLoss, trailingStop)) {
+    } else if (currentBalance <= Math.max(maxLoss, mfeTrailingStop)) {
       return 'danger-zone';
     } else {
       return 'safe-zone';
