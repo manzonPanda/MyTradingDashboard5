@@ -1877,7 +1877,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       cumulativePnL.push(cumulativeProfit);
       drawdownData.push(drawdown);
 
-      // Add futures trading lines
+      // Add futures trading lines (always visible)
       profitTargetData.push(this.calculateProfitTarget(this.startingBalance));
       maxLossData.push(this.calculateMaxLoss(this.startingBalance));
       trailingDrawdownData.push(this.calculateTrailingDrawdown(currentBalance, this.highWaterMark));
