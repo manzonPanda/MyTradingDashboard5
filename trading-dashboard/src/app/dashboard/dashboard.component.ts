@@ -126,7 +126,7 @@ interface NotionPerformanceData {
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './futures-trading.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
 })
 
 
@@ -292,7 +292,13 @@ export class DashboardComponent implements AfterViewInit {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
-  // Chart configuration for beautiful trading visualization
+  // Futures trading configuration
+  public profitTargetPercentage = 6; // 6% profit target
+  public maxLossPercentage = 5; // 5% trailing stop loss
+  public startingBalance = 5000; // Default starting balance
+  public highWaterMark = 5000; // Track highest balance for trailing stop
+
+  // Chart configuration for beautiful trading visualization with futures trading lines
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
   public chartData: any = {
@@ -343,6 +349,51 @@ export class DashboardComponent implements AfterViewInit {
         pointBorderWidth: 2,
         pointRadius: 3,
         pointHoverRadius: 5
+      },
+      {
+        label: 'Profit Target (6%)',
+        data: [],
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.02)',
+        borderWidth: 3,
+        borderDash: [8, 4],
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointBackgroundColor: 'rgb(34, 197, 94)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Max Loss (Trailing 5%)',
+        data: [],
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.02)',
+        borderWidth: 3,
+        borderDash: [4, 8],
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointBackgroundColor: 'rgb(239, 68, 68)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Trailing Drawdown',
+        data: [],
+        borderColor: 'rgb(249, 115, 22)',
+        backgroundColor: 'rgba(249, 115, 22, 0.05)',
+        borderWidth: 2,
+        borderDash: [2, 2],
+        fill: '+1',
+        tension: 0.2,
+        pointRadius: 0,
+        pointHoverRadius: 3,
+        pointBackgroundColor: 'rgb(249, 115, 22)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 1
       }
     ]
   };
@@ -360,7 +411,24 @@ export class DashboardComponent implements AfterViewInit {
     },
     plugins: {
       legend: {
-        display: false
+        display: true,
+        position: 'top',
+        align: 'start',
+        labels: {
+          boxWidth: 12,
+          boxHeight: 12,
+          padding: 15,
+          usePointStyle: true,
+          font: {
+            size: 12,
+            weight: 'normal'
+          },
+          color: '#64748b',
+          filter: (legendItem: any) => {
+            // Show only main lines in legend
+            return ['Account Balance', 'Profit Target (6%)', 'Max Loss (Trailing 5%)', 'Trailing Drawdown'].includes(legendItem.text);
+          }
+        }
       },
       tooltip: {
         enabled: true,
@@ -385,20 +453,31 @@ export class DashboardComponent implements AfterViewInit {
           },
           label: function(context: any) {
             const value = context.parsed.y;
+            const label = context.dataset.label;
             const index = context.dataIndex;
             const data = context.dataset.data;
 
-            if (index === 0) {
-              return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            } else {
-              const previousValue = data[index - 1];
-              const change = value - previousValue;
-              const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
-              return [
-                `Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                `Trade P&L: ${changeText}`
-              ];
+            // Custom tooltips for different line types
+            if (label === 'Profit Target (6%)') {
+              return `🎯 Profit Target: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (label === 'Max Loss (Trailing 5%)') {
+              return `🛑 Max Loss: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (label === 'Trailing Drawdown') {
+              return `📉 Trailing Stop: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (label === 'Account Balance') {
+              if (index === 0) {
+                return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              } else {
+                const previousValue = data[index - 1];
+                const change = value - previousValue;
+                const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
+                return [
+                  `💰 Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  `Trade P&L: ${changeText}`
+                ];
+              }
             }
+            return `${label}: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           }
         }
       }
@@ -442,7 +521,10 @@ export class DashboardComponent implements AfterViewInit {
             size: 16,
             weight: 'bold'
           }
-        }
+        },
+        // Dynamic y-axis scaling (will be updated in createFuturesChart)
+        min: 4700,
+        max: 5350
       }
     }
   };
@@ -452,6 +534,206 @@ export class DashboardComponent implements AfterViewInit {
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService) {
     // Register Chart.js components
     Chart.register(...registerables);
+
+    // Create futures chart immediately
+    this.createFuturesChart();
+
+    // Generate proper chart data after a moment
+    setTimeout(() => {
+      this.createFuturesChart();
+    }, 100);
+  }
+
+  // Initialize chart with default data to prevent loading screen
+  initializeDefaultChart(): void {
+    const defaultBalance = 5000;
+    const profitTarget = defaultBalance * 1.06;
+    const maxLoss = defaultBalance * 0.95;
+    const trailingStop = defaultBalance * 0.95;
+
+    this.chartData = {
+      labels: ['Start', 'Current', 'Future'],
+      datasets: [
+        {
+          label: 'Account Balance',
+          data: [defaultBalance, defaultBalance, defaultBalance],
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: 'rgb(16, 185, 129)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8
+        },
+        {
+          label: 'Cumulative P&L',
+          data: [0, 0, 0],
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'Drawdown',
+          data: [0, 0, 0],
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5
+        },
+        {
+          label: 'Profit Target (6%)',
+          data: [profitTarget, profitTarget, profitTarget],
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.02)',
+          borderWidth: 3,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(34, 197, 94)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Max Loss (Trailing 5%)',
+          data: [maxLoss, maxLoss, maxLoss],
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.02)',
+          borderWidth: 3,
+          borderDash: [4, 8],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Trailing Drawdown',
+          data: [trailingStop, trailingStop, trailingStop],
+          borderColor: 'rgb(249, 115, 22)',
+          backgroundColor: 'rgba(249, 115, 22, 0.05)',
+          borderWidth: 2,
+          borderDash: [2, 2],
+          fill: false,
+          tension: 0.2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointBackgroundColor: 'rgb(249, 115, 22)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1
+        }
+      ]
+    };
+  }
+
+  // Create futures chart with always-visible lines
+  createFuturesChart(): void {
+    console.log('🎨 Creating simple futures chart...');
+
+    try {
+      const startingBalance = this.startingBalance || 5000;
+      const profitTarget = startingBalance * (1 + this.profitTargetPercentage / 100);
+      const maxLoss = startingBalance * (1 - this.maxLossPercentage / 100);
+      const trailingStop = startingBalance * (1 - this.maxLossPercentage / 100);
+
+      // Set chart data directly with simple structure
+      this.chartData = {
+        labels: ['Start', 'Current', 'Future'],
+        datasets: [
+          {
+            label: 'Account Balance',
+            data: [startingBalance, startingBalance, startingBalance],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 3,
+            fill: true
+          },
+          {
+            label: `Profit Target (${this.profitTargetPercentage}%)`,
+            data: [profitTarget, profitTarget, profitTarget],
+            borderColor: '#22c55e',
+            borderWidth: 3,
+            borderDash: [8, 4],
+            fill: false,
+            pointRadius: 0
+          },
+          {
+            label: `Max Loss (${this.maxLossPercentage}%)`,
+            data: [maxLoss, maxLoss, maxLoss],
+            borderColor: '#ef4444',
+            borderWidth: 3,
+            borderDash: [4, 8],
+            fill: false,
+            pointRadius: 0
+          },
+          {
+            label: `MFE Trailing (${this.maxLossPercentage}%)`,
+            data: [trailingStop, trailingStop, trailingStop],
+            borderColor: '#f97316',
+            borderWidth: 2,
+            borderDash: [2, 2],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      };
+
+      // Calculate tight y-axis range based on data
+      const dataMin = Math.min(maxLoss, trailingStop);
+      const dataMax = profitTarget;
+      const range = dataMax - dataMin;
+      const padding = range * 0.05; // 5% padding on each side
+
+      // Update chart options with tight scaling
+      if (this.chartOptions.scales && this.chartOptions.scales.y) {
+        (this.chartOptions.scales.y as any).min = dataMin - padding;
+        (this.chartOptions.scales.y as any).max = dataMax + padding;
+      }
+
+      console.log('✨ Futures chart data set successfully');
+      console.log('📊 Y-axis range:', (dataMin - padding).toFixed(0), 'to', (dataMax + padding).toFixed(0));
+
+      // Force chart update to apply new y-axis range
+      setTimeout(() => {
+        if (this.chart) {
+          this.chart.update('resize');
+        }
+        this.cdr.detectChanges();
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error creating futures chart:', error);
+
+      // Fallback to simple chart
+      this.chartData = {
+        labels: ['Start'],
+        datasets: [{
+          label: 'Account Balance',
+          data: [5000],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)'
+        }]
+      };
+    }
   }
 
 async ngOnInit() {
@@ -578,10 +860,11 @@ async ngOnInit() {
   }
 
   ngAfterViewInit() {
-    // Initialize the stunning trading chart
+    // Initialize the futures trading chart
     setTimeout(() => {
-      this.generateTradingChartData();
-    }, 1000);
+      console.log('🎨 ngAfterViewInit: Creating futures chart...');
+      this.createFuturesChart();
+    }, 200);
   }
 
   initializeDataTable(): void {
@@ -1739,17 +2022,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
-    console.log('🎨 Generating beautiful trading chart data...');
+    console.log('🎨 Generating beautiful trading chart data with futures trading lines...');
 
-    const startingBalance = this.mt5AccountInfo.starting_balance;
-    let currentBalance = startingBalance;
-    let cumulativePnL = 0;
-    let peakBalance = startingBalance;
+    // Get starting balance from MT5 account info or default
+    this.startingBalance = this.mt5AccountInfo?.starting_balance || 5000;
+    let chartCurrentBalance = this.startingBalance;
+    this.highWaterMark = this.startingBalance;
+
+    console.log('💰 Starting balance:', this.startingBalance);
+    console.log('📊 Table data length:', this.tableData.length);
 
     const labels: string[] = [];
     const balanceData: number[] = [];
-    const pnlData: number[] = [];
+    const cumulativePnL: number[] = [];
     const drawdownData: number[] = [];
+    const profitTargetData: number[] = [];
+    const maxLossData: number[] = [];
+    const trailingDrawdownData: number[] = [];
 
     // Sort trades by date for proper chart progression
     const sortedTrades = [...this.tableData].sort((a, b) => {
@@ -1760,23 +2049,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Add starting point
     labels.push('Start');
-    balanceData.push(startingBalance);
-    pnlData.push(0);
+    balanceData.push(this.startingBalance);
+    cumulativePnL.push(0);
     drawdownData.push(0);
+    profitTargetData.push(this.calculateProfitTarget(this.startingBalance));
+    maxLossData.push(this.calculateMaxLoss(this.startingBalance));
+    trailingDrawdownData.push(this.calculateTrailingDrawdown(this.startingBalance, this.highWaterMark));
+
+    let cumulativeProfit = 0;
 
     // Process each trade for chart progression
     sortedTrades.forEach((trade, index) => {
       const tradeProfit = parseFloat(trade.netProfit || '0');
-      currentBalance += tradeProfit;
-      cumulativePnL += tradeProfit;
+      chartCurrentBalance += tradeProfit;
+      cumulativeProfit += tradeProfit;
 
-      // Update peak for drawdown calculation
-      if (currentBalance > peakBalance) {
-        peakBalance = currentBalance;
+      // Update high water mark for trailing calculations
+      if (chartCurrentBalance > this.highWaterMark) {
+        this.highWaterMark = chartCurrentBalance;
       }
 
       // Calculate drawdown percentage
-      const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
+      const drawdown = ((this.highWaterMark - chartCurrentBalance) / this.highWaterMark) * 100;
 
       // Format date for label
       const tradeDate = new Date(trade.openDate || '');
@@ -1786,43 +2080,163 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       });
 
       labels.push(`${dateLabel} #${index + 1}`);
-      balanceData.push(currentBalance);
-      pnlData.push(cumulativePnL);
+      balanceData.push(chartCurrentBalance);
+      cumulativePnL.push(cumulativeProfit);
       drawdownData.push(drawdown);
+
+      // Add futures trading lines (always visible)
+      profitTargetData.push(this.calculateProfitTarget(this.startingBalance));
+      maxLossData.push(this.calculateMaxLoss(this.startingBalance));
+      trailingDrawdownData.push(this.calculateTrailingDrawdown(chartCurrentBalance, this.highWaterMark));
     });
 
-    // If no trades, show empty chart with just starting balance
+    // Always show futures lines, even with no trades
     if (sortedTrades.length === 0) {
-      console.log('📊 No trade data found, showing empty chart...');
+      console.log('📊 No trade data found, showing chart with futures lines always visible...');
+      const profitTarget = this.calculateProfitTarget(this.startingBalance);
+      const maxLoss = this.calculateMaxLoss(this.startingBalance);
+      const trailingStop = this.calculateTrailingDrawdown(this.startingBalance, this.startingBalance);
+
+      console.log('🎯 Profit Target:', profitTarget);
+      console.log('🛑 Max Loss:', maxLoss);
+      console.log('📉 Trailing Stop:', trailingStop);
+
       this.chartData = {
-        labels: ['Start'],
+        labels: ['Start', 'Current', 'Future'],
         datasets: [
           {
             label: 'Account Balance',
-            data: [startingBalance],
+            data: [this.startingBalance, this.startingBalance, this.startingBalance],
             borderColor: 'rgb(16, 185, 129)',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 4,
+            borderWidth: 3,
             fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          },
+          {
+            label: 'Cumulative P&L',
+            data: [0, 0, 0],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            borderWidth: 2,
+            fill: false,
             tension: 0.3,
             pointBackgroundColor: 'rgb(59, 130, 246)',
             pointBorderColor: '#ffffff',
-            pointBorderWidth: 3,
-            pointRadius: 8,
-            pointHoverRadius: 12
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Drawdown',
+            data: [0, 0, 0],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          },
+          {
+            label: 'Profit Target (6%)',
+            data: [profitTarget, profitTarget, profitTarget],
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.02)',
+            borderWidth: 3,
+            borderDash: [8, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointBackgroundColor: 'rgb(34, 197, 94)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
+          },
+          {
+            label: 'Max Loss (Trailing 5%)',
+            data: [maxLoss, maxLoss, maxLoss],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.02)',
+            borderWidth: 3,
+            borderDash: [4, 8],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
+          },
+          {
+            label: 'Trailing Drawdown',
+            data: [trailingStop, trailingStop, trailingStop],
+            borderColor: 'rgb(249, 115, 22)',
+            backgroundColor: 'rgba(249, 115, 22, 0.05)',
+            borderWidth: 2,
+            borderDash: [2, 2],
+            fill: false,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 3,
+            pointBackgroundColor: 'rgb(249, 115, 22)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1
           }
         ]
       };
+
+      console.log('✨ Chart data generated for no trades scenario');
+
+      // Force chart update
+      if (this.chart) {
+        this.chart.update('active');
+      }
+      this.cdr.detectChanges();
       return;
     }
 
-    // Simple chart showing just account balance progression
+    // Add future projection points to extend futures lines beyond current data
+    const futureLabels = ['Future 1', 'Future 2'];
+    const extendedLabels = [...labels, ...futureLabels];
+    const finalBalance = balanceData[balanceData.length - 1] || this.startingBalance;
+    const currentPnL = cumulativePnL[cumulativePnL.length - 1] || 0;
+    const currentDrawdown = drawdownData[drawdownData.length - 1] || 0;
+
+    // Extend all data arrays with future points
+    const extendedBalanceData = [...balanceData, finalBalance, finalBalance];
+    const extendedCumulativePnL = [...cumulativePnL, currentPnL, currentPnL];
+    const extendedDrawdownData = [...drawdownData, currentDrawdown, currentDrawdown];
+
+    // Futures lines extend into the future
+    const extendedProfitTargetData = [...profitTargetData,
+      this.calculateProfitTarget(this.startingBalance),
+      this.calculateProfitTarget(this.startingBalance)
+    ];
+    const extendedMaxLossData = [...maxLossData,
+      this.calculateMaxLoss(this.startingBalance),
+      this.calculateMaxLoss(this.startingBalance)
+    ];
+    const extendedTrailingDrawdownData = [...trailingDrawdownData,
+      this.calculateTrailingDrawdown(finalBalance, this.highWaterMark),
+      this.calculateTrailingDrawdown(finalBalance, this.highWaterMark)
+    ];
+
+    // Beautiful chart with always-visible futures trading lines
     this.chartData = {
-      labels: labels,
+      labels: extendedLabels,
       datasets: [
         {
           label: 'Account Balance',
-          data: balanceData,
+          data: extendedBalanceData,
           borderColor: 'rgb(16, 185, 129)',
           backgroundColor: (ctx: any) => {
             const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
@@ -1830,30 +2244,208 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
             return gradient;
           },
-          borderWidth: 4,
+          borderWidth: 3,
           fill: true,
-          tension: 0.3,
-          pointBackgroundColor: balanceData.map((val, i, arr) => {
+          tension: 0.4,
+          pointBackgroundColor: extendedBalanceData.map((val, i, arr) => {
             if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
+            if (i >= balanceData.length) return 'rgba(59, 130, 246, 0.3)'; // Future points - transparent
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
           pointBorderColor: '#ffffff',
-          pointBorderWidth: 3,
-          pointRadius: balanceData.map((_, i, arr) => {
-            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
+          pointBorderWidth: 2,
+          pointRadius: extendedBalanceData.map((_, i, arr) => {
+            if (i >= balanceData.length) return 0; // Hide future points
+            if (i === 0 || i === balanceData.length - 1) return 8; // Larger points for start/current
             return 6;
           }),
-          pointHoverRadius: 12
+          pointHoverRadius: 8
+        },
+        {
+          label: 'Cumulative P&L',
+          data: extendedCumulativePnL,
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'Drawdown',
+          data: extendedDrawdownData,
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5
+        },
+        {
+          label: 'Profit Target (6%)',
+          data: extendedProfitTargetData,
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.02)',
+          borderWidth: 3,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(34, 197, 94)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Max Loss (Trailing 5%)',
+          data: extendedMaxLossData,
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.02)',
+          borderWidth: 3,
+          borderDash: [4, 8],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Trailing Drawdown',
+          data: extendedTrailingDrawdownData,
+          borderColor: 'rgb(249, 115, 22)',
+          backgroundColor: 'rgba(249, 115, 22, 0.05)',
+          borderWidth: 2,
+          borderDash: [2, 2],
+          fill: false,
+          tension: 0.2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointBackgroundColor: 'rgb(249, 115, 22)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1
         }
       ]
     };
 
-    console.log('✨ Beautiful trading chart generated with', labels.length, 'data points!');
+    console.log('✨ Beautiful trading chart with futures lines generated!', labels.length, 'data points');
 
     // Trigger chart update with animation
     if (this.chart) {
       this.chart.update('active');
+    }
+
+    // Force change detection
+    this.cdr.detectChanges();
+  }
+
+  // Calculate profit target line (6% above starting balance)
+  calculateProfitTarget(startingBalance: number): number {
+    return startingBalance * (1 + this.profitTargetPercentage / 100);
+  }
+
+  // Calculate max loss line (5% below starting balance)
+  calculateMaxLoss(startingBalance: number): number {
+    return startingBalance * (1 - this.maxLossPercentage / 100);
+  }
+
+  // Calculate dynamic trailing drawdown based on MFE (Maximum Favorable Excursion) from live trades
+  calculateTrailingDrawdown(currentBalance: number, highWaterMark: number): number {
+    // Get the maximum MFE from all live trades
+    const liveTrades = this.tableData.filter(trade =>
+      trade.mt5status === 'open' || !trade.closeDate || trade.closeDate === '-'
+    );
+
+    let maxMFE = 0;
+    if (liveTrades.length > 0) {
+      // Use the highest MFE from live trades
+      maxMFE = Math.max(...liveTrades.map(trade => parseFloat(trade.mfe || '0')));
+    }
+
+    // If we have positive MFE, use it as the base for trailing stop
+    // Otherwise, fall back to high water mark
+    const baseAmount = maxMFE > 0 ? (this.startingBalance + maxMFE) : highWaterMark;
+    return baseAmount * (1 - this.maxLossPercentage / 100);
+  }
+
+  // Update futures trading settings with dynamic y-axis scaling
+  updateFuturesSettings(profitTarget: number, maxLoss: number): void {
+    this.profitTargetPercentage = profitTarget;
+    this.maxLossPercentage = maxLoss;
+
+    console.log('🎛️ Updating futures settings:', { profitTarget, maxLoss });
+
+    // Recreate chart with new settings and dynamic scaling
+    this.createFuturesChart();
+  }
+
+  // Get current account balance
+  getCurrentBalance(): number {
+    if (this.tableData.length === 0) {
+      return this.startingBalance;
+    }
+
+    let accountBalance = this.startingBalance;
+    this.tableData.forEach(trade => {
+      accountBalance += parseFloat(trade.netProfit || '0');
+    });
+
+    return accountBalance;
+  }
+
+  // Determine current trading zone based on MFE-based trailing stop
+  getCurrentTradingZone(): string {
+    const activeBalance = this.getCurrentBalance();
+    const profitTarget = this.calculateProfitTarget(this.startingBalance);
+    const maxLoss = this.calculateMaxLoss(this.startingBalance);
+    const mfeTrailingStop = this.calculateTrailingDrawdown(activeBalance, this.highWaterMark);
+
+    if (activeBalance >= profitTarget) {
+      return 'profit-zone';
+    } else if (activeBalance <= Math.max(maxLoss, mfeTrailingStop)) {
+      return 'danger-zone';
+    } else {
+      return 'safe-zone';
+    }
+  }
+
+  // Get trading zone description
+  getTradingZoneDescription(): string {
+    const zone = this.getCurrentTradingZone();
+    switch (zone) {
+      case 'profit-zone':
+        return 'Account has reached profit target! Consider taking profits.';
+      case 'danger-zone':
+        return 'Account is approaching maximum loss or MFE-based trailing stop. Exercise caution.';
+      case 'safe-zone':
+        return 'Account is in safe trading zone.';
+      default:
+        return 'Account status unknown.';
+    }
+  }
+
+  // Get trading zone text
+  getTradingZoneText(): string {
+    const zone = this.getCurrentTradingZone();
+    switch (zone) {
+      case 'profit-zone':
+        return 'Profit Zone';
+      case 'danger-zone':
+        return 'Danger Zone';
+      case 'safe-zone':
+        return 'Safe Zone';
+      default:
+        return 'Unknown';
     }
   }
 
@@ -2273,7 +2865,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
 
       // Provide detailed error message based on status
-      let errorMessage = '❌ Backend connection failed!\n\n';
+      let errorMessage = '�� Backend connection failed!\n\n';
 
       if (error.status === 0 || error.status === undefined) {
         errorMessage += '���� Connection Error: Cannot reach the server\n\n';
@@ -4006,7 +4598,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableData(): void {
     console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
