@@ -521,6 +521,39 @@ export class DashboardComponent implements AfterViewInit {
             size: 16,
             weight: 'bold'
           }
+        },
+        // Dynamic y-axis scaling based on futures trading data
+        min: function(context: any) {
+          const datasets = context.chart.data.datasets;
+          let minValue = Infinity;
+
+          datasets.forEach((dataset: any) => {
+            if (dataset.data && Array.isArray(dataset.data)) {
+              const dataMin = Math.min(...dataset.data.filter((val: any) => val !== null && val !== undefined));
+              if (dataMin < minValue) {
+                minValue = dataMin;
+              }
+            }
+          });
+
+          // Add 1% padding below the minimum value for better visual appearance
+          return minValue > 0 ? minValue * 0.99 : minValue;
+        },
+        max: function(context: any) {
+          const datasets = context.chart.data.datasets;
+          let maxValue = -Infinity;
+
+          datasets.forEach((dataset: any) => {
+            if (dataset.data && Array.isArray(dataset.data)) {
+              const dataMax = Math.max(...dataset.data.filter((val: any) => val !== null && val !== undefined));
+              if (dataMax > maxValue) {
+                maxValue = dataMax;
+              }
+            }
+          });
+
+          // Add 1% padding above the maximum value for better visual appearance
+          return maxValue * 1.01;
         }
       }
     }
