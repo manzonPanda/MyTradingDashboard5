@@ -728,9 +728,15 @@ export class DashboardComponent implements AfterViewInit {
       };
 
       console.log('✨ Futures chart data set successfully');
+      console.log('📊 Data range: Min:', Math.min(maxLoss, trailingStop), 'Max:', profitTarget);
 
-      // Force change detection
-      this.cdr.detectChanges();
+      // Force chart update to recalculate y-axis
+      setTimeout(() => {
+        if (this.chart) {
+          this.chart.update('resize');
+        }
+        this.cdr.detectChanges();
+      }, 100);
 
     } catch (error) {
       console.error('❌ Error creating futures chart:', error);
