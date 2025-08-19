@@ -1818,17 +1818,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
-    console.log('🎨 Generating beautiful trading chart data...');
+    console.log('🎨 Generating beautiful trading chart data with futures trading lines...');
 
-    const startingBalance = this.mt5AccountInfo.starting_balance;
-    let currentBalance = startingBalance;
-    let cumulativePnL = 0;
-    let peakBalance = startingBalance;
+    // Get starting balance from MT5 account info or default
+    this.startingBalance = this.mt5AccountInfo?.starting_balance || 5000;
+    let currentBalance = this.startingBalance;
+    this.highWaterMark = this.startingBalance;
 
     const labels: string[] = [];
     const balanceData: number[] = [];
-    const pnlData: number[] = [];
+    const cumulativePnL: number[] = [];
     const drawdownData: number[] = [];
+    const profitTargetData: number[] = [];
+    const maxLossData: number[] = [];
+    const trailingDrawdownData: number[] = [];
 
     // Sort trades by date for proper chart progression
     const sortedTrades = [...this.tableData].sort((a, b) => {
@@ -1839,23 +1842,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Add starting point
     labels.push('Start');
-    balanceData.push(startingBalance);
-    pnlData.push(0);
+    balanceData.push(this.startingBalance);
+    cumulativePnL.push(0);
     drawdownData.push(0);
+    profitTargetData.push(this.calculateProfitTarget(this.startingBalance));
+    maxLossData.push(this.calculateMaxLoss(this.startingBalance));
+    trailingDrawdownData.push(this.calculateTrailingDrawdown(this.startingBalance, this.highWaterMark));
+
+    let cumulativeProfit = 0;
 
     // Process each trade for chart progression
     sortedTrades.forEach((trade, index) => {
       const tradeProfit = parseFloat(trade.netProfit || '0');
       currentBalance += tradeProfit;
-      cumulativePnL += tradeProfit;
+      cumulativeProfit += tradeProfit;
 
-      // Update peak for drawdown calculation
-      if (currentBalance > peakBalance) {
-        peakBalance = currentBalance;
+      // Update high water mark for trailing calculations
+      if (currentBalance > this.highWaterMark) {
+        this.highWaterMark = currentBalance;
       }
 
       // Calculate drawdown percentage
-      const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
+      const drawdown = ((this.highWaterMark - currentBalance) / this.highWaterMark) * 100;
 
       // Format date for label
       const tradeDate = new Date(trade.openDate || '');
@@ -1866,74 +1874,127 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       labels.push(`${dateLabel} #${index + 1}`);
       balanceData.push(currentBalance);
-      pnlData.push(cumulativePnL);
+      cumulativePnL.push(cumulativeProfit);
       drawdownData.push(drawdown);
+
+      // Add futures trading lines
+      profitTargetData.push(this.calculateProfitTarget(this.startingBalance));
+      maxLossData.push(this.calculateMaxLoss(this.startingBalance));
+      trailingDrawdownData.push(this.calculateTrailingDrawdown(currentBalance, this.highWaterMark));
     });
 
-    // If no trades, show empty chart with just starting balance
+    // If no trades, show empty chart with futures lines
     if (sortedTrades.length === 0) {
-      console.log('📊 No trade data found, showing empty chart...');
+      console.log('📊 No trade data found, showing empty chart with futures lines...');
       this.chartData = {
         labels: ['Start'],
         datasets: [
           {
-            label: 'Account Balance',
-            data: [startingBalance],
-            borderColor: 'rgb(16, 185, 129)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 4,
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: 'rgb(59, 130, 246)',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 3,
-            pointRadius: 8,
-            pointHoverRadius: 12
+            ...this.chartData.datasets[0],
+            data: [this.startingBalance]
+          },
+          {
+            ...this.chartData.datasets[1],
+            data: [0]
+          },
+          {
+            ...this.chartData.datasets[2],
+            data: [0]
+          },
+          {
+            ...this.chartData.datasets[3],
+            data: [this.calculateProfitTarget(this.startingBalance)]
+          },
+          {
+            ...this.chartData.datasets[4],
+            data: [this.calculateMaxLoss(this.startingBalance)]
+          },
+          {
+            ...this.chartData.datasets[5],
+            data: [this.calculateTrailingDrawdown(this.startingBalance, this.startingBalance)]
           }
         ]
       };
       return;
     }
 
-    // Simple chart showing just account balance progression
+    // Beautiful chart with futures trading lines
     this.chartData = {
       labels: labels,
       datasets: [
         {
-          label: 'Account Balance',
+          ...this.chartData.datasets[0],
           data: balanceData,
-          borderColor: 'rgb(16, 185, 129)',
           backgroundColor: (ctx: any) => {
             const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
             return gradient;
           },
-          borderWidth: 4,
-          fill: true,
-          tension: 0.3,
           pointBackgroundColor: balanceData.map((val, i, arr) => {
             if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 3,
           pointRadius: balanceData.map((_, i, arr) => {
             if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
             return 6;
-          }),
-          pointHoverRadius: 12
+          })
+        },
+        {
+          ...this.chartData.datasets[1],
+          data: cumulativePnL
+        },
+        {
+          ...this.chartData.datasets[2],
+          data: drawdownData
+        },
+        {
+          ...this.chartData.datasets[3],
+          data: profitTargetData
+        },
+        {
+          ...this.chartData.datasets[4],
+          data: maxLossData
+        },
+        {
+          ...this.chartData.datasets[5],
+          data: trailingDrawdownData
         }
       ]
     };
 
-    console.log('✨ Beautiful trading chart generated with', labels.length, 'data points!');
+    console.log('✨ Beautiful trading chart with futures lines generated!', labels.length, 'data points');
 
     // Trigger chart update with animation
     if (this.chart) {
       this.chart.update('active');
     }
+
+    // Force change detection
+    this.cdr.detectChanges();
+  }
+
+  // Calculate profit target line (6% above starting balance)
+  calculateProfitTarget(startingBalance: number): number {
+    return startingBalance * (1 + this.profitTargetPercentage / 100);
+  }
+
+  // Calculate max loss line (5% below starting balance)
+  calculateMaxLoss(startingBalance: number): number {
+    return startingBalance * (1 - this.maxLossPercentage / 100);
+  }
+
+  // Calculate dynamic trailing drawdown (5% below high water mark)
+  calculateTrailingDrawdown(currentBalance: number, highWaterMark: number): number {
+    return highWaterMark * (1 - this.maxLossPercentage / 100);
+  }
+
+  // Update futures trading settings
+  updateFuturesSettings(profitTarget: number, maxLoss: number): void {
+    this.profitTargetPercentage = profitTarget;
+    this.maxLossPercentage = maxLoss;
+    this.generateTradingChartData();
   }
 
 
