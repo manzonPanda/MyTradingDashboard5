@@ -379,6 +379,28 @@
             class="trading-chart">
           </canvas>
 
+          <!-- Futures Trading Status Indicators -->
+          <div class="futures-status" *ngIf="!isLoadingMT5Data && chartData?.labels?.length">
+            <div class="status-item"
+                 [ngClass]="getCurrentTradingZone()"
+                 [title]="getTradingZoneDescription()">
+              <div class="status-icon"></div>
+              <span>{{ getTradingZoneText() }}</span>
+            </div>
+            <div class="status-item">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #22c55e;">🎯</mat-icon>
+              <span>Target: {{ calculateProfitTarget(startingBalance) | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="status-item">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #ef4444;">🛑</mat-icon>
+              <span>Max Loss: {{ calculateMaxLoss(startingBalance) | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="status-item">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #f97316;">📉</mat-icon>
+              <span>Trailing: {{ calculateTrailingDrawdown(getCurrentBalance(), highWaterMark) | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+
         </div>
 
       </div>
