@@ -660,7 +660,9 @@ export class DashboardComponent implements AfterViewInit {
 
     const config = createFuturesChartConfig(chartData);
     this.chartData = config.data;
-    this.chartOptions = config.options;
+    if (config.options) {
+      this.chartOptions = config.options as any;
+    }
 
     console.log('✨ Futures chart created with lines:', {
       profitTarget,
