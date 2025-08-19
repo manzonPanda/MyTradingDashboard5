@@ -533,12 +533,12 @@ export class DashboardComponent implements AfterViewInit {
     // Register Chart.js components
     Chart.register(...registerables);
 
-    // Initialize chart data immediately to prevent loading screen
-    this.initializeDefaultChart();
+    // Create futures chart immediately
+    this.createFuturesChart();
 
     // Generate proper chart data after a moment
     setTimeout(() => {
-      this.generateTradingChartData();
+      this.createFuturesChart();
     }, 100);
   }
 
@@ -690,7 +690,7 @@ async ngOnInit() {
 
   socket.on("account_info", (data) => {
     this.mt5AccountInfo = data;
-    console.warn("������ Account Info Received:", data);
+    console.warn("���� Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
