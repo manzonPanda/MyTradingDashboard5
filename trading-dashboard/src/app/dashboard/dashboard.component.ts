@@ -650,19 +650,71 @@ export class DashboardComponent implements AfterViewInit {
     const maxLoss = startingBalance * 0.95; // 5% max loss
     const trailingStop = startingBalance * 0.95; // 5% trailing
 
-    const chartData: FuturesChartData = {
+    // Set chart data directly
+    this.chartData = {
       labels: ['Start', 'Current', 'Future'],
-      balanceData: [startingBalance, startingBalance, startingBalance],
-      profitTargetData: [profitTarget, profitTarget, profitTarget],
-      maxLossData: [maxLoss, maxLoss, maxLoss],
-      trailingDrawdownData: [trailingStop, trailingStop, trailingStop]
+      datasets: [
+        {
+          label: 'Account Balance',
+          data: [startingBalance, startingBalance, startingBalance],
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: 'rgb(16, 185, 129)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8
+        },
+        {
+          label: 'Profit Target (6%)',
+          data: [profitTarget, profitTarget, profitTarget],
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.02)',
+          borderWidth: 3,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(34, 197, 94)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Max Loss (5%)',
+          data: [maxLoss, maxLoss, maxLoss],
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.02)',
+          borderWidth: 3,
+          borderDash: [4, 8],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'MFE Trailing (5%)',
+          data: [trailingStop, trailingStop, trailingStop],
+          borderColor: 'rgb(249, 115, 22)',
+          backgroundColor: 'rgba(249, 115, 22, 0.05)',
+          borderWidth: 2,
+          borderDash: [2, 2],
+          fill: false,
+          tension: 0.2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointBackgroundColor: 'rgb(249, 115, 22)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1
+        }
+      ]
     };
-
-    const config = createFuturesChartConfig(chartData);
-    this.chartData = config.data;
-    if (config.options) {
-      this.chartOptions = config.options as any;
-    }
 
     console.log('✨ Futures chart created with lines:', {
       profitTarget,
@@ -823,7 +875,7 @@ async ngOnInit() {
 
   refreshDataTableWithAngularBinding(): void {
     try {
-      console.log('🔄 Refreshing DataTable with Angular binding for complex columns');
+      console.log('�� Refreshing DataTable with Angular binding for complex columns');
 
       // Force Angular change detection first
       this.cdr.detectChanges();
