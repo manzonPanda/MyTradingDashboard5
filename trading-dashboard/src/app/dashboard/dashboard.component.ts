@@ -2086,7 +2086,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       case 'profit-zone':
         return 'Account has reached profit target! Consider taking profits.';
       case 'danger-zone':
-        return 'Account is approaching maximum loss or trailing stop. Exercise caution.';
+        return 'Account is approaching maximum loss or MFE-based trailing stop. Exercise caution.';
       case 'safe-zone':
         return 'Account is in safe trading zone.';
       default:
