@@ -1883,38 +1883,48 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       trailingDrawdownData.push(this.calculateTrailingDrawdown(currentBalance, this.highWaterMark));
     });
 
-    // If no trades, show empty chart with futures lines
+    // Always show futures lines, even with no trades
     if (sortedTrades.length === 0) {
-      console.log('📊 No trade data found, showing empty chart with futures lines...');
+      console.log('📊 No trade data found, showing chart with futures lines always visible...');
+      const profitTarget = this.calculateProfitTarget(this.startingBalance);
+      const maxLoss = this.calculateMaxLoss(this.startingBalance);
+      const trailingStop = this.calculateTrailingDrawdown(this.startingBalance, this.startingBalance);
+
       this.chartData = {
-        labels: ['Start'],
+        labels: ['Start', 'Current'],
         datasets: [
           {
             ...this.chartData.datasets[0],
-            data: [this.startingBalance]
+            data: [this.startingBalance, this.startingBalance]
           },
           {
             ...this.chartData.datasets[1],
-            data: [0]
+            data: [0, 0]
           },
           {
             ...this.chartData.datasets[2],
-            data: [0]
+            data: [0, 0]
           },
           {
             ...this.chartData.datasets[3],
-            data: [this.calculateProfitTarget(this.startingBalance)]
+            data: [profitTarget, profitTarget]
           },
           {
             ...this.chartData.datasets[4],
-            data: [this.calculateMaxLoss(this.startingBalance)]
+            data: [maxLoss, maxLoss]
           },
           {
             ...this.chartData.datasets[5],
-            data: [this.calculateTrailingDrawdown(this.startingBalance, this.startingBalance)]
+            data: [trailingStop, trailingStop]
           }
         ]
       };
+
+      // Force chart update
+      if (this.chart) {
+        this.chart.update('active');
+      }
+      this.cdr.detectChanges();
       return;
     }
 
