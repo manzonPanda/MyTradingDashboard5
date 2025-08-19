@@ -1769,7 +1769,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         this.notionPerformanceData = this.parseNotionResponse(allResults);
         console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
-        console.log('��� Sample parsed record:', this.notionPerformanceData[0]);
+        console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
   
       } else {
         console.warn('⚠️ No results found in your Notion database after pagination');
@@ -1985,9 +1985,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return startingBalance * (1 - this.maxLossPercentage / 100);
   }
 
-  // Calculate dynamic trailing drawdown (5% below high water mark)
+  // Calculate dynamic trailing drawdown based on MFE (Maximum Favorable Excursion) from live trades
   calculateTrailingDrawdown(currentBalance: number, highWaterMark: number): number {
-    return highWaterMark * (1 - this.maxLossPercentage / 100);
+    // Get the maximum MFE from all live trades
+    const liveTrades = this.tableData.filter(trade =>
+      trade.mt5status === 'open' || !trade.closeDate || trade.closeDate === '-'
+    );
+
+    let maxMFE = 0;
+    if (liveTrades.length > 0) {
+      // Use the highest MFE from live trades
+      maxMFE = Math.max(...liveTrades.map(trade => parseFloat(trade.mfe || '0')));
+    }
+
+    // If we have positive MFE, use it as the base for trailing stop
+    // Otherwise, fall back to high water mark
+    const baseAmount = maxMFE > 0 ? (this.startingBalance + maxMFE) : highWaterMark;
+    return baseAmount * (1 - this.maxLossPercentage / 100);
   }
 
   // Update futures trading settings
