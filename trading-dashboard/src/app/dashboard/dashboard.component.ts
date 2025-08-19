@@ -2396,11 +2396,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return baseAmount * (1 - this.maxLossPercentage / 100);
   }
 
-  // Update futures trading settings
+  // Update futures trading settings with dynamic y-axis scaling
   updateFuturesSettings(profitTarget: number, maxLoss: number): void {
     this.profitTargetPercentage = profitTarget;
     this.maxLossPercentage = maxLoss;
-    this.generateTradingChartData();
+
+    console.log('🎛️ Updating futures settings:', { profitTarget, maxLoss });
+
+    // Recreate chart with new settings and dynamic scaling
+    this.createFuturesChart();
   }
 
   // Get current account balance
