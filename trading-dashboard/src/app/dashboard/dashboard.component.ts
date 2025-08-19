@@ -1769,7 +1769,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         this.notionPerformanceData = this.parseNotionResponse(allResults);
         console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
-        console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
+        console.log('��� Sample parsed record:', this.notionPerformanceData[0]);
   
       } else {
         console.warn('⚠️ No results found in your Notion database after pagination');
@@ -1995,6 +1995,66 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.profitTargetPercentage = profitTarget;
     this.maxLossPercentage = maxLoss;
     this.generateTradingChartData();
+  }
+
+  // Get current account balance
+  getCurrentBalance(): number {
+    if (this.tableData.length === 0) {
+      return this.startingBalance;
+    }
+
+    let currentBalance = this.startingBalance;
+    this.tableData.forEach(trade => {
+      currentBalance += parseFloat(trade.netProfit || '0');
+    });
+
+    return currentBalance;
+  }
+
+  // Determine current trading zone
+  getCurrentTradingZone(): string {
+    const currentBalance = this.getCurrentBalance();
+    const profitTarget = this.calculateProfitTarget(this.startingBalance);
+    const maxLoss = this.calculateMaxLoss(this.startingBalance);
+    const trailingStop = this.calculateTrailingDrawdown(currentBalance, this.highWaterMark);
+
+    if (currentBalance >= profitTarget) {
+      return 'profit-zone';
+    } else if (currentBalance <= Math.max(maxLoss, trailingStop)) {
+      return 'danger-zone';
+    } else {
+      return 'safe-zone';
+    }
+  }
+
+  // Get trading zone description
+  getTradingZoneDescription(): string {
+    const zone = this.getCurrentTradingZone();
+    switch (zone) {
+      case 'profit-zone':
+        return 'Account has reached profit target! Consider taking profits.';
+      case 'danger-zone':
+        return 'Account is approaching maximum loss or trailing stop. Exercise caution.';
+      case 'safe-zone':
+        return 'Account is in safe trading zone.';
+      default:
+        return 'Account status unknown.';
+    }
+  }
+
+  // Get trading zone text
+  getTradingZoneText(): string {
+    const zone = this.getCurrentTradingZone();
+    switch (zone) {
+      case 'profit-zone':
+        return 'Profit Zone';
+      case 'danger-zone':
+        return 'Danger Zone';
+      case 'safe-zone':
+        return 'Safe Zone';
+      default:
+        return 'Unknown';
+    }
   }
 
 
