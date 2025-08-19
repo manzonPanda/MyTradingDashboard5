@@ -292,7 +292,13 @@ export class DashboardComponent implements AfterViewInit {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
-  // Chart configuration for beautiful trading visualization
+  // Futures trading configuration
+  public profitTargetPercentage = 6; // 6% profit target
+  public maxLossPercentage = 5; // 5% trailing stop loss
+  public startingBalance = 5000; // Default starting balance
+  public highWaterMark = 5000; // Track highest balance for trailing stop
+
+  // Chart configuration for beautiful trading visualization with futures trading lines
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
   public chartData: any = {
@@ -1693,7 +1699,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
   
       } else {
-        console.warn('⚠️ No results found in your Notion database after pagination');
+        console.warn('⚠�� No results found in your Notion database after pagination');
         this.notionPerformanceData = [];
    
       }
