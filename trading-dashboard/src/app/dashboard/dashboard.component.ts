@@ -2118,7 +2118,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const currentDrawdown = drawdownData[drawdownData.length - 1] || 0;
 
     // Extend all data arrays with future points
-    const extendedBalanceData = [...balanceData, currentBalance, currentBalance];
+    const extendedBalanceData = [...balanceData, finalBalance, finalBalance];
     const extendedCumulativePnL = [...cumulativePnL, currentPnL, currentPnL];
     const extendedDrawdownData = [...drawdownData, currentDrawdown, currentDrawdown];
 
@@ -2132,8 +2132,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.calculateMaxLoss(this.startingBalance)
     ];
     const extendedTrailingDrawdownData = [...trailingDrawdownData,
-      this.calculateTrailingDrawdown(currentBalance, this.highWaterMark),
-      this.calculateTrailingDrawdown(currentBalance, this.highWaterMark)
+      this.calculateTrailingDrawdown(finalBalance, this.highWaterMark),
+      this.calculateTrailingDrawdown(finalBalance, this.highWaterMark)
     ];
 
     // Beautiful chart with always-visible futures trading lines
@@ -2417,7 +2417,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           divergenceValue: this.getNotionProperty(properties, 'Divergence value', 'number') || 0,
           pips: this.getNotionProperty(properties, 'Pips', 'number') || 0,
           formula: this.getNotionProperty(properties, 'Formula', 'formula') || 0,
-          rulesViolated: this.getNotionProperty(properties, 'Rules violated 🛑', 'multi_select') || [],
+          rulesViolated: this.getNotionProperty(properties, 'Rules violated ��', 'multi_select') || [],
           emptySelect: this.getNotionProperty(properties, '', 'select') || '',
           swap: this.getNotionProperty(properties, 'swap', 'number') || 0
         };
