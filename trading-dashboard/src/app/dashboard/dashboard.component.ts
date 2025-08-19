@@ -421,7 +421,7 @@ export class DashboardComponent implements AfterViewInit {
           usePointStyle: true,
           font: {
             size: 12,
-            weight: '500'
+            weight: 'normal'
           },
           color: '#64748b',
           filter: (legendItem: any) => {
@@ -1803,7 +1803,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('����� Checking backend availability...');
+      console.log('��� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -4507,7 +4507,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
     ) : [];
 
-    console.log('��� Existing non-MT5 trades:', existingTrades.length);
+    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
 
     // Create completely new array reference to trigger Angular change detection
     const previousLength = this.tableData ? this.tableData.length : 0;
@@ -4706,7 +4706,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Add the row and redraw
         const rowNode = table.row.add(rowData).draw(false);
-        console.log('✅ Row added directly to DataTable');
+        console.log('��� Row added directly to DataTable');
 
         // Scroll to top to show the new row
         $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
