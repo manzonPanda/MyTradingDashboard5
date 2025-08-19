@@ -364,7 +364,7 @@
 
         <div class="chart-canvas-wrapper">
           <!-- Loading spinner when data is not ready -->
-          <div *ngIf="isLoadingMT5Data || !chartData?.labels?.length" class="chart-loading-overlay">
+          <div *ngIf="!chartData?.labels?.length" class="chart-loading-overlay">
             <div class="loading-spinner">
               <mat-icon class="spinning">refresh</mat-icon>
             </div>
