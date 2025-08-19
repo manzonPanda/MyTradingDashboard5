@@ -1932,7 +1932,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Get starting balance from MT5 account info or default
     this.startingBalance = this.mt5AccountInfo?.starting_balance || 5000;
-    let currentBalance = this.startingBalance;
+    let chartCurrentBalance = this.startingBalance;
     this.highWaterMark = this.startingBalance;
 
     console.log('💰 Starting balance:', this.startingBalance);
@@ -4706,7 +4706,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Add the row and redraw
         const rowNode = table.row.add(rowData).draw(false);
-        console.log('��� Row added directly to DataTable');
+        console.log('✅ Row added directly to DataTable');
 
         // Scroll to top to show the new row
         $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
