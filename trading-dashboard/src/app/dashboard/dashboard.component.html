@@ -331,30 +331,6 @@
               <span class="stat-value">{{ calculateWinRate() }}%</span>
             </div>
             <div class="chart-controls">
-              <div class="futures-controls">
-                <div class="control-group">
-                  <label class="control-label">Profit Target</label>
-                  <div class="control-input">
-                    <input type="number"
-                           [(ngModel)]="profitTargetPercentage"
-                           (ngModelChange)="updateFuturesSettings(profitTargetPercentage, maxLossPercentage)"
-                           min="1" max="20" step="0.5"
-                           class="futures-input">
-                    <span class="control-unit">%</span>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label class="control-label">Max Loss</label>
-                  <div class="control-input">
-                    <input type="number"
-                           [(ngModel)]="maxLossPercentage"
-                           (ngModelChange)="updateFuturesSettings(profitTargetPercentage, maxLossPercentage)"
-                           min="1" max="20" step="0.5"
-                           class="futures-input">
-                    <span class="control-unit">%</span>
-                  </div>
-                </div>
-              </div>
               <button class="chart-refresh-btn" (click)="refreshChart()" title="Refresh Chart">
                 <mat-icon>refresh</mat-icon>
               </button>
@@ -364,7 +340,7 @@
 
         <div class="chart-canvas-wrapper">
           <!-- Loading spinner when data is not ready -->
-          <div *ngIf="!chartData?.labels?.length" class="chart-loading-overlay">
+          <div *ngIf="isLoadingMT5Data || !chartData?.labels?.length" class="chart-loading-overlay">
             <div class="loading-spinner">
               <mat-icon class="spinning">refresh</mat-icon>
             </div>
@@ -378,28 +354,6 @@
             [type]="chartType"
             class="trading-chart">
           </canvas>
-
-          <!-- Futures Trading Status Indicators -->
-          <div class="futures-status" *ngIf="!isLoadingMT5Data && chartData?.labels?.length">
-            <div class="status-item"
-                 [ngClass]="getCurrentTradingZone()"
-                 [title]="getTradingZoneDescription()">
-              <div class="status-icon"></div>
-              <span>{{ getTradingZoneText() }}</span>
-            </div>
-            <div class="status-item">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #22c55e;">🎯</mat-icon>
-              <span>Target: {{ calculateProfitTarget(startingBalance) | currency:'USD':'symbol':'1.0-0' }}</span>
-            </div>
-            <div class="status-item">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #ef4444;">🛑</mat-icon>
-              <span>Max Loss: {{ calculateMaxLoss(startingBalance) | currency:'USD':'symbol':'1.0-0' }}</span>
-            </div>
-            <div class="status-item">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #f97316;">📉</mat-icon>
-              <span>MFE Trailing: {{ calculateTrailingDrawdown(getCurrentBalance(), highWaterMark) | currency:'USD':'symbol':'1.0-0' }}</span>
-            </div>
-          </div>
 
         </div>
 
