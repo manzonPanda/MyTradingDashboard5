@@ -1925,7 +1925,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointHoverRadius: 12
         },
         {
-          label: 'Total P&L Line',
+          label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
           data: new Array(labels.length).fill(pnlLineValue),
           borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
           backgroundColor: 'transparent',
@@ -1939,7 +1939,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: 'Highest Balance',
+          label: '🔵 --- Highest Balance',
           data: new Array(labels.length).fill(highestBalance),
           borderColor: 'rgb(59, 130, 246)',
           backgroundColor: 'transparent',
@@ -1953,7 +1953,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: 'Account Size',
+          label: '🟣 --- Account Size',
           data: new Array(labels.length).fill(accountSize),
           borderColor: 'rgb(147, 51, 234)',
           backgroundColor: 'transparent',
@@ -2288,7 +2288,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   async isBackendRunning(): Promise<boolean> {
     try {
       // Try a simple POST request to see if backend endpoint is responding
-      console.log('��� Quick check if backend is responding...');
+      console.log('���� Quick check if backend is responding...');
 
       const quickTestBody = {}; // Empty body as per your specification
 
