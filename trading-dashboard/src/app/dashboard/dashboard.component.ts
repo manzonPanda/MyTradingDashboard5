@@ -374,7 +374,6 @@ export class DashboardComponent implements AfterViewInit {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Total P&L Line') ||
-                   legendItem.text === '🔵 --- Highest Balance' ||
                    legendItem.text === '🟣 --- Account Size';
           }
         }
@@ -1708,7 +1707,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       if (allResults.length > 0) {
         // Show first page structure for debugging
         console.log('��� First entry structure:', allResults[0]);
-        console.log('���� Properties available:', Object.keys(allResults[0].properties || {}));
+        console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
 
         this.notionPerformanceData = this.parseNotionResponse(allResults);
         console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
