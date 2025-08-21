@@ -1812,7 +1812,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       drawdownData.push(drawdown);
     });
 
-    // If no trades, show empty chart with reference lines only
+    // If no trades, show empty chart with starting balance and reference lines
     if (sortedTrades.length === 0) {
       console.log('📊 No trade data found, showing empty chart...');
       const currentTotalPnL = this.calculateTotalPnL();
@@ -1822,6 +1822,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.chartData = {
         labels: ['Start'],
         datasets: [
+          {
+            label: 'Account Balance',
+            data: [startingBalance],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 4,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
           {
             label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
             data: [pnlLineValue],
