@@ -2483,14 +2483,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return diffDays;
   }
 
-  calculateTotalPercentageGain(): string {
+  calculateTotalPercentageGain(): number {
     const totalPnL = this.calculateTotalPnL();
     const startingBalance = this.mt5AccountInfo?.starting_balance || 5000; // Fallback to 5000 if not available
 
-    if (startingBalance <= 0) return '0.00';
+    if (startingBalance <= 0) return 0;
 
     const percentage = (totalPnL / startingBalance) * 100;
-    return percentage.toFixed(2);
+    return parseFloat(percentage.toFixed(2));
   }
 
   calculatePnLChangePercent(): string {
@@ -4409,7 +4409,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('����� Destroying existing DataTable completely');
+        console.log('🗑��� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
