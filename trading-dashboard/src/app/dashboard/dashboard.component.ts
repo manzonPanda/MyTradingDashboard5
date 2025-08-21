@@ -1873,39 +1873,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const currentTotalPnL = this.calculateTotalPnL();
     const pnlLineValue = startingBalance + currentTotalPnL;
 
+    // Calculate highest balance reached
+    const highestBalance = Math.max(...balanceData);
+
     // Get account size for purple reference line
     const accountSize = this.calculateAccountSize();
 
-    // Simple chart showing just account balance progression
+    // Chart with reference lines only (no main account balance line)
     this.chartData = {
       labels: labels,
       datasets: [
-        {
-          label: 'Account Balance',
-          data: balanceData,
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
-            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-            return gradient;
-          },
-          borderWidth: 4,
-          fill: true,
-          tension: 0.3,
-          pointBackgroundColor: balanceData.map((val, i, arr) => {
-            if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
-            const profit = val - arr[i-1];
-            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
-          }),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 3,
-          pointRadius: balanceData.map((_, i, arr) => {
-            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
-            return 6;
-          }),
-          pointHoverRadius: 12
-        },
         {
           label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
           data: new Array(labels.length).fill(pnlLineValue),
@@ -1913,6 +1890,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: '🔵 --- Highest Balance',
+          data: new Array(labels.length).fill(highestBalance),
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [5, 3],
           fill: false,
           tension: 0,
           pointRadius: 0,
