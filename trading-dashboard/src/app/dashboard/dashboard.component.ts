@@ -1816,6 +1816,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return;
     }
 
+    // Calculate current total P&L for horizontal reference line
+    const currentTotalPnL = this.calculateTotalPnL();
+    const pnlLineValue = startingBalance + currentTotalPnL;
+
     // Simple chart showing just account balance progression
     this.chartData = {
       labels: labels,
@@ -1845,6 +1849,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             return 6;
           }),
           pointHoverRadius: 12
+        },
+        {
+          label: 'Total P&L Line',
+          data: new Array(labels.length).fill(pnlLineValue),
+          borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+          backgroundColor: 'transparent',
+          borderWidth: 3,
+          borderDash: [10, 5],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
         }
       ]
     };
@@ -1946,7 +1964,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
 
-      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`�� Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
