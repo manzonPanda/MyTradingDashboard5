@@ -1873,9 +1873,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const currentTotalPnL = this.calculateTotalPnL();
     const pnlLineValue = startingBalance + currentTotalPnL;
 
-    // Calculate highest balance reached
-    const highestBalance = Math.max(...balanceData);
-
     // Get account size for purple reference line
     const accountSize = this.calculateAccountSize();
 
