@@ -1708,7 +1708,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       if (allResults.length > 0) {
         // Show first page structure for debugging
         console.log('��� First entry structure:', allResults[0]);
-        console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
+        console.log('���� Properties available:', Object.keys(allResults[0].properties || {}));
 
         this.notionPerformanceData = this.parseNotionResponse(allResults);
         console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
@@ -1844,20 +1844,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             backgroundColor: 'transparent',
             borderWidth: 1,
             borderDash: [8, 4],
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
-          },
-          {
-            label: '🔵 --- Highest Balance',
-            data: [startingBalance],
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'transparent',
-            borderWidth: 1,
-            borderDash: [5, 3],
             fill: false,
             tension: 0,
             pointRadius: 0,
