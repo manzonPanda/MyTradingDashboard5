@@ -371,8 +371,10 @@ export class DashboardComponent implements AfterViewInit {
           },
           color: '#64748b',
           filter: function(legendItem: any) {
-            // Only show Account Balance and Total P&L Line in legend
-            return legendItem.text === 'Account Balance' || legendItem.text === 'Total P&L Line';
+            // Show main chart elements in legend
+            return legendItem.text === 'Account Balance' ||
+                   legendItem.text === 'Total P&L Line' ||
+                   legendItem.text === 'Highest Balance';
           }
         }
       },
@@ -4096,7 +4098,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    console.log('����� updateTableData called');
+    console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
