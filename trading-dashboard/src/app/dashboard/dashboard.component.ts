@@ -407,20 +407,12 @@ export class DashboardComponent implements AfterViewInit {
 
             // Handle Total P&L Line tooltip
             if (datasetLabel === 'Total P&L Line') {
-              const startingBalance = data[0] || value; // Fallback to current value
-              const totalPnL = value - startingBalance;
-              return [
-                `Total P&L Reference: $${totalPnL.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                `Current Balance Target: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-              ];
+              return `Total P&L: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
 
             // Handle Highest Balance Line tooltip
             if (datasetLabel === 'Highest Balance') {
-              return [
-                `Highest Balance Reached: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                `Peak Performance Level`
-              ];
+              return `Highest: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
 
             // Handle Account Balance tooltip
