@@ -203,7 +203,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '��', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
@@ -396,8 +396,8 @@ export class DashboardComponent implements AfterViewInit {
           size: 14
         },
         filter: function(tooltipItem: any) {
-          // Only show tooltips for Account Balance, not for reference lines
-          return tooltipItem.dataset.label === 'Account Balance';
+          // No tooltips for reference lines only chart
+          return false;
         },
         callbacks: {
           title: function(context: any) {
