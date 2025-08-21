@@ -1794,6 +1794,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // If no trades, show empty chart with just starting balance
     if (sortedTrades.length === 0) {
       console.log('📊 No trade data found, showing empty chart...');
+      const currentTotalPnL = this.calculateTotalPnL();
+      const pnlLineValue = startingBalance + currentTotalPnL;
+
       this.chartData = {
         labels: ['Start'],
         datasets: [
@@ -1810,6 +1813,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderWidth: 3,
             pointRadius: 8,
             pointHoverRadius: 12
+          },
+          {
+            label: 'Total P&L Line',
+            data: [pnlLineValue],
+            borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+            backgroundColor: 'transparent',
+            borderWidth: 3,
+            borderDash: [10, 5],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
           }
         ]
       };
@@ -1964,7 +1981,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
 
-      // console.log(`�� Getting property "${propertyName}" of type "${type}":`, property);
+      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
@@ -4253,7 +4270,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.refreshDataTableWithAngularBinding();
 
     } catch (error) {
-      console.error('❌ Error refreshing DataTable:', error);
+      console.error('��� Error refreshing DataTable:', error);
     }
   }
 
