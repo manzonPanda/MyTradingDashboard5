@@ -1608,7 +1608,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       const token = localStorage.getItem('fcm_token');
       if (!token) {
-        console.warn('⚠�� No FCM token available for notification');
+        console.warn('⚠️ No FCM token available for notification');
         return;
       }
 
@@ -2481,6 +2481,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     return diffDays;
+  }
+
+  calculateTotalPercentageGain(): string {
+    const totalPnL = this.calculateTotalPnL();
+    const startingBalance = this.mt5AccountInfo?.starting_balance || 5000; // Fallback to 5000 if not available
+
+    if (startingBalance <= 0) return '0.00';
+
+    const percentage = (totalPnL / startingBalance) * 100;
+    return percentage.toFixed(2);
   }
 
   calculatePnLChangePercent(): string {
@@ -4399,7 +4409,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑��� Destroying existing DataTable completely');
+        console.log('����� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
