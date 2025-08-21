@@ -405,14 +405,9 @@ export class DashboardComponent implements AfterViewInit {
             const data = context.dataset.data;
             const datasetLabel = context.dataset.label;
 
-            // Handle Total P&L Line tooltip
-            if (datasetLabel === '💰 Total P&L Line') {
-              return `Total P&L: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            }
-
-            // Handle Highest Balance Line tooltip
-            if (datasetLabel === '🔝 Highest Balance') {
-              return `Highest: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            // Skip tooltips for reference lines
+            if (datasetLabel === '💰 Total P&L Line' || datasetLabel === '🔝 Highest Balance') {
+              return null; // This will hide the tooltip for reference lines
             }
 
             // Handle Account Balance tooltip
