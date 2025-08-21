@@ -1863,6 +1863,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const currentTotalPnL = this.calculateTotalPnL();
     const pnlLineValue = startingBalance + currentTotalPnL;
 
+    // Calculate highest balance reached
+    const highestBalance = Math.max(...balanceData);
+
     // Simple chart showing just account balance progression
     this.chartData = {
       labels: labels,
@@ -1898,8 +1901,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           data: new Array(labels.length).fill(pnlLineValue),
           borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
           backgroundColor: 'transparent',
-          borderWidth: 3,
-          borderDash: [10, 5],
+          borderWidth: 1,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: 'Highest Balance',
+          data: new Array(labels.length).fill(highestBalance),
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [5, 3],
           fill: false,
           tension: 0,
           pointRadius: 0,
