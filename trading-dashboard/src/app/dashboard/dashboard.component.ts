@@ -1863,6 +1863,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointHoverRadius: 0,
             pointBackgroundColor: 'transparent',
             pointBorderColor: 'transparent'
+          },
+          {
+            label: '📊 Account Size',
+            data: [accountSize],
+            borderColor: 'rgb(147, 51, 234)',
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderDash: [6, 2],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
           }
         ]
       };
