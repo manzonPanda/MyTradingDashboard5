@@ -203,7 +203,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '���', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
@@ -1913,7 +1913,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointHoverRadius: 12
         },
         {
-          label: 'Total P&L Line',
+          label: '💰 Total P&L Line',
           data: new Array(labels.length).fill(pnlLineValue),
           borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
           backgroundColor: 'transparent',
@@ -1927,7 +1927,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: 'Highest Balance',
+          label: '🔝 Highest Balance',
           data: new Array(labels.length).fill(highestBalance),
           borderColor: 'rgb(59, 130, 246)',
           backgroundColor: 'transparent',
