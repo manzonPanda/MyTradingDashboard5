@@ -395,6 +395,10 @@ export class DashboardComponent implements AfterViewInit {
         bodyFont: {
           size: 14
         },
+        filter: function(tooltipItem: any) {
+          // Only show tooltips for Account Balance, not for reference lines
+          return tooltipItem.dataset.label === 'Account Balance';
+        },
         callbacks: {
           title: function(context: any) {
             return context[0].label;
@@ -403,12 +407,6 @@ export class DashboardComponent implements AfterViewInit {
             const value = context.parsed.y;
             const index = context.dataIndex;
             const data = context.dataset.data;
-            const datasetLabel = context.dataset.label;
-
-            // Skip tooltips for reference lines
-            if (datasetLabel === '💰 Total P&L Line' || datasetLabel === '🔝 Highest Balance') {
-              return null; // This will hide the tooltip for reference lines
-            }
 
             // Handle Account Balance tooltip
             if (index === 0) {
