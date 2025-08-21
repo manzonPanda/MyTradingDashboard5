@@ -1817,6 +1817,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       console.log('📊 No trade data found, showing empty chart...');
       const currentTotalPnL = this.calculateTotalPnL();
       const pnlLineValue = startingBalance + currentTotalPnL;
+      const accountSize = this.calculateAccountSize();
 
       this.chartData = {
         labels: ['Start'],
