@@ -203,7 +203,7 @@ export class DashboardComponent implements AfterViewInit {
     { name: 'Patient', icon: '🧘', color: '#10b981' },
     { name: 'Frustrated', icon: '😤', color: '#ef4444' },
     { name: 'Disciplined', icon: '💪', color: '#10b981' },
-    { name: 'Overwhelmed', icon: '��', color: '#f59e0b' },
+    { name: 'Overwhelmed', icon: '😵', color: '#f59e0b' },
     { name: 'Calm', icon: '😌', color: '#10b981' }
   ];
 
@@ -1879,10 +1879,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Get account size for purple reference line
     const accountSize = this.calculateAccountSize();
 
-    // Chart with reference lines only (no main account balance line)
+    // Chart with trading data progression and reference lines
     this.chartData = {
       labels: labels,
       datasets: [
+        {
+          label: 'Account Balance',
+          data: balanceData,
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: (ctx: any) => {
+            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+            return gradient;
+          },
+          borderWidth: 4,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
         {
           label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
           data: new Array(labels.length).fill(pnlLineValue),
