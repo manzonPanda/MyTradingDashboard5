@@ -324,6 +324,9 @@
               <span class="stat-label">Total P&L</span>
               <span class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
                 {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                <span class="percentage-gain">
+                  ({{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() }}%)
+                </span>
               </span>
             </div>
             <div class="stat-item">
