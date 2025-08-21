@@ -1608,7 +1608,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       const token = localStorage.getItem('fcm_token');
       if (!token) {
-        console.warn('⚠️ No FCM token available for notification');
+        console.warn('⚠�� No FCM token available for notification');
         return;
       }
 
@@ -2459,6 +2459,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const netProfit = parseFloat(trade.netProfit) || 0;
       return total + netProfit;
     }, 0);
+  }
+
+  calculateDaysSinceFirstTrade(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    // Find the earliest trade date
+    const earliestDate = this.tableData.reduce((earliest, trade) => {
+      const tradeDate = new Date(trade.openDate || '');
+      if (!earliest || tradeDate < earliest) {
+        return tradeDate;
+      }
+      return earliest;
+    }, null as Date | null);
+
+    if (!earliestDate || isNaN(earliestDate.getTime())) return 0;
+
+    // Calculate days between first trade and now
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - earliestDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
   }
 
   calculatePnLChangePercent(): string {
