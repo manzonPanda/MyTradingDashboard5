@@ -397,8 +397,8 @@ export class DashboardComponent implements AfterViewInit {
           size: 14
         },
         filter: function(tooltipItem: any) {
-          // No tooltips for reference lines only chart
-          return false;
+          // Only show tooltips for Account Balance, not for reference lines
+          return tooltipItem.dataset.label === 'Account Balance';
         },
         callbacks: {
           title: function(context: any) {
