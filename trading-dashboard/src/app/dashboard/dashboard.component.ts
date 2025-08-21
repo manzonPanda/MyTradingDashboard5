@@ -1831,10 +1831,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             borderWidth: 4,
             fill: true,
             tension: 0.3,
-            pointRadius: 0,
-            pointHoverRadius: 8,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
+            pointBackgroundColor: 'rgb(16, 185, 129)', // Green starting point
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointRadius: 8,
+            pointHoverRadius: 12
           },
           {
             label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
