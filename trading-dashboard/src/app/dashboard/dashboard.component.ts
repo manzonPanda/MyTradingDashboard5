@@ -401,7 +401,19 @@ export class DashboardComponent implements AfterViewInit {
             const value = context.parsed.y;
             const index = context.dataIndex;
             const data = context.dataset.data;
+            const datasetLabel = context.dataset.label;
 
+            // Handle Total P&L Line tooltip
+            if (datasetLabel === 'Total P&L Line') {
+              const startingBalance = data[0] || value; // Fallback to current value
+              const totalPnL = value - startingBalance;
+              return [
+                `Total P&L Reference: $${totalPnL.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                `Current Balance Target: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              ];
+            }
+
+            // Handle Account Balance tooltip
             if (index === 0) {
               return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else {
