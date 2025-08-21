@@ -1910,10 +1910,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           borderWidth: 4,
           fill: true,
           tension: 0.3,
-          pointRadius: 0,
-          pointHoverRadius: 8,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
+          pointBackgroundColor: balanceData.map((val, i, arr) => {
+            if (i === 0) return 'rgb(16, 185, 129)'; // Starting point - green (no blue)
+            const profit = val - arr[i-1];
+            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
+          }),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: balanceData.map((_, i, arr) => {
+            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
+            return 6;
+          }),
+          pointHoverRadius: 12
         },
         {
           label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
