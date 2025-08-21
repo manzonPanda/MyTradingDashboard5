@@ -324,6 +324,9 @@
               <span class="stat-label">Total P&L</span>
               <span class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
                 {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                <span class="percentage-gain">
+                  ({{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%)
+                </span>
               </span>
             </div>
             <div class="stat-item">
@@ -362,16 +365,16 @@
       <div class="metrics-grid">
         <div class="metric-card profit-loss">
           <div class="metric-header">
-            <h3 class="metric-title">Net P&L</h3>
-            <mat-icon class="metric-icon">trending_up</mat-icon>
+            <h3 class="metric-title">Days</h3>
+            <mat-icon class="metric-icon">calendar_today</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
             <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-value positive">{{ calculateTotalPnL() | currency }}</div>
-            <div class="metric-change">+{{ calculatePnLChangePercent() }}%</div>
+            <div class="metric-value positive">{{ calculateDaysSinceFirstTrade() }}</div>
+            <div class="metric-change">since first trade</div>
           </div>
         </div>
 

@@ -360,7 +360,24 @@ export class DashboardComponent implements AfterViewInit {
     },
     plugins: {
       legend: {
-        display: false
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'normal'
+          },
+          color: '#64748b',
+          filter: function(legendItem: any) {
+            // Show main chart elements in legend
+            return legendItem.text === 'Account Balance' ||
+                   legendItem.text.includes('Total P&L Line') ||
+                   legendItem.text === '🔵 --- Highest Balance' ||
+                   legendItem.text === '🟣 --- Account Size';
+          }
+        }
       },
       tooltip: {
         enabled: true,
@@ -379,6 +396,10 @@ export class DashboardComponent implements AfterViewInit {
         bodyFont: {
           size: 14
         },
+        filter: function(tooltipItem: any) {
+          // Only show tooltips for Account Balance, not for reference lines
+          return tooltipItem.dataset.label === 'Account Balance';
+        },
         callbacks: {
           title: function(context: any) {
             return context[0].label;
@@ -388,6 +409,7 @@ export class DashboardComponent implements AfterViewInit {
             const index = context.dataIndex;
             const data = context.dataset.data;
 
+            // Handle Account Balance tooltip
             if (index === 0) {
               return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else {
@@ -1791,9 +1813,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       drawdownData.push(drawdown);
     });
 
-    // If no trades, show empty chart with just starting balance
+    // If no trades, show empty chart with starting balance and reference lines
     if (sortedTrades.length === 0) {
       console.log('📊 No trade data found, showing empty chart...');
+      const currentTotalPnL = this.calculateTotalPnL();
+      const pnlLineValue = startingBalance + currentTotalPnL;
+      const accountSize = this.calculateAccountSize();
+
       this.chartData = {
         labels: ['Start'],
         datasets: [
@@ -1805,18 +1831,70 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             borderWidth: 4,
             fill: true,
             tension: 0.3,
-            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBackgroundColor: 'rgb(16, 185, 129)', // Green starting point
             pointBorderColor: '#ffffff',
             pointBorderWidth: 3,
             pointRadius: 8,
             pointHoverRadius: 12
+          },
+          {
+            label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
+            data: [pnlLineValue],
+            borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderDash: [8, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
+          {
+            label: '🔵 --- Highest Balance',
+            data: [startingBalance],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderDash: [5, 3],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
+          {
+            label: '🟣 --- Account Size',
+            data: [accountSize],
+            borderColor: 'rgb(147, 51, 234)',
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderDash: [6, 2],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
           }
         ]
       };
       return;
     }
 
-    // Simple chart showing just account balance progression
+    // Calculate current total P&L for horizontal reference line
+    const currentTotalPnL = this.calculateTotalPnL();
+    const pnlLineValue = startingBalance + currentTotalPnL;
+
+    // Calculate highest balance reached
+    const highestBalance = Math.max(...balanceData);
+
+    // Get account size for purple reference line
+    const accountSize = this.calculateAccountSize();
+
+    // Chart with trading data progression and reference lines
     this.chartData = {
       labels: labels,
       datasets: [
@@ -1834,17 +1912,59 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           fill: true,
           tension: 0.3,
           pointBackgroundColor: balanceData.map((val, i, arr) => {
-            if (i === 0) return 'rgb(59, 130, 246)'; // Starting point - blue
+            if (i === 0) return 'rgb(16, 185, 129)'; // Starting point - green (no blue)
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
           pointBorderColor: '#ffffff',
-          pointBorderWidth: 3,
+          pointBorderWidth: 2,
           pointRadius: balanceData.map((_, i, arr) => {
             if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
             return 6;
           }),
           pointHoverRadius: 12
+        },
+        {
+          label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
+          data: new Array(labels.length).fill(pnlLineValue),
+          borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: '🔵 --- Highest Balance',
+          data: new Array(labels.length).fill(highestBalance),
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [5, 3],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: '🟣 --- Account Size',
+          data: new Array(labels.length).fill(accountSize),
+          borderColor: 'rgb(147, 51, 234)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [6, 2],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
         }
       ]
     };
@@ -2339,6 +2459,38 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const netProfit = parseFloat(trade.netProfit) || 0;
       return total + netProfit;
     }, 0);
+  }
+
+  calculateDaysSinceFirstTrade(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    // Find the earliest trade date
+    const earliestDate = this.tableData.reduce((earliest, trade) => {
+      const tradeDate = new Date(trade.openDate || '');
+      if (!earliest || tradeDate < earliest) {
+        return tradeDate;
+      }
+      return earliest;
+    }, null as Date | null);
+
+    if (!earliestDate || isNaN(earliestDate.getTime())) return 0;
+
+    // Calculate days between first trade and now
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - earliestDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  }
+
+  calculateTotalPercentageGain(): number {
+    const totalPnL = this.calculateTotalPnL();
+    const startingBalance = this.mt5AccountInfo?.starting_balance || 5000; // Fallback to 5000 if not available
+
+    if (startingBalance <= 0) return 0;
+
+    const percentage = (totalPnL / startingBalance) * 100;
+    return parseFloat(percentage.toFixed(2));
   }
 
   calculatePnLChangePercent(): string {
