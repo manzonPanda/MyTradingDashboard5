@@ -1572,6 +1572,14 @@ table.simple-table {
               color: var(--tf-negative);
               text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
             }
+
+            .percentage-gain {
+              font-size: 0.9rem;
+              font-weight: 600;
+              margin-left: 0.5rem;
+              opacity: 0.8;
+              display: inline-block;
+            }
           }
         }
 
