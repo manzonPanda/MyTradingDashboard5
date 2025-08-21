@@ -415,6 +415,14 @@ export class DashboardComponent implements AfterViewInit {
               ];
             }
 
+            // Handle Highest Balance Line tooltip
+            if (datasetLabel === 'Highest Balance') {
+              return [
+                `Highest Balance Reached: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                `Peak Performance Level`
+              ];
+            }
+
             // Handle Account Balance tooltip
             if (index === 0) {
               return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
