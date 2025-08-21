@@ -1845,8 +1845,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             data: [pnlLineValue],
             borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
             backgroundColor: 'transparent',
-            borderWidth: 3,
-            borderDash: [10, 5],
+            borderWidth: 1,
+            borderDash: [8, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
+          {
+            label: 'Highest Balance',
+            data: [startingBalance],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderDash: [5, 3],
             fill: false,
             tension: 0,
             pointRadius: 0,
@@ -4082,7 +4096,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    console.log('��� updateTableData called');
+    console.log('����� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
