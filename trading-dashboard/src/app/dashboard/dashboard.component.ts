@@ -1702,7 +1702,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`������ Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`���� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
@@ -1929,6 +1929,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderDash: [5, 3],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: '📊 Account Size',
+          data: new Array(labels.length).fill(accountSize),
+          borderColor: 'rgb(147, 51, 234)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderDash: [6, 2],
           fill: false,
           tension: 0,
           pointRadius: 0,
