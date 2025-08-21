@@ -371,8 +371,9 @@ export class DashboardComponent implements AfterViewInit {
           },
           color: '#64748b',
           filter: function(legendItem: any) {
-            // Show reference lines in legend
-            return legendItem.text.includes('Total P&L Line') ||
+            // Show main chart elements in legend
+            return legendItem.text === 'Account Balance' ||
+                   legendItem.text.includes('Total P&L Line') ||
                    legendItem.text === '🔵 --- Highest Balance' ||
                    legendItem.text === '🟣 --- Account Size';
           }
