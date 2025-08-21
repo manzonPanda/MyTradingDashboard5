@@ -373,8 +373,8 @@ export class DashboardComponent implements AfterViewInit {
           filter: function(legendItem: any) {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
-                   legendItem.text === 'Total P&L Line' ||
-                   legendItem.text === 'Highest Balance';
+                   legendItem.text === '💰 Total P&L Line' ||
+                   legendItem.text === '🔝 Highest Balance';
           }
         }
       },
@@ -995,7 +995,7 @@ onUpload(): void {
       console.log('Real-time trades:', loadedData);
       this.tableData = loadedData;
     }, (error) => {
-      console.warn('⚠��� Firestore realtime listener error - continuing in offline mode:', error.message);
+      console.warn('⚠️ Firestore realtime listener error - continuing in offline mode:', error.message);
       // Keep existing data, don't update
     });
   }
@@ -4372,7 +4372,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           // Step 6: If still no luck, try direct jQuery DataTable initialization
           setTimeout(() => {
             if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
-              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
+              console.log('��� Fallback: Direct jQuery DataTable initialization');
               $('#myTable').DataTable(this.dtOptions);
             }
           }, 300);
