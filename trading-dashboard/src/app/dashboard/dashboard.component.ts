@@ -373,9 +373,9 @@ export class DashboardComponent implements AfterViewInit {
           filter: function(legendItem: any) {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
-                   legendItem.text === '💰 Total P&L Line' ||
-                   legendItem.text === '🔝 Highest Balance' ||
-                   legendItem.text === '📊 Account Size';
+                   legendItem.text === 'Total P&L Line' ||
+                   legendItem.text === 'Highest Balance' ||
+                   legendItem.text === 'Account Size';
           }
         }
       },
