@@ -373,9 +373,9 @@ export class DashboardComponent implements AfterViewInit {
           filter: function(legendItem: any) {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
-                   legendItem.text === 'Total P&L Line' ||
-                   legendItem.text === 'Highest Balance' ||
-                   legendItem.text === 'Account Size';
+                   legendItem.text.includes('Total P&L Line') ||
+                   legendItem.text === '🔵 --- Highest Balance' ||
+                   legendItem.text === '🟣 --- Account Size';
           }
         }
       },
@@ -1852,7 +1852,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🔵 --- Highest Balance',
+            label: '�� --- Highest Balance',
             data: [startingBalance],
             borderColor: 'rgb(59, 130, 246)',
             backgroundColor: 'transparent',
@@ -4124,7 +4124,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    console.log('���� updateTableData called');
+    console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
