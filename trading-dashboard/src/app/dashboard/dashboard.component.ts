@@ -1702,7 +1702,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`���� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`������ Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
@@ -1874,6 +1874,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Calculate highest balance reached
     const highestBalance = Math.max(...balanceData);
+
+    // Get account size for purple reference line
+    const accountSize = this.calculateAccountSize();
 
     // Simple chart showing just account balance progression
     this.chartData = {
