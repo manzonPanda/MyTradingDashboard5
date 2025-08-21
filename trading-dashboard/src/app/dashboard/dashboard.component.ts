@@ -1838,7 +1838,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointHoverRadius: 12
           },
           {
-            label: '💰 Total P&L Line',
+            label: 'Total P&L Line',
             data: [pnlLineValue],
             borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
             backgroundColor: 'transparent',
@@ -1852,7 +1852,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🔝 Highest Balance',
+            label: 'Highest Balance',
             data: [startingBalance],
             borderColor: 'rgb(59, 130, 246)',
             backgroundColor: 'transparent',
@@ -1866,7 +1866,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '📊 Account Size',
+            label: 'Account Size',
             data: [accountSize],
             borderColor: 'rgb(147, 51, 234)',
             backgroundColor: 'transparent',
