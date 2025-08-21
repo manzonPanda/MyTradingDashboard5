@@ -360,7 +360,21 @@ export class DashboardComponent implements AfterViewInit {
     },
     plugins: {
       legend: {
-        display: false
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+            weight: 'normal'
+          },
+          color: '#64748b',
+          filter: function(legendItem: any) {
+            // Only show Account Balance and Total P&L Line in legend
+            return legendItem.text === 'Account Balance' || legendItem.text === 'Total P&L Line';
+          }
+        }
       },
       tooltip: {
         enabled: true,
@@ -4270,7 +4284,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.refreshDataTableWithAngularBinding();
 
     } catch (error) {
-      console.error('��� Error refreshing DataTable:', error);
+      console.error('❌ Error refreshing DataTable:', error);
     }
   }
 
