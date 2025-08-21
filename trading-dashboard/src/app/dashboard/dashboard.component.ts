@@ -406,12 +406,12 @@ export class DashboardComponent implements AfterViewInit {
             const datasetLabel = context.dataset.label;
 
             // Handle Total P&L Line tooltip
-            if (datasetLabel === 'Total P&L Line') {
+            if (datasetLabel === '💰 Total P&L Line') {
               return `Total P&L: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
 
             // Handle Highest Balance Line tooltip
-            if (datasetLabel === 'Highest Balance') {
+            if (datasetLabel === '🔝 Highest Balance') {
               return `Highest: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
 
@@ -4372,7 +4372,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           // Step 6: If still no luck, try direct jQuery DataTable initialization
           setTimeout(() => {
             if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
-              console.log('��� Fallback: Direct jQuery DataTable initialization');
+              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
               $('#myTable').DataTable(this.dtOptions);
             }
           }, 300);
