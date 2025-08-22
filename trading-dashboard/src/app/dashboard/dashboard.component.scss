@@ -310,31 +310,23 @@ table.simple-table {
 
         // Days with no news - make smaller
         &:has(.no-news) {
-          flex: 0.5;
-          min-width: 100px;
+          flex: 0.3;
+          min-width: 80px;
         }
 
-        // Days with 1-2 news items - normal size
-        &:has(.enhanced-news-list .time-group-container:nth-child(-n+2):nth-child(n+1)) {
-          flex: 1;
+        // Target Thursday specifically (4th day column - 0-indexed) for extra space
+        &:nth-child(4) {
+          flex: 4 !important;
+          min-width: 450px !important;
+          max-width: 600px;
         }
 
-        // Days with many news items (3+) - make larger
-        &:has(.enhanced-news-list .time-group-container:nth-child(n+3)) {
-          flex: 1.5;
-          min-width: 200px;
-        }
-
-        // Days with lots of news items (5+) - make much larger
-        &:has(.enhanced-news-list .time-group-container:nth-child(n+5)) {
-          flex: 3;
-          min-width: 320px;
-        }
-
-        // Days with excessive news items (6+) - make extra large
-        &:has(.enhanced-news-list .time-group-container:nth-child(n+6)) {
-          flex: 4;
-          min-width: 400px;
+        // Days with multiple time groups - make larger
+        .enhanced-news-list:has(.time-group-container ~ .time-group-container ~ .time-group-container) {
+          & {
+            flex: 2;
+            min-width: 250px;
+          }
         }
 
         &.current {
@@ -2437,7 +2429,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '🔴 LIVE';
+              content: '���� LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;
