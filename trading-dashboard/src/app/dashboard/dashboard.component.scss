@@ -303,10 +303,16 @@ table.simple-table {
           min-width: 200px;
         }
 
-        // Days with lots of news items (5+) - make even larger
+        // Days with lots of news items (5+) - make much larger
         &:has(.enhanced-news-list .time-group-container:nth-child(n+5)) {
-          flex: 2;
-          min-width: 240px;
+          flex: 3;
+          min-width: 320px;
+        }
+
+        // Days with excessive news items (6+) - make extra large
+        &:has(.enhanced-news-list .time-group-container:nth-child(n+6)) {
+          flex: 4;
+          min-width: 400px;
         }
 
         &.current {
