@@ -1381,6 +1381,15 @@ isRowAlreadySelected(row: any): boolean {
                     }
                   }
                 ]
+              },
+              "mup":{
+                "rich_text": [
+                  {
+                    "text": {
+                      "content": trade.mfe ? trade.mfe.toString() : "0"
+                    }
+                  }
+                ]
               }
             }
           },
