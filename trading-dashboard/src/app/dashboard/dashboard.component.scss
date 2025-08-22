@@ -266,11 +266,11 @@ table.simple-table {
       background: var(--tf-bg-tertiary);
       padding: 0.25rem;
       width: 100%;
+      height: calc(20vh - 4rem);
       border-radius: 8px;
       border: 1px solid var(--tf-border-primary);
       overflow-x: auto;
       overflow-y: hidden;
-      max-height: calc(20vh - 2rem);
 
       .day-column {
         display: flex;
