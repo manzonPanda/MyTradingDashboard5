@@ -273,6 +273,28 @@ table.simple-table {
       overflow-x: auto;
       overflow-y: hidden;
 
+      // Better scrollbar for horizontal scrolling
+      scrollbar-width: auto;
+      scrollbar-color: rgba(99, 102, 241, 0.6) rgba(99, 102, 241, 0.1);
+
+      &::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.6);
+        border-radius: 4px;
+
+        &:hover {
+          background: rgba(99, 102, 241, 0.8);
+        }
+      }
+
       .day-column {
         display: flex;
         flex-direction: column;
