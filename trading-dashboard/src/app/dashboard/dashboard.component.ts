@@ -1838,9 +1838,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointHoverRadius: 12
           },
           {
-            label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
+            label: '🟠 --- Total P&L Line',
             data: [pnlLineValue],
-            borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+            borderColor: 'rgb(249, 115, 22)',
             backgroundColor: 'transparent',
             borderWidth: 1,
             borderDash: [8, 4],
@@ -1852,9 +1852,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🔵 --- Profit target (8%)',
+            label: '🟢 --- Profit target (8%)',
             data: [startingBalance * 1.08],
-            borderColor: 'rgb(59, 130, 246)',
+            borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'transparent',
             borderWidth: 1,
             fill: false,
@@ -1923,9 +1923,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointHoverRadius: 12
         },
         {
-          label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
+          label: '🟠 --- Total P&L Line',
           data: new Array(labels.length).fill(pnlLineValue),
-          borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+          borderColor: 'rgb(249, 115, 22)',
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderDash: [8, 4],
@@ -1937,9 +1937,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: '🔵 --- Profit target (8%)',
+          label: '🟢 --- Profit target (8%)',
           data: new Array(labels.length).fill(startingBalance * 1.08),
-          borderColor: 'rgb(59, 130, 246)',
+          borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'transparent',
           borderWidth: 1,
           fill: false,
