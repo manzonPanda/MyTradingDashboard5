@@ -259,6 +259,7 @@ table.simple-table {
     width: 100%;
     max-width: none;
     flex: 1;
+    height: 180px;
 
     .trading-days-grid {
       display: flex;
@@ -266,7 +267,7 @@ table.simple-table {
       background: var(--tf-bg-tertiary);
       padding: 0.25rem;
       width: 100%;
-      height: calc(20vh - 4rem);
+      height: 180px;
       border-radius: 8px;
       border: 1px solid var(--tf-border-primary);
       overflow-x: auto;
