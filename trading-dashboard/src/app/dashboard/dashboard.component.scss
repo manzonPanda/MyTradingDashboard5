@@ -1464,7 +1464,6 @@ table.simple-table {
 
   .trading-chart-container {
     flex: 2;
-    min-height: 850px;
     background: var(--tf-bg-card);
     border: 1px solid var(--tf-border-primary);
     border-radius: 16px;
@@ -1630,7 +1629,6 @@ table.simple-table {
     .chart-canvas-wrapper {
       position: relative;
       height: 650px;
-      padding: 2rem;
       background: linear-gradient(180deg,
         rgba(255, 255, 255, 0.8),
         rgba(248, 250, 252, 0.4)
