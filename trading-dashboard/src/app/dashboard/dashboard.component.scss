@@ -401,11 +401,11 @@ table.simple-table {
           }
           padding: 0.2rem;
           flex: 1;
-          height: 100%;
+          height: calc(180px - 35px);
           overflow-y: auto;
           overflow-x: hidden;
-          scrollbar-width: thin;
-          scrollbar-color: var(--tf-border-primary) transparent;
+          scrollbar-width: auto;
+          scrollbar-color: rgba(99, 102, 241, 0.6) rgba(99, 102, 241, 0.1);
 
           &.current-day-news {
             background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
