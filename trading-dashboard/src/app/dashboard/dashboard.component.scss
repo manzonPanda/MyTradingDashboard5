@@ -230,7 +230,7 @@ table.simple-table {
   position: sticky;
   top: 0;
   z-index: 100;
-  height: 30vh;
+  height: 40vh;
 
   .header-content {
     display: flex;
@@ -239,7 +239,7 @@ table.simple-table {
     max-width: 100%;
     margin: 0;
     gap: 1.5rem;
-    min-height: 180px;
+    min-height: 120px;
   }
 
   .header-left-section {
@@ -322,7 +322,7 @@ table.simple-table {
           justify-content: center;
           align-items: center;
           gap: 0.25rem;
-          padding: 0.3rem 0.25rem;
+          padding: 0.2rem 0.25rem;
           background: var(--tf-bg-secondary);
           border-bottom: 1px solid var(--tf-border-primary);
           position: relative;
