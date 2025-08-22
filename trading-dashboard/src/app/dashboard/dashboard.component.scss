@@ -412,16 +412,21 @@ table.simple-table {
           }
 
           &::-webkit-scrollbar {
-            width: 3px;
+            width: 6px;
           }
 
           &::-webkit-scrollbar-track {
-            background: transparent;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 3px;
           }
 
           &::-webkit-scrollbar-thumb {
-            background: var(--tf-border-primary);
+            background: rgba(99, 102, 241, 0.6);
             border-radius: 3px;
+
+            &:hover {
+              background: rgba(99, 102, 241, 0.8);
+            }
           }
 
           .news-loading-container {
