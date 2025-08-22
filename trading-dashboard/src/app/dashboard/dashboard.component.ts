@@ -374,7 +374,7 @@ export class DashboardComponent implements AfterViewInit {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Total P&L Line') ||
-                   legendItem.text === '🔵 --- Highest Balance' ||
+                   legendItem.text === '🟢 --- Profit target (8%)' ||
                    legendItem.text === '🟣 --- Account Size';
           }
         }
@@ -444,16 +444,22 @@ export class DashboardComponent implements AfterViewInit {
         display: true,
         grid: {
           display: true,
-          color: 'rgba(0, 0, 0, 0.08)'
+          color: 'rgba(0, 0, 0, 0.08)',
+          lineWidth: 1
         },
         ticks: {
+          maxTicksLimit: 15,
+          stepSize: 50,
           font: {
-            size: 14,
+            size: 13,
             weight: 'normal'
           },
           color: '#64748b',
           callback: function(value: any) {
-            return '$' + value.toLocaleString();
+            return '$' + value.toLocaleString('en-US', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            });
           }
         },
         title: {
@@ -1847,9 +1853,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointHoverRadius: 12
           },
           {
-            label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
+            label: '🟠 --- Total P&L Line',
             data: [pnlLineValue],
-            borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+            borderColor: 'rgb(249, 115, 22)',
             backgroundColor: 'transparent',
             borderWidth: 1,
             borderDash: [8, 4],
@@ -1861,12 +1867,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🔵 --- Highest Balance',
-            data: [startingBalance],
-            borderColor: 'rgb(59, 130, 246)',
+            label: '🟢 --- Profit target (8%)',
+            data: [startingBalance * 1.08],
+            borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'transparent',
             borderWidth: 1,
-            borderDash: [5, 3],
             fill: false,
             tension: 0,
             pointRadius: 0,
@@ -1880,7 +1885,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             borderColor: 'rgb(147, 51, 234)',
             backgroundColor: 'transparent',
             borderWidth: 1,
-            borderDash: [6, 2],
             fill: false,
             tension: 0,
             pointRadius: 0,
@@ -1934,9 +1938,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointHoverRadius: 12
         },
         {
-          label: currentTotalPnL >= 0 ? '🟢 --- Total P&L Line' : '🔴 --- Total P&L Line',
+          label: '🟠 --- Total P&L Line',
           data: new Array(labels.length).fill(pnlLineValue),
-          borderColor: currentTotalPnL >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)',
+          borderColor: 'rgb(249, 115, 22)',
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderDash: [8, 4],
@@ -1948,12 +1952,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: '🔵 --- Highest Balance',
-          data: new Array(labels.length).fill(highestBalance),
-          borderColor: 'rgb(59, 130, 246)',
+          label: '🟢 --- Profit target (8%)',
+          data: new Array(labels.length).fill(startingBalance * 1.08),
+          borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'transparent',
           borderWidth: 1,
-          borderDash: [5, 3],
           fill: false,
           tension: 0,
           pointRadius: 0,
@@ -1967,7 +1970,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           borderColor: 'rgb(147, 51, 234)',
           backgroundColor: 'transparent',
           borderWidth: 1,
-          borderDash: [6, 2],
           fill: false,
           tension: 0,
           pointRadius: 0,
@@ -4167,7 +4169,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableData(): void {
     console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
