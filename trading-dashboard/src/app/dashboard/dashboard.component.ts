@@ -373,9 +373,9 @@ export class DashboardComponent implements AfterViewInit {
           filter: function(legendItem: any) {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
-                   legendItem.text.includes('Total P&L Line') ||
+                   legendItem.text.includes('Current P&L') ||
                    legendItem.text === '🟢 --- Profit target (8%)' ||
-                   legendItem.text === '🟣 --- Account Size';
+                   legendItem.text === '🟣 --- Starting Balance';
           }
         }
       },
@@ -1853,7 +1853,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointHoverRadius: 12
           },
           {
-            label: '🟠 --- Total P&L Line',
+            label: '🟠 --- Current P&L',
             data: [pnlLineValue],
             borderColor: 'rgb(249, 115, 22)',
             backgroundColor: 'transparent',
@@ -1871,7 +1871,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             data: [startingBalance * 1.08],
             borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'transparent',
-            borderWidth: 1,
+            borderWidth: 3,
             fill: false,
             tension: 0,
             pointRadius: 0,
@@ -1880,7 +1880,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🟣 --- Account Size',
+            label: '🟣 --- Starting Balance',
             data: [accountSize],
             borderColor: 'rgb(147, 51, 234)',
             backgroundColor: 'transparent',
@@ -1938,7 +1938,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointHoverRadius: 12
         },
         {
-          label: '🟠 --- Total P&L Line',
+          label: '🟠 --- Current P&L',
           data: new Array(labels.length).fill(pnlLineValue),
           borderColor: 'rgb(249, 115, 22)',
           backgroundColor: 'transparent',
@@ -1956,7 +1956,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           data: new Array(labels.length).fill(startingBalance * 1.08),
           borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'transparent',
-          borderWidth: 1,
+          borderWidth: 3,
           fill: false,
           tension: 0,
           pointRadius: 0,
@@ -1965,7 +1965,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: '🟣 --- Account Size',
+          label: '🟣 --- Starting Balance',
           data: new Array(labels.length).fill(accountSize),
           borderColor: 'rgb(147, 51, 234)',
           backgroundColor: 'transparent',
