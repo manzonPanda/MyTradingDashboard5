@@ -444,16 +444,22 @@ export class DashboardComponent implements AfterViewInit {
         display: true,
         grid: {
           display: true,
-          color: 'rgba(0, 0, 0, 0.08)'
+          color: 'rgba(0, 0, 0, 0.08)',
+          lineWidth: 1
         },
         ticks: {
+          maxTicksLimit: 15,
+          stepSize: 50,
           font: {
-            size: 14,
+            size: 13,
             weight: 'normal'
           },
           color: '#64748b',
           callback: function(value: any) {
-            return '$' + value.toLocaleString();
+            return '$' + value.toLocaleString('en-US', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            });
           }
         },
         title: {
@@ -4154,7 +4160,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableData(): void {
     console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('��� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
