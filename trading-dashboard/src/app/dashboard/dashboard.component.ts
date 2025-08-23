@@ -148,6 +148,9 @@ export class DashboardComponent implements AfterViewInit {
   isLoadingMT5Data = false;
   isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
+  // Profit target configuration
+  profitTargetPercentage: number = 8; // Default 8%
+  profitTargetOptions: number[] = [3, 4, 5, 6, 7, 8];
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
