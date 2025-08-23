@@ -404,8 +404,8 @@
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
             <div class="metric-percentage positive">+{{ calculateAvgWinPercentage() | number:'1.2-2' }}%</div>
+            <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
             <div class="metric-subtitle">Per winning trade</div>
           </div>
         </div>
@@ -420,8 +420,8 @@
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
             <div class="metric-percentage negative">-{{ calculateAvgLossPercentage() | number:'1.2-2' }}%</div>
+            <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
             <div class="metric-subtitle">Per losing trade</div>
           </div>
         </div>
