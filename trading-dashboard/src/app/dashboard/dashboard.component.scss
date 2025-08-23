@@ -1506,8 +1506,8 @@ table.simple-table {
 // Metrics Section
 .metrics-section {
   padding: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
 
   .metrics-container {
     display: flex;
@@ -4900,7 +4900,7 @@ table.simple-table {
     box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 
     &::after {
-      content: '���';
+      content: '✓';
       position: absolute;
       right: 0.25rem;
       top: 50%;
