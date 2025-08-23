@@ -381,6 +381,7 @@ export class DashboardComponent implements AfterViewInit {
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
                    legendItem.text.includes('Profit target') ||
+                   legendItem.text.includes('Max loss') ||
                    legendItem.text === '🟣 --- Starting Balance';
           }
         }
