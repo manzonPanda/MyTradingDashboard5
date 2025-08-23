@@ -1934,6 +1934,21 @@ table.simple-table {
     line-height: 1.2;
   }
 
+  .metric-percentage {
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 0.1rem;
+
+    &.positive {
+      color: var(--tf-positive);
+    }
+
+    &.negative {
+      color: var(--tf-negative);
+    }
+  }
+
   .metric-loading {
     display: flex;
     flex-direction: column;
