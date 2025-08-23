@@ -484,21 +484,6 @@
           </div>
         </div>
 
-        <div class="metric-card account-size">
-          <div class="metric-header">
-            <h3 class="metric-title">Account Size</h3>
-            <mat-icon class="metric-icon">account_balance</mat-icon>
-          </div>
-          <div *ngIf="isLoadingMetrics" class="metric-loading">
-            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
-            <span class="loading-text">Loading...</span>
-          </div>
-          <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-value">{{ (mt5AccountInfo.starting_balance) | currency }}</div>
-            <div class="metric-subtitle">Starting balance</div>
-          </div>
-        </div>
-
         <div class="metric-card avg-trade-duration">
           <div class="metric-header">
             <h3 class="metric-title">Avg. Trade Duration</h3>
