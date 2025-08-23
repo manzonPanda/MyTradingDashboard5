@@ -1511,12 +1511,13 @@ table.simple-table {
 
   .metrics-container {
     display: flex;
+    flex-direction: column;
     gap: 2rem;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .trading-chart-container {
-    flex: 2;
+    width: 100%;
     background: var(--tf-bg-card);
     border: 1px solid var(--tf-border-primary);
     border-radius: 16px;
