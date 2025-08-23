@@ -1777,6 +1777,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.generateTradingChartData();
   }
 
+  onProfitTargetChange() {
+    // Regenerate chart data when profit target changes
+    this.generateTradingChartData();
+    this.cdr.detectChanges();
+  }
+
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
