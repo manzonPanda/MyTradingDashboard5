@@ -1997,6 +1997,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
+          label: `🔴 --- Max loss (${this.maxLossPercentage}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 - this.maxLossPercentage / 100)),
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'transparent',
+          borderWidth: 3,
+          borderDash: [6, 6],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
           label: '🟣 --- Starting Balance',
           data: new Array(labels.length).fill(accountSize),
           borderColor: 'rgb(147, 51, 234)',
