@@ -1679,7 +1679,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           body.start_cursor = startCursor;
         }
 
-        console.log(`📤 Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
+        console.log(`���� Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
 
         // Use the proxy endpoint that matches your database ID exactly
         const proxyResponse: any = await firstValueFrom(
@@ -2682,6 +2682,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     const profits = this.tableData.map(trade => parseFloat(trade.netProfit) || 0);
     return Math.max(...profits, 0);
+  }
+
+  calculateBestProfitPercentage(): number {
+    const bestProfit = this.calculateBestProfit();
+    const accountSize = this.mt5AccountInfo?.starting_balance || this.calculateAccountSize() || 5000;
+
+    if (bestProfit <= 0 || accountSize <= 0) return 0;
+
+    return (bestProfit / accountSize) * 100;
   }
 
   // Emotional tracking methods for individual trades
