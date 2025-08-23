@@ -151,6 +151,9 @@ export class DashboardComponent implements AfterViewInit {
   // Profit target configuration
   profitTargetPercentage: number = 8; // Default 8%
   profitTargetOptions: number[] = [3, 4, 5, 6, 7, 8];
+  // Max loss configuration
+  maxLossPercentage: number = 5; // Default 5%
+  maxLossOptions: number[] = [3, 4, 5, 6, 8, 10];
   //uploading progress bar
   uploadProgress: number = 0;
   isUploading: boolean = false;
@@ -1682,7 +1685,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           body.start_cursor = startCursor;
         }
 
-        console.log(`���� Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
+        console.log(`����� Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
 
         // Use the proxy endpoint that matches your database ID exactly
         const proxyResponse: any = await firstValueFrom(
