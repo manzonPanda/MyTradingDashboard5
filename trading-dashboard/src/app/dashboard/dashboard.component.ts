@@ -377,7 +377,7 @@ export class DashboardComponent implements AfterViewInit {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
-                   legendItem.text === `🟢 --- Profit target (${this.profitTargetPercentage}%)` ||
+                   legendItem.text.includes('Profit target') ||
                    legendItem.text === '🟣 --- Starting Balance';
           }
         }
