@@ -1685,7 +1685,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           body.start_cursor = startCursor;
         }
 
-        console.log(`����� Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
+        console.log(`���� Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
 
         // Use the proxy endpoint that matches your database ID exactly
         const proxyResponse: any = await firstValueFrom(
@@ -1782,6 +1782,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   onProfitTargetChange() {
     // Regenerate chart data when profit target changes
+    this.generateTradingChartData();
+    this.cdr.detectChanges();
+  }
+
+  onMaxLossChange() {
+    // Regenerate chart data when max loss changes
     this.generateTradingChartData();
     this.cdr.detectChanges();
   }
