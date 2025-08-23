@@ -2632,6 +2632,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return totalLosses / losingTrades.length;
   }
 
+  calculateAvgWinPercentage(): number {
+    const avgWin = this.calculateAvgWin();
+    const accountSize = this.mt5AccountInfo?.starting_balance || this.calculateAccountSize() || 5000;
+
+    if (avgWin <= 0 || accountSize <= 0) return 0;
+
+    return (avgWin / accountSize) * 100;
+  }
+
+  calculateAvgLossPercentage(): number {
+    const avgLoss = Math.abs(this.calculateAvgLoss());
+    const accountSize = this.mt5AccountInfo?.starting_balance || this.calculateAccountSize() || 5000;
+
+    if (avgLoss <= 0 || accountSize <= 0) return 0;
+
+    return (avgLoss / accountSize) * 100;
+  }
+
   calculateExpectancy(): number {
     const totalTrades = this.getTotalTrades();
     if (totalTrades === 0) return 0;
