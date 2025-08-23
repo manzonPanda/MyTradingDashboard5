@@ -348,6 +348,19 @@
                   </option>
                 </select>
               </div>
+              <div class="profit-target-selector">
+                <label for="maxLoss" class="profit-target-label">Max Loss:</label>
+                <select
+                  id="maxLoss"
+                  class="profit-target-dropdown"
+                  [(ngModel)]="maxLossPercentage"
+                  (change)="onMaxLossChange()"
+                  title="Select Maximum Loss">
+                  <option *ngFor="let loss of maxLossOptions" [value]="loss">
+                    {{ loss }}%
+                  </option>
+                </select>
+              </div>
               <button class="chart-refresh-btn" (click)="refreshChart()" title="Refresh Chart">
                 <mat-icon>refresh</mat-icon>
               </button>
