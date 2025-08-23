@@ -1955,8 +1955,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: '🟢 --- Profit target (8%)',
-          data: new Array(labels.length).fill(startingBalance * 1.08),
+          label: `🟢 --- Profit target (${this.profitTargetPercentage}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 + this.profitTargetPercentage / 100)),
           borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'transparent',
           borderWidth: 3,
