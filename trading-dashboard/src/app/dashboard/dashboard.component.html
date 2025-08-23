@@ -335,6 +335,19 @@
               <span class="stat-value">{{ calculateWinRate() }}%</span>
             </div>
             <div class="chart-controls">
+              <div class="profit-target-selector">
+                <label for="profitTarget" class="profit-target-label">Target:</label>
+                <select
+                  id="profitTarget"
+                  class="profit-target-dropdown"
+                  [(ngModel)]="profitTargetPercentage"
+                  (change)="onProfitTargetChange()"
+                  title="Select Profit Target">
+                  <option *ngFor="let target of profitTargetOptions" [value]="target">
+                    {{ target }}%
+                  </option>
+                </select>
+              </div>
               <button class="chart-refresh-btn" (click)="refreshChart()" title="Refresh Chart">
                 <mat-icon>refresh</mat-icon>
               </button>
