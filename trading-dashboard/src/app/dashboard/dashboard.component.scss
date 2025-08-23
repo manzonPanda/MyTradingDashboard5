@@ -5043,22 +5043,6 @@ table.simple-table {
       }
     }
   }
-  background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-  border-radius: 20px;
-  margin-bottom: 2rem;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--tf-accent-primary), var(--tf-accent-info), var(--tf-positive));
-    border-radius: 20px 20px 0 0;
-  }
 
   .analytics-hero-header {
     display: flex;
