@@ -444,23 +444,35 @@ export class ConfettiService {
 
   private stopCelebration(): void {
     this.isPlaying = false;
-    
+
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
-    
+
     if (this.canvas) {
       this.canvas.remove();
       this.canvas = null;
+      this.ctx = null;
     }
-    
+
     const textOverlay = document.getElementById('celebration-text');
     if (textOverlay) {
-      textOverlay.remove();
+      // Smooth fade out
+      textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
+      setTimeout(() => {
+        if (textOverlay.parentNode) {
+          textOverlay.remove();
+        }
+      }, 500);
     }
-    
+
     this.particles = [];
+  }
+
+  // Public method to manually stop celebration
+  stopCurrentCelebration(): void {
+    this.stopCelebration();
   }
 
   // Public method to trigger different types of celebrations
