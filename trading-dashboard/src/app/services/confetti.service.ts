@@ -345,7 +345,7 @@ export class ConfettiService {
     // Create subtitle
     const subtitle = document.createElement('div');
     subtitle.className = 'celebration-subtitle';
-    subtitle.innerHTML = '🚀 YOU\'RE ABSOLUTELY CRUSHING IT! 🚀<br>💰 KEEP THIS MOMENTUM GOING! 💰';
+    subtitle.innerHTML = '🚀 CONGRATULATIONS! 💰';
     subtitle.style.cssText = `
       font-size: 1.5rem;
       font-weight: bold;
@@ -480,7 +480,7 @@ export class ConfettiService {
     this.celebrate({
       text: `🎉 ${targetPercentage}% PROFIT TARGET REACHED! 🎉`,
       duration: 0, // Persistent display, no auto-hide
-      particleCount: 400, // More confetti for extra celebration!
+      particleCount: 500, // More confetti for extra celebration!
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548']
     });
   }
@@ -489,7 +489,7 @@ export class ConfettiService {
     this.celebrate({
       text: `💰 MASSIVE WIN! +$${amount.toFixed(2)} 💰<br><span style="font-size: 0.6em;">Keep this momentum going! 🔥</span>`,
       duration: 4000,
-      particleCount: 100,
+      particleCount: 400,
       colors: ['#FFD700', '#32CD32', '#00FF7F', '#ADFF2F']
     });
   }
