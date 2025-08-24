@@ -4635,32 +4635,59 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   private checkForProfitTargetCelebration(): void {
     const currentPercentageGain = this.calculateTotalPercentageGain();
 
-    // Only celebrate if we've reached the target and haven't celebrated this target yet
-    if (currentPercentageGain >= this.profitTarget && !this.hasCelebratedCurrentTarget) {
-      console.log('🎉 PROFIT TARGET REACHED! Triggering celebration...', {
-        currentGain: currentPercentageGain,
-        target: this.profitTarget
-      });
+    // Show celebration whenever we're at or above target
+    if (currentPercentageGain >= this.profitTarget) {
+      // Only trigger if we haven't celebrated this target yet
+      if (!this.hasCelebratedCurrentTarget) {
+        console.log('🎉 PROFIT TARGET REACHED! Triggering celebration...', {
+          currentGain: currentPercentageGain,
+          target: this.profitTarget
+        });
 
-      // Mark as celebrated to prevent multiple celebrations
-      this.hasCelebratedCurrentTarget = true;
-      this.lastCelebratedTarget = this.profitTarget;
+        // Mark as celebrated to prevent multiple triggers
+        this.hasCelebratedCurrentTarget = true;
+        this.lastCelebratedTarget = this.profitTarget;
 
-      // Trigger the amazing confetti celebration!
-      this.confetti.celebrateProfitTarget(this.profitTarget);
+        // Trigger the amazing persistent confetti celebration!
+        this.confetti.celebrateProfitTarget(this.profitTarget);
 
-      // Optional: Also celebrate big wins (trades over $100 profit)
-      const totalPnL = this.calculateTotalPnL();
-      if (totalPnL >= 100) {
-        setTimeout(() => {
-          this.confetti.celebrateBigWin(totalPnL);
-        }, 2000); // Delay to avoid overlapping celebrations
+        // Optional: Also play sound for big wins (trades over $100 profit)
+        const totalPnL = this.calculateTotalPnL();
+        if (totalPnL >= 100) {
+          this.playCelebrationSound();
+        }
+      }
+    } else {
+      // If we fall below target, stop celebration and reset flag
+      if (this.hasCelebratedCurrentTarget) {
+        console.log('📉 Below profit target, stopping celebration...');
+        this.confetti.stopCurrentCelebration();
+        this.hasCelebratedCurrentTarget = false;
       }
     }
+  }
 
-    // Reset celebration flag if we fall below target (for future celebrations)
-    if (currentPercentageGain < this.profitTarget && this.hasCelebratedCurrentTarget) {
-      this.hasCelebratedCurrentTarget = false;
+  // Helper method to play celebration sound
+  private playCelebrationSound(): void {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.warn('Could not play celebration sound:', error);
     }
   }
 
