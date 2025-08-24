@@ -433,10 +433,10 @@ export class ConfettiService {
   // Public method to trigger different types of celebrations
   celebrateProfitTarget(targetPercentage: number): void {
     this.celebrate({
-      text: `🎉 ${targetPercentage}% PROFIT TARGET REACHED! 🎉<br><span style="font-size: 0.6em;">You're absolutely crushing it! 🚀</span>`,
-      duration: 5000,
-      particleCount: 200,
-      colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3']
+      text: `🎉 ${targetPercentage}% PROFIT TARGET REACHED! 🎉`,
+      duration: 0, // Persistent display, no auto-hide
+      particleCount: 400, // More confetti for extra celebration!
+      colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548']
     });
   }
 
