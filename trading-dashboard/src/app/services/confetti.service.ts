@@ -354,10 +354,11 @@ export class ConfettiService {
     subtitle.className = 'celebration-subtitle';
     subtitle.innerHTML = '🚀 CONGRATULATIONS! 💰';
     subtitle.style.cssText = `
-      font-size: 1.5rem;
+      font-size: 2.5rem;
       font-weight: bold;
       margin-bottom: 30px;
       color: white;
+      white-space: nowrap;
       text-shadow:
         0 0 8px rgba(255, 255, 255, 0.9),
         0 0 16px rgba(255, 215, 0, 0.8),
