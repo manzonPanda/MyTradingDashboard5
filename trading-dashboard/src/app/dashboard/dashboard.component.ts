@@ -4634,7 +4634,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // Test method to manually trigger confetti (for development/testing)
   testConfettiCelebration(): void {
     console.log('🧪 Testing confetti celebration manually...');
-    this.confetti.celebrateProfitTarget(this.profitTarget);
+    // Stop any existing celebration first
+    this.confetti.stopCurrentCelebration();
+    // Start new celebration
+    setTimeout(() => {
+      this.confetti.celebrateProfitTarget(this.profitTarget);
+    }, 100);
   }
 
   // Check for profit target achievement and trigger celebration
