@@ -234,14 +234,6 @@
           background: linear-gradient(90deg, var(--calendar-positive) 0%, rgba(16, 185, 129, 0.6) 100%);
         }
 
-        &::after {
-          content: '💚';
-          position: absolute;
-          top: 0.5rem;
-          right: 0.5rem;
-          font-size: 0.75rem;
-          opacity: 0.8;
-        }
 
         &:hover {
           background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(34, 197, 94, 0.25) 100%) !important;
