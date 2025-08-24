@@ -487,6 +487,9 @@ export class DashboardComponent implements AfterViewInit {
   }
 
 async ngOnInit() {
+    // Load saved trading settings
+    this.loadTradingSettings();
+
     const socket = io("http://localhost:5000",{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
