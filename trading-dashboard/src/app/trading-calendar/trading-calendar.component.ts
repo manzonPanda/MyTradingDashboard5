@@ -93,7 +93,8 @@ interface WeekSummary {
               <div class="day-number">{{ day.date.getDate() }}</div>
               <div class="day-content" *ngIf="day.tradeCount > 0">
                 <div class="day-net-pnl" [ngClass]="getDayPnLClass(day.pnl)">
-                  {{ formatCurrency(day.pnl) }}
+                  
+                  {{ formatPercentage(day.dailyPercentage) }}
                 </div>
                 <div class="day-win-loss-amounts">
                   <div class="amounts-row">
@@ -114,7 +115,8 @@ interface WeekSummary {
                     <span class="loss-count">{{ day.lossCount }}L</span>
                   </div>
                   <div class="day-percentage" [ngClass]="getDayPnLClass(day.pnl)">
-                    {{ formatPercentage(day.dailyPercentage) }}
+                   
+                    {{ formatCurrency(day.pnl) }}
                   </div>
                 </div>
               </div>
