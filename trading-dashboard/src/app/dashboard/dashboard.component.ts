@@ -504,7 +504,7 @@ async ngOnInit() {
 
   socket.on("account_info", (data) => {
     this.mt5AccountInfo = data;
-    console.warn("����� Account Info Received:", data);
+    console.warn("���� Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
@@ -1026,7 +1026,7 @@ onUpload(): void {
         console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
-        console.warn('����️ Firestore connection issue - operating in offline mode:', error.message);
+        console.warn('���️ Firestore connection issue - operating in offline mode:', error.message);
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
@@ -1648,7 +1648,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.log('✅ News reminder notification sent:', title);
       }
     } catch (error) {
-      console.error('❌ Error sending notification:', error);
+      console.error('��� Error sending notification:', error);
     }
   }
 
@@ -4585,7 +4585,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   onMaxLossChange(): void {
     console.log('🛑 Max loss changed to:', this.maxLoss + '%');
-    // You can add logic here to update risk management calculations
+
+    // Add visual feedback
+    const dropdowns = document.querySelectorAll('.setting-dropdown');
+    const maxLossDropdown = dropdowns[1] as HTMLElement; // Second dropdown is max loss
+    if (maxLossDropdown) {
+      maxLossDropdown.classList.add('value-changed');
+      setTimeout(() => maxLossDropdown.classList.remove('value-changed'), 600);
+    }
+
     this.updateTradingTargets();
   }
 
