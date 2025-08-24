@@ -4230,6 +4230,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateTableDataOnly(): void {
     this.tableData = [...this.mt5LiveTrades, ];
+
+    // Check for profit target achievement on live updates
+    this.checkForProfitTargetCelebration();
   }
 
   updateTableData(): void {
