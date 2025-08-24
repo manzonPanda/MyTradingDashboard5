@@ -341,10 +341,10 @@ export class ConfettiService {
       text-shadow:
         0 0 10px rgba(255, 255, 255, 0.9),
         0 0 20px rgba(255, 215, 0, 0.8),
-        0 0 30px rgba(255, 107, 107, 0.7),
-        0 0 40px rgba(78, 205, 196, 0.6),
-        0 0 50px rgba(138, 43, 226, 0.5),
-        0 0 60px rgba(255, 20, 147, 0.4);
+        0 0 30px rgba(78, 205, 196, 0.7),
+        0 0 40px rgba(138, 43, 226, 0.6),
+        0 0 50px rgba(0, 150, 255, 0.5),
+        0 0 60px rgba(0, 255, 127, 0.4);
       animation: celebrationPulse 1.5s ease-in-out infinite alternate, rainbowGlow 2s ease-in-out infinite;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
     `;
