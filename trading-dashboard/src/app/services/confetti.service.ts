@@ -81,35 +81,37 @@ export class ConfettiService {
 
   celebrate(config: ConfettiConfig = {}): void {
     if (this.isPlaying) return; // Prevent multiple celebrations at once
-    
+
     const defaultConfig: Required<ConfettiConfig> = {
-      duration: 4000,
-      particleCount: 150,
+      duration: 0, // 0 means no auto-hide, display permanently
+      particleCount: 300, // Increased from 150 to 300 for more confetti!
       text: '🎉 PROFIT TARGET REACHED! 🎉',
       playSound: true,
-      colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF']
+      colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
     };
 
     const finalConfig = { ...defaultConfig, ...config };
-    
+
     this.isPlaying = true;
     this.setupCanvas();
     this.createParticles(finalConfig.particleCount, finalConfig.colors);
-    
+
     if (finalConfig.playSound) {
       this.playCelebrationSound();
     }
-    
+
     if (finalConfig.text) {
       this.showCelebrationText(finalConfig.text, finalConfig.duration);
     }
-    
+
     this.startAnimation();
-    
-    // Auto-stop after duration
-    setTimeout(() => {
-      this.stopCelebration();
-    }, finalConfig.duration);
+
+    // Only auto-stop if duration is specified (> 0)
+    if (finalConfig.duration > 0) {
+      setTimeout(() => {
+        this.stopCelebration();
+      }, finalConfig.duration);
+    }
   }
 
   private setupCanvas(): void {
