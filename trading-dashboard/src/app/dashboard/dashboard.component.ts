@@ -1899,6 +1899,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointHoverRadius: 0,
             pointBackgroundColor: 'transparent',
             pointBorderColor: 'transparent'
+          },
+          {
+            label: `🔴 --- Max loss (${this.maxLoss}%)`,
+            data: [startingBalance * (1 - this.maxLoss / 100)],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
           }
         ]
       };
@@ -4232,7 +4246,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
-    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('��� Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
 
