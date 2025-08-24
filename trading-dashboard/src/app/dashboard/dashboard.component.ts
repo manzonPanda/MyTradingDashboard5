@@ -31,6 +31,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
+import { ConfettiService } from '../services/confetti.service';
 
 declare var $: any;
 
@@ -296,6 +297,10 @@ export class DashboardComponent implements AfterViewInit {
   profitTarget: number = 5; // Default 5%
   maxLoss: number = 2; // Default 2%
 
+  // Confetti celebration tracking
+  private lastCelebratedTarget: number = 0;
+  private hasCelebratedCurrentTarget: boolean = false;
+
   // Chart configuration for beautiful trading visualization
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
@@ -480,7 +485,7 @@ export class DashboardComponent implements AfterViewInit {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
@@ -4225,6 +4230,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateTableDataOnly(): void {
     this.tableData = [...this.mt5LiveTrades, ];
+
+    // Check for profit target achievement on live updates
+    this.checkForProfitTargetCelebration();
   }
 
   updateTableData(): void {
@@ -4250,6 +4258,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
+
+    // Check for profit target achievement and celebrate! 🎉
+    this.checkForProfitTargetCelebration();
   }
 
   // Update chart with real-time trade data
@@ -4607,7 +4618,88 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       setTimeout(() => dropdown.classList.remove('value-changed'), 600);
     }
 
+    // Stop any existing celebration and reset tracking for new target
+    this.confetti.stopCurrentCelebration();
+    this.hasCelebratedCurrentTarget = false;
+    this.lastCelebratedTarget = 0;
+
     this.updateTradingTargets();
+
+    // Check if we should immediately celebrate the new target
+    setTimeout(() => {
+      this.checkForProfitTargetCelebration();
+    }, 100);
+  }
+
+  // Test method to manually trigger confetti (for development/testing)
+  testConfettiCelebration(): void {
+    console.log('🧪 Testing confetti celebration manually...');
+    // Stop any existing celebration first
+    this.confetti.stopCurrentCelebration();
+    // Start new celebration
+    setTimeout(() => {
+      this.confetti.celebrateProfitTarget(this.profitTarget);
+    }, 100);
+  }
+
+  // Check for profit target achievement and trigger celebration
+  private checkForProfitTargetCelebration(): void {
+    const currentPercentageGain = this.calculateTotalPercentageGain();
+
+    // Show celebration whenever we're at or above target
+    if (currentPercentageGain >= this.profitTarget) {
+      // Only trigger if we haven't celebrated this target yet
+      if (!this.hasCelebratedCurrentTarget) {
+        console.log('🎉 PROFIT TARGET REACHED! Triggering celebration...', {
+          currentGain: currentPercentageGain,
+          target: this.profitTarget
+        });
+
+        // Mark as celebrated to prevent multiple triggers
+        this.hasCelebratedCurrentTarget = true;
+        this.lastCelebratedTarget = this.profitTarget;
+
+        // Trigger the amazing persistent confetti celebration!
+        this.confetti.celebrateProfitTarget(this.profitTarget);
+
+        // Optional: Also play sound for big wins (trades over $100 profit)
+        const totalPnL = this.calculateTotalPnL();
+        if (totalPnL >= 100) {
+          this.playCelebrationSound();
+        }
+      }
+    } else {
+      // If we fall below target, stop celebration and reset flag
+      if (this.hasCelebratedCurrentTarget) {
+        console.log('📉 Below profit target, stopping celebration...');
+        this.confetti.stopCurrentCelebration();
+        this.hasCelebratedCurrentTarget = false;
+      }
+    }
+  }
+
+  // Helper method to play celebration sound
+  private playCelebrationSound(): void {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.warn('Could not play celebration sound:', error);
+    }
   }
 
   onMaxLossChange(): void {
@@ -4648,6 +4740,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (savedMaxLoss) {
       this.maxLoss = parseInt(savedMaxLoss);
     }
+
+    // Reset celebration tracking when component initializes
+    this.hasCelebratedCurrentTarget = false;
+    this.lastCelebratedTarget = 0;
   }
 
 }
