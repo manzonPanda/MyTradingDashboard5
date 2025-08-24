@@ -88,7 +88,10 @@ interface WeekSummary {
                 'today': day.isToday,
                 'has-trades': day.tradeCount > 0,
                 'profit-day': day.pnl > 0,
-                'loss-day': day.pnl < 0
+                'loss-day': day.pnl < 0,
+                'weekday-profit': isWeekday(day.date) && day.pnl > 0,
+                'weekday-loss': isWeekday(day.date) && day.pnl < 0,
+                'weekend': !isWeekday(day.date)
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
               <div class="day-content" *ngIf="day.tradeCount > 0">
@@ -361,5 +364,10 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   getAbsoluteValue(value: number): number {
     return Math.abs(value);
+  }
+
+  isWeekday(date: Date): boolean {
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday through Friday
   }
 }
