@@ -85,7 +85,7 @@ export class ConfettiService {
     const defaultConfig: Required<ConfettiConfig> = {
       duration: 0, // 0 means no auto-hide, display permanently
       particleCount: 300, // Increased from 150 to 300 for more confetti!
-      text: '🎉 PROFIT TARGET REACHED! 🎉',
+      text: 'PROFIT TARGET REACHED!',
       playSound: true,
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
     };
@@ -570,7 +570,7 @@ export class ConfettiService {
   // Public method to trigger different types of celebrations
   celebrateProfitTarget(targetPercentage: number): void {
     this.celebrate({
-      text: `🎉 ${targetPercentage}% PROFIT TARGET REACHED! 🎉`,
+      text: `${targetPercentage}% PROFIT TARGET REACHED!`,
       duration: 0, // Persistent display, no auto-hide
       particleCount: 500, // More confetti for extra celebration!
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548']
