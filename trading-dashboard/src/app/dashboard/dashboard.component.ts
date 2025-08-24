@@ -4089,7 +4089,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       "commission": (Math.random() * 5).toFixed(2),
     }
 
-    console.log('🎯 Generated mock trade:', mock);
+    console.log('�� Generated mock trade:', mock);
     this.closeMT5Trade(mock);
   }
 
@@ -4696,6 +4696,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (savedMaxLoss) {
       this.maxLoss = parseInt(savedMaxLoss);
     }
+
+    // Reset celebration tracking when component initializes
+    this.hasCelebratedCurrentTarget = false;
+    this.lastCelebratedTarget = 0;
   }
 
 }
