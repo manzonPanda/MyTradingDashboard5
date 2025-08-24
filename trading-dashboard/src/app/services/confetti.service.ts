@@ -159,48 +159,81 @@ export class ConfettiService {
 
   private startAnimation(): void {
     if (!this.ctx) return;
-    
+
+    let frameCount = 0;
+    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548'];
+
     const animate = () => {
       if (!this.ctx || !this.canvas) return;
-      
+
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      
+
+      // Add new particles periodically for continuous celebration
+      frameCount++;
+      if (frameCount % 20 === 0 && this.isPlaying) { // Add new particles every 20 frames (~3 times per second)
+        this.addNewParticles(15, colors); // Add 15 new particles
+      }
+
       for (let i = this.particles.length - 1; i >= 0; i--) {
         const particle = this.particles[i];
-        
+
         // Update particle physics
         particle.x += particle.vx;
         particle.y += particle.vy;
         particle.vy += particle.gravity;
         particle.rotation += particle.rotationSpeed;
-        particle.life -= 0.016; // Assuming 60fps
-        
+        particle.life -= 0.012; // Slower fade for longer-lasting particles
+
         // Remove dead particles
-        if (particle.life <= 0 || particle.y > window.innerHeight + 50) {
+        if (particle.life <= 0 || particle.y > window.innerHeight + 100) {
           this.particles.splice(i, 1);
           continue;
         }
-        
-        // Draw particle
+
+        // Draw particle with enhanced glow effect
         this.ctx.save();
         this.ctx.translate(particle.x, particle.y);
         this.ctx.rotate(particle.rotation * Math.PI / 180);
-        this.ctx.globalAlpha = Math.max(0, particle.life / particle.maxLife);
+
+        const alpha = Math.max(0, particle.life / particle.maxLife);
+        this.ctx.globalAlpha = alpha;
+
+        // Add glow effect
+        this.ctx.shadowColor = particle.color;
+        this.ctx.shadowBlur = 10 * alpha;
+
         this.ctx.fillStyle = particle.color;
-        
         this.drawParticle(particle);
-        
+
         this.ctx.restore();
       }
-      
-      if (this.particles.length > 0) {
+
+      // Continue animation as long as celebration is active
+      if (this.isPlaying) {
         this.animationId = requestAnimationFrame(animate);
-      } else {
-        this.stopCelebration();
       }
     };
-    
+
     animate();
+  }
+
+  private addNewParticles(count: number, colors: string[]): void {
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: Math.random() * window.innerWidth,
+        y: -20,
+        vx: (Math.random() - 0.5) * 12,
+        vy: Math.random() * 6 + 2,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 15,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 10 + 6,
+        gravity: Math.random() * 0.4 + 0.15,
+        life: 1,
+        maxLife: Math.random() * 4 + 3,
+        shape: ['square', 'circle', 'triangle'][Math.floor(Math.random() * 3)] as 'square' | 'circle' | 'triangle'
+      });
+    }
   }
 
   private drawParticle(particle: Particle): void {
