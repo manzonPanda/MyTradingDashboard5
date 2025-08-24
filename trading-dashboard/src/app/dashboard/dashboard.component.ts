@@ -1023,7 +1023,7 @@ onUpload(): void {
         console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
-        console.warn('⚠️ Firestore connection issue - operating in offline mode:', error.message);
+        console.warn('���️ Firestore connection issue - operating in offline mode:', error.message);
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
@@ -4566,5 +4566,45 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
   }
 
+  // Trading settings handler methods
+  onProfitTargetChange(): void {
+    console.log('🎯 Profit target changed to:', this.profitTarget + '%');
+    // You can add logic here to update charts, calculations, or save to user preferences
+    this.updateTradingTargets();
+  }
+
+  onMaxLossChange(): void {
+    console.log('🛑 Max loss changed to:', this.maxLoss + '%');
+    // You can add logic here to update risk management calculations
+    this.updateTradingTargets();
+  }
+
+  private updateTradingTargets(): void {
+    // Update any chart reference lines or calculations based on new targets
+    console.log('📊 Updating trading targets - Profit:', this.profitTarget + '%, Max Loss:', this.maxLoss + '%');
+
+    // Trigger chart refresh if needed
+    if (this.chart) {
+      this.generateTradingChartData();
+    }
+
+    // Save to localStorage for persistence
+    localStorage.setItem('tradingProfitTarget', this.profitTarget.toString());
+    localStorage.setItem('tradingMaxLoss', this.maxLoss.toString());
+  }
+
+  private loadTradingSettings(): void {
+    // Load saved settings from localStorage
+    const savedProfitTarget = localStorage.getItem('tradingProfitTarget');
+    const savedMaxLoss = localStorage.getItem('tradingMaxLoss');
+
+    if (savedProfitTarget) {
+      this.profitTarget = parseInt(savedProfitTarget);
+    }
+
+    if (savedMaxLoss) {
+      this.maxLoss = parseInt(savedMaxLoss);
+    }
+  }
 
 }
