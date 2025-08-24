@@ -126,11 +126,11 @@ interface WeekSummary {
         <div class="weekly-summary">
           <div *ngFor="let week of weekSummaries" class="week-summary">
             <div class="week-label">{{ week.label }}</div>
-            <div class="week-pnl" [ngClass]="getWeekPnLClass(week.totalPnL)">
-              {{ formatCurrency(week.totalPnL) }}
-            </div>
             <div class="week-percentage" [ngClass]="getWeekPnLClass(week.totalPnL)">
               {{ formatPercentage(week.weeklyPercentageGained) }}
+            </div>
+            <div class="week-pnl" [ngClass]="getWeekPnLClass(week.totalPnL)">
+              {{ formatCurrency(week.totalPnL) }}
             </div>
             <div class="week-details">{{ week.days }} days</div>
           </div>
