@@ -504,7 +504,7 @@ async ngOnInit() {
 
   socket.on("account_info", (data) => {
     this.mt5AccountInfo = data;
-    console.warn("���� Account Info Received:", data);
+    console.warn("����� Account Info Received:", data);
   });
 
   socket.on("connect_error", (err: any) => {
@@ -1026,7 +1026,7 @@ onUpload(): void {
         console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
-        console.warn('���️ Firestore connection issue - operating in offline mode:', error.message);
+        console.warn('����️ Firestore connection issue - operating in offline mode:', error.message);
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
@@ -4572,7 +4572,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // Trading settings handler methods
   onProfitTargetChange(): void {
     console.log('🎯 Profit target changed to:', this.profitTarget + '%');
-    // You can add logic here to update charts, calculations, or save to user preferences
+
+    // Add visual feedback
+    const dropdown = document.querySelector('.setting-dropdown') as HTMLElement;
+    if (dropdown) {
+      dropdown.classList.add('value-changed');
+      setTimeout(() => dropdown.classList.remove('value-changed'), 600);
+    }
+
     this.updateTradingTargets();
   }
 
