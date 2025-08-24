@@ -419,6 +419,48 @@ export class ConfettiService {
           0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.8); }
           100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
+        @keyframes subtitleGlow {
+          0% {
+            text-shadow:
+              0 0 8px rgba(255, 255, 255, 0.9),
+              0 0 16px rgba(255, 215, 0, 0.8),
+              0 0 24px rgba(78, 205, 196, 0.7),
+              0 0 32px rgba(138, 43, 226, 0.6),
+              0 0 40px rgba(0, 255, 255, 0.5);
+          }
+          25% {
+            text-shadow:
+              0 0 10px rgba(255, 255, 255, 1),
+              0 0 20px rgba(78, 205, 196, 0.9),
+              0 0 28px rgba(138, 43, 226, 0.8),
+              0 0 36px rgba(0, 255, 255, 0.7),
+              0 0 44px rgba(255, 215, 0, 0.6);
+          }
+          50% {
+            text-shadow:
+              0 0 12px rgba(255, 255, 255, 1),
+              0 0 24px rgba(138, 43, 226, 0.9),
+              0 0 32px rgba(0, 255, 255, 0.8),
+              0 0 40px rgba(255, 215, 0, 0.7),
+              0 0 48px rgba(78, 205, 196, 0.6);
+          }
+          75% {
+            text-shadow:
+              0 0 10px rgba(255, 255, 255, 1),
+              0 0 20px rgba(0, 255, 255, 0.9),
+              0 0 28px rgba(255, 215, 0, 0.8),
+              0 0 36px rgba(78, 205, 196, 0.7),
+              0 0 44px rgba(138, 43, 226, 0.6);
+          }
+          100% {
+            text-shadow:
+              0 0 8px rgba(255, 255, 255, 0.9),
+              0 0 16px rgba(255, 215, 0, 0.8),
+              0 0 24px rgba(78, 205, 196, 0.7),
+              0 0 32px rgba(138, 43, 226, 0.6),
+              0 0 40px rgba(0, 255, 255, 0.5);
+          }
+        }
         @keyframes rainbowGlow {
           0% {
             text-shadow:
