@@ -84,7 +84,7 @@ export class ConfettiService {
 
     const defaultConfig: Required<ConfettiConfig> = {
       duration: 0, // 0 means no auto-hide, display permanently
-      particleCount: 300, // Increased from 150 to 300 for more confetti!
+      particleCount: 800, // Massive confetti explosion!
       text: 'PROFIT TARGET REACHED!',
       playSound: true,
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
@@ -170,8 +170,8 @@ export class ConfettiService {
 
       // Add new particles periodically for continuous celebration
       frameCount++;
-      if (frameCount % 20 === 0 && this.isPlaying) { // Add new particles every 20 frames (~3 times per second)
-        this.addNewParticles(15, colors); // Add 15 new particles
+      if (frameCount % 15 === 0 && this.isPlaying) { // Add new particles every 15 frames (~4 times per second)
+        this.addNewParticles(35, colors); // Add 35 new particles for continuous shower!
       }
 
       for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -577,7 +577,7 @@ export class ConfettiService {
     this.celebrate({
       text: `${targetPercentage}% PROFIT TARGET REACHED!`,
       duration: 0, // Persistent display, no auto-hide
-      particleCount: 500, // More confetti for extra celebration!
+      particleCount: 1200, // MASSIVE confetti explosion for profit targets!
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548']
     });
   }
@@ -586,7 +586,7 @@ export class ConfettiService {
     this.celebrate({
       text: `💰 MASSIVE WIN! +$${amount.toFixed(2)} 💰<br><span style="font-size: 0.6em;">Keep this momentum going! 🔥</span>`,
       duration: 4000,
-      particleCount: 400,
+      particleCount: 1000, // Epic confetti storm for big wins!
       colors: ['#FFD700', '#32CD32', '#00FF7F', '#ADFF2F']
     });
   }
