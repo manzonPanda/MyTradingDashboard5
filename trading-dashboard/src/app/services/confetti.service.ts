@@ -329,10 +329,15 @@ export class ConfettiService {
     textOverlay.className = 'celebration-main-text';
     textOverlay.innerHTML = text;
     textOverlay.style.cssText = `
-      font-size: 4rem;
+      font-size: 3.5rem;
       font-weight: 900;
       margin-bottom: 20px;
       color: white;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      max-width: none;
+      width: max-content;
       text-shadow:
         0 0 10px rgba(255, 255, 255, 0.9),
         0 0 20px rgba(255, 215, 0, 0.8),
