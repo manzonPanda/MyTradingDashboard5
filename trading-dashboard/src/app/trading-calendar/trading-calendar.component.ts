@@ -43,6 +43,7 @@ interface WeekSummary {
   totalPnL: number;
   totalTrades: number;
   days: number;
+  weeklyPercentageGained: number;
 }
 
 @Component({
@@ -125,6 +126,9 @@ interface WeekSummary {
         <div class="weekly-summary">
           <div *ngFor="let week of weekSummaries" class="week-summary">
             <div class="week-label">{{ week.label }}</div>
+            <div class="week-percentage" [ngClass]="getWeekPnLClass(week.totalPnL)">
+              {{ formatPercentage(week.weeklyPercentageGained) }}
+            </div>
             <div class="week-pnl" [ngClass]="getWeekPnLClass(week.totalPnL)">
               {{ formatCurrency(week.totalPnL) }}
             </div>
@@ -223,13 +227,15 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const weekPnL = currentMonthDays.reduce((sum, day) => sum + day.pnl, 0);
       const weekTrades = currentMonthDays.reduce((sum, day) => sum + day.tradeCount, 0);
       const activeDays = currentMonthDays.filter(day => day.tradeCount > 0).length;
-      
+      const weeklyPercentageGained = (weekPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+
       this.weekSummaries.push({
         weekNumber: weekIndex + 1,
         label: `Week ${weekIndex + 1}`,
         totalPnL: weekPnL,
         totalTrades: weekTrades,
-        days: activeDays
+        days: activeDays,
+        weeklyPercentageGained: weeklyPercentageGained
       });
     }
   }

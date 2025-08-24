@@ -456,6 +456,33 @@
       }
     }
 
+    .week-percentage {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      text-align: center;
+      background: var(--tf-bg-tertiary);
+      border: 1px solid var(--tf-border-primary);
+
+      &.positive {
+        color: #065f46;
+        background: linear-gradient(135deg, rgba(236, 253, 245, 0.8), rgba(209, 250, 229, 0.8));
+        border-color: #a7f3d0;
+      }
+
+      &.negative {
+        color: #991b1b;
+        background: linear-gradient(135deg, rgba(254, 242, 242, 0.8), rgba(254, 202, 202, 0.8));
+        border-color: #fca5a5;
+      }
+
+      &.neutral {
+        color: var(--tf-text-muted);
+      }
+    }
+
     .week-details {
       font-size: 0.75rem;
       color: var(--tf-text-muted);
