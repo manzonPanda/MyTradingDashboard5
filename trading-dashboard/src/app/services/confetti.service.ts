@@ -84,8 +84,8 @@ export class ConfettiService {
 
     const defaultConfig: Required<ConfettiConfig> = {
       duration: 0, // 0 means no auto-hide, display permanently
-      particleCount: 300, // Increased from 150 to 300 for more confetti!
-      text: '🎉 PROFIT TARGET REACHED! 🎉',
+      particleCount: 800, // Massive confetti explosion!
+      text: 'PROFIT TARGET REACHED!',
       playSound: true,
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
     };
@@ -170,8 +170,8 @@ export class ConfettiService {
 
       // Add new particles periodically for continuous celebration
       frameCount++;
-      if (frameCount % 20 === 0 && this.isPlaying) { // Add new particles every 20 frames (~3 times per second)
-        this.addNewParticles(15, colors); // Add 15 new particles
+      if (frameCount % 15 === 0 && this.isPlaying) { // Add new particles every 15 frames (~4 times per second)
+        this.addNewParticles(35, colors); // Add 35 new particles for continuous shower!
       }
 
       for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -329,17 +329,24 @@ export class ConfettiService {
     textOverlay.className = 'celebration-main-text';
     textOverlay.innerHTML = text;
     textOverlay.style.cssText = `
-      font-size: 4rem;
+      font-size: 3.5rem;
       font-weight: 900;
       margin-bottom: 20px;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 107, 107, 0.6), 0 0 60px rgba(78, 205, 196, 0.4);
-      background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57, #FF9FF3, #54A0FF);
-      background-size: 400% 400%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: celebrationPulse 1.5s ease-in-out infinite alternate, gradientShift 3s ease-in-out infinite;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+      color: white;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      max-width: none;
+      width: max-content;
+      text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.9),
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 30px rgba(78, 205, 196, 0.7),
+        0 0 40px rgba(138, 43, 226, 0.6),
+        0 0 50px rgba(0, 150, 255, 0.5),
+        0 0 60px rgba(0, 255, 127, 0.4);
+      animation: celebrationPulse 1.5s ease-in-out infinite alternate, rainbowGlow 2s ease-in-out infinite;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
     `;
 
     // Create subtitle
@@ -347,16 +354,18 @@ export class ConfettiService {
     subtitle.className = 'celebration-subtitle';
     subtitle.innerHTML = '🚀 CONGRATULATIONS! 💰';
     subtitle.style.cssText = `
-      font-size: 1.5rem;
+      font-size: 2.5rem;
       font-weight: bold;
       margin-bottom: 30px;
-      background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFD700, #FF9FF3);
-      background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: gradientShift 2s ease-in-out infinite, subtitleFloat 2s ease-in-out infinite;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      color: white;
+      white-space: nowrap;
+      text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.9),
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 24px rgba(78, 205, 196, 0.7),
+        0 0 32px rgba(138, 43, 226, 0.6),
+        0 0 40px rgba(0, 255, 255, 0.5);
+      animation: subtitleGlow 2s ease-in-out infinite, subtitleFloat 2s ease-in-out infinite;
     `;
 
     // Create close button
@@ -415,6 +424,95 @@ export class ConfettiService {
         @keyframes celebrationFadeIn {
           0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.8); }
           100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        @keyframes subtitleGlow {
+          0% {
+            text-shadow:
+              0 0 8px rgba(255, 255, 255, 0.9),
+              0 0 16px rgba(255, 215, 0, 0.8),
+              0 0 24px rgba(78, 205, 196, 0.7),
+              0 0 32px rgba(138, 43, 226, 0.6),
+              0 0 40px rgba(0, 255, 255, 0.5);
+          }
+          25% {
+            text-shadow:
+              0 0 10px rgba(255, 255, 255, 1),
+              0 0 20px rgba(78, 205, 196, 0.9),
+              0 0 28px rgba(138, 43, 226, 0.8),
+              0 0 36px rgba(0, 255, 255, 0.7),
+              0 0 44px rgba(255, 215, 0, 0.6);
+          }
+          50% {
+            text-shadow:
+              0 0 12px rgba(255, 255, 255, 1),
+              0 0 24px rgba(138, 43, 226, 0.9),
+              0 0 32px rgba(0, 255, 255, 0.8),
+              0 0 40px rgba(255, 215, 0, 0.7),
+              0 0 48px rgba(78, 205, 196, 0.6);
+          }
+          75% {
+            text-shadow:
+              0 0 10px rgba(255, 255, 255, 1),
+              0 0 20px rgba(0, 255, 255, 0.9),
+              0 0 28px rgba(255, 215, 0, 0.8),
+              0 0 36px rgba(78, 205, 196, 0.7),
+              0 0 44px rgba(138, 43, 226, 0.6);
+          }
+          100% {
+            text-shadow:
+              0 0 8px rgba(255, 255, 255, 0.9),
+              0 0 16px rgba(255, 215, 0, 0.8),
+              0 0 24px rgba(78, 205, 196, 0.7),
+              0 0 32px rgba(138, 43, 226, 0.6),
+              0 0 40px rgba(0, 255, 255, 0.5);
+          }
+        }
+        @keyframes rainbowGlow {
+          0% {
+            text-shadow:
+              0 0 10px rgba(255, 255, 255, 0.9),
+              0 0 20px rgba(255, 215, 0, 0.8),
+              0 0 30px rgba(78, 205, 196, 0.7),
+              0 0 40px rgba(138, 43, 226, 0.6),
+              0 0 50px rgba(0, 150, 255, 0.5),
+              0 0 60px rgba(0, 255, 127, 0.4);
+          }
+          25% {
+            text-shadow:
+              0 0 12px rgba(255, 255, 255, 1),
+              0 0 25px rgba(78, 205, 196, 0.9),
+              0 0 35px rgba(138, 43, 226, 0.8),
+              0 0 45px rgba(0, 150, 255, 0.7),
+              0 0 55px rgba(255, 215, 0, 0.6),
+              0 0 65px rgba(0, 255, 127, 0.5);
+          }
+          50% {
+            text-shadow:
+              0 0 15px rgba(255, 255, 255, 1),
+              0 0 30px rgba(138, 43, 226, 0.9),
+              0 0 40px rgba(0, 150, 255, 0.8),
+              0 0 50px rgba(255, 215, 0, 0.7),
+              0 0 60px rgba(0, 255, 127, 0.6),
+              0 0 70px rgba(78, 205, 196, 0.5);
+          }
+          75% {
+            text-shadow:
+              0 0 12px rgba(255, 255, 255, 1),
+              0 0 25px rgba(0, 150, 255, 0.9),
+              0 0 35px rgba(255, 215, 0, 0.8),
+              0 0 45px rgba(0, 255, 127, 0.7),
+              0 0 55px rgba(78, 205, 196, 0.6),
+              0 0 65px rgba(138, 43, 226, 0.5);
+          }
+          100% {
+            text-shadow:
+              0 0 10px rgba(255, 255, 255, 0.9),
+              0 0 20px rgba(255, 215, 0, 0.8),
+              0 0 30px rgba(78, 205, 196, 0.7),
+              0 0 40px rgba(138, 43, 226, 0.6),
+              0 0 50px rgba(0, 150, 255, 0.5),
+              0 0 60px rgba(0, 255, 127, 0.4);
+          }
         }
       `;
       document.head.appendChild(style);
@@ -478,9 +576,9 @@ export class ConfettiService {
   // Public method to trigger different types of celebrations
   celebrateProfitTarget(targetPercentage: number): void {
     this.celebrate({
-      text: `🎉 ${targetPercentage}% PROFIT TARGET REACHED! 🎉`,
+      text: `${targetPercentage}% PROFIT TARGET REACHED!`,
       duration: 0, // Persistent display, no auto-hide
-      particleCount: 500, // More confetti for extra celebration!
+      particleCount: 1200, // MASSIVE confetti explosion for profit targets!
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548']
     });
   }
@@ -489,7 +587,7 @@ export class ConfettiService {
     this.celebrate({
       text: `💰 MASSIVE WIN! +$${amount.toFixed(2)} 💰<br><span style="font-size: 0.6em;">Keep this momentum going! 🔥</span>`,
       duration: 4000,
-      particleCount: 400,
+      particleCount: 1000, // Epic confetti storm for big wins!
       colors: ['#FFD700', '#32CD32', '#00FF7F', '#ADFF2F']
     });
   }
