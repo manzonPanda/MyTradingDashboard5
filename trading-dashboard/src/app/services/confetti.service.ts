@@ -352,13 +352,14 @@ export class ConfettiService {
       font-size: 1.5rem;
       font-weight: bold;
       margin-bottom: 30px;
-      background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFD700, #FF9FF3);
-      background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: gradientShift 2s ease-in-out infinite, subtitleFloat 2s ease-in-out infinite;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      color: white;
+      text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.9),
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 24px rgba(78, 205, 196, 0.7),
+        0 0 32px rgba(138, 43, 226, 0.6),
+        0 0 40px rgba(0, 255, 255, 0.5);
+      animation: subtitleGlow 2s ease-in-out infinite, subtitleFloat 2s ease-in-out infinite;
     `;
 
     // Create close button
