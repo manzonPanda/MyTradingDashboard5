@@ -31,6 +31,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
+import { ConfettiService } from '../services/confetti.service';
 
 declare var $: any;
 
@@ -296,6 +297,10 @@ export class DashboardComponent implements AfterViewInit {
   profitTarget: number = 5; // Default 5%
   maxLoss: number = 2; // Default 2%
 
+  // Confetti celebration tracking
+  private lastCelebratedTarget: number = 0;
+  private hasCelebratedCurrentTarget: boolean = false;
+
   // Chart configuration for beautiful trading visualization
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
@@ -480,7 +485,7 @@ export class DashboardComponent implements AfterViewInit {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
