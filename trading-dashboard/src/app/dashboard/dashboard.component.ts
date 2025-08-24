@@ -4612,7 +4612,44 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       setTimeout(() => dropdown.classList.remove('value-changed'), 600);
     }
 
+    // Reset celebration tracking for new target
+    this.hasCelebratedCurrentTarget = false;
+    this.lastCelebratedTarget = 0;
+
     this.updateTradingTargets();
+  }
+
+  // Check for profit target achievement and trigger celebration
+  private checkForProfitTargetCelebration(): void {
+    const currentPercentageGain = this.calculateTotalPercentageGain();
+
+    // Only celebrate if we've reached the target and haven't celebrated this target yet
+    if (currentPercentageGain >= this.profitTarget && !this.hasCelebratedCurrentTarget) {
+      console.log('🎉 PROFIT TARGET REACHED! Triggering celebration...', {
+        currentGain: currentPercentageGain,
+        target: this.profitTarget
+      });
+
+      // Mark as celebrated to prevent multiple celebrations
+      this.hasCelebratedCurrentTarget = true;
+      this.lastCelebratedTarget = this.profitTarget;
+
+      // Trigger the amazing confetti celebration!
+      this.confetti.celebrateProfitTarget(this.profitTarget);
+
+      // Optional: Also celebrate big wins (trades over $100 profit)
+      const totalPnL = this.calculateTotalPnL();
+      if (totalPnL >= 100) {
+        setTimeout(() => {
+          this.confetti.celebrateBigWin(totalPnL);
+        }, 2000); // Delay to avoid overlapping celebrations
+      }
+    }
+
+    // Reset celebration flag if we fall below target (for future celebrations)
+    if (currentPercentageGain < this.profitTarget && this.hasCelebratedCurrentTarget) {
+      this.hasCelebratedCurrentTarget = false;
+    }
   }
 
   onMaxLossChange(): void {
