@@ -378,7 +378,7 @@ export class DashboardComponent implements AfterViewInit {
             // Show main chart elements in legend
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
-                   legendItem.text === '🟢 --- Profit target (8%)' ||
+                   legendItem.text.includes('🟢 --- Profit target') ||
                    legendItem.text === '🟣 --- Starting Balance';
           }
         }
@@ -1874,8 +1874,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🟢 --- Profit target (8%)',
-            data: [startingBalance * 1.08],
+            label: `🟢 --- Profit target (${this.profitTarget}%)`,
+            data: [startingBalance * (1 + this.profitTarget / 100)],
             borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'transparent',
             borderWidth: 3,
@@ -1959,8 +1959,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: '🟢 --- Profit target (8%)',
-          data: new Array(labels.length).fill(startingBalance * 1.08),
+          label: `🟢 --- Profit target (${this.profitTarget}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 + this.profitTarget / 100)),
           borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'transparent',
           borderWidth: 3,
