@@ -1,0 +1,99 @@
+// Trading Settings Dropdown Styles
+.trading-settings {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .setting-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .setting-dropdown {
+      min-width: 70px;
+      padding: 0.5rem 0.75rem;
+      background: linear-gradient(135deg, #ffffff, #f8fafc);
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+      &:hover {
+        border-color: #6b46c1;
+        background: linear-gradient(135deg, #ffffff, #faf5ff);
+        box-shadow: 0 4px 8px rgba(107, 70, 193, 0.1);
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #6b46c1;
+        background: linear-gradient(135deg, #ffffff, #faf5ff);
+        box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.1);
+      }
+
+      option {
+        padding: 0.5rem;
+        background: white;
+        color: #374151;
+      }
+    }
+  }
+}
+
+// Responsive design for trading settings
+@media (max-width: 768px) {
+  .trading-settings {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+
+    .setting-group {
+      width: 100%;
+
+      .setting-dropdown {
+        width: 100%;
+        min-width: unset;
+      }
+    }
+  }
+}
+
+// Animation for when values change
+.setting-dropdown {
+  position: relative;
+
+  &.value-changed {
+    animation: settingChanged 0.6s ease-out;
+  }
+}
+
+@keyframes settingChanged {
+  0% {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    transform: scale(1.05);
+  }
+  50% {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    transform: scale(1.02);
+  }
+  100% {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    color: #374151;
+    transform: scale(1);
+  }
+}

@@ -126,7 +126,7 @@ interface NotionPerformanceData {
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
 })
 
 
@@ -292,6 +292,10 @@ export class DashboardComponent implements AfterViewInit {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
+  // Trading settings properties
+  profitTarget: number = 5; // Default 5%
+  maxLoss: number = 2; // Default 2%
+
   // Chart configuration for beautiful trading visualization
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
@@ -371,10 +375,9 @@ export class DashboardComponent implements AfterViewInit {
           },
           color: '#64748b',
           filter: function(legendItem: any) {
-            // Show main chart elements in legend
+            // Show main chart elements in legend, hide profit target and max loss text
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
-                   legendItem.text === '🟢 --- Profit target (8%)' ||
                    legendItem.text === '🟣 --- Starting Balance';
           }
         }
@@ -483,6 +486,9 @@ export class DashboardComponent implements AfterViewInit {
   }
 
 async ngOnInit() {
+    // Load saved trading settings
+    this.loadTradingSettings();
+
     const socket = io("http://localhost:5000",{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
@@ -1019,7 +1025,7 @@ onUpload(): void {
         console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
-        console.warn('⚠️ Firestore connection issue - operating in offline mode:', error.message);
+        console.warn('���️ Firestore connection issue - operating in offline mode:', error.message);
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
@@ -1641,7 +1647,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.log('✅ News reminder notification sent:', title);
       }
     } catch (error) {
-      console.error('❌ Error sending notification:', error);
+      console.error('��� Error sending notification:', error);
     }
   }
 
@@ -1867,8 +1873,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: '🟢 --- Profit target (8%)',
-            data: [startingBalance * 1.08],
+            label: `🟢 --- Profit target (${this.profitTarget}%)`,
+            data: [startingBalance * (1 + this.profitTarget / 100)],
             borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'transparent',
             borderWidth: 3,
@@ -1885,6 +1891,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             borderColor: 'rgb(147, 51, 234)',
             backgroundColor: 'transparent',
             borderWidth: 1,
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
+          {
+            label: `🔴 --- Max loss (${this.maxLoss}%)`,
+            data: [startingBalance * (1 - this.maxLoss / 100)],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [5, 5],
             fill: false,
             tension: 0,
             pointRadius: 0,
@@ -1952,8 +1972,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: '🟢 --- Profit target (8%)',
-          data: new Array(labels.length).fill(startingBalance * 1.08),
+          label: `🟢 --- Profit target (${this.profitTarget}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 + this.profitTarget / 100)),
           borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'transparent',
           borderWidth: 3,
@@ -1970,6 +1990,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           borderColor: 'rgb(147, 51, 234)',
           backgroundColor: 'transparent',
           borderWidth: 1,
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: `🔴 --- Max loss (${this.maxLoss}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 - this.maxLoss / 100)),
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5, 5],
           fill: false,
           tension: 0,
           pointRadius: 0,
@@ -4562,5 +4596,58 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
   }
 
+  // Trading settings handler methods
+  onProfitTargetChange(): void {
+    console.log('🎯 Profit target changed to:', this.profitTarget + '%');
+
+    // Add visual feedback
+    const dropdown = document.querySelector('.setting-dropdown') as HTMLElement;
+    if (dropdown) {
+      dropdown.classList.add('value-changed');
+      setTimeout(() => dropdown.classList.remove('value-changed'), 600);
+    }
+
+    this.updateTradingTargets();
+  }
+
+  onMaxLossChange(): void {
+    console.log('🛑 Max loss changed to:', this.maxLoss + '%');
+
+    // Add visual feedback
+    const dropdowns = document.querySelectorAll('.setting-dropdown');
+    const maxLossDropdown = dropdowns[1] as HTMLElement; // Second dropdown is max loss
+    if (maxLossDropdown) {
+      maxLossDropdown.classList.add('value-changed');
+      setTimeout(() => maxLossDropdown.classList.remove('value-changed'), 600);
+    }
+
+    this.updateTradingTargets();
+  }
+
+  private updateTradingTargets(): void {
+    // Update any chart reference lines or calculations based on new targets
+    console.log('📊 Updating trading targets - Profit:', this.profitTarget + '%, Max Loss:', this.maxLoss + '%');
+
+    // Trigger chart refresh to update profit target line
+    this.generateTradingChartData();
+
+    // Save to localStorage for persistence
+    localStorage.setItem('tradingProfitTarget', this.profitTarget.toString());
+    localStorage.setItem('tradingMaxLoss', this.maxLoss.toString());
+  }
+
+  private loadTradingSettings(): void {
+    // Load saved settings from localStorage
+    const savedProfitTarget = localStorage.getItem('tradingProfitTarget');
+    const savedMaxLoss = localStorage.getItem('tradingMaxLoss');
+
+    if (savedProfitTarget) {
+      this.profitTarget = parseInt(savedProfitTarget);
+    }
+
+    if (savedMaxLoss) {
+      this.maxLoss = parseInt(savedMaxLoss);
+    }
+  }
 
 }
