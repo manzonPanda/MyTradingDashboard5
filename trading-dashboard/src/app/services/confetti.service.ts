@@ -271,60 +271,142 @@ export class ConfettiService {
   }
 
   private showCelebrationText(text: string, duration: number): void {
-    // Create text overlay
-    const textOverlay = document.createElement('div');
-    textOverlay.id = 'celebration-text';
-    textOverlay.innerHTML = text;
-    textOverlay.style.cssText = `
+    // Remove existing celebration text if any
+    const existing = document.getElementById('celebration-text');
+    if (existing) {
+      existing.remove();
+    }
+
+    // Create text overlay container
+    const textContainer = document.createElement('div');
+    textContainer.id = 'celebration-text';
+    textContainer.style.cssText = `
       position: fixed;
-      top: 20%;
+      top: 15%;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 3rem;
-      font-weight: bold;
-      color: #FFD700;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
       z-index: 10000;
       text-align: center;
-      animation: celebrationPulse 1s ease-in-out infinite alternate;
-      pointer-events: none;
+      pointer-events: auto;
       font-family: 'Arial', sans-serif;
-      background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4);
+    `;
+
+    // Create main text element
+    const textOverlay = document.createElement('div');
+    textOverlay.className = 'celebration-main-text';
+    textOverlay.innerHTML = text;
+    textOverlay.style.cssText = `
+      font-size: 4rem;
+      font-weight: 900;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 107, 107, 0.6), 0 0 60px rgba(78, 205, 196, 0.4);
+      background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57, #FF9FF3, #54A0FF);
+      background-size: 400% 400%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      animation: celebrationPulse 1.5s ease-in-out infinite alternate, gradientShift 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     `;
-    
-    // Add CSS animation
+
+    // Create subtitle
+    const subtitle = document.createElement('div');
+    subtitle.className = 'celebration-subtitle';
+    subtitle.innerHTML = '🚀 YOU\'RE ABSOLUTELY CRUSHING IT! 🚀<br>💰 KEEP THIS MOMENTUM GOING! 💰';
+    subtitle.style.cssText = `
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+      background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFD700, #FF9FF3);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 2s ease-in-out infinite, subtitleFloat 2s ease-in-out infinite;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    `;
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '✕ Close Celebration';
+    closeButton.style.cssText = `
+      background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+      border: none;
+      border-radius: 25px;
+      padding: 12px 24px;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+      animation: buttonPulse 2s ease-in-out infinite;
+    `;
+
+    closeButton.addEventListener('mouseenter', () => {
+      closeButton.style.transform = 'scale(1.1)';
+      closeButton.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+    });
+
+    closeButton.addEventListener('mouseleave', () => {
+      closeButton.style.transform = 'scale(1)';
+      closeButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+    });
+
+    closeButton.addEventListener('click', () => {
+      this.stopCelebration();
+    });
+
+    // Add enhanced CSS animations
     if (!document.getElementById('celebration-styles')) {
       const style = document.createElement('style');
       style.id = 'celebration-styles';
       style.textContent = `
         @keyframes celebrationPulse {
-          0% { transform: translateX(-50%) scale(1); }
-          100% { transform: translateX(-50%) scale(1.1); }
+          0% { transform: scale(1); }
+          100% { transform: scale(1.05); }
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes subtitleFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes buttonPulse {
+          0%, 100% { box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+          50% { box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4); }
         }
         @keyframes celebrationFadeIn {
-          0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-          100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+          0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.8); }
+          100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
       `;
       document.head.appendChild(style);
     }
-    
-    textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out, celebrationPulse 1s ease-in-out 0.5s infinite alternate';
-    
-    document.body.appendChild(textOverlay);
-    
-    // Remove text after duration
-    setTimeout(() => {
-      if (textOverlay.parentNode) {
-        textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
-        setTimeout(() => {
-          textOverlay.remove();
-        }, 500);
-      }
-    }, duration - 500);
+
+    // Assemble the components
+    textContainer.appendChild(textOverlay);
+    textContainer.appendChild(subtitle);
+    textContainer.appendChild(closeButton);
+
+    textContainer.style.animation = 'celebrationFadeIn 0.8s ease-out';
+
+    document.body.appendChild(textContainer);
+
+    // Only remove after duration if duration > 0
+    if (duration > 0) {
+      setTimeout(() => {
+        if (textContainer.parentNode) {
+          textContainer.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
+          setTimeout(() => {
+            textContainer.remove();
+          }, 500);
+        }
+      }, duration - 500);
+    }
   }
 
   private stopCelebration(): void {
