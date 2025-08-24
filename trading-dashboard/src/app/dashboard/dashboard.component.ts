@@ -4618,11 +4618,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       setTimeout(() => dropdown.classList.remove('value-changed'), 600);
     }
 
-    // Reset celebration tracking for new target
+    // Stop any existing celebration and reset tracking for new target
+    this.confetti.stopCurrentCelebration();
     this.hasCelebratedCurrentTarget = false;
     this.lastCelebratedTarget = 0;
 
     this.updateTradingTargets();
+
+    // Check if we should immediately celebrate the new target
+    setTimeout(() => {
+      this.checkForProfitTargetCelebration();
+    }, 100);
   }
 
   // Test method to manually trigger confetti (for development/testing)
