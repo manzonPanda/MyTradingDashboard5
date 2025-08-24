@@ -4586,10 +4586,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Update any chart reference lines or calculations based on new targets
     console.log('📊 Updating trading targets - Profit:', this.profitTarget + '%, Max Loss:', this.maxLoss + '%');
 
-    // Trigger chart refresh if needed
-    if (this.chart) {
-      this.generateTradingChartData();
-    }
+    // Trigger chart refresh to update profit target line
+    this.generateTradingChartData();
 
     // Save to localStorage for persistence
     localStorage.setItem('tradingProfitTarget', this.profitTarget.toString());
