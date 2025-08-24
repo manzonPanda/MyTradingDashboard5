@@ -335,6 +335,30 @@
               <span class="stat-value">{{ calculateWinRate() }}%</span>
             </div>
             <div class="chart-controls">
+              <div class="trading-settings">
+                <div class="setting-group">
+                  <label class="setting-label">Profit Target</label>
+                  <select class="setting-dropdown" [(ngModel)]="profitTarget" (change)="onProfitTargetChange()">
+                    <option value="3">3%</option>
+                    <option value="4">4%</option>
+                    <option value="5">5%</option>
+                    <option value="6">6%</option>
+                    <option value="7">7%</option>
+                    <option value="8">8%</option>
+                  </select>
+                </div>
+                <div class="setting-group">
+                  <label class="setting-label">Max Loss</label>
+                  <select class="setting-dropdown" [(ngModel)]="maxLoss" (change)="onMaxLossChange()">
+                    <option value="1">1%</option>
+                    <option value="2">2%</option>
+                    <option value="3">3%</option>
+                    <option value="4">4%</option>
+                    <option value="5">5%</option>
+                    <option value="10">10%</option>
+                  </select>
+                </div>
+              </div>
               <button class="chart-refresh-btn" (click)="refreshChart()" title="Refresh Chart">
                 <mat-icon>refresh</mat-icon>
               </button>
