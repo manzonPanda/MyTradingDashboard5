@@ -4089,7 +4089,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       "commission": (Math.random() * 5).toFixed(2),
     }
 
-    console.log('�� Generated mock trade:', mock);
+    console.log('🎯 Generated mock trade:', mock);
     this.closeMT5Trade(mock);
   }
 
@@ -4623,6 +4623,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.lastCelebratedTarget = 0;
 
     this.updateTradingTargets();
+  }
+
+  // Test method to manually trigger confetti (for development/testing)
+  testConfettiCelebration(): void {
+    console.log('🧪 Testing confetti celebration manually...');
+    this.confetti.celebrateProfitTarget(this.profitTarget);
   }
 
   // Check for profit target achievement and trigger celebration
