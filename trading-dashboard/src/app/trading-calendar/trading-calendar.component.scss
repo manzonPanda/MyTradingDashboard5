@@ -257,14 +257,6 @@
           background: linear-gradient(90deg, var(--calendar-negative) 0%, rgba(239, 68, 68, 0.6) 100%);
         }
 
-        &::after {
-          content: '💔';
-          position: absolute;
-          top: 0.5rem;
-          right: 0.5rem;
-          font-size: 0.75rem;
-          opacity: 0.8;
-        }
 
         &:hover {
           background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.25) 100%) !important;
