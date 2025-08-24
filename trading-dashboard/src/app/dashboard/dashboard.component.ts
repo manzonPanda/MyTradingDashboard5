@@ -375,12 +375,10 @@ export class DashboardComponent implements AfterViewInit {
           },
           color: '#64748b',
           filter: function(legendItem: any) {
-            // Show main chart elements in legend
+            // Show main chart elements in legend, hide profit target and max loss text
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
-                   legendItem.text.includes('🟢 --- Profit target') ||
-                   legendItem.text === '🟣 --- Starting Balance' ||
-                   legendItem.text.includes('🔴 --- Max loss');
+                   legendItem.text === '🟣 --- Starting Balance';
           }
         }
       },
@@ -4246,7 +4244,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
-    console.log('��� Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
 
