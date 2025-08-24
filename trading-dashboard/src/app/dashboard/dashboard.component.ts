@@ -292,6 +292,10 @@ export class DashboardComponent implements AfterViewInit {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
+  // Trading settings properties
+  profitTarget: number = 5; // Default 5%
+  maxLoss: number = 2; // Default 2%
+
   // Chart configuration for beautiful trading visualization
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
