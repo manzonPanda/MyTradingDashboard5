@@ -265,11 +265,44 @@
         }
       }
 
-      // Weekend styling (for contrast)
+      // Weekend styling with gray background
       &.weekend {
-        &.profit-day, &.loss-day {
-          opacity: 0.8;
-          filter: saturate(0.7);
+        background: linear-gradient(135deg, rgba(107, 114, 128, 0.12) 0%, rgba(75, 85, 99, 0.08) 100%) !important;
+        border-left: 3px solid rgba(107, 114, 128, 0.4) !important;
+        box-shadow: inset 0 0 0 1px rgba(107, 114, 128, 0.2), var(--shadow-soft) !important;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, rgba(107, 114, 128, 0.6) 0%, rgba(75, 85, 99, 0.4) 100%);
+        }
+
+        &:hover {
+          background: linear-gradient(135deg, rgba(107, 114, 128, 0.18) 0%, rgba(75, 85, 99, 0.12) 100%) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: inset 0 0 0 1px rgba(107, 114, 128, 0.3), 0 6px 20px rgba(107, 114, 128, 0.15) !important;
+        }
+
+        &.profit-day {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(107, 114, 128, 0.08) 100%) !important;
+          border-left: 3px solid rgba(16, 185, 129, 0.6) !important;
+
+          &::before {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.6) 0%, rgba(107, 114, 128, 0.4) 100%);
+          }
+        }
+
+        &.loss-day {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(107, 114, 128, 0.08) 100%) !important;
+          border-left: 3px solid rgba(239, 68, 68, 0.6) !important;
+
+          &::before {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.6) 0%, rgba(107, 114, 128, 0.4) 100%);
+          }
         }
       }
 
@@ -523,18 +556,17 @@
     }
 
     .week-percentage {
-      font-size: 1.5rem;
-      font-weight: 900;
-      margin-bottom: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 12px;
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
       text-align: center;
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.08));
-      border: 2px solid rgba(99, 102, 241, 0.3);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      letter-spacing: 0.05em;
-      transform: scale(1.02);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.06));
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.025em;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       &.positive {
@@ -561,8 +593,8 @@
       }
 
       &:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       }
     }
 
