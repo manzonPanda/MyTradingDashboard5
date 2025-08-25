@@ -99,29 +99,30 @@ interface WeekSummary {
                   
                   {{ formatPercentage(day.dailyPercentage) }}
                 </div>
-                <div class="day-win-loss-amounts">
-                  <div class="amounts-row">
-                    <div class="win-amount" *ngIf="day.totalWinAmount > 0">
-                      <span class="amount-icon">↗</span>
-                      <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
-                    </div>
-                    <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
-                      <span class="amount-icon">↘</span>
-                      <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
-                    </div>
-                  </div>
-                </div>
                 <div class="day-trades-summary">
                   <div class="trades-count">
                     <span class="win-count">{{ day.winCount }}W</span>
                     <span class="separator">•</span>
                     <span class="loss-count">{{ day.lossCount }}L</span>
                   </div>
+                  <div class="day-win-loss-amounts">
+                    <div class="amounts-row">
+                      <div class="win-amount" *ngIf="day.totalWinAmount > 0">
+                        <span class="amount-icon">↗</span>
+                        <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
+                      </div>
+                      <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
+                        <span class="amount-icon">↘</span>
+                        <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
+                      </div>
+                    </div>
+                  </div>
                   <div class="day-percentage" [ngClass]="getDayPnLClass(day.pnl)">
                    
                     {{ formatCurrency(day.pnl) }}
                   </div>
                 </div>
+                
               </div>
             </div>
           </div>
