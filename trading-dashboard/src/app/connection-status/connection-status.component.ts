@@ -21,7 +21,7 @@ interface ServerStatus {
   templateUrl: './connection-status.component.html',
   styleUrls: ['./connection-status.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatTooltipModule],
+  imports: [CommonModule, MatTooltipModule, HttpClientModule],
 })
 export class ConnectionStatusComponent implements OnInit, OnDestroy {
   servers: ServerStatus[] = [
