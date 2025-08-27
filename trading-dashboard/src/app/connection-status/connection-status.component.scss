@@ -95,15 +95,15 @@
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  border: 1px solid white;
+  border: 2px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 .status-dot {
