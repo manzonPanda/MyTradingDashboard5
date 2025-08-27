@@ -294,7 +294,7 @@ def full_history():
     all_trades = df_closed + df_open
     return jsonify(all_trades)
 
-@app.route("/health", methods=["GET"])
+@app.route("/api/health", methods=["GET"])
 def health_check():
     """Health check endpoint for connection monitoring"""
     mt5_connected = mt5.terminal_info() is not None

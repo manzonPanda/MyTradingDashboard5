@@ -3,7 +3,7 @@ import { InternetStatusService } from '../internet-status.service';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { interval, Subscription } from 'rxjs';
+import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -34,14 +34,14 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     },
     {
       name: 'NotionProxy',
-      url: '/notion-api/health',
+      url: 'http://localhost:3000/api/health',
       status: 'checking',
       icon: '/assets/images/notion-icon.png',
       tooltip: 'Notion Proxy API Server'
     },
     {
       name: 'MT5 API',
-      url: '/api/health',
+      url: 'http://localhost:5000/api/health',
       status: 'checking',
       icon: '/assets/images/mt5_icon.png',
       tooltip: 'MetaTrader 5 API Server'
@@ -74,8 +74,8 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     // Initial status check
     this.checkAllServerStatus();
 
-    // Set up periodic status checks every 10 seconds
-    this.statusCheckSubscription = interval(10000).subscribe(() => {
+    // Set up periodic status checks every 5 seconds
+    this.statusCheckSubscription = interval(5000).subscribe(() => {
       if (this.isInternetOnline) {
         this.checkAllServerStatus();
       }
@@ -92,31 +92,33 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   }
 
   private async checkAllServerStatus(): Promise<void> {
-    for (const server of this.servers) {
+     await Promise.all(
+    this.servers.map(async (server) => {
       if (server.name === 'Angular') {
         // Angular is always online if we're running this code
         server.status = 'online';
         server.lastChecked = new Date();
-        continue;
+        return;
       }
-
-      server.status = 'checking';
 
       try {
-        const response = await this.http.get(server.url).pipe(
-          catchError(error => {
-            console.warn(`Connection check failed for ${server.name}:`, error);
-            return of(null);
-          })
-        ).toPromise();
+        const response = await firstValueFrom(
+          this.http.get(server.url).pipe(
+            catchError(error => {
+              console.warn(`Connection check failed for ${server.name}:`, error);
+              return of(null);
+            })
+          )
+        );
 
         server.status = response !== null ? 'online' : 'offline';
-        server.lastChecked = new Date();
       } catch (error) {
         server.status = 'offline';
-        server.lastChecked = new Date();
       }
-    }
+
+      server.lastChecked = new Date();
+    })
+  );
   }
 
   getServerTooltip(server: ServerStatus): string {
