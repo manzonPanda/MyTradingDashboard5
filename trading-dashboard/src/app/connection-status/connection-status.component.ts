@@ -27,21 +27,21 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   servers: ServerStatus[] = [
     {
       name: 'Angular',
-      url: 'http://localhost:4200/assets/images/angular_icon.gif',
+      url: '/assets/images/angular_icon.gif',
       status: 'online',
       icon: '/assets/images/angular_icon.gif',
       tooltip: 'Angular Development Server'
     },
     {
       name: 'NotionProxy',
-      url: 'http://localhost:3000/api/health',
+      url: '/notion-api/health',
       status: 'checking',
       icon: '/assets/images/notion-icon.png',
       tooltip: 'Notion Proxy API Server'
     },
     {
       name: 'MT5 API',
-      url: 'http://localhost:5000/health',
+      url: '/api/health',
       status: 'checking',
       icon: '/assets/images/mt5_icon.png',
       tooltip: 'MetaTrader 5 API Server'
