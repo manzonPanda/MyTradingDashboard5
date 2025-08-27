@@ -19,6 +19,21 @@
   }
 }
 
+.connection-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+
+  .connection-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 8px;
+  }
+}
+
 .servers-grid {
   display: flex;
   gap: 8px;
