@@ -1,7 +1,30 @@
-<div
-  class="dot"
-  [ngClass]="{ online: isOnline, offline: !isOnline }"
-  [matTooltip]="isOnline ? 'Connected' : 'No Internet'"
-  matTooltipPosition="above"
-  [attr.title]="isOnline ? 'Connected' : 'No Internet'"></div>>
+<div class="connection-status-container">
+  <div class="servers-grid">
+    <div 
+      *ngFor="let server of servers" 
+      class="server-status-item"
+      [ngClass]="'status-' + server.status"
+      [matTooltip]="getServerTooltip(server)"
+      matTooltipPosition="below">
+      
+      <div class="server-icon-container">
+        <img 
+          [src]="server.icon" 
+          [alt]="server.name + ' icon'"
+          class="server-icon"
+          [ngClass]="'icon-' + server.status">
+        
+        <div class="status-indicator" [ngClass]="'indicator-' + server.status">
+          <div class="status-dot" [ngClass]="'dot-' + server.status"></div>
+        </div>
+      </div>
+      
+      <div class="server-label">{{ server.name }}</div>
+    </div>
+  </div>
+  
+  <!-- Overall status indicator -->
+  <div class="overall-status" [ngClass]="'overall-' + getOverallStatus()">
+    <div class="overall-dot" [ngClass]="'overall-dot-' + getOverallStatus()"></div>
+  </div>
 </div>
