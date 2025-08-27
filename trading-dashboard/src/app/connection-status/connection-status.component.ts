@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { InternetStatusService } from '../internet-status.service';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { interval, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
