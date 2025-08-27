@@ -104,8 +104,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
       try {
         const response = await this.http.get(server.url, {
-          timeout: 3000,
-          responseType: 'text'
+          timeout: 3000
         }).pipe(
           catchError(error => {
             console.warn(`Connection check failed for ${server.name}:`, error);
