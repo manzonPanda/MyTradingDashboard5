@@ -69,7 +69,7 @@ def watch_trades():
                     points = abs(pos.price_open - pos.sl) / point
                     risk_usd = points * tick_value * pos.volume
                 else:
-                    print("⚠️ Cannot calculate risk (missing SL or symbol info)")
+                    print("⚠�� Cannot calculate risk (missing SL or symbol info)")
 
                 socketio.emit('trade_opened', {
                     "ticket": pos.ticket,
@@ -294,10 +294,17 @@ def full_history():
     all_trades = df_closed + df_open
     return jsonify(all_trades)
 
-
-
-
-
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint for connection monitoring"""
+    mt5_connected = mt5.terminal_info() is not None
+    return jsonify({
+        'status': 'healthy' if mt5_connected else 'unhealthy',
+        'service': 'MT5_API',
+        'mt5_connected': mt5_connected,
+        'timestamp': datetime.now().isoformat(),
+        'port': 5000
+    })
 
 @socketio.on('connect')
 def on_connect():
@@ -350,4 +357,3 @@ def on_connect():
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
- 

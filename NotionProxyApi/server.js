@@ -247,5 +247,14 @@ app.post("/api/sendNotif", async (req, res) => {
   }
 });
 
+// Health check endpoint for connection monitoring
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    service: 'NotionProxyApi',
+    timestamp: new Date().toISOString(),
+    port: 3000
+  });
+});
 
 app.listen(3000, () => console.log('✅ Server running at http://localhost:3000'));

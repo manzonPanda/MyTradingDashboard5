@@ -1417,7 +1417,29 @@ table.simple-table {
     color: var(--tf-text-primary);
     letter-spacing: -0.025em;
   }
-  
+
+  .header-right-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 10;
+
+    .dream-timeline-header-widget {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 0.5rem;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    app-connection-status {
+      display: block;
+      z-index: 15;
+    }
+  }
+
   .header-actions {
     display: flex;
     gap: 0.5rem;
