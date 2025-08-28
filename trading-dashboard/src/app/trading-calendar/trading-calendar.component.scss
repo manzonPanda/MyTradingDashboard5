@@ -410,6 +410,30 @@
             .amount-icon {
               color: #dc2626;
             }
+
+            &.zero-amount {
+              color: var(--tf-text-muted);
+              background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(75, 85, 99, 0.08) 100%);
+              border: 1px solid rgba(107, 114, 128, 0.3);
+
+              .amount-icon {
+                color: var(--tf-text-muted);
+                opacity: 0.6;
+              }
+            }
+          }
+
+          .win-amount {
+            &.zero-amount {
+              color: var(--tf-text-muted);
+              background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(75, 85, 99, 0.08) 100%);
+              border: 1px solid rgba(107, 114, 128, 0.3);
+
+              .amount-icon {
+                color: var(--tf-text-muted);
+                opacity: 0.6;
+              }
+            }
           }
         }
 
