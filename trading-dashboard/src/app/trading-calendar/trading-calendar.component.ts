@@ -94,12 +94,12 @@ interface WeekSummary {
                 'weekend': !isWeekday(day.date)
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <!-- Always show daily percentage -->
-              <div class="day-percentage-always" [ngClass]="getDayPnLClass(day.pnl)">
-                {{ formatPercentage(day.dailyPercentage) }}
-              </div>
-
               <div class="day-content" *ngIf="day.tradeCount > 0">
+                <!-- Always show percentage on trading days, even if null or 0 -->
+                <div class="day-percentage-display" [ngClass]="getDayPnLClass(day.pnl)">
+                  {{ formatPercentage(day.dailyPercentage) }}
+                </div>
+
                 <div class="day-trades-summary">
                   <div class="trades-count">
                     <span class="win-count">{{ day.winCount }}W</span>
