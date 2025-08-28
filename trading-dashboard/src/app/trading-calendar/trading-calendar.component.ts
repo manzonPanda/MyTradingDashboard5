@@ -94,7 +94,7 @@ interface WeekSummary {
                 'weekend': !isWeekday(day.date)
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <div class="day-content" *ngIf="day.tradeCount > 0">
+              <div class="day-content" *ngIf="day.tradeCount > 0 || day.isCurrentMonth">
                 <div class="day-net-pnl" [ngClass]="getDayPnLClass(day.pnl)">
                   
                   {{ formatPercentage(day.dailyPercentage) }}
