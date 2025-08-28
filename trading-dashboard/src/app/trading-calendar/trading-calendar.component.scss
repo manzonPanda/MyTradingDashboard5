@@ -316,13 +316,13 @@
         z-index: 2;
       }
 
-      // Always visible percentage for gain/lose status
-      .day-percentage-always {
+      // Percentage display for trading days (always visible on trading days)
+      .day-percentage-display {
         font-weight: 800;
-        font-size: 0.75rem;
+        font-size: 0.875rem;
         text-align: center;
-        padding: 0.25rem 0.4rem;
-        border-radius: 6px;
+        padding: 0.375rem 0.5rem;
+        border-radius: 8px;
         background: var(--tf-bg-tertiary);
         border: 1px solid var(--tf-border-primary);
         box-shadow: var(--shadow-soft);
@@ -331,14 +331,12 @@
         margin-bottom: 0.375rem;
         position: relative;
         z-index: 2;
-        opacity: 0.9;
 
         &.positive {
           color: #065f46;
           background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
           border: 1px solid #a7f3d0;
           box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
-          opacity: 1;
         }
 
         &.negative {
@@ -346,14 +344,12 @@
           background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
           border: 1px solid #fca5a5;
           box-shadow: 0 1px 3px rgba(244, 63, 94, 0.2);
-          opacity: 1;
         }
 
         &.neutral {
-          color: var(--tf-text-muted);
-          background: rgba(107, 114, 128, 0.05);
-          border: 1px solid rgba(107, 114, 128, 0.2);
-          opacity: 0.8;
+          color: var(--tf-text-primary);
+          background: var(--tf-bg-tertiary);
+          border: 1px solid var(--tf-border-primary);
         }
       }
 
