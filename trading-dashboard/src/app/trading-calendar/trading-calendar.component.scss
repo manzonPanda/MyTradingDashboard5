@@ -561,7 +561,7 @@
   /* Empty space to align with day headers */
   &::before {
     content: '';
-    height: calc(0.75rem * 2 + 0.875rem + 1rem); /* Match day headers height + gap */
+    height: calc(0.75rem + 0.875rem + 0.75rem + 1rem); /* padding-top + font-size + padding-bottom + gap */
     grid-row: 1;
   }
 
