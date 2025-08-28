@@ -552,17 +552,19 @@
 .weekly-summary {
   background: var(--tf-bg-secondary);
   border-left: 1px solid var(--tf-border-primary);
-  padding: 1.5rem 1rem;
+  padding: 1.5rem 1rem 1.5rem 1rem;
   display: grid;
   grid-template-rows: auto repeat(6, 1fr);
   gap: 1px;
   height: 100%;
 
-  /* Empty space to align with day headers */
+  /* Header space to align with day headers - exact match */
   &::before {
     content: '';
-    height: calc(0.75rem + 0.875rem + 0.75rem + 1rem); /* padding-top + font-size + padding-bottom + gap */
+    /* Match day-headers: 0.75rem padding + 0.875rem font-size + 0.75rem padding + 1rem gap */
+    height: calc(0.75rem + 0.875rem + 0.75rem + 1rem);
     grid-row: 1;
+    display: block;
   }
 
   .week-summary {
