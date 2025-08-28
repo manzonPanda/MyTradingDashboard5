@@ -339,9 +339,11 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return `$${amount.toFixed(0)}`;
   }
 
-  formatPercentage(percentage: number): string {
-    const sign = percentage >= 0 ? '+' : '';
-    return `${sign}${percentage.toFixed(2)}%`;
+  formatPercentage(percentage: number | null | undefined): string {
+    // Handle null, undefined, or NaN values
+    const safePercentage = (percentage === null || percentage === undefined || isNaN(percentage)) ? 0 : percentage;
+    const sign = safePercentage >= 0 ? '+' : '';
+    return `${sign}${safePercentage.toFixed(2)}%`;
   }
 
   getDayPnLClass(pnl: number): string {
