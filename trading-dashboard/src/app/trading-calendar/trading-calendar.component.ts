@@ -125,7 +125,7 @@ interface WeekSummary {
 
               </div>
 
-              <!-- Show zero amounts for current month days with no trades -->
+              <!-- Show zero amounts only for weekdays (trading days) with no trades -->
               <div class="day-content-zero" *ngIf="day.tradeCount === 0 && day.isCurrentMonth && isWeekday(day.date)">
                 <div class="day-win-loss-amounts">
                   <div class="amounts-row">
