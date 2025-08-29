@@ -2084,18 +2084,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: `🔴 --- Max loss (${this.maxLoss}%)`,
-          data: new Array(labels.length).fill(startingBalance * (1 - this.maxLoss / 100)),
+          label: `⚠️ Max Drawdown (${this.mt5AccountInfo.maxTotalDrawdown}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 - this.mt5AccountInfo.maxTotalDrawdown / 100)),
           borderColor: 'rgb(239, 68, 68)',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderDash: [5, 5],
-          fill: false,
+          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+          borderWidth: 4,
+          borderDash: [8, 6],
+          fill: '-1',
           tension: 0,
           pointRadius: 0,
-          pointHoverRadius: 0,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          shadowOffsetX: 0,
+          shadowOffsetY: 2,
+          shadowBlur: 12,
+          shadowColor: 'rgba(239, 68, 68, 0.4)'
         }
       ]
     };
@@ -4097,7 +4102,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   mockMT5newTrade(){
     console.log('🚀 Mock button clicked! Current state:');
     console.log('📊 Current tableData length:', this.tableData.length);
-    console.log('�� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
+    console.log('��� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
 
     // Generate random mock data for testing
     const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
