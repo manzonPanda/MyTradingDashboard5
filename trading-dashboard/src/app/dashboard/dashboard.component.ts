@@ -45,6 +45,14 @@ interface Trades {
   tradeId: string;
 }
 
+interface AccountSettings {
+  startingBalance: number;
+  balance:number;
+  profitTarget: number;
+  maxTotalDrawdown: number;
+  dailyLossLimit: number;
+}
+
 interface Table {
   openDate: string;
   tradeNotion: Trades[];
@@ -144,7 +152,13 @@ export class DashboardComponent implements AfterViewInit {
   dtTrigger: Subject<any> = new Subject<any>();
 
   // MT5 Live Trading properties
-  mt5AccountInfo: any; // MT5 account info with default values
+mt5AccountInfo: AccountSettings = {
+  startingBalance: 0,
+  balance: 0,
+  profitTarget: 0,
+  maxTotalDrawdown: 0,
+  dailyLossLimit: 0
+};
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   isLoadingMetrics = true; // Loading state for metrics cards
@@ -173,6 +187,7 @@ export class DashboardComponent implements AfterViewInit {
   showNotionData = false;
   // selectedTradeId: string | null = null;
   selectedTradeId: { [position: string]: string | null } = {};
+
 
   //news data from ForexFactory
   newsData: any[] = [];
@@ -489,6 +504,51 @@ export class DashboardComponent implements AfterViewInit {
     // Register Chart.js components
     Chart.register(...registerables);
   }
+  private async loadTradingSettings(): Promise<void> {
+    // Load saved settings from localStorage
+    // const savedProfitTarget = localStorage.getItem('tradingProfitTarget');
+    // const savedMaxLoss = localStorage.getItem('tradingMaxLoss');
+    // if (savedProfitTarget) {
+    //   this.profitTarget = parseInt(savedProfitTarget);
+    // }
+    // if (savedMaxLoss) {
+    //   this.maxLoss = parseInt(savedMaxLoss);
+    // }
+    const body = {
+      "page_size": 1,
+      "filter": {
+        "property": "Account",
+        "multi_select": {
+          "contains": "5ers4️⃣5k [#25475923]"
+        }
+      },
+      "sorts": [
+        {
+          "timestamp": "created_time",
+          "direction": "ascending"
+        }
+      ]
+    };
+    try {
+      const accountSettings: any = await firstValueFrom(
+        this.http.post("http://localhost:3000/api/getPropFirmAccountSettings", body) //Patching
+      );
+      if (accountSettings.results[0]) {
+        const info = accountSettings.results[0].properties["Daily Reflection"]?.rich_text?.[0]?.plain_text || "";
+        const startingBalance = info.match(/InitialBalance:\s*(\d+)/i)?.[1] || null;
+        const profitTarget = info.match(/ProfitTarget:\s*([\d.]+%)/i)?.[1] || null;
+        const maxTotalDrawdown = info.match(/MaxTotalDrawdown:\s*([\d.]+%)/i)?.[1] || null;
+        const dailyLossLimit = info.match(/DailyLossLimit:\s*([\d.]+%)/i)?.[1] || null;
+        this.mt5AccountInfo.startingBalance = parseInt(startingBalance)
+        this.mt5AccountInfo.profitTarget = parseInt(profitTarget.replace('%', ''))
+        this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', '')) 
+        this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', '')) 
+
+      } 
+    } catch (error) {
+
+    }
+  }
 
 async ngOnInit() {
     // Load saved trading settings
@@ -507,7 +567,9 @@ async ngOnInit() {
   });
 
   socket.on("account_info", (data) => {
-    this.mt5AccountInfo = data;
+    if (this.mt5AccountInfo) {
+      this.mt5AccountInfo.balance = data.balance;
+    }
     console.warn("���� Account Info Received:", data);
   });
 
@@ -1789,7 +1851,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
 
-    const startingBalance = this.mt5AccountInfo.starting_balance;
+    const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
     let currentBalance = startingBalance;
     let cumulativePnL = 0;
     let peakBalance = startingBalance;
@@ -1808,7 +1870,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Add starting point
     labels.push('Start');
-    balanceData.push(startingBalance);
+    balanceData.push(startingBalance ?? 0);
     pnlData.push(0);
     drawdownData.push(0);
 
@@ -2535,9 +2597,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateTotalPercentageGain(): number {
     const totalPnL = this.calculateTotalPnL();
-    const startingBalance = this.mt5AccountInfo?.starting_balance || 5000; // Fallback to 5000 if not available
+    const startingBalance = this.mt5AccountInfo?.startingBalance
 
-    if (startingBalance <= 0) return 0;
+    if (startingBalance === undefined || startingBalance <= 0) return 0;
 
     const percentage = (totalPnL / startingBalance) * 100;
     return parseFloat(percentage.toFixed(2));
@@ -2565,7 +2627,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAccountSize(): number {
-    const balanceFromMt5 = this.mt5AccountInfo.balance; // Typical 5k challenge
+    const balanceFromMt5 = this.mt5AccountInfo?.balance ?? 0;
     const totalPnL = this.calculateTotalPnL();
     return balanceFromMt5 - totalPnL;
   }
@@ -2673,7 +2735,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateAvgWinPercentage(): number {
     const avgWin = this.calculateAvgWin();
-    const accountSize = this.mt5AccountInfo?.starting_balance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
 
     if (avgWin <= 0 || accountSize <= 0) return 0;
 
@@ -2682,7 +2744,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateAvgLossPercentage(): number {
     const avgLoss = Math.abs(this.calculateAvgLoss());
-    const accountSize = this.mt5AccountInfo?.starting_balance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
 
     if (avgLoss <= 0 || accountSize <= 0) return 0;
 
@@ -2725,7 +2787,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateBestProfitPercentage(): number {
     const bestProfit = this.calculateBestProfit();
-    const accountSize = this.mt5AccountInfo?.starting_balance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
 
     if (bestProfit <= 0 || accountSize <= 0) return 0;
 
@@ -4728,22 +4790,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     localStorage.setItem('tradingMaxLoss', this.maxLoss.toString());
   }
 
-  private loadTradingSettings(): void {
-    // Load saved settings from localStorage
-    const savedProfitTarget = localStorage.getItem('tradingProfitTarget');
-    const savedMaxLoss = localStorage.getItem('tradingMaxLoss');
 
-    if (savedProfitTarget) {
-      this.profitTarget = parseInt(savedProfitTarget);
-    }
-
-    if (savedMaxLoss) {
-      this.maxLoss = parseInt(savedMaxLoss);
-    }
-
-    // Reset celebration tracking when component initializes
-    this.hasCelebratedCurrentTarget = false;
-    this.lastCelebratedTarget = 0;
-  }
 
 }

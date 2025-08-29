@@ -257,4 +257,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.post('/api/getPropFirmAccountSettings', async (req, res) => {
+  try {
+    const response = await axios.post(
+      'https://api.notion.com/v1/databases/ef10ac6f79524ea49e4bc0997e0ee704/query',
+      req.body,
+      {
+        headers: {
+          Authorization: `Bearer ${NOTION_TOKEN}`,
+          'Notion-Version': NOTION_VERSION,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    res.json(response.data);
+  } catch (err) {
+    res.status(err.response?.status || 500).json(err.response?.data || { error: 'Unknown error' });
+  }
+});
+
 app.listen(3000, () => console.log('✅ Server running at http://localhost:3000'));
