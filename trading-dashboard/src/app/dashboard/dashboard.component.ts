@@ -135,7 +135,8 @@ interface NotionPerformanceData {
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 
 
@@ -4583,7 +4584,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑��� Destroying existing DataTable completely');
+        console.log('🗑����� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
