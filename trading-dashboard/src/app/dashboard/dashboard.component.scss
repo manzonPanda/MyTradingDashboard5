@@ -4,20 +4,23 @@
 .mt5-account-info {
   .account-targets {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
+    width: 100%;
   }
 
   .target-card {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border-radius: 12px;
-    padding: 0.75rem;
-    min-width: 160px;
+    padding: 0.6rem;
+    flex: 1;
+    max-width: 180px;
+    min-width: 140px;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
     box-shadow:
       0 4px 20px rgba(0, 0, 0, 0.08),
       0 2px 8px rgba(0, 0, 0, 0.04);
@@ -95,17 +98,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
       }
     }
 
@@ -134,20 +137,22 @@
     }
 
     .target-label {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
       line-height: 1;
+      white-space: nowrap;
     }
 
     .target-value {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.1rem;
       line-height: 1;
+      white-space: nowrap;
 
       &.profit {
         color: #059669;
@@ -166,11 +171,14 @@
     }
 
     .target-amount {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 500;
       color: #64748b;
       opacity: 0.9;
       line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
