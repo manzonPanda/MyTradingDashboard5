@@ -67,3 +67,12 @@ app-root {
   min-height: 100vh;
   background-color: #ffffff;
 }
+
+// Global override for Win Rate mat-icon
+.chart-stats .stat-item:last-child mat-icon {
+  color: #2563eb !important;
+}
+
+.chart-stats .stat-item:last-child .mat-icon {
+  color: #2563eb !important;
+}
