@@ -321,6 +321,9 @@
           </div>
           <div class="chart-stats">
             <div class="stat-item">
+              <div class="stat-icon">
+                <mat-icon>account_balance_wallet</mat-icon>
+              </div>
               <div class="stat-content">
                 <div class="stat-label">Total P&L</div>
                 <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
@@ -332,6 +335,9 @@
               </div>
             </div>
             <div class="stat-item">
+              <div class="stat-icon">
+                <mat-icon>emoji_events</mat-icon>
+              </div>
               <div class="stat-content">
                 <div class="stat-label">Win Rate</div>
                 <div class="stat-value">{{ calculateWinRate() }}%</div>
