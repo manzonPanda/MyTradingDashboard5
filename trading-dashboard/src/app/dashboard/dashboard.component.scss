@@ -437,6 +437,14 @@
   }
 }
 
+// Force Total P&L to purple with higher specificity
+.chart-stats .stat-item:first-child .stat-value,
+.chart-stats .stat-item:first-child .stat-value.positive,
+.chart-stats .stat-item:first-child .stat-value.negative {
+  color: #7c3aed !important;
+  text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1) !important;
+}
+
 // Animation for initial load
 @keyframes slideInUp {
   from {
