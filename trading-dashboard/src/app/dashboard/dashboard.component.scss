@@ -4,24 +4,31 @@
 .mt5-account-info {
   .account-targets {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: nowrap;
     justify-content: center;
+    width: 100%;
   }
 
   .target-card {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border-radius: 12px;
-    padding: 0.5rem;
-    min-width: 100px;
+    padding: 0.6rem;
+    flex: 1;
+    max-width: 180px;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     box-shadow:
       0 4px 20px rgba(0, 0, 0, 0.08),
       0 2px 8px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(226, 232, 240, 0.6);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
 
     &::before {
       content: '';
@@ -39,10 +46,15 @@
       }
 
       &:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px) scale(1.02);
         box-shadow:
-          0 8px 30px rgba(16, 185, 129, 0.15),
-          0 4px 12px rgba(16, 185, 129, 0.1);
+          0 12px 40px rgba(16, 185, 129, 0.2),
+          0 6px 16px rgba(16, 185, 129, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
       }
     }
 
@@ -52,10 +64,15 @@
       }
 
       &:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px) scale(1.02);
         box-shadow:
-          0 8px 30px rgba(239, 68, 68, 0.15),
-          0 4px 12px rgba(239, 68, 68, 0.1);
+          0 12px 40px rgba(239, 68, 68, 0.2),
+          0 6px 16px rgba(239, 68, 68, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
       }
     }
 
@@ -65,10 +82,15 @@
       }
 
       &:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px) scale(1.02);
         box-shadow:
-          0 8px 30px rgba(245, 158, 11, 0.15),
-          0 4px 12px rgba(245, 158, 11, 0.1);
+          0 12px 40px rgba(245, 158, 11, 0.2),
+          0 6px 16px rgba(245, 158, 11, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
       }
     }
 
@@ -76,50 +98,64 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      margin: 0 auto 0.5rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
 
       mat-icon {
-        font-size: 14px;
-        width: 14px;
-        height: 14px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
       }
     }
 
     &.profit-target .target-icon {
       background: linear-gradient(135deg, #ecfdf5, #d1fae5);
       color: #059669;
+      border: 2px solid rgba(16, 185, 129, 0.2);
     }
 
     &.max-loss .target-icon {
       background: linear-gradient(135deg, #fef2f2, #fecaca);
       color: #dc2626;
+      border: 2px solid rgba(239, 68, 68, 0.2);
     }
 
     &.daily-limit .target-icon {
       background: linear-gradient(135deg, #fffbeb, #fed7aa);
       color: #d97706;
+      border: 2px solid rgba(245, 158, 11, 0.2);
     }
 
     .target-content {
-      text-align: center;
+      text-align: left;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
     }
 
     .target-label {
-      font-size: 0.65rem;
-      font-weight: 500;
+      font-size: 0.6rem;
+      font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.2rem;
+      line-height: 1;
+      white-space: nowrap;
     }
 
     .target-value {
       font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.2rem;
+      line-height: 1;
+      white-space: nowrap;
+      margin: 0;
 
       &.profit {
         color: #059669;
@@ -135,13 +171,258 @@
         color: #d97706;
         text-shadow: 0 1px 2px rgba(217, 119, 6, 0.1);
       }
+
+      &.positive {
+        color: #059669;
+        text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+      }
+
+      &.negative {
+        color: #dc2626;
+        text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+      }
+
+      &.win {
+        color: #7c3aed;
+        text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+      }
+    }
+
+    // Total P&L target card styling
+    &.total-pnl {
+      &::before {
+        background: linear-gradient(90deg, #059669, #10b981);
+      }
+
+      &:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow:
+          0 12px 40px rgba(5, 150, 105, 0.2),
+          0 6px 16px rgba(5, 150, 105, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+      }
+    }
+
+    &.total-pnl .target-icon {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      color: #059669;
+      border: 2px solid rgba(16, 185, 129, 0.2);
+    }
+
+    // Win Rate target card styling
+    &.win-rate {
+      &::before {
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+      }
+
+      &:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow:
+          0 12px 40px rgba(139, 92, 246, 0.2),
+          0 6px 16px rgba(139, 92, 246, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+      }
+    }
+
+    &.win-rate .target-icon {
+      background: linear-gradient(135deg, #faf5ff, #ede9fe);
+      color: #7c3aed;
+      border: 2px solid rgba(139, 92, 246, 0.2);
     }
 
     .target-amount {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 600;
-      color: #475569;
-      opacity: 0.8;
+      color: #64748b;
+      opacity: 0.9;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+
+    .target-value-group {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+
+      .target-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      .target-amount {
+        font-size: 0.7rem;
+        font-weight: 500;
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+// Beautiful Chart Stats Styling - Remove Circles and Match Target Card Height
+.chart-stats {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+  flex-wrap: nowrap;
+
+  .stat-item {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    padding: 0.6rem;
+    flex: 1;
+    max-width: 180px;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow:
+      0 4px 20px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      transition: all 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow:
+        0 12px 40px rgba(59, 130, 246, 0.2),
+        0 6px 16px rgba(59, 130, 246, 0.15);
+    }
+
+    // Remove the ::after circles that were causing the issue
+    .stat-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .stat-content {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .stat-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1;
+      margin: 0 0 0.2rem 0;
+      white-space: nowrap;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+      margin: 0 0 0.1rem 0;
+      white-space: nowrap;
+
+      &.positive {
+        color: #059669;
+        text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+      }
+
+      &.negative {
+        color: #dc2626;
+        text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+      }
+    }
+
+    .percentage-gain {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: #64748b;
+      opacity: 0.9;
+      line-height: 1;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    // First stat item (Total P&L) styling
+    &:first-child {
+      &::before {
+        background: linear-gradient(90deg, #059669, #10b981);
+      }
+
+      .stat-icon {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        color: #059669;
+      }
+
+      &:hover {
+        box-shadow:
+          0 12px 40px rgba(5, 150, 105, 0.2),
+          0 6px 16px rgba(5, 150, 105, 0.15);
+
+        .stat-icon {
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    // Second stat item (Win Rate) styling
+    &:last-child {
+      &::before {
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+      }
+
+      .stat-icon {
+        background: linear-gradient(135deg, #faf5ff, #ede9fe);
+        border: 2px solid rgba(139, 92, 246, 0.2);
+        color: #7c3aed;
+      }
+
+      &:hover {
+        box-shadow:
+          0 12px 40px rgba(139, 92, 246, 0.2),
+          0 6px 16px rgba(139, 92, 246, 0.15);
+
+        .stat-icon {
+          transform: scale(1.1);
+        }
+      }
+
+      .stat-value {
+        color: #7c3aed;
+        text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+      }
     }
   }
 }
@@ -3528,7 +3809,7 @@ table.simple-table {
   border-radius: 4px;
   transition: all 0.2s ease;
 
-  // 🔥 AMAZING R:R (3.0+)
+  // ���� AMAZING R:R (3.0+)
   &.rrr-on-fire {
     background: rgba(16, 185, 129, 0.15);
     border: 1px solid rgba(16, 185, 129, 0.4);

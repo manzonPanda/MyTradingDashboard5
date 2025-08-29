@@ -321,18 +321,28 @@
           </div>
           <div class="chart-stats">
             <div class="stat-item">
-              <span class="stat-label">Total P&L</span>
-              <span class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
+              <div class="stat-icon">
+                <mat-icon>account_balance_wallet</mat-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Total P&L</div>
+                <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
                   {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
-                  <span class="percentage-gain" >
-                  ({{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }})
-                </span>
-              </span>
-              
+                </div>
+                <div class="percentage-gain">
+                  {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                </div>
+              </div>
             </div>
             <div class="stat-item">
-              <span class="stat-label">Win Rate</span>
-              <span class="stat-value">{{ calculateWinRate() }}%</span>
+              <div class="stat-icon">
+                <mat-icon>emoji_events</mat-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value">{{ calculateWinRate() }}%</div>
+                <div class="percentage-gain">Success Rate</div>
+              </div>
             </div>
             <div class="chart-controls">
               <div class="mt5-account-info">
@@ -343,8 +353,10 @@
                     </div>
                     <div class="target-content">
                       <div class="target-label">Profit Target</div>
-                      <div class="target-value profit">{{ mt5AccountInfo.profitTarget }}%</div>
-                      <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.profitTarget / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                      <div class="target-value-group">
+                        <div class="target-value profit">{{ mt5AccountInfo.profitTarget }}%</div>
+                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.profitTarget / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -354,8 +366,10 @@
                     </div>
                     <div class="target-content">
                       <div class="target-label">Max Drawdown</div>
-                      <div class="target-value loss">{{ mt5AccountInfo.maxTotalDrawdown }}%</div>
-                      <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.maxTotalDrawdown / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                      <div class="target-value-group">
+                        <div class="target-value loss">{{ mt5AccountInfo.maxTotalDrawdown }}%</div>
+                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.maxTotalDrawdown / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -365,15 +379,14 @@
                     </div>
                     <div class="target-content">
                       <div class="target-label">Daily Limit</div>
-                      <div class="target-value warning">{{ mt5AccountInfo.dailyLossLimit }}%</div>
-                      <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.dailyLossLimit / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                      <div class="target-value-group">
+                        <div class="target-value warning">{{ mt5AccountInfo.dailyLossLimit }}%</div>
+                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.dailyLossLimit / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <button class="chart-refresh-btn" (click)="refreshChart()" title="Refresh Chart">
-                <mat-icon>refresh</mat-icon>
-              </button>
               <!-- <button class="confetti-test-btn" (click)="testConfettiCelebration()" title="Test Persistent Confetti Celebration 🎉" style="margin-left: 8px; background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4); border: none; border-radius: 12px; padding: 10px 16px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); transition: all 0.3s ease; font-size: 0.9rem;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 20px rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.4)'">
                 🎉 Test Celebration
               </button> -->
@@ -1235,7 +1248,7 @@
               <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
               <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
               <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
-              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated ����</th>
+              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated �����</th>
               <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
               <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
               <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
