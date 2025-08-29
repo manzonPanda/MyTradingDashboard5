@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -2440,7 +2440,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         })
       );
 
-      console.log('✅ Backend is responding to POST requests with empty body');
+      console.log('��� Backend is responding to POST requests with empty body');
       return true;
 
     } catch (error: any) {
@@ -4584,7 +4584,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑����� Destroying existing DataTable completely');
+        console.log('🗑��� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
