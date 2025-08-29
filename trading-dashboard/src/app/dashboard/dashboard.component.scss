@@ -299,6 +299,18 @@
 
     }
 
+    .percentage-gain {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: #64748b;
+      opacity: 0.9;
+      line-height: 1;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     // First stat item (Total P&L) styling
     &:first-child {
       &::before {
@@ -3732,7 +3744,7 @@ table.simple-table {
   border-radius: 4px;
   transition: all 0.2s ease;
 
-  // 🔥 AMAZING R:R (3.0+)
+  // ���� AMAZING R:R (3.0+)
   &.rrr-on-fire {
     background: rgba(16, 185, 129, 0.15);
     border: 1px solid rgba(16, 185, 129, 0.4);
