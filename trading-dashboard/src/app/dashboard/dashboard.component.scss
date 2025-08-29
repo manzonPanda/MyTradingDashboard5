@@ -457,10 +457,26 @@
   -webkit-text-fill-color: #2563eb !important;
 }
 
-// Target the specific emoji_events icon
-.chart-stats .stat-item:last-child mat-icon[data-mat-icon-name="emoji_events"]::before,
-.chart-stats .stat-item:last-child .material-icons:contains("emoji_events") {
+// Target all possible icon formats including SVG
+.chart-stats .stat-item:last-child mat-icon svg,
+.chart-stats .stat-item:last-child mat-icon svg path,
+.chart-stats .stat-item:last-child .mat-icon svg,
+.chart-stats .stat-item:last-child .mat-icon svg path {
+  fill: #2563eb !important;
   color: #2563eb !important;
+}
+
+// Target text-based icons
+.chart-stats .stat-item:last-child mat-icon::before,
+.chart-stats .stat-item:last-child .mat-icon::before,
+.chart-stats .stat-item:last-child .material-icons::before {
+  color: #2563eb !important;
+}
+
+// Nuclear option - target everything inside Win Rate icon
+.chart-stats .stat-item:last-child .stat-icon * {
+  color: #2563eb !important;
+  fill: #2563eb !important;
 }
 
 // Animation for initial load
