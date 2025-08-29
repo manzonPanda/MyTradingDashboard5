@@ -700,7 +700,7 @@ async ngOnInit() {
 
   refreshDataTableWithAngularBinding(): void {
     try {
-      console.log('🔄 Refreshing DataTable with Angular binding for complex columns');
+      console.log('��� Refreshing DataTable with Angular binding for complex columns');
 
       // Force Angular change detection first
       this.cdr.detectChanges();
@@ -1973,18 +1973,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: `🔴 --- Max loss (${this.maxLoss}%)`,
-            data: [startingBalance * (1 - this.maxLoss / 100)],
+            label: `⚠️ Max Drawdown (${this.mt5AccountInfo.maxTotalDrawdown}%)`,
+            data: [startingBalance * (1 - this.mt5AccountInfo.maxTotalDrawdown / 100)],
             borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            borderDash: [5, 5],
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 4,
+            borderDash: [8, 6],
             fill: false,
             tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
+            pointRadius: 6,
+            pointHoverRadius: 10,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointStyle: 'rect',
+            shadowOffsetX: 0,
+            shadowOffsetY: 2,
+            shadowBlur: 8,
+            shadowColor: 'rgba(239, 68, 68, 0.3)'
           }
         ]
       };
