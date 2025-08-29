@@ -76,15 +76,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      margin: 0 auto 0.75rem;
+      margin: 0 auto 0.5rem;
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
       }
     }
 
@@ -108,18 +108,18 @@
     }
 
     .target-label {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 500;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
     }
 
     .target-value {
-      font-size: 1.25rem;
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
 
       &.profit {
         color: #059669;
@@ -138,7 +138,7 @@
     }
 
     .target-amount {
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: #475569;
       opacity: 0.8;
