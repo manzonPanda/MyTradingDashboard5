@@ -427,6 +427,16 @@
   }
 }
 
+// Force Win Rate to blue with higher specificity
+.chart-stats .stat-item:last-child .stat-icon,
+.chart-stats .stat-item:last-child .stat-icon mat-icon {
+  color: #2563eb !important;
+}
+
+.chart-stats .stat-item:last-child .stat-value {
+  color: #2563eb !important;
+  text-shadow: 0 1px 2px rgba(37, 99, 235, 0.1) !important;
+}
 
 // Animation for initial load
 @keyframes slideInUp {
