@@ -430,14 +430,17 @@
 // Force Win Rate to blue with maximum specificity
 .chart-stats .stat-item:last-child .stat-icon {
   color: #2563eb !important;
+  fill: #2563eb !important;
 }
 
 .chart-stats .stat-item:last-child .stat-icon mat-icon {
   color: #2563eb !important;
+  fill: #2563eb !important;
 }
 
 .chart-stats .stat-item:last-child .stat-icon .mat-icon {
   color: #2563eb !important;
+  fill: #2563eb !important;
 }
 
 .chart-stats .stat-item:last-child .stat-value {
@@ -446,8 +449,17 @@
 }
 
 // Override any potential global mat-icon styles for Win Rate
-.chart-stats .stat-item:last-child mat-icon[data-mat-icon-name="emoji_events"],
+.chart-stats .stat-item:last-child mat-icon,
+.chart-stats .stat-item:last-child .mat-icon,
 .chart-stats .stat-item:last-child .material-icons {
+  color: #2563eb !important;
+  fill: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}
+
+// Target the specific emoji_events icon
+.chart-stats .stat-item:last-child mat-icon[data-mat-icon-name="emoji_events"]::before,
+.chart-stats .stat-item:last-child .material-icons:contains("emoji_events") {
   color: #2563eb !important;
 }
 
