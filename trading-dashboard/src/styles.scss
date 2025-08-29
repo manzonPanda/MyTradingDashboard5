@@ -68,11 +68,28 @@ app-root {
   background-color: #ffffff;
 }
 
-// Global override for Win Rate mat-icon
-.chart-stats .stat-item:last-child mat-icon {
+// Global override for Win Rate mat-icon - NUCLEAR OPTION
+app-dashboard .chart-stats .stat-item:last-child mat-icon,
+app-dashboard .chart-stats .stat-item:last-child .mat-icon,
+app-dashboard .chart-stats .stat-item:last-child .material-icons {
+  color: #2563eb !important;
+  fill: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}
+
+app-dashboard .chart-stats .stat-item:last-child mat-icon svg,
+app-dashboard .chart-stats .stat-item:last-child mat-icon svg path,
+app-dashboard .chart-stats .stat-item:last-child .mat-icon svg,
+app-dashboard .chart-stats .stat-item:last-child .mat-icon svg path {
+  fill: #2563eb !important;
   color: #2563eb !important;
 }
 
-.chart-stats .stat-item:last-child .mat-icon {
+app-dashboard .chart-stats .stat-item:last-child .stat-icon {
   color: #2563eb !important;
+}
+
+app-dashboard .chart-stats .stat-item:last-child .stat-icon * {
+  color: #2563eb !important;
+  fill: #2563eb !important;
 }
