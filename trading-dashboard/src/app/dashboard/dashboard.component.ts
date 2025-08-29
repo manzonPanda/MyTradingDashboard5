@@ -541,12 +541,17 @@ mt5AccountInfo: AccountSettings = {
         const dailyLossLimit = info.match(/DailyLossLimit:\s*([\d.]+%)/i)?.[1] || null;
         this.mt5AccountInfo.startingBalance = parseInt(startingBalance)
         this.mt5AccountInfo.profitTarget = parseInt(profitTarget.replace('%', ''))
-        this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', '')) 
-        this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', '')) 
+        this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', ''))
+        this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', ''))
 
-      } 
+        // Refresh chart with updated MT5 account info
+        setTimeout(() => {
+          this.generateTradingChartData();
+        }, 100);
+
+      }
     } catch (error) {
-
+      console.warn('⚠️ Could not load MT5 account settings from backend');
     }
   }
 
@@ -1940,17 +1945,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: `🟢 --- Profit target (${this.profitTarget}%)`,
-            data: [startingBalance * (1 + this.profitTarget / 100)],
-            borderColor: 'rgb(34, 197, 94)',
-            backgroundColor: 'transparent',
-            borderWidth: 3,
+            label: `🎯 Profit Target (${this.mt5AccountInfo.profitTarget}%)`,
+            data: [startingBalance * (1 + this.mt5AccountInfo.profitTarget / 100)],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 4,
+            borderDash: [12, 8],
             fill: false,
             tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
+            pointRadius: 6,
+            pointHoverRadius: 10,
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointStyle: 'triangle',
+            shadowOffsetX: 0,
+            shadowOffsetY: 2,
+            shadowBlur: 8,
+            shadowColor: 'rgba(16, 185, 129, 0.3)'
           },
           {
             label: '🟣 --- Starting Balance',
@@ -1966,18 +1978,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: `🔴 --- Max loss (${this.maxLoss}%)`,
-            data: [startingBalance * (1 - this.maxLoss / 100)],
+            label: `⚠️ Max Drawdown (${this.mt5AccountInfo.maxTotalDrawdown}%)`,
+            data: [startingBalance * (1 - this.mt5AccountInfo.maxTotalDrawdown / 100)],
             borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            borderDash: [5, 5],
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 4,
+            borderDash: [8, 6],
             fill: false,
             tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
+            pointRadius: 6,
+            pointHoverRadius: 10,
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointStyle: 'rect',
+            shadowOffsetX: 0,
+            shadowOffsetY: 2,
+            shadowBlur: 8,
+            shadowColor: 'rgba(239, 68, 68, 0.3)'
           }
         ]
       };
@@ -2039,17 +2057,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: `🟢 --- Profit target (${this.profitTarget}%)`,
-          data: new Array(labels.length).fill(startingBalance * (1 + this.profitTarget / 100)),
-          borderColor: 'rgb(34, 197, 94)',
-          backgroundColor: 'transparent',
-          borderWidth: 3,
-          fill: false,
+          label: `🎯 Profit Target (${this.mt5AccountInfo.profitTarget}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 + this.mt5AccountInfo.profitTarget / 100)),
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: 'rgba(16, 185, 129, 0.05)',
+          borderWidth: 4,
+          borderDash: [12, 8],
+          fill: '+1',
           tension: 0,
           pointRadius: 0,
-          pointHoverRadius: 0,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgb(16, 185, 129)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          shadowOffsetX: 0,
+          shadowOffsetY: 2,
+          shadowBlur: 12,
+          shadowColor: 'rgba(16, 185, 129, 0.4)'
         },
         {
           label: '🟣 --- Starting Balance',
@@ -2065,18 +2089,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           pointBorderColor: 'transparent'
         },
         {
-          label: `🔴 --- Max loss (${this.maxLoss}%)`,
-          data: new Array(labels.length).fill(startingBalance * (1 - this.maxLoss / 100)),
+          label: `⚠️ Max Drawdown (${this.mt5AccountInfo.maxTotalDrawdown}%)`,
+          data: new Array(labels.length).fill(startingBalance * (1 - this.mt5AccountInfo.maxTotalDrawdown / 100)),
           borderColor: 'rgb(239, 68, 68)',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderDash: [5, 5],
-          fill: false,
+          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+          borderWidth: 4,
+          borderDash: [8, 6],
+          fill: '-1',
           tension: 0,
           pointRadius: 0,
-          pointHoverRadius: 0,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          shadowOffsetX: 0,
+          shadowOffsetY: 2,
+          shadowBlur: 12,
+          shadowColor: 'rgba(239, 68, 68, 0.4)'
         }
       ]
     };
@@ -4078,7 +4107,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   mockMT5newTrade(){
     console.log('🚀 Mock button clicked! Current state:');
     console.log('📊 Current tableData length:', this.tableData.length);
-    console.log('�� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
+    console.log('��� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
 
     // Generate random mock data for testing
     const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
