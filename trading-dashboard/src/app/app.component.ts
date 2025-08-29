@@ -12,7 +12,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
   ],
   standalone: true,
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   title = 'trading-dashboard';
