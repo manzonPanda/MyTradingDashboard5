@@ -1,5 +1,171 @@
 // TradersFeed-inspired light theme Dashboard Styles
 
+// Beautiful MT5 Account Info Display
+.mt5-account-info {
+  .account-targets {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .target-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    padding: 1rem;
+    min-width: 140px;
+    box-shadow:
+      0 4px 20px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      transition: all 0.3s ease;
+    }
+
+    &.profit-target {
+      &::before {
+        background: linear-gradient(90deg, #10b981, #34d399);
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 8px 30px rgba(16, 185, 129, 0.15),
+          0 4px 12px rgba(16, 185, 129, 0.1);
+      }
+    }
+
+    &.max-loss {
+      &::before {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 8px 30px rgba(239, 68, 68, 0.15),
+          0 4px 12px rgba(239, 68, 68, 0.1);
+      }
+    }
+
+    &.daily-limit {
+      &::before {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 8px 30px rgba(245, 158, 11, 0.15),
+          0 4px 12px rgba(245, 158, 11, 0.1);
+      }
+    }
+
+    .target-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin: 0 auto 0.75rem;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    &.profit-target .target-icon {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      color: #059669;
+    }
+
+    &.max-loss .target-icon {
+      background: linear-gradient(135deg, #fef2f2, #fecaca);
+      color: #dc2626;
+    }
+
+    &.daily-limit .target-icon {
+      background: linear-gradient(135deg, #fffbeb, #fed7aa);
+      color: #d97706;
+    }
+
+    .target-content {
+      text-align: center;
+    }
+
+    .target-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .target-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+
+      &.profit {
+        color: #059669;
+        text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+      }
+
+      &.loss {
+        color: #dc2626;
+        text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+      }
+
+      &.warning {
+        color: #d97706;
+        text-shadow: 0 1px 2px rgba(217, 119, 6, 0.1);
+      }
+    }
+
+    .target-amount {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #475569;
+      opacity: 0.8;
+    }
+  }
+}
+
+// Animation for initial load
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.target-card {
+  animation: slideInUp 0.6s ease-out;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+}
+
 // Global table styling that overrides everything
 table.modern-table,
 table.simple-table {
