@@ -321,18 +321,22 @@
           </div>
           <div class="chart-stats">
             <div class="stat-item">
-              <span class="stat-label">Total P&L</span>
-              <span class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
+              <div class="stat-content">
+                <div class="stat-label">Total P&L</div>
+                <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
                   {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
-                  <span class="percentage-gain" >
-                  ({{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }})
-                </span>
-              </span>
-              
+                </div>
+                <div class="percentage-gain">
+                  {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                </div>
+              </div>
             </div>
             <div class="stat-item">
-              <span class="stat-label">Win Rate</span>
-              <span class="stat-value">{{ calculateWinRate() }}%</span>
+              <div class="stat-content">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value">{{ calculateWinRate() }}%</div>
+                <div class="percentage-gain">Success Rate</div>
+              </div>
             </div>
             <div class="chart-controls">
               <div class="mt5-account-info">
