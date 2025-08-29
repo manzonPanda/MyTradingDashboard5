@@ -1940,17 +1940,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             pointBorderColor: 'transparent'
           },
           {
-            label: `🟢 --- Profit target (${this.profitTarget}%)`,
-            data: [startingBalance * (1 + this.profitTarget / 100)],
-            borderColor: 'rgb(34, 197, 94)',
-            backgroundColor: 'transparent',
-            borderWidth: 3,
+            label: `🎯 Profit Target (${this.mt5AccountInfo.profitTarget}%)`,
+            data: [startingBalance * (1 + this.mt5AccountInfo.profitTarget / 100)],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 4,
+            borderDash: [12, 8],
             fill: false,
             tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
+            pointRadius: 6,
+            pointHoverRadius: 10,
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 3,
+            pointStyle: 'triangle',
+            shadowOffsetX: 0,
+            shadowOffsetY: 2,
+            shadowBlur: 8,
+            shadowColor: 'rgba(16, 185, 129, 0.3)'
           },
           {
             label: '🟣 --- Starting Balance',
