@@ -541,12 +541,17 @@ mt5AccountInfo: AccountSettings = {
         const dailyLossLimit = info.match(/DailyLossLimit:\s*([\d.]+%)/i)?.[1] || null;
         this.mt5AccountInfo.startingBalance = parseInt(startingBalance)
         this.mt5AccountInfo.profitTarget = parseInt(profitTarget.replace('%', ''))
-        this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', '')) 
-        this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', '')) 
+        this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', ''))
+        this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', ''))
 
-      } 
+        // Refresh chart with updated MT5 account info
+        setTimeout(() => {
+          this.generateTradingChartData();
+        }, 100);
+
+      }
     } catch (error) {
-
+      console.warn('⚠️ Could not load MT5 account settings from backend');
     }
   }
 
