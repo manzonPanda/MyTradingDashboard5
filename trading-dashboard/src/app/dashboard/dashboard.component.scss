@@ -377,6 +377,29 @@
     // First stat item (Total P&L) styling
     &:first-child {
       &::before {
+        background: linear-gradient(90deg, #059669, #10b981);
+      }
+
+      .stat-icon {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        color: #059669;
+      }
+
+      &:hover {
+        box-shadow:
+          0 12px 40px rgba(5, 150, 105, 0.2),
+          0 6px 16px rgba(5, 150, 105, 0.15);
+
+        .stat-icon {
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    // Second stat item (Win Rate) styling
+    &:last-child {
+      &::before {
         background: linear-gradient(90deg, #8b5cf6, #a78bfa);
       }
 
@@ -395,88 +418,13 @@
           transform: scale(1.1);
         }
       }
-    }
-
-    // Second stat item (Win Rate) styling
-    &:last-child {
-      &::before {
-        background: linear-gradient(90deg, #3b82f6, #60a5fa);
-      }
-
-      .stat-icon {
-        background: linear-gradient(135deg, #eff6ff, #dbeafe);
-        border: 2px solid rgba(59, 130, 246, 0.2);
-        color: #2563eb;
-      }
-
-      &:hover {
-        box-shadow:
-          0 12px 40px rgba(59, 130, 246, 0.2),
-          0 6px 16px rgba(59, 130, 246, 0.15);
-
-        .stat-icon {
-          transform: scale(1.1);
-        }
-      }
 
       .stat-value {
-        color: #2563eb;
-        text-shadow: 0 1px 2px rgba(37, 99, 235, 0.1);
+        color: #7c3aed;
+        text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
       }
     }
   }
-}
-
-// Force Win Rate to blue with maximum specificity
-.chart-stats .stat-item:last-child .stat-icon {
-  color: #2563eb !important;
-  fill: #2563eb !important;
-}
-
-.chart-stats .stat-item:last-child .stat-icon mat-icon {
-  color: #2563eb !important;
-  fill: #2563eb !important;
-}
-
-.chart-stats .stat-item:last-child .stat-icon .mat-icon {
-  color: #2563eb !important;
-  fill: #2563eb !important;
-}
-
-.chart-stats .stat-item:last-child .stat-value {
-  color: #2563eb !important;
-  text-shadow: 0 1px 2px rgba(37, 99, 235, 0.1) !important;
-}
-
-// Override any potential global mat-icon styles for Win Rate
-.chart-stats .stat-item:last-child mat-icon,
-.chart-stats .stat-item:last-child .mat-icon,
-.chart-stats .stat-item:last-child .material-icons {
-  color: #2563eb !important;
-  fill: #2563eb !important;
-  -webkit-text-fill-color: #2563eb !important;
-}
-
-// Target all possible icon formats including SVG
-.chart-stats .stat-item:last-child mat-icon svg,
-.chart-stats .stat-item:last-child mat-icon svg path,
-.chart-stats .stat-item:last-child .mat-icon svg,
-.chart-stats .stat-item:last-child .mat-icon svg path {
-  fill: #2563eb !important;
-  color: #2563eb !important;
-}
-
-// Target text-based icons
-.chart-stats .stat-item:last-child mat-icon::before,
-.chart-stats .stat-item:last-child .mat-icon::before,
-.chart-stats .stat-item:last-child .material-icons::before {
-  color: #2563eb !important;
-}
-
-// Nuclear option - target everything inside Win Rate icon
-.chart-stats .stat-item:last-child .stat-icon * {
-  color: #2563eb !important;
-  fill: #2563eb !important;
 }
 
 // Animation for initial load
