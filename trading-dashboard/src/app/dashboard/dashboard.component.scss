@@ -134,6 +134,9 @@
       text-align: left;
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
     }
 
     .target-label {
@@ -150,9 +153,9 @@
     .target-value {
       font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.1rem;
       line-height: 1;
       white-space: nowrap;
+      margin: 0;
 
       &.profit {
         color: #059669;
@@ -172,13 +175,31 @@
 
     .target-amount {
       font-size: 0.65rem;
-      font-weight: 500;
+      font-weight: 600;
       color: #64748b;
       opacity: 0.9;
       line-height: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin: 0;
+    }
+
+    .target-value-group {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+
+      .target-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      .target-amount {
+        font-size: 0.7rem;
+        font-weight: 500;
+        opacity: 0.8;
+      }
     }
   }
 }
