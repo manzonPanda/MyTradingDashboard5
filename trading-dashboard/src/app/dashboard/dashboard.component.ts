@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -135,7 +135,8 @@ interface NotionPerformanceData {
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
+  styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 
 
@@ -2439,7 +2440,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         })
       );
 
-      console.log('✅ Backend is responding to POST requests with empty body');
+      console.log('��� Backend is responding to POST requests with empty body');
       return true;
 
     } catch (error: any) {
