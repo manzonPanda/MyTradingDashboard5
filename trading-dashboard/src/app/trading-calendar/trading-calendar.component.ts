@@ -95,10 +95,11 @@ interface WeekSummary {
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
               <div class="day-content" *ngIf="day.tradeCount > 0">
-                <div class="day-net-pnl" [ngClass]="getDayPnLClass(day.pnl)">
-                  
+                <!-- Always show percentage on trading days, even if null or 0 -->
+                <div class="day-percentage-display" [ngClass]="getDayPnLClass(day.pnl)">
                   {{ formatPercentage(day.dailyPercentage) }}
                 </div>
+
                 <div class="day-trades-summary">
                   <div class="trades-count">
                     <span class="win-count">{{ day.winCount }}W</span>
@@ -107,22 +108,21 @@ interface WeekSummary {
                   </div>
                   <div class="day-win-loss-amounts">
                     <div class="amounts-row">
-                      <div class="win-amount" *ngIf="day.totalWinAmount > 0">
+                      <div class="win-amount" [ngClass]="{'zero-amount': day.totalWinAmount === 0}">
                         <span class="amount-icon">↗</span>
                         <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
                       </div>
-                      <div class="loss-amount" *ngIf="day.totalLossAmount < 0">
+                      <div class="loss-amount" [ngClass]="{'zero-amount': day.totalLossAmount === 0}">
                         <span class="amount-icon">↘</span>
                         <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
                       </div>
                     </div>
                   </div>
-                  <div class="day-percentage" [ngClass]="getDayPnLClass(day.pnl)">
-                   
+                  <div class="day-pnl-amount" [ngClass]="getDayPnLClass(day.pnl)">
                     {{ formatCurrency(day.pnl) }}
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>
@@ -339,9 +339,11 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return `$${amount.toFixed(0)}`;
   }
 
-  formatPercentage(percentage: number): string {
-    const sign = percentage >= 0 ? '+' : '';
-    return `${sign}${percentage.toFixed(2)}%`;
+  formatPercentage(percentage: number | null | undefined): string {
+    // Handle null, undefined, or NaN values
+    const safePercentage = (percentage === null || percentage === undefined || isNaN(percentage)) ? 0 : percentage;
+    const sign = safePercentage >= 0 ? '+' : '';
+    return `${sign}${safePercentage.toFixed(2)}%`;
   }
 
   getDayPnLClass(pnl: number): string {
