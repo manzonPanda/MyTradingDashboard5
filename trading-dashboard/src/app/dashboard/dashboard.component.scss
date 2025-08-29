@@ -386,6 +386,16 @@
         color: #059669;
       }
 
+      // Force Total P&L value to purple (overrides .positive/.negative)
+      .stat-value {
+        color: #7c3aed;
+        text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+      }
+      .stat-value.positive,
+      .stat-value.negative {
+        color: #7c3aed;
+      }
+
       &:hover {
         box-shadow:
           0 12px 40px rgba(5, 150, 105, 0.2),
