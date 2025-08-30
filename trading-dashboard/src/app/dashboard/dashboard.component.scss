@@ -2512,13 +2512,13 @@ table.simple-table {
         min-width: 12px;
 
         &.wins {
-          color: #10b981;
+          color: #6366f1;
         }
         &.breakeven {
-          color: #3b82f6;
+          color: #94a3b8;
         }
         &.losses {
-          color: #ef4444;
+          color: #f59e0b;
         }
       }
     }
@@ -5387,7 +5387,7 @@ table.simple-table {
     border-left-width: 6px;
 
     &::after {
-      content: '��️';
+      content: '⚠️';
       position: absolute;
       right: 1rem;
       top: 50%;
