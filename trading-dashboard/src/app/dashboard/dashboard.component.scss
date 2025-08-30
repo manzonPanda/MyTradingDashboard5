@@ -2447,6 +2447,109 @@ table.simple-table {
     gap: 0.25rem;
     flex: 1;
   }
+
+  // Trade Win Rate Card Special Styling
+  &.trade-win-rate {
+    .metric-content {
+      align-items: center;
+      justify-content: center;
+    }
+
+    .win-rate-chart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .semicircle-chart {
+      position: relative;
+      width: 80px;
+      height: 40px;
+      margin-bottom: 0.5rem;
+
+      .chart-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 80px;
+        height: 40px;
+        border-radius: 80px 80px 0 0;
+        border: 6px solid #e2e8f0;
+        border-bottom: none;
+        background: transparent;
+      }
+
+      .chart-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 80px;
+        height: 40px;
+        border-radius: 80px 80px 0 0;
+        border: 6px solid transparent;
+        border-bottom: none;
+        background: transparent;
+        transform-origin: center bottom;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: -6px;
+          left: -6px;
+          width: 80px;
+          height: 40px;
+          border-radius: 80px 80px 0 0;
+          border: 6px solid transparent;
+          border-bottom: none;
+          background: conic-gradient(
+            from 180deg at 50% 100%,
+            #10b981 0deg,
+            #34d399 calc(var(--percentage, 0) * 1.8deg),
+            #e2e8f0 calc(var(--percentage, 0) * 1.8deg),
+            #e2e8f0 180deg
+          );
+          -webkit-mask:
+            radial-gradient(circle at 50% 100%, transparent 28px, black 34px),
+            linear-gradient(0deg, black 50%, transparent 50%);
+          mask:
+            radial-gradient(circle at 50% 100%, transparent 28px, black 34px),
+            linear-gradient(0deg, black 50%, transparent 50%);
+        }
+
+        .chart-inner {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+
+          .percentage-display {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--tf-positive);
+            text-align: center;
+            margin-top: 8px;
+          }
+        }
+      }
+    }
+
+    .win-rate-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 70px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--tf-text-muted);
+
+      .label {
+        &.low { color: #ef4444; }
+        &.medium { color: #f59e0b; }
+        &.high { color: #10b981; }
+      }
+    }
+  }
 }
 
 // Section Styling
