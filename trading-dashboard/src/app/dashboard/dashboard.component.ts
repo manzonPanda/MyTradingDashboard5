@@ -514,6 +514,32 @@ mt5AccountInfo: AccountSettings = {
     return Math.abs(value);
   }
 
+  // Methods for dynamic Trade Win % semicircle gauge
+  getWinRatePath(): string {
+    // Full semicircle path
+    return "M 10 35 A 25 25 0 0 1 60 35";
+  }
+
+  getWinRateColor(): string {
+    const winRate = this.getWinRateDecimal();
+    if (winRate >= 0.7) return 'url(#winGradient)'; // 70%+ = green gradient
+    if (winRate >= 0.5) return '#3b82f6'; // 50-70% = blue
+    return 'url(#lossGradient)'; // <50% = red gradient
+  }
+
+  getSemicircleLength(): number {
+    // Approximate length of semicircle with radius 25
+    return Math.PI * 25;
+  }
+
+  getWinRateStrokeDash(): string {
+    const winRate = this.getWinRateDecimal();
+    const totalLength = this.getSemicircleLength();
+    const filledLength = winRate * totalLength;
+    const emptyLength = totalLength - filledLength;
+    return `${filledLength} ${emptyLength}`;
+  }
+
   // Add sample data for testing the visualization
   private addSampleTradingData(): void {
     if (this.tableData.length === 0) {
@@ -4461,7 +4487,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateTableData(): void {
     console.log('��� updateTableData called');
-    console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
+    console.log('������ Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
