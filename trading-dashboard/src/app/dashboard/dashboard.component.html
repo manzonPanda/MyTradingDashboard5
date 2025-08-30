@@ -631,9 +631,9 @@
                   </svg>
                 </div>
                 <div class="trade-counts">
-                  <span class="count-item wins">{{ getWinCount() }}</span>
-                  <span class="count-item breakeven">{{ getBreakevenCount() }}</span>
-                  <span class="count-item losses">{{ getLossCount() }}</span>
+                  <span class="count-item wins" [title]="'Winning trades: ' + getWinCount()">{{ getWinCount() }}</span>
+                  <span class="count-item breakeven" [title]="'Breakeven trades: ' + getBreakevenCount()">{{ getBreakevenCount() }}</span>
+                  <span class="count-item losses" [title]="'Losing trades: ' + getLossCount()">{{ getLossCount() }}</span>
                 </div>
               </div>
             </div>
