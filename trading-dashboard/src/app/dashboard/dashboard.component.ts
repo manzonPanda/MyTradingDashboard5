@@ -2647,6 +2647,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : '0.00';
   }
 
+  getWinRateDecimal(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.getWinCount();
+    const totalTrades = this.getTotalTrades();
+    return totalTrades > 0 ? (winningTrades / totalTrades) : 0;
+  }
+
   getWinCount(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
     return this.tableData.filter(trade => {
@@ -4329,7 +4336,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableData(): void {
     console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('������ Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
