@@ -2497,6 +2497,29 @@ table.simple-table {
           transition: all 0.3s ease;
           filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
         }
+
+        .win-rate-path {
+          transition: stroke 0.5s ease;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+
+          &:hover {
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+            stroke-width: 9;
+          }
+        }
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 4px;
+        background: var(--tf-text-primary);
+        border-radius: 50%;
+        opacity: 0.6;
       }
     }
 
@@ -2521,6 +2544,266 @@ table.simple-table {
         &.losses {
           color: #ef4444;
         }
+      }
+    }
+  }
+
+  // Combined Avg Win/Loss Card Special Styling
+  &.avg-win-loss-combined {
+    .metric-content {
+      padding: 0;
+    }
+
+    .win-loss-layout {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .values-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .win-section, .loss-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.125rem;
+    }
+
+    .win-percentage, .loss-percentage {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .win-percentage {
+      color: var(--tf-positive);
+    }
+
+    .loss-percentage {
+      color: var(--tf-negative);
+    }
+
+    .win-amount, .loss-amount {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .win-amount {
+      color: var(--tf-positive);
+    }
+
+    .loss-amount {
+      color: var(--tf-negative);
+    }
+
+    .win-label, .loss-label {
+      font-size: 0.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--tf-text-muted);
+      line-height: 1;
+    }
+
+    .chart-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .win-loss-progress-bar {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .progress-track {
+        position: relative;
+        width: 100%;
+        height: 12px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+
+        .progress-win, .progress-loss {
+          height: 100%;
+          position: relative;
+          transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+
+          .progress-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+          }
+
+          &:hover .progress-label {
+            opacity: 1;
+          }
+        }
+
+        .progress-win {
+          background: linear-gradient(90deg, #10b981, #34d399);
+          border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.1) 50%,
+              transparent 100%
+            );
+            animation: shimmer 2s infinite;
+          }
+        }
+
+        .progress-loss {
+          background: linear-gradient(90deg, #ef4444, #f87171);
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.1) 50%,
+              transparent 100%
+            );
+            animation: shimmer 2s infinite 0.5s;
+          }
+        }
+      }
+
+      .progress-indicators {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .indicator {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+
+          .indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+          }
+
+          .indicator-text {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--tf-text-muted);
+            transition: color 0.3s ease;
+          }
+
+          &.win-indicator {
+            .indicator-dot {
+              background: #10b981;
+              box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+            }
+
+            &:hover {
+              .indicator-dot {
+                transform: scale(1.3);
+                box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+              }
+              .indicator-text {
+                color: #10b981;
+              }
+            }
+          }
+
+          &.loss-indicator {
+            .indicator-dot {
+              background: #ef4444;
+              box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+            }
+
+            &:hover {
+              .indicator-dot {
+                transform: scale(1.3);
+                box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+              }
+              .indicator-text {
+                color: #ef4444;
+              }
+            }
+          }
+        }
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+    }
+
+    .ratio-display {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--tf-text-secondary);
+      text-align: center;
+      padding: 0.25rem 0.5rem;
+      background: rgba(107, 114, 128, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(107, 114, 128, 0.2);
+      min-width: 60px;
+    }
+
+    &:hover {
+      .win-loss-progress-bar {
+        .progress-track {
+          box-shadow:
+            inset 0 1px 3px rgba(0, 0, 0, 0.15),
+            0 0 10px rgba(107, 70, 193, 0.2);
+          border-color: rgba(107, 70, 193, 0.3);
+        }
+
+        .progress-indicators .indicator {
+          .indicator-text {
+            font-weight: 700;
+          }
+        }
+      }
+
+      .ratio-display {
+        background: rgba(107, 114, 128, 0.15);
+        border-color: rgba(107, 114, 128, 0.3);
+        transform: scale(1.05);
       }
     }
   }
