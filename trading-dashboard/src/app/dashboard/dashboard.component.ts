@@ -2678,6 +2678,24 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }).length;
   }
 
+  getWinPercentageForGradient(): number {
+    const total = this.getTotalTrades();
+    if (total === 0) return 0;
+    return (this.getWinCount() / total) * 100;
+  }
+
+  getBreakevenPercentageForGradient(): number {
+    const total = this.getTotalTrades();
+    if (total === 0) return 0;
+    return (this.getBreakevenCount() / total) * 100;
+  }
+
+  getLossPercentageForGradient(): number {
+    const total = this.getTotalTrades();
+    if (total === 0) return 0;
+    return (this.getLossCount() / total) * 100;
+  }
+
   calculateAccountSize(): number {
     const balanceFromMt5 = this.mt5AccountInfo?.balance ?? 0;
     const totalPnL = this.calculateTotalPnL();
