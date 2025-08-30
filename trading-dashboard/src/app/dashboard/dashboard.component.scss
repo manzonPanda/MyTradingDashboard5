@@ -2332,6 +2332,11 @@ table.simple-table {
     grid-template-rows: repeat(5, 1fr);
     gap: 0.75rem;
     min-width: 300px;
+
+    // When we have more than 10 cards, adjust the grid
+    &:has(.metric-card:nth-child(11)) {
+      grid-template-rows: repeat(6, 1fr);
+    }
   }
 }
 
