@@ -468,54 +468,31 @@
                 </div>
               </div>
               <div class="chart-section">
-                <div class="win-loss-chart">
-                  <svg width="80" height="50" viewBox="0 0 80 50">
-                    <!-- Background bars -->
-                    <rect x="10" y="35" width="25" height="10" fill="#f1f5f9" rx="2"/>
-                    <rect x="45" y="35" width="25" height="10" fill="#f1f5f9" rx="2"/>
-
-                    <!-- Win bar -->
-                    <rect x="10" y="35"
-                          [attr.width]="mathMin(25, (calculateAvgWin() / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
-                          height="10"
-                          fill="url(#winGradient)"
-                          rx="2">
-                      <animate attributeName="width"
-                               [attr.from]="0"
-                               [attr.to]="mathMin(25, (calculateAvgWin() / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
-                               dur="1s"
-                               begin="0s"/>
-                    </rect>
-
-                    <!-- Loss bar -->
-                    <rect x="45" y="35"
-                          [attr.width]="mathMin(25, (mathAbs(calculateAvgLoss()) / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
-                          height="10"
-                          fill="url(#lossGradient)"
-                          rx="2">
-                      <animate attributeName="width"
-                               [attr.from]="0"
-                               [attr.to]="mathMin(25, (mathAbs(calculateAvgLoss()) / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
-                               dur="1s"
-                               begin="0.3s"/>
-                    </rect>
-
-                    <!-- Labels -->
-                    <text x="22.5" y="30" text-anchor="middle" font-size="8" fill="#10b981" font-weight="bold">W</text>
-                    <text x="57.5" y="30" text-anchor="middle" font-size="8" fill="#ef4444" font-weight="bold">L</text>
-
-                    <!-- Gradient definitions -->
-                    <defs>
-                      <linearGradient id="winGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#10b981"/>
-                        <stop offset="100%" style="stop-color:#34d399"/>
-                      </linearGradient>
-                      <linearGradient id="lossGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#ef4444"/>
-                        <stop offset="100%" style="stop-color:#f87171"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
+                <div class="win-loss-progress-bar">
+                  <!-- Background track -->
+                  <div class="progress-track">
+                    <!-- Win section -->
+                    <div class="progress-win"
+                         [style.width.%]="calculateAvgWin() ? (calculateAvgWin() / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 100 : 0">
+                      <span class="progress-label">{{ calculateAvgWinPercentage() | number:'1.0-0' }}%</span>
+                    </div>
+                    <!-- Loss section -->
+                    <div class="progress-loss"
+                         [style.width.%]="calculateAvgLoss() ? (mathAbs(calculateAvgLoss()) / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 100 : 0">
+                      <span class="progress-label">{{ calculateAvgLossPercentage() | number:'1.0-0' }}%</span>
+                    </div>
+                  </div>
+                  <!-- Progress indicators -->
+                  <div class="progress-indicators">
+                    <div class="indicator win-indicator">
+                      <div class="indicator-dot"></div>
+                      <span class="indicator-text">Win</span>
+                    </div>
+                    <div class="indicator loss-indicator">
+                      <div class="indicator-dot"></div>
+                      <span class="indicator-text">Loss</span>
+                    </div>
+                  </div>
                 </div>
                 <div class="ratio-display">
                   R:R {{ (calculateAvgWin() / mathAbs(calculateAvgLoss())) | number:'1.1-1' }}:1
