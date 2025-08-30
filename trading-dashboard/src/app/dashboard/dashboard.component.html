@@ -576,26 +576,26 @@
                           stroke-width="6"
                           stroke-linecap="round"/>
 
-                    <!-- Win section (green) -->
+                    <!-- Win section (soft blue) -->
                     <path d="M 8 30 A 22 22 0 0 0 30 8"
                           fill="none"
-                          stroke="#10b981"
+                          stroke="#6366f1"
                           stroke-width="6"
                           stroke-linecap="round"
                           [attr.opacity]="getWinCount() > 0 ? 1 : 0.3"/>
 
-                    <!-- Breakeven section (blue) -->
+                    <!-- Breakeven section (neutral gray) -->
                     <path d="M 30 8 A 22 22 0 0 0 30 8"
                           fill="none"
-                          stroke="#3b82f6"
+                          stroke="#94a3b8"
                           stroke-width="6"
                           stroke-linecap="round"
                           [attr.opacity]="getBreakevenCount() > 0 ? 1 : 0.3"/>
 
-                    <!-- Loss section (red) -->
+                    <!-- Loss section (soft orange) -->
                     <path d="M 30 8 A 22 22 0 0 0 52 30"
                           fill="none"
-                          stroke="#ef4444"
+                          stroke="#f59e0b"
                           stroke-width="6"
                           stroke-linecap="round"
                           [attr.opacity]="getLossCount() > 0 ? 1 : 0.3"/>
