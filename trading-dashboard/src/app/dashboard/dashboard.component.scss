@@ -2524,6 +2524,120 @@ table.simple-table {
       }
     }
   }
+
+  // Combined Avg Win/Loss Card Special Styling
+  &.avg-win-loss-combined {
+    .metric-content {
+      padding: 0;
+    }
+
+    .win-loss-layout {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .values-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .win-section, .loss-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.125rem;
+    }
+
+    .win-percentage, .loss-percentage {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .win-percentage {
+      color: var(--tf-positive);
+    }
+
+    .loss-percentage {
+      color: var(--tf-negative);
+    }
+
+    .win-amount, .loss-amount {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .win-amount {
+      color: var(--tf-positive);
+    }
+
+    .loss-amount {
+      color: var(--tf-negative);
+    }
+
+    .win-label, .loss-label {
+      font-size: 0.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--tf-text-muted);
+      line-height: 1;
+    }
+
+    .chart-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .win-loss-chart {
+      position: relative;
+      width: 80px;
+      height: 50px;
+
+      svg {
+        rect {
+          transition: all 0.3s ease;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+
+        text {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+      }
+    }
+
+    .ratio-display {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--tf-text-secondary);
+      text-align: center;
+      padding: 0.25rem 0.5rem;
+      background: rgba(107, 114, 128, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(107, 114, 128, 0.2);
+      min-width: 60px;
+    }
+
+    &:hover {
+      .win-loss-chart svg rect {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+      }
+
+      .ratio-display {
+        background: rgba(107, 114, 128, 0.15);
+        border-color: rgba(107, 114, 128, 0.3);
+        transform: scale(1.05);
+      }
+    }
+  }
 }
 
 // Section Styling
