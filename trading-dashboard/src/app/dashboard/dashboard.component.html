@@ -563,36 +563,50 @@
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
             <div class="win-rate-chart-container">
-              <div class="semicircle-chart">
-                <svg width="80" height="50" viewBox="0 0 80 50">
-                  <!-- Background arc -->
-                  <path d="M 10 40 A 30 30 0 0 1 70 40"
+              <div class="semicircle-gauge">
+                <svg width="100" height="60" viewBox="0 0 100 60">
+                  <!-- Background arc (full semicircle) -->
+                  <path d="M 15 45 A 35 35 0 0 1 85 45"
                         fill="none"
-                        stroke="#e2e8f0"
-                        stroke-width="6"
+                        stroke="#f1f5f9"
+                        stroke-width="8"
                         stroke-linecap="round"/>
-                  <!-- Progress arc -->
-                  <path d="M 10 40 A 30 30 0 0 1 70 40"
-                        fill="none"
-                        stroke="url(#winRateGradient)"
-                        stroke-width="6"
-                        stroke-linecap="round"
-                        stroke-dasharray="94.25"
-                        [attr.stroke-dashoffset]="94.25 - (94.25 * getWinRateDecimal())"
-                        class="progress-arc"/>
+
+                  <!-- Gradient definition for green to red -->
                   <defs>
-                    <linearGradient id="winRateGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id="greenToRedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                      <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                      <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" />
                     </linearGradient>
                   </defs>
+
+                  <!-- Full gradient arc (always visible) -->
+                  <path d="M 15 45 A 35 35 0 0 1 85 45"
+                        fill="none"
+                        stroke="url(#greenToRedGradient)"
+                        stroke-width="8"
+                        stroke-linecap="round"
+                        opacity="0.3"/>
+
+                  <!-- Progress arc (shows current value) -->
+                  <path d="M 15 45 A 35 35 0 0 1 85 45"
+                        fill="none"
+                        stroke="url(#greenToRedGradient)"
+                        stroke-width="8"
+                        stroke-linecap="round"
+                        stroke-dasharray="110"
+                        [attr.stroke-dashoffset]="110 - (110 * getWinRateDecimal())"
+                        class="progress-arc"/>
                 </svg>
-                <div class="percentage-display">{{ calculateWinRate() }}%</div>
+                <div class="gauge-center">
+                  <div class="percentage-value">{{ calculateWinRate() }}%</div>
+                </div>
               </div>
-              <div class="win-rate-labels">
-                <span class="label low">L</span>
-                <span class="label medium">S</span>
-                <span class="label high">W</span>
+              <div class="gauge-labels">
+                <span class="label-item poor">US</span>
+                <span class="label-item neutral">0</span>
+                <span class="label-item excellent">2R</span>
               </div>
             </div>
           </div>
