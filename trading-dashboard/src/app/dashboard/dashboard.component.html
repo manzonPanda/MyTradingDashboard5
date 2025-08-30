@@ -551,6 +551,34 @@
             <div class="metric-subtitle">Average hold time</div>
           </div>
         </div>
+
+        <div class="metric-card trade-win-rate">
+          <div class="metric-header">
+            <h3 class="metric-title">Trade Win %</h3>
+            <mat-icon class="metric-icon">emoji_events</mat-icon>
+          </div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="win-rate-chart-container">
+              <div class="semicircle-chart">
+                <div class="chart-progress" [attr.data-percentage]="calculateWinRate()">
+                  <div class="chart-inner">
+                    <div class="percentage-display">{{ calculateWinRate() }}%</div>
+                  </div>
+                </div>
+                <div class="chart-background"></div>
+              </div>
+              <div class="win-rate-labels">
+                <span class="label low">L</span>
+                <span class="label medium">S</span>
+                <span class="label high">W</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
