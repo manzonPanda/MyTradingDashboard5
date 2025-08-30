@@ -504,6 +504,15 @@ mt5AccountInfo: AccountSettings = {
     // Register Chart.js components
     Chart.register(...registerables);
   }
+
+  // Math utility methods for template calculations
+  mathMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  mathAbs(value: number): number {
+    return Math.abs(value);
+  }
   private async loadTradingSettings(): Promise<void> {
     // Load saved settings from localStorage
     // const savedProfitTarget = localStorage.getItem('tradingProfitTarget');
@@ -1551,7 +1560,7 @@ isRowAlreadySelected(row: any): boolean {
       }
     }
 
-    console.log('🎯 Compare to Notion completed! Data updated in simple table.');
+    console.log('��� Compare to Notion completed! Data updated in simple table.');
 
     // Simple change detection - no DataTable refresh needed!
     this.cdr.detectChanges();
