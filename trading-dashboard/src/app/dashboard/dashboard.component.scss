@@ -2456,77 +2456,69 @@ table.simple-table {
   // Trade Win Rate Card Special Styling
   &.trade-win-rate {
     .metric-content {
-      align-items: center;
-      justify-content: center;
+      padding: 0;
     }
 
-    .win-rate-chart-container {
+    .trade-win-layout {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .percentage-section {
+      flex: 1;
+      display: flex;
+      align-items: center;
+
+      .win-percentage {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--tf-text-primary);
+        line-height: 1;
+      }
+    }
+
+    .chart-section {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.5rem;
-      width: 100%;
     }
 
     .semicircle-gauge {
       position: relative;
-      width: 100px;
-      height: 60px;
-      margin-bottom: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      width: 60px;
+      height: 35px;
 
       svg {
-        .progress-arc {
-          transition: stroke-dashoffset 1.2s ease-in-out;
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-        }
-      }
-
-      .gauge-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: -5px;
-
-        .percentage-value {
-          font-size: 1rem;
-          font-weight: 700;
-          color: var(--tf-text-primary);
-          text-align: center;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        path {
+          transition: opacity 0.3s ease;
         }
       }
     }
 
-    .gauge-labels {
+    .trade-counts {
       display: flex;
       justify-content: space-between;
-      width: 90px;
-      margin-top: 0.25rem;
+      width: 50px;
+      gap: 0.25rem;
 
-      .label-item {
-        font-size: 0.7rem;
+      .count-item {
+        font-size: 0.75rem;
         font-weight: 600;
         text-align: center;
-        min-width: 20px;
+        min-width: 12px;
 
-        &.poor {
+        &.wins {
           color: #10b981;
-          font-weight: 700;
         }
-        &.neutral {
-          color: var(--tf-text-muted);
-          font-weight: 500;
+        &.breakeven {
+          color: #3b82f6;
         }
-        &.excellent {
+        &.losses {
           color: #ef4444;
-          font-weight: 700;
         }
       }
     }
@@ -5395,7 +5387,7 @@ table.simple-table {
     border-left-width: 6px;
 
     &::after {
-      content: '⚠️';
+      content: '��️';
       position: absolute;
       right: 1rem;
       top: 50%;
