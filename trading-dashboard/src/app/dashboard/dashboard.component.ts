@@ -2662,6 +2662,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }).length;
   }
 
+  getBreakevenCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit === 0;
+    }).length;
+  }
+
+  getLossCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    }).length;
+  }
+
   calculateAccountSize(): number {
     const balanceFromMt5 = this.mt5AccountInfo?.balance ?? 0;
     const totalPnL = this.calculateTotalPnL();
@@ -4336,7 +4352,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableData(): void {
     console.log('��� updateTableData called');
     console.log('���� Before update - tableData:', this.tableData ? this.tableData.length : 0);
-    console.log('������ Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
+    console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
     // Get existing non-MT5 trades (those loaded from Firestore)
     const existingTrades = this.tableData ? this.tableData.filter(trade =>
