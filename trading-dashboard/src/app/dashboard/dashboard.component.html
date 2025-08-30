@@ -564,12 +564,30 @@
           <div *ngIf="!isLoadingMetrics" class="metric-content">
             <div class="win-rate-chart-container">
               <div class="semicircle-chart">
-                <div class="chart-progress" [style.--percentage]="calculateWinRate()">
-                  <div class="chart-inner">
-                    <div class="percentage-display">{{ calculateWinRate() }}%</div>
-                  </div>
-                </div>
-                <div class="chart-background"></div>
+                <svg width="80" height="50" viewBox="0 0 80 50">
+                  <!-- Background arc -->
+                  <path d="M 10 40 A 30 30 0 0 1 70 40"
+                        fill="none"
+                        stroke="#e2e8f0"
+                        stroke-width="6"
+                        stroke-linecap="round"/>
+                  <!-- Progress arc -->
+                  <path d="M 10 40 A 30 30 0 0 1 70 40"
+                        fill="none"
+                        stroke="url(#winRateGradient)"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                        stroke-dasharray="94.25"
+                        [attr.stroke-dashoffset]="94.25 - (94.25 * getWinRateDecimal())"
+                        class="progress-arc"/>
+                  <defs>
+                    <linearGradient id="winRateGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="percentage-display">{{ calculateWinRate() }}%</div>
               </div>
               <div class="win-rate-labels">
                 <span class="label low">L</span>
@@ -1275,7 +1293,7 @@
               <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
               <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
               <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
-              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated ������</th>
+              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated �����</th>
               <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
               <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
               <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
