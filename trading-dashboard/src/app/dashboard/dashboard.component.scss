@@ -2471,72 +2471,27 @@ table.simple-table {
     .semicircle-chart {
       position: relative;
       width: 80px;
-      height: 40px;
+      height: 50px;
       margin-bottom: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
 
-      .chart-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 80px;
-        height: 40px;
-        border-radius: 80px 80px 0 0;
-        border: 6px solid #e2e8f0;
-        border-bottom: none;
-        background: transparent;
+      svg {
+        .progress-arc {
+          transition: stroke-dashoffset 0.8s ease-in-out;
+        }
       }
 
-      .chart-progress {
+      .percentage-display {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 80px;
-        height: 40px;
-        border-radius: 80px 80px 0 0;
-        border: 6px solid transparent;
-        border-bottom: none;
-        background: transparent;
-        transform-origin: center bottom;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: -6px;
-          left: -6px;
-          width: 80px;
-          height: 40px;
-          border-radius: 80px 80px 0 0;
-          border: 6px solid transparent;
-          border-bottom: none;
-          background: conic-gradient(
-            from 180deg at 50% 100%,
-            #10b981 0deg,
-            #34d399 calc(var(--percentage, 0) * 1.8deg),
-            #e2e8f0 calc(var(--percentage, 0) * 1.8deg),
-            #e2e8f0 180deg
-          );
-          -webkit-mask:
-            radial-gradient(circle at 50% 100%, transparent 28px, black 34px),
-            linear-gradient(0deg, black 50%, transparent 50%);
-          mask:
-            radial-gradient(circle at 50% 100%, transparent 28px, black 34px),
-            linear-gradient(0deg, black 50%, transparent 50%);
-        }
-
-        .chart-inner {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-
-          .percentage-display {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--tf-positive);
-            text-align: center;
-            margin-top: 8px;
-          }
-        }
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--tf-positive);
+        text-align: center;
       }
     }
 
