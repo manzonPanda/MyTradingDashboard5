@@ -573,38 +573,23 @@
                     <path d="M 10 35 A 25 25 0 0 1 60 35"
                           fill="none"
                           stroke="#f1f5f9"
-                          stroke-width="8"/>
+                          stroke-width="8"
+                          stroke-linecap="round"/>
 
-                    <!-- Green section (wins) -->
+                    <!-- Data semicircle with gradient -->
                     <path d="M 10 35 A 25 25 0 0 1 60 35"
                           fill="none"
-                          stroke="#10b981"
+                          stroke="url(#semicircleGradient)"
                           stroke-width="8"
-                          stroke-dasharray="78.54"
-                          [attr.stroke-dashoffset]="78.54 - (78.54 * getWinPercentageForGradient() / 100)"
-                          class="win-arc"/>
+                          stroke-linecap="round"/>
 
-                    <!-- Blue section (breakeven) -->
-                    <path d="M 10 35 A 25 25 0 0 1 60 35"
-                          fill="none"
-                          stroke="#3b82f6"
-                          stroke-width="8"
-                          stroke-dasharray="78.54"
-                          [attr.stroke-dashoffset]="78.54 - (78.54 * (getWinPercentageForGradient() + getBreakevenPercentageForGradient()) / 100)"
-                          [style.transform]="'rotate(' + (180 * getWinPercentageForGradient() / 100) + 'deg)'"
-                          [style.transform-origin]="'35px 35px'"
-                          class="breakeven-arc"/>
-
-                    <!-- Red section (losses) -->
-                    <path d="M 10 35 A 25 25 0 0 1 60 35"
-                          fill="none"
-                          stroke="#ef4444"
-                          stroke-width="8"
-                          stroke-dasharray="78.54"
-                          [attr.stroke-dashoffset]="78.54 - (78.54 * getLossPercentageForGradient() / 100)"
-                          [style.transform]="'rotate(' + (180 * (getWinPercentageForGradient() + getBreakevenPercentageForGradient()) / 100) + 'deg)'"
-                          [style.transform-origin]="'35px 35px'"
-                          class="loss-arc"/>
+                    <defs>
+                      <linearGradient id="semicircleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#10b981"/>
+                        <stop offset="50%" style="stop-color:#3b82f6"/>
+                        <stop offset="100%" style="stop-color:#ef4444"/>
+                      </linearGradient>
+                    </defs>
                   </svg>
                 </div>
                 <div class="trade-counts">
