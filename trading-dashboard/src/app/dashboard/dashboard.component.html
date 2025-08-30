@@ -444,35 +444,84 @@
           </div>
         </div>
 
-        <div class="metric-card average-win">
+        <div class="metric-card avg-win-loss-combined">
           <div class="metric-header">
-            <h3 class="metric-title">Avg Win</h3>
-            <mat-icon class="metric-icon">add_circle</mat-icon>
+            <h3 class="metric-title">Avg Win vs Loss</h3>
+            <mat-icon class="metric-icon">balance</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
             <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-percentage positive">+{{ calculateAvgWinPercentage() | number:'1.2-2' }}%</div>
-            <div class="metric-value positive">{{ calculateAvgWin() | currency }}</div>
-            <div class="metric-subtitle">Per winning trade</div>
-          </div>
-        </div>
+            <div class="win-loss-layout">
+              <div class="values-section">
+                <div class="win-section">
+                  <div class="win-percentage">+{{ calculateAvgWinPercentage() | number:'1.2-2' }}%</div>
+                  <div class="win-amount">{{ calculateAvgWin() | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="win-label">Win</div>
+                </div>
+                <div class="loss-section">
+                  <div class="loss-percentage">-{{ calculateAvgLossPercentage() | number:'1.2-2' }}%</div>
+                  <div class="loss-amount">{{ calculateAvgLoss() | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="loss-label">Loss</div>
+                </div>
+              </div>
+              <div class="chart-section">
+                <div class="win-loss-chart">
+                  <svg width="80" height="50" viewBox="0 0 80 50">
+                    <!-- Background bars -->
+                    <rect x="10" y="35" width="25" height="10" fill="#f1f5f9" rx="2"/>
+                    <rect x="45" y="35" width="25" height="10" fill="#f1f5f9" rx="2"/>
 
-        <div class="metric-card average-loss">
-          <div class="metric-header">
-            <h3 class="metric-title">Avg Loss</h3>
-            <mat-icon class="metric-icon">remove_circle</mat-icon>
-          </div>
-          <div *ngIf="isLoadingMetrics" class="metric-loading">
-            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
-            <span class="loading-text">Loading...</span>
-          </div>
-          <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-percentage negative">-{{ calculateAvgLossPercentage() | number:'1.2-2' }}%</div>
-            <div class="metric-value negative">{{ calculateAvgLoss() | currency }}</div>
-            <div class="metric-subtitle">Per losing trade</div>
+                    <!-- Win bar -->
+                    <rect x="10" y="35"
+                          [attr.width]="Math.min(25, (calculateAvgWin() / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                          height="10"
+                          fill="url(#winGradient)"
+                          rx="2">
+                      <animate attributeName="width"
+                               [attr.from]="0"
+                               [attr.to]="Math.min(25, (calculateAvgWin() / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                               dur="1s"
+                               begin="0s"/>
+                    </rect>
+
+                    <!-- Loss bar -->
+                    <rect x="45" y="35"
+                          [attr.width]="Math.min(25, (Math.abs(calculateAvgLoss()) / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                          height="10"
+                          fill="url(#lossGradient)"
+                          rx="2">
+                      <animate attributeName="width"
+                               [attr.from]="0"
+                               [attr.to]="Math.min(25, (Math.abs(calculateAvgLoss()) / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                               dur="1s"
+                               begin="0.3s"/>
+                    </rect>
+
+                    <!-- Labels -->
+                    <text x="22.5" y="30" text-anchor="middle" font-size="8" fill="#10b981" font-weight="bold">W</text>
+                    <text x="57.5" y="30" text-anchor="middle" font-size="8" fill="#ef4444" font-weight="bold">L</text>
+
+                    <!-- Gradient definitions -->
+                    <defs>
+                      <linearGradient id="winGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#10b981"/>
+                        <stop offset="100%" style="stop-color:#34d399"/>
+                      </linearGradient>
+                      <linearGradient id="lossGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#ef4444"/>
+                        <stop offset="100%" style="stop-color:#f87171"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+                <div class="ratio-display">
+                  R:R {{ (calculateAvgWin() / Math.abs(calculateAvgLoss())) | number:'1.1-1' }}:1
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
