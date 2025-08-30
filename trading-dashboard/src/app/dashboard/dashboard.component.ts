@@ -2647,12 +2647,53 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : '0.00';
   }
 
+  getWinRateDecimal(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const winningTrades = this.getWinCount();
+    const totalTrades = this.getTotalTrades();
+    return totalTrades > 0 ? (winningTrades / totalTrades) : 0;
+  }
+
   getWinCount(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
     return this.tableData.filter(trade => {
       const netProfit = parseFloat(trade.netProfit) || 0;
       return netProfit > 0;
     }).length;
+  }
+
+  getBreakevenCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit === 0;
+    }).length;
+  }
+
+  getLossCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    return this.tableData.filter(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      return netProfit < 0;
+    }).length;
+  }
+
+  getWinPercentageForGradient(): number {
+    const total = this.getTotalTrades();
+    if (total === 0) return 0;
+    return (this.getWinCount() / total) * 100;
+  }
+
+  getBreakevenPercentageForGradient(): number {
+    const total = this.getTotalTrades();
+    if (total === 0) return 0;
+    return (this.getBreakevenCount() / total) * 100;
+  }
+
+  getLossPercentageForGradient(): number {
+    const total = this.getTotalTrades();
+    if (total === 0) return 0;
+    return (this.getLossCount() / total) * 100;
   }
 
   calculateAccountSize(): number {

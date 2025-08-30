@@ -2332,6 +2332,11 @@ table.simple-table {
     grid-template-rows: repeat(5, 1fr);
     gap: 0.75rem;
     min-width: 300px;
+
+    // When we have more than 10 cards, adjust the grid
+    &:has(.metric-card:nth-child(11)) {
+      grid-template-rows: repeat(6, 1fr);
+    }
   }
 }
 
@@ -2446,6 +2451,78 @@ table.simple-table {
     flex-direction: column;
     gap: 0.25rem;
     flex: 1;
+  }
+
+  // Trade Win Rate Card Special Styling
+  &.trade-win-rate {
+    .metric-content {
+      padding: 0;
+    }
+
+    .trade-win-layout {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .percentage-section {
+      flex: 1;
+      display: flex;
+      align-items: center;
+
+      .win-percentage {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--tf-text-primary);
+        line-height: 1;
+      }
+    }
+
+    .chart-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .semicircle-gauge {
+      position: relative;
+      width: 70px;
+      height: 40px;
+
+      svg {
+        path {
+          transition: all 0.3s ease;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+      }
+    }
+
+    .trade-counts {
+      display: flex;
+      justify-content: space-between;
+      width: 60px;
+      gap: 0.25rem;
+
+      .count-item {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        min-width: 12px;
+
+        &.wins {
+          color: #10b981;
+        }
+        &.breakeven {
+          color: #3b82f6;
+        }
+        &.losses {
+          color: #ef4444;
+        }
+      }
+    }
   }
 }
 
