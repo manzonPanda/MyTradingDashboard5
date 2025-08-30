@@ -476,26 +476,26 @@
 
                     <!-- Win bar -->
                     <rect x="10" y="35"
-                          [attr.width]="Math.min(25, (calculateAvgWin() / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                          [attr.width]="mathMin(25, (calculateAvgWin() / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
                           height="10"
                           fill="url(#winGradient)"
                           rx="2">
                       <animate attributeName="width"
                                [attr.from]="0"
-                               [attr.to]="Math.min(25, (calculateAvgWin() / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                               [attr.to]="mathMin(25, (calculateAvgWin() / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
                                dur="1s"
                                begin="0s"/>
                     </rect>
 
                     <!-- Loss bar -->
                     <rect x="45" y="35"
-                          [attr.width]="Math.min(25, (Math.abs(calculateAvgLoss()) / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                          [attr.width]="mathMin(25, (mathAbs(calculateAvgLoss()) / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
                           height="10"
                           fill="url(#lossGradient)"
                           rx="2">
                       <animate attributeName="width"
                                [attr.from]="0"
-                               [attr.to]="Math.min(25, (Math.abs(calculateAvgLoss()) / (calculateAvgWin() + Math.abs(calculateAvgLoss()))) * 50)"
+                               [attr.to]="mathMin(25, (mathAbs(calculateAvgLoss()) / (calculateAvgWin() + mathAbs(calculateAvgLoss()))) * 50)"
                                dur="1s"
                                begin="0.3s"/>
                     </rect>
