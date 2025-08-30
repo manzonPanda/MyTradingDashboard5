@@ -768,6 +768,11 @@ async ngOnInit() {
 
     // Generate initial chart data
     this.generateTradingChartData();
+
+    // Add sample data for testing visualization
+    setTimeout(() => {
+      this.addSampleTradingData();
+    }, 2000);
   }
 
   ngAfterViewInit() {
@@ -2540,7 +2545,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's any other error but not connection error, server might be running
       if (error.status && error.status !== 0) {
-        console.log('���️ Backend is running but has issues with the API');
+        console.log('��️ Backend is running but has issues with the API');
         return true; // Server is running, just has issues
       }
 
