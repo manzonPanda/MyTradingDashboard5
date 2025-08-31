@@ -465,6 +465,23 @@
   &:nth-child(3) { animation-delay: 0.3s; }
 }
 
+// Profit Factor Chart Styling
+.profit-factor-chart {
+  margin: 0.5rem 0;
+  width: 100%;
+
+  .profit-factor-svg {
+    width: 100%;
+    height: 50px;
+
+    .chart-label {
+      fill: #64748b;
+      font-size: 10px;
+      font-weight: 500;
+    }
+  }
+}
+
 // Simple Gauge Chart for Trade Win % (like reference image)
 .simple-gauge-container {
   display: flex;
