@@ -4624,33 +4624,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return isRecent || isLiveTrade;
   }
 
-  getSafeNumber(value: any): number {
-    // Handle null, undefined, or empty values
-    if (value === null || value === undefined || value === '') {
-      return 0;
-    }
-
-    // Already a number
-    if (typeof value === 'number') {
-      return isNaN(value) ? 0 : value;
-    }
-
-    // String conversion
-    if (typeof value === 'string') {
-      // Handle common placeholder strings
-      if (value === '-' || value.trim() === '' || value.toLowerCase() === 'n/a') {
-        return 0;
-      }
-
-      // Remove any non-numeric characters except decimal point and minus sign
-      const cleanValue = value.replace(/[^0-9.-]/g, '');
-      const parsed = parseFloat(cleanValue);
-      return isNaN(parsed) ? 0 : parsed;
-    }
-
-    // Fallback for any other type
-    return 0;
-  }
+  // Removed duplicate getSafeNumber method - using the implementation above
 
   getRiskPercentage(row: Table): string {
     // Calculate risk percentage based on actual account size
