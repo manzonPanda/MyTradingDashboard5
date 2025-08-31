@@ -141,6 +141,7 @@ interface NotionPerformanceData {
 
 // @Injectable({ providedIn: 'root' })
 export class DashboardComponent implements AfterViewInit {
+  // Additional calculation methods for missing functions
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
@@ -514,109 +515,67 @@ mt5AccountInfo: AccountSettings = {
     return Math.abs(value);
   }
 
-  // Methods for dynamic Trade Win % semicircle gauge
-  getWinRatePath(): string {
-    // Full semicircle path
-    return "M 10 35 A 25 25 0 0 1 60 35";
+  // Trade statistics calculation methods
+  calculateWinRate(): number {
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return 0;
+
+    const winningTrades = this.getWinCount();
+    return Math.round((winningTrades / totalTrades) * 100);
   }
 
-  getWinRateColor(): string {
-    const winRate = this.getWinRateDecimal();
-    if (winRate >= 0.7) return 'url(#winGradient)'; // 70%+ = green gradient
-    if (winRate >= 0.5) return '#3b82f6'; // 50-70% = blue
-    return 'url(#lossGradient)'; // <50% = red gradient
+  getWinCount(): number {
+    return this.tableData.filter(trade => {
+      const netProfit = this.getSafeNumber(trade.netProfit);
+      return netProfit > 0;
+    }).length;
   }
 
-  getSemicircleLength(): number {
-    // Approximate length of semicircle with radius 25
-    return Math.PI * 25;
+  getLossCount(): number {
+    return this.tableData.filter(trade => {
+      const netProfit = this.getSafeNumber(trade.netProfit);
+      return netProfit < 0;
+    }).length;
   }
 
-  getWinRateStrokeDash(): string {
-    const winRate = this.getWinRateDecimal();
-    const totalLength = this.getSemicircleLength();
-    const filledLength = winRate * totalLength;
-    const emptyLength = totalLength - filledLength;
-    return `${filledLength} ${emptyLength}`;
+  getBreakevenCount(): number {
+    return this.tableData.filter(trade => {
+      const netProfit = this.getSafeNumber(trade.netProfit);
+      return netProfit === 0;
+    }).length;
   }
 
-  // Add sample data for testing the visualization
-  private addSampleTradingData(): void {
-    if (this.tableData.length === 0) {
-      this.tableData = [
-        {
-          openDate: '2024.01.15 09:30:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345678',
-          symbol: 'EURUSD',
-          type: '0', // Buy
-          volume: '0.10',
-          entry: '1.0850',
-          sL: '1.0800',
-          tP: '1.0950',
-          closeDate: '2024.01.15 14:30:00',
-          exit: '1.0920',
-          commission: '-2.50',
-          swap: '0.00',
-          profit: '70.00',
-          netProfit: '67.50',
-          riskPerTrade: '50.00',
-          rrr: '1.4R',
-          mt5status: 'closed',
-          mfe: '85.00'
-        },
-        {
-          openDate: '2024.01.16 08:15:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345679',
-          symbol: 'GBPUSD',
-          type: '1', // Sell
-          volume: '0.15',
-          entry: '1.2650',
-          sL: '1.2700',
-          tP: '1.2550',
-          closeDate: '2024.01.16 11:45:00',
-          exit: '1.2680',
-          commission: '-3.75',
-          swap: '0.00',
-          profit: '-45.00',
-          netProfit: '-48.75',
-          riskPerTrade: '75.00',
-          rrr: '-0.65R',
-          mt5status: 'closed',
-          mfe: '15.00'
-        },
-        {
-          openDate: '2024.01.17 10:00:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345680',
-          symbol: 'USDJPY',
-          type: '0', // Buy
-          volume: '0.20',
-          entry: '148.50',
-          sL: '148.00',
-          tP: '149.50',
-          closeDate: '2024.01.17 16:30:00',
-          exit: '149.20',
-          commission: '-5.00',
-          swap: '0.00',
-          profit: '140.00',
-          netProfit: '135.00',
-          riskPerTrade: '100.00',
-          rrr: '1.4R',
-          mt5status: 'closed',
-          mfe: '160.00'
-        }
-      ];
-
-      console.log('✅ Added sample trading data for visualization testing');
-      this.isLoadingMetrics = false; // Stop showing loading spinner
-      this.generateTradingChartData(); // Update chart with sample data
-    }
+  getTotalTrades(): number {
+    return this.tableData.length;
   }
+
+  getSafeNumber(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+    return isNaN(num) ? 0 : num;
+  }
+
+  // Simple gauge chart methods for Trade Win %
+  getSimpleGaugeColor(): string {
+    const winRate = this.calculateWinRate();
+    if (winRate >= 60) return '#10b981'; // Green for 60%+
+    if (winRate >= 40) return '#f59e0b'; // Yellow for 40-59%
+    return '#ef4444'; // Red for <40%
+  }
+
+  getSimpleGaugeDash(): string {
+    const circumference = Math.PI * 60; // Half circle circumference (radius 60)
+    return `${circumference} ${circumference}`;
+  }
+
+  getSimpleGaugeOffset(): number {
+    const winRate = this.calculateWinRate();
+    const circumference = Math.PI * 60;
+    const progress = (100 - winRate) / 100;
+    return circumference * progress;
+  }
+
+  // Test data removed - gauge chart now works with real trading data
   private async loadTradingSettings(): Promise<void> {
     const body = {
       "page_size": 1,
@@ -670,7 +629,7 @@ async ngOnInit() {
 
   socket.on("connect", async () => {
     console.warn("✅ Connected to WebSocket server");
-    // Set metrics loading to false after data is loaded
+    // Set metrics loading to false after connection
     this.isLoadingMetrics = false;
     await this.loadMT5Data(); // Load MT5 trades
   });
@@ -684,6 +643,8 @@ async ngOnInit() {
 
   socket.on("connect_error", (err: any) => {
     console.warn("❌ Socket connection error:", err);
+    // Even if socket fails, show the metrics (they'll just be 0)
+    this.isLoadingMetrics = false;
   });
 
   socket.on("trade_opened", (data: any) => {
@@ -786,10 +747,12 @@ async ngOnInit() {
     // Generate initial chart data
     this.generateTradingChartData();
 
-    // Add sample data for testing visualization
+    // Set loading to false after a short delay to show metrics even without data
     setTimeout(() => {
-      this.addSampleTradingData();
-    }, 2000);
+      this.isLoadingMetrics = false;
+    }, 3000);
+
+    // Removed complex dummy data as requested by user
   }
 
   ngAfterViewInit() {
@@ -2749,43 +2712,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return '0.00';
   }
 
-  calculateWinRate(): string {
-    if (!this.tableData || this.tableData.length === 0) return '0.00';
-    const winningTrades = this.getWinCount();
-    const totalTrades = this.getTotalTrades();
-    return totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : '0.00';
-  }
-
-  getWinRateDecimal(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const winningTrades = this.getWinCount();
-    const totalTrades = this.getTotalTrades();
-    return totalTrades > 0 ? (winningTrades / totalTrades) : 0;
-  }
-
-  getWinCount(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    return this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit > 0;
-    }).length;
-  }
-
-  getBreakevenCount(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    return this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit === 0;
-    }).length;
-  }
-
-  getLossCount(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    return this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit < 0;
-    }).length;
-  }
+  // Removed duplicate methods - keeping the newer implementations above
 
   getWinPercentageForGradient(): number {
     const total = this.getTotalTrades();
@@ -2876,9 +2803,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return totalMinutes;
   }
 
-  getTotalTrades(): number {
-    return this.tableData ? this.tableData.length : 0;
-  }
+  // Removed duplicate getTotalTrades - keeping the newer implementation above
 
   calculateAvgWin(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
@@ -2934,7 +2859,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const totalTrades = this.getTotalTrades();
     if (totalTrades === 0) return 0;
 
-    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const winRate = this.calculateWinRate() / 100;
     const avgWin = this.calculateAvgWin();
     const avgLoss = Math.abs(this.calculateAvgLoss());
 
@@ -3648,7 +3573,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getKellyCriterion(): string {
-    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const winRate = this.calculateWinRate() / 100;
     const avgWin = this.calculateAvgWin();
     const avgLoss = Math.abs(this.calculateAvgLoss());
 
@@ -4062,7 +3987,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const insights: { title: string, description: string, recommendations: string[], severity: string }[] = [];
 
     // Win Rate Analysis
-    const winRate = parseFloat(this.calculateWinRate());
+    const winRate = this.calculateWinRate();
     if (winRate < 40) {
       insights.push({
         title: '🎯 Low Win Rate Detected',
@@ -4577,33 +4502,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return isRecent || isLiveTrade;
   }
 
-  getSafeNumber(value: any): number {
-    // Handle null, undefined, or empty values
-    if (value === null || value === undefined || value === '') {
-      return 0;
-    }
-
-    // Already a number
-    if (typeof value === 'number') {
-      return isNaN(value) ? 0 : value;
-    }
-
-    // String conversion
-    if (typeof value === 'string') {
-      // Handle common placeholder strings
-      if (value === '-' || value.trim() === '' || value.toLowerCase() === 'n/a') {
-        return 0;
-      }
-
-      // Remove any non-numeric characters except decimal point and minus sign
-      const cleanValue = value.replace(/[^0-9.-]/g, '');
-      const parsed = parseFloat(cleanValue);
-      return isNaN(parsed) ? 0 : parsed;
-    }
-
-    // Fallback for any other type
-    return 0;
-  }
+  // Removed duplicate getSafeNumber method - using the implementation above
 
   getRiskPercentage(row: Table): string {
     // Calculate risk percentage based on actual account size

@@ -574,16 +574,37 @@
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="trade-win-layout">
-              <div class="percentage-section">
-                <div class="win-percentage">{{ calculateWinRate() }}%</div>
+            <div class="simple-gauge-container">
+              <!-- Simple SVG Gauge -->
+              <div class="simple-gauge">
+                <svg viewBox="0 0 160 100" class="gauge-svg">
+                  <!-- Background arc -->
+                  <path d="M 20 80 A 60 60 0 0 1 140 80"
+                        fill="none"
+                        stroke="#e5e7eb"
+                        stroke-width="8"
+                        stroke-linecap="round"/>
+
+                  <!-- Progress arc -->
+                  <path d="M 20 80 A 60 60 0 0 1 140 80"
+                        fill="none"
+                        [attr.stroke]="getSimpleGaugeColor()"
+                        stroke-width="8"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="getSimpleGaugeDash()"
+                        [attr.stroke-dashoffset]="getSimpleGaugeOffset()"
+                        class="progress-arc"/>
+
+                  <!-- Percentage text -->
+                  <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
+                </svg>
               </div>
-              <div class="chart-section">
-                <div class="trade-counts">
-                  <span class="count-item wins" [title]="'Winning trades: ' + getWinCount()">{{ getWinCount() }}</span>
-                  <span class="count-item breakeven" [title]="'Breakeven trades: ' + getBreakevenCount()">{{ getBreakevenCount() }}</span>
-                  <span class="count-item losses" [title]="'Losing trades: ' + getLossCount()">{{ getLossCount() }}</span>
-                </div>
+
+              <!-- Counts below gauge -->
+              <div class="gauge-counts">
+                <span class="count-green">{{ getWinCount() }}</span>
+                <span class="count-gray">{{ getBreakevenCount() }}</span>
+                <span class="count-red">{{ getLossCount() }}</span>
               </div>
             </div>
           </div>
