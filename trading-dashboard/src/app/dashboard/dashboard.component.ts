@@ -2939,6 +2939,76 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return (bestProfit / accountSize) * 100;
   }
 
+  calculateBestLoss(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+
+    const losses = this.tableData.map(trade => parseFloat(trade.netProfit) || 0).filter(profit => profit < 0);
+    return losses.length > 0 ? Math.min(...losses) : 0;
+  }
+
+  calculateBestLossPercentage(): number {
+    const bestLoss = Math.abs(this.calculateBestLoss());
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
+
+    if (bestLoss <= 0 || accountSize <= 0) return 0;
+
+    return (bestLoss / accountSize) * 100;
+  }
+
+  // Chart data for Best Profit/Loss visualization
+  getProfitLossChartData() {
+    if (!this.tableData || this.tableData.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          data: [],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          borderWidth: 2,
+          tension: 0.4
+        }]
+      };
+    }
+
+    const bestProfit = this.calculateBestProfit();
+    const bestLoss = this.calculateBestLoss();
+
+    return {
+      labels: ['Best Loss', 'Break Even', 'Best Profit'],
+      datasets: [{
+        data: [bestLoss, 0, bestProfit],
+        borderColor: '#6366f1',
+        backgroundColor: ['#ef4444', '#6b7280', '#10b981'],
+        fill: false,
+        borderWidth: 2,
+        tension: 0.4
+      }]
+    };
+  }
+
+  getProfitLossChartOptions() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      },
+      elements: {
+        point: { radius: 3 },
+        line: { borderWidth: 2 }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false }
+      },
+      layout: {
+        padding: 5
+      }
+    };
+  }
+
   // Emotional tracking methods for individual trades
   getTradeKey(trade: Table): string {
     return `${trade.openDate}_${trade.symbol}_${trade.volume}`;
