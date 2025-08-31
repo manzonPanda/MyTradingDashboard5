@@ -581,127 +581,7 @@ mt5AccountInfo: AccountSettings = {
     return this.calculateWinRate() / 100;
   }
 
-  // Add sample data for testing the visualization
-  private addSampleTradingData(): void {
-    if (this.tableData.length === 0) {
-      this.tableData = [
-        {
-          openDate: '2024.01.15 09:30:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345678',
-          symbol: 'EURUSD',
-          type: '0', // Buy
-          volume: '0.10',
-          entry: '1.0850',
-          sL: '1.0800',
-          tP: '1.0950',
-          closeDate: '2024.01.15 14:30:00',
-          exit: '1.0920',
-          commission: '-2.50',
-          swap: '0.00',
-          profit: '70.00',
-          netProfit: '67.50',
-          riskPerTrade: '50.00',
-          rrr: '1.4R',
-          mt5status: 'closed',
-          mfe: '85.00'
-        },
-        {
-          openDate: '2024.01.16 08:15:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345679',
-          symbol: 'GBPUSD',
-          type: '1', // Sell
-          volume: '0.15',
-          entry: '1.2650',
-          sL: '1.2700',
-          tP: '1.2550',
-          closeDate: '2024.01.16 11:45:00',
-          exit: '1.2680',
-          commission: '-3.75',
-          swap: '0.00',
-          profit: '-45.00',
-          netProfit: '-48.75',
-          riskPerTrade: '75.00',
-          rrr: '-0.65R',
-          mt5status: 'closed',
-          mfe: '15.00'
-        },
-        {
-          openDate: '2024.01.17 10:00:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345680',
-          symbol: 'USDJPY',
-          type: '0', // Buy
-          volume: '0.20',
-          entry: '148.50',
-          sL: '148.00',
-          tP: '149.50',
-          closeDate: '2024.01.17 16:30:00',
-          exit: '149.20',
-          commission: '-5.00',
-          swap: '0.00',
-          profit: '140.00',
-          netProfit: '135.00',
-          riskPerTrade: '100.00',
-          rrr: '1.4R',
-          mt5status: 'closed',
-          mfe: '160.00'
-        },
-        {
-          openDate: '2024.01.18 11:30:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345681',
-          symbol: 'AUDCAD',
-          type: '0', // Buy
-          volume: '0.12',
-          entry: '0.9150',
-          sL: '0.9100',
-          tP: '0.9250',
-          closeDate: '2024.01.18 15:45:00',
-          exit: '0.9220',
-          commission: '-3.20',
-          swap: '0.00',
-          profit: '84.00',
-          netProfit: '80.80',
-          riskPerTrade: '60.00',
-          rrr: '1.4R',
-          mt5status: 'closed',
-          mfe: '100.00'
-        },
-        {
-          openDate: '2024.01.19 08:45:00',
-          tradeNotion: [],
-          status: 'closed',
-          position: '12345682',
-          symbol: 'NZDJPY',
-          type: '1', // Sell
-          volume: '0.08',
-          entry: '89.50',
-          sL: '90.00',
-          tP: '88.50',
-          closeDate: '2024.01.19 12:30:00',
-          exit: '89.20',
-          commission: '-2.40',
-          swap: '0.00',
-          profit: '24.00',
-          netProfit: '21.60',
-          riskPerTrade: '40.00',
-          rrr: '0.6R',
-          mt5status: 'closed',
-          mfe: '30.00'
-        }
-      ];
-
-      console.log('✅ Added sample trading data for visualization testing (5 trades: 4 wins, 1 loss = 80% win rate)');
-      this.isLoadingMetrics = false; // Stop showing loading spinner
-      this.generateTradingChartData(); // Update chart with sample data
-    }
-  }
+  // Removed dummy data method as requested by user
   private async loadTradingSettings(): Promise<void> {
     const body = {
       "page_size": 1,
@@ -871,10 +751,7 @@ async ngOnInit() {
     // Generate initial chart data
     this.generateTradingChartData();
 
-    // Add sample data for testing visualization
-    setTimeout(() => {
-      this.addSampleTradingData();
-    }, 2000);
+    // Removed dummy data as requested by user
   }
 
   ngAfterViewInit() {
@@ -2647,7 +2524,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's any other error but not connection error, server might be running
       if (error.status && error.status !== 0) {
-        console.log('��️ Backend is running but has issues with the API');
+        console.log('����️ Backend is running but has issues with the API');
         return true; // Server is running, just has issues
       }
 
