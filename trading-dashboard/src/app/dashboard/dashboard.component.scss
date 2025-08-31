@@ -2999,7 +2999,7 @@ table.simple-table {
 
     .days-bar {
       background: linear-gradient(180deg, #6366f1, #8b5cf6);
-      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
 
       &::before {
         content: '';
@@ -3010,16 +3010,19 @@ table.simple-table {
         bottom: 0;
         background: linear-gradient(
           180deg,
-          transparent 0%,
-          rgba(255, 255, 255, 0.1) 50%,
-          transparent 100%
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(255, 255, 255, 0.1) 100%
         );
-        animation: shimmer-vertical 2s infinite;
+        animation: shimmer-vertical 3s infinite;
+        border-radius: 6px;
       }
     }
 
     .trades-bar {
       background: linear-gradient(180deg, #10b981, #34d399);
+      border: 1px solid rgba(16, 185, 129, 0.3);
 
       &::before {
         content: '';
@@ -3030,11 +3033,13 @@ table.simple-table {
         bottom: 0;
         background: linear-gradient(
           180deg,
-          transparent 0%,
-          rgba(255, 255, 255, 0.1) 50%,
-          transparent 100%
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(255, 255, 255, 0.1) 100%
         );
-        animation: shimmer-vertical 2s infinite 0.5s;
+        animation: shimmer-vertical 3s infinite 1s;
+        border-radius: 6px;
       }
     }
 
