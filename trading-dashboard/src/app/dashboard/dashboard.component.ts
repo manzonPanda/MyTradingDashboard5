@@ -558,7 +558,45 @@ mt5AccountInfo: AccountSettings = {
     return isNaN(num) ? 0 : num;
   }
 
-  // Simple gauge chart methods for Trade Win %
+  // Count-based gauge chart methods for Trade Win %
+  getWinGaugeDash(): string {
+    const circumference = Math.PI * 60; // Half circle circumference (radius 60)
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return '0 0';
+
+    const winCount = this.getWinCount();
+    const winPortion = (winCount / totalTrades) * circumference;
+    const gap = circumference - winPortion;
+    return `${winPortion} ${gap}`;
+  }
+
+  getWinGaugeOffset(): number {
+    return 0; // Start from the beginning
+  }
+
+  getLossGaugeDash(): string {
+    const circumference = Math.PI * 60;
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return '0 0';
+
+    const lossCount = this.getLossCount();
+    const lossPortion = (lossCount / totalTrades) * circumference;
+    const gap = circumference - lossPortion;
+    return `${lossPortion} ${gap}`;
+  }
+
+  getLossGaugeOffset(): number {
+    const circumference = Math.PI * 60;
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return 0;
+
+    const winCount = this.getWinCount();
+    const breakevenCount = this.getBreakevenCount();
+    const offsetPortion = (winCount + breakevenCount) / totalTrades;
+    return -(circumference * offsetPortion);
+  }
+
+  // Legacy methods for compatibility
   getSimpleGaugeColor(): string {
     const winRate = this.calculateWinRate();
     if (winRate >= 60) return '#10b981'; // Green for 60%+
@@ -3993,7 +4031,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const winRate = this.calculateWinRate();
     if (winRate < 40) {
       insights.push({
-        title: '🎯 Low Win Rate Detected',
+        title: '�� Low Win Rate Detected',
         description: `Your win rate of ${winRate.toFixed(1)}% is below the typical 40-60% range for successful traders.`,
         recommendations: [
           'Review your entry criteria - you may be entering trades with poor setups',
