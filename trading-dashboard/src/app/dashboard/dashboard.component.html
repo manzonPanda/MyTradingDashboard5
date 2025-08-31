@@ -621,6 +621,24 @@
                 <text x="130" y="35" text-anchor="middle" class="chart-label" font-size="8">2.0</text>
                 <text x="190" y="35" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
               </svg>
+              <div class="profit-factor-legend">
+                <div class="legend-item" [class.active]="calculateProfitFactor() < 0.5">
+                  <div class="legend-color poor"></div>
+                  <span class="legend-text">Poor</span>
+                </div>
+                <div class="legend-item" [class.active]="calculateProfitFactor() >= 0.5 && calculateProfitFactor() < 1.0">
+                  <div class="legend-color concerning"></div>
+                  <span class="legend-text">Concerning</span>
+                </div>
+                <div class="legend-item" [class.active]="calculateProfitFactor() >= 1.0 && calculateProfitFactor() < 1.5">
+                  <div class="legend-color good"></div>
+                  <span class="legend-text">Good</span>
+                </div>
+                <div class="legend-item" [class.active]="calculateProfitFactor() >= 1.5">
+                  <div class="legend-color excellent"></div>
+                  <span class="legend-text">Excellent</span>
+                </div>
+              </div>
             </div>
             <div class="metric-subtitle">Gross win / Gross loss</div>
           </div>
