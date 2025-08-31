@@ -2673,6 +2673,72 @@ table.simple-table {
     gap: 0.25rem;
   }
 
+  // Best Profit/Loss Performance Card Styling
+  &.best-profit-loss {
+    .metric-content {
+      gap: 0.5rem;
+    }
+
+    .performance-section {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--tf-border-primary);
+
+      &:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0.25rem;
+      }
+
+      .performance-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+
+        .performance-label {
+          font-size: 0.75rem;
+          color: var(--tf-text-secondary);
+          font-weight: 500;
+        }
+
+        .performance-value {
+          font-size: 0.9rem;
+          font-weight: 600;
+
+          &.positive {
+            color: var(--tf-positive);
+          }
+
+          &.negative {
+            color: var(--tf-negative);
+          }
+        }
+      }
+
+      .performance-percentage {
+        font-size: 0.7rem;
+        font-weight: 500;
+        text-align: right;
+
+        &.positive {
+          color: var(--tf-positive);
+        }
+
+        &.negative {
+          color: var(--tf-negative);
+        }
+      }
+    }
+
+    .performance-chart {
+      height: 40px;
+      margin-top: 0.5rem;
+
+      canvas {
+        max-height: 40px;
+      }
+    }
+  }
+
   // Trade Win Rate Card Special Styling
   &.trade-win-rate {
     .metric-content {
