@@ -2966,15 +2966,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // Chart data for Best Profit/Loss visualization
   getProfitLossChartData() {
     if (!this.tableData || this.tableData.length === 0) {
+      // Show demo data when no trades exist
       return {
-        labels: [],
+        labels: ['Best Loss', 'Break Even', 'Best Profit'],
         datasets: [{
-          data: [],
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          fill: true,
-          borderWidth: 2,
-          tension: 0.4
+          data: [-87.25, 0, 125.50],
+          backgroundColor: ['#ef4444', '#6b7280', '#10b981'],
+          borderColor: ['#ef4444', '#6b7280', '#10b981'],
+          borderWidth: 1
         }]
       };
     }
