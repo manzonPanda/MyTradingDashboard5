@@ -2396,7 +2396,7 @@ table.simple-table {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(5, 1fr);
+    // grid-template-rows: repeat(5, 1fr);
     gap: 0.75rem;
     min-width: 300px;
 
@@ -2937,15 +2937,12 @@ table.simple-table {
       width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 0.75rem;
     }
 
     .chart-bars {
       display: flex;
-      gap: 1rem;
       align-items: flex-end;
-      height: 120px;
       padding: 0.5rem;
     }
 

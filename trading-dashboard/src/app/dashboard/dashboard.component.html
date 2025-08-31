@@ -426,16 +426,6 @@
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
             <div class="activity-layout">
-              <div class="activity-stats">
-                <div class="stat-group">
-                  <div class="stat-value">{{ calculateDaysSinceFirstTrade() }}</div>
-                  <div class="stat-label">Days Trading</div>
-                </div>
-                <div class="stat-group">
-                  <div class="stat-value">{{ getTotalTrades() }}</div>
-                  <div class="stat-label">Total Trades</div>
-                </div>
-              </div>
               <div class="activity-chart">
                 <div class="chart-container">
                   <div class="chart-bars">
@@ -451,17 +441,7 @@
                            [style.height.%]="getTotalTrades() > 0 ? Math.max(20, (getTotalTrades() / Math.max(calculateDaysSinceFirstTrade(), getTotalTrades())) * 80) : 20">
                         <span class="bar-label">{{ getTotalTrades() }}</span>
                       </div>
-                      <div class="bar-title">Trades</div>
-                    </div>
-                  </div>
-                  <div class="chart-metrics">
-                    <div class="metric-ratio">
-                      <ng-container *ngIf="calculateDaysSinceFirstTrade() > 0; else noData">
-                        {{ (getTotalTrades() / calculateDaysSinceFirstTrade()) | number:'1.1-1' }} trades/day
-                      </ng-container>
-                      <ng-template #noData>
-                        0.0 trades/day
-                      </ng-template>
+                      <div class="bar-title">Total Trades</div>
                     </div>
                   </div>
                 </div>
