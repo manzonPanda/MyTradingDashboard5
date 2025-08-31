@@ -635,7 +635,7 @@ async ngOnInit() {
 
   socket.on("connect", async () => {
     console.warn("✅ Connected to WebSocket server");
-    // Set metrics loading to false after data is loaded
+    // Set metrics loading to false after connection
     this.isLoadingMetrics = false;
     await this.loadMT5Data(); // Load MT5 trades
   });
@@ -649,6 +649,8 @@ async ngOnInit() {
 
   socket.on("connect_error", (err: any) => {
     console.warn("❌ Socket connection error:", err);
+    // Even if socket fails, show the metrics (they'll just be 0)
+    this.isLoadingMetrics = false;
   });
 
   socket.on("trade_opened", (data: any) => {
@@ -750,6 +752,11 @@ async ngOnInit() {
 
     // Generate initial chart data
     this.generateTradingChartData();
+
+    // Set loading to false after a short delay to show metrics even without data
+    setTimeout(() => {
+      this.isLoadingMetrics = false;
+    }, 3000);
 
     // Removed dummy data as requested by user
   }
@@ -2524,7 +2531,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // If it's any other error but not connection error, server might be running
       if (error.status && error.status !== 0) {
-        console.log('����️ Backend is running but has issues with the API');
+        console.log('��️ Backend is running but has issues with the API');
         return true; // Server is running, just has issues
       }
 
