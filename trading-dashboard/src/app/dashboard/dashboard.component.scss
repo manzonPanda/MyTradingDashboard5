@@ -2558,7 +2558,7 @@ table.simple-table {
 
     // When we have more than 10 cards, adjust the grid
     &:has(.metric-card:nth-child(11)) {
-      grid-template-rows: repeat(6, 1fr);
+      grid-template-rows: repeat(6, auto);
     }
   }
 }
