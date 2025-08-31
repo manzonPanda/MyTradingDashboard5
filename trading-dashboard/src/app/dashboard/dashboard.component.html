@@ -415,17 +415,47 @@
       </div>
 
       <div class="metrics-grid">
-        <div class="metric-card profit-loss">
+        <div class="metric-card trading-activity-combined">
           <div class="metric-header">
-            <h3 class="metric-title">Days</h3>
-            <mat-icon class="metric-icon">calendar_today</mat-icon>
+            <h3 class="metric-title">Trading Activity</h3>
+            <mat-icon class="metric-icon">insights</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
             <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-value positive">{{ calculateDaysSinceFirstTrade() }}</div>
+            <div class="activity-layout">
+              <div class="activity-stats">
+                <div class="stat-group">
+                  <div class="stat-value">{{ calculateDaysSinceFirstTrade() }}</div>
+                  <div class="stat-label">Days Trading</div>
+                </div>
+                <div class="stat-group">
+                  <div class="stat-value">{{ getTotalTrades() }}</div>
+                  <div class="stat-label">Total Trades</div>
+                </div>
+              </div>
+              <div class="activity-chart">
+                <div class="chart-container">
+                  <div class="chart-bar">
+                    <div class="bar-segment days-bar"
+                         [style.height.%]="(calculateDaysSinceFirstTrade() / (calculateDaysSinceFirstTrade() + getTotalTrades())) * 100">
+                      <span class="bar-label">Days</span>
+                    </div>
+                    <div class="bar-segment trades-bar"
+                         [style.height.%]="(getTotalTrades() / (calculateDaysSinceFirstTrade() + getTotalTrades())) * 100">
+                      <span class="bar-label">Trades</span>
+                    </div>
+                  </div>
+                  <div class="chart-metrics">
+                    <div class="metric-ratio">
+                      {{ (getTotalTrades() / calculateDaysSinceFirstTrade()) | number:'1.1-1' }} trades/day
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
