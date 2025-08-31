@@ -326,11 +326,13 @@
               </div>
               <div class="stat-content">
                 <div class="stat-label">Total P&L</div>
-                <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
-                  {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
-                </div>
-                <div class="percentage-gain">
-                  {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                <div class="stat-value-group">
+                  <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
+                    {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
+                  </div>
+                  <div class="percentage-gain">
+                    {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                  </div>
                 </div>
               </div>
             </div>
