@@ -141,6 +141,9 @@ interface NotionPerformanceData {
 
 // @Injectable({ providedIn: 'root' })
 export class DashboardComponent implements AfterViewInit {
+  // Math object for template calculations
+  Math = Math;
+
   // Additional calculation methods for missing functions
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
   viewDate: Date = new Date();
