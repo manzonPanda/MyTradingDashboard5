@@ -579,43 +579,6 @@
                 <div class="win-percentage">{{ calculateWinRate() }}%</div>
               </div>
               <div class="chart-section">
-                <div class="semicircle-gauge">
-                  <svg width="70" height="40" viewBox="0 0 70 40">
-                    <!-- Background semicircle -->
-                    <path d="M 10 35 A 25 25 0 0 1 60 35"
-                          fill="none"
-                          stroke="#f1f5f9"
-                          stroke-width="8"
-                          stroke-linecap="round"/>
-
-                    <!-- Dynamic win rate semicircle -->
-                    <path [attr.d]="getWinRatePath()"
-                          fill="none"
-                          [attr.stroke]="getWinRateColor()"
-                          stroke-width="8"
-                          stroke-linecap="round"
-                          class="win-rate-path">
-                      <animate attributeName="stroke-dasharray"
-                               [attr.from]="'0 ' + getSemicircleLength()"
-                               [attr.to]="getWinRateStrokeDash()"
-                               dur="1.5s"
-                               begin="0s"/>
-                    </path>
-
-                    <defs>
-                      <linearGradient id="winGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#10b981"/>
-                        <stop offset="50%" style="stop-color:#34d399"/>
-                        <stop offset="100%" style="stop-color:#22c55e"/>
-                      </linearGradient>
-                      <linearGradient id="lossGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#ef4444"/>
-                        <stop offset="50%" style="stop-color:#f87171"/>
-                        <stop offset="100%" style="stop-color:#dc2626"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
                 <div class="trade-counts">
                   <span class="count-item wins" [title]="'Winning trades: ' + getWinCount()">{{ getWinCount() }}</span>
                   <span class="count-item breakeven" [title]="'Breakeven trades: ' + getBreakevenCount()">{{ getBreakevenCount() }}</span>

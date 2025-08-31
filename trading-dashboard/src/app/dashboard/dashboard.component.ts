@@ -2042,7 +2042,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           {
             label: '🟠 --- Current P&L',
             data: [pnlLineValue],
-            borderColor: 'rgb(249, 115, 22)',
+            borderColor: '#7c3aed',
             backgroundColor: 'transparent',
             borderWidth: 1,
             borderDash: [8, 4],
@@ -2076,7 +2076,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           {
             label: '🟣 --- Starting Balance',
             data: [accountSize],
-            borderColor: 'rgb(147, 51, 234)',
+            borderColor: '#3d3aed',
             backgroundColor: 'transparent',
             borderWidth: 1,
             fill: false,
@@ -2154,7 +2154,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         {
           label: '🟠 --- Current P&L',
           data: new Array(labels.length).fill(pnlLineValue),
-          borderColor: 'rgb(249, 115, 22)',
+          borderColor: '#7c3aed',
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderDash: [8, 4],
@@ -2187,7 +2187,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         {
           label: '🟣 --- Starting Balance',
           data: new Array(labels.length).fill(accountSize),
-          borderColor: 'rgb(147, 51, 234)',
+          borderColor: '#3d3aed',
           backgroundColor: 'transparent',
           borderWidth: 1,
           fill: false,
