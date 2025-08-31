@@ -680,26 +680,35 @@
                         stroke-width="8"
                         stroke-linecap="round"/>
 
-                  <!-- Progress arc -->
+                  <!-- Win arc (green) -->
                   <path d="M 20 80 A 60 60 0 0 1 140 80"
                         fill="none"
-                        [attr.stroke]="getSimpleGaugeColor()"
+                        stroke="#10b981"
                         stroke-width="8"
                         stroke-linecap="round"
-                        [attr.stroke-dasharray]="getSimpleGaugeDash()"
-                        [attr.stroke-dashoffset]="getSimpleGaugeOffset()"
+                        [attr.stroke-dasharray]="getWinGaugeDash()"
+                        [attr.stroke-dashoffset]="getWinGaugeOffset()"
                         class="progress-arc"/>
 
-                  <!-- Percentage text -->
-                  <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
-                </svg>
-              </div>
+                  <!-- Loss arc (red) -->
+                  <path d="M 20 80 A 60 60 0 0 1 140 80"
+                        fill="none"
+                        stroke="#ef4444"
+                        stroke-width="8"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="getLossGaugeDash()"
+                        [attr.stroke-dashoffset]="getLossGaugeOffset()"
+                        class="loss-arc"/>
 
-              <!-- Counts below gauge -->
-              <div class="gauge-counts">
-                <span class="count-green">{{ getWinCount() }}</span>
-                <span class="count-gray">{{ getBreakevenCount() }}</span>
-                <span class="count-red">{{ getLossCount() }}</span>
+                  <!-- Win count (left) -->
+                  <text x="30" y="95" text-anchor="middle" class="gauge-count win-count">{{ getWinCount() }}</text>
+
+                  <!-- Breakeven count (center) -->
+                  <text x="80" y="65" text-anchor="middle" class="gauge-count breakeven-count">{{ getBreakevenCount() }}</text>
+
+                  <!-- Loss count (right) -->
+                  <text x="130" y="95" text-anchor="middle" class="gauge-count loss-count">{{ getLossCount() }}</text>
+                </svg>
               </div>
             </div>
           </div>
