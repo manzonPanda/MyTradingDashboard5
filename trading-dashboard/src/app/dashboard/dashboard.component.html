@@ -628,7 +628,7 @@
           </div>
         </div>
 
-        <div class="metric-card best-profit-loss">
+        <div class="metric-card best-profit-loss-combined">
           <div class="metric-header">
             <h3 class="metric-title">Best Performance</h3>
             <mat-icon class="metric-icon">trending_up</mat-icon>
@@ -638,31 +638,26 @@
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <!-- Best Profit Section -->
-            <div class="performance-section profit-section">
-              <div class="performance-row">
-                <span class="performance-label">Best Profit</span>
-                <span class="performance-value positive">{{ calculateBestProfit() | currency }}</span>
+            <div class="profit-loss-layout">
+              <div class="profit-section">
+                <div class="profit-percentage">+{{ calculateBestProfitPercentage() | number:'1.2-2' }}%</div>
+                <div class="profit-amount">{{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="profit-label">Best</div>
               </div>
-              <div class="performance-percentage positive">+{{ calculateBestProfitPercentage() | number:'1.2-2' }}%</div>
-            </div>
-
-            <!-- Best Loss Section -->
-            <div class="performance-section loss-section">
-              <div class="performance-row">
-                <span class="performance-label">Best Loss</span>
-                <span class="performance-value negative">{{ calculateBestLoss() | currency }}</span>
+              <div class="loss-section">
+                <div class="loss-percentage">-{{ calculateBestLossPercentage() | number:'1.2-2' }}%</div>
+                <div class="loss-amount">{{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="loss-label">Worst</div>
               </div>
-              <div class="performance-percentage negative">-{{ calculateBestLossPercentage() | number:'1.2-2' }}%</div>
             </div>
-
-            <!-- Small Chart -->
-            <div class="performance-chart">
-              <canvas baseChart
-                      [data]="getProfitLossChartData()"
-                      [options]="getProfitLossChartOptions()"
-                      [type]="'bar'"
-                      height="40"></canvas>
+            <div class="chart-section">
+              <div class="performance-chart">
+                <canvas baseChart
+                        [data]="getProfitLossChartData()"
+                        [options]="getProfitLossChartOptions()"
+                        [type]="'bar'"
+                        height="30"></canvas>
+              </div>
             </div>
           </div>
         </div>
