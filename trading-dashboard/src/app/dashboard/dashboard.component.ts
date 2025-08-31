@@ -618,15 +618,6 @@ mt5AccountInfo: AccountSettings = {
     }
   }
   private async loadTradingSettings(): Promise<void> {
-    // Load saved settings from localStorage
-    // const savedProfitTarget = localStorage.getItem('tradingProfitTarget');
-    // const savedMaxLoss = localStorage.getItem('tradingMaxLoss');
-    // if (savedProfitTarget) {
-    //   this.profitTarget = parseInt(savedProfitTarget);
-    // }
-    // if (savedMaxLoss) {
-    //   this.maxLoss = parseInt(savedMaxLoss);
-    // }
     const body = {
       "page_size": 1,
       "filter": {
