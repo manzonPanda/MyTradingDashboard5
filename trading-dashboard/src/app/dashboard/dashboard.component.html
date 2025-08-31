@@ -438,19 +438,30 @@
               </div>
               <div class="activity-chart">
                 <div class="chart-container">
-                  <div class="chart-bar">
-                    <div class="bar-segment days-bar"
-                         [style.height.%]="(calculateDaysSinceFirstTrade() / (calculateDaysSinceFirstTrade() + getTotalTrades())) * 100">
-                      <span class="bar-label">Days</span>
+                  <div class="chart-bars">
+                    <div class="bar-wrapper">
+                      <div class="bar-segment days-bar"
+                           [style.height.%]="calculateDaysSinceFirstTrade() > 0 ? Math.max(20, (calculateDaysSinceFirstTrade() / Math.max(calculateDaysSinceFirstTrade(), getTotalTrades())) * 80) : 20">
+                        <span class="bar-label">{{ calculateDaysSinceFirstTrade() }}</span>
+                      </div>
+                      <div class="bar-title">Days</div>
                     </div>
-                    <div class="bar-segment trades-bar"
-                         [style.height.%]="(getTotalTrades() / (calculateDaysSinceFirstTrade() + getTotalTrades())) * 100">
-                      <span class="bar-label">Trades</span>
+                    <div class="bar-wrapper">
+                      <div class="bar-segment trades-bar"
+                           [style.height.%]="getTotalTrades() > 0 ? Math.max(20, (getTotalTrades() / Math.max(calculateDaysSinceFirstTrade(), getTotalTrades())) * 80) : 20">
+                        <span class="bar-label">{{ getTotalTrades() }}</span>
+                      </div>
+                      <div class="bar-title">Trades</div>
                     </div>
                   </div>
                   <div class="chart-metrics">
                     <div class="metric-ratio">
-                      {{ (getTotalTrades() / calculateDaysSinceFirstTrade()) | number:'1.1-1' }} trades/day
+                      <ng-container *ngIf="calculateDaysSinceFirstTrade() > 0; else noData">
+                        {{ (getTotalTrades() / calculateDaysSinceFirstTrade()) | number:'1.1-1' }} trades/day
+                      </ng-container>
+                      <ng-template #noData>
+                        0.0 trades/day
+                      </ng-template>
                     </div>
                   </div>
                 </div>
