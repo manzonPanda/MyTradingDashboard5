@@ -2869,18 +2869,6 @@ table.simple-table {
       }
     }
 
-    .ratio-display {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--tf-text-secondary);
-      text-align: center;
-      padding: 0.25rem 0.5rem;
-      background: rgba(107, 114, 128, 0.1);
-      border-radius: 12px;
-      border: 1px solid rgba(107, 114, 128, 0.2);
-      min-width: 60px;
-    }
-
     &:hover {
       .win-loss-progress-bar {
         .progress-track {
@@ -2895,12 +2883,6 @@ table.simple-table {
             font-weight: 700;
           }
         }
-      }
-
-      .ratio-display {
-        background: rgba(107, 114, 128, 0.15);
-        border-color: rgba(107, 114, 128, 0.3);
-        transform: scale(1.05);
       }
     }
   }
