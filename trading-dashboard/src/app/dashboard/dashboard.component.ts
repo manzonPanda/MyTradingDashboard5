@@ -2981,7 +2981,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const totalTrades = this.getTotalTrades();
     if (totalTrades === 0) return 0;
 
-    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const winRate = this.calculateWinRate() / 100;
     const avgWin = this.calculateAvgWin();
     const avgLoss = Math.abs(this.calculateAvgLoss());
 
@@ -3695,7 +3695,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getKellyCriterion(): string {
-    const winRate = parseFloat(this.calculateWinRate()) / 100;
+    const winRate = this.calculateWinRate() / 100;
     const avgWin = this.calculateAvgWin();
     const avgLoss = Math.abs(this.calculateAvgLoss());
 
@@ -4109,7 +4109,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const insights: { title: string, description: string, recommendations: string[], severity: string }[] = [];
 
     // Win Rate Analysis
-    const winRate = parseFloat(this.calculateWinRate());
+    const winRate = this.calculateWinRate();
     if (winRate < 40) {
       insights.push({
         title: '🎯 Low Win Rate Detected',
