@@ -2673,84 +2673,47 @@ table.simple-table {
     gap: 0.25rem;
   }
 
-  // Best Profit/Loss Performance Card Styling (Compact like Avg Win vs Loss)
+  // Best Performance Card Styling (Compact like Trading Activity)
   &.best-profit-loss-combined {
     .metric-content {
       padding: 0;
     }
 
-    .profit-loss-layout {
+    .performance-stats {
       display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.5rem;
+    }
+
+    .stat-group {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-
-    .profit-section {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
       gap: 0.125rem;
-      flex: 1;
     }
 
-    .loss-section {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.125rem;
-      flex: 1;
-    }
-
-    .profit-percentage, .loss-percentage {
-      font-size: 1rem;
+    .stat-value {
+      font-size: 1.25rem;
       font-weight: 700;
       line-height: 1;
+
+      &.positive {
+        color: var(--tf-positive);
+      }
+
+      &.negative {
+        color: var(--tf-negative);
+      }
     }
 
-    .profit-percentage {
-      color: var(--tf-positive);
-    }
-
-    .loss-percentage {
-      color: var(--tf-negative);
-    }
-
-    .profit-amount, .loss-amount {
-      font-size: 0.9rem;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    .profit-amount {
-      color: var(--tf-positive);
-    }
-
-    .loss-amount {
-      color: var(--tf-negative);
-    }
-
-    .profit-label, .loss-label {
+    .stat-label {
       font-size: 0.65rem;
-      font-weight: 500;
-      color: var(--tf-text-secondary);
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      color: var(--tf-text-muted);
       line-height: 1;
-    }
-
-    .chart-section {
-      margin-top: 0.5rem;
-    }
-
-    .performance-chart {
-      height: 30px;
-
-      canvas {
-        max-height: 30px;
-      }
     }
   }
 
