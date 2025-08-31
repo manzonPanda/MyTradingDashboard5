@@ -612,6 +612,28 @@
       fill: var(--tf-text-primary);
       dominant-baseline: middle;
     }
+
+    .gauge-count {
+      font-size: 14px;
+      font-weight: 700;
+      dominant-baseline: middle;
+    }
+
+    .win-count {
+      fill: #10b981;
+    }
+
+    .breakeven-count {
+      fill: #6b7280;
+    }
+
+    .loss-count {
+      fill: #ef4444;
+    }
+
+    .progress-arc, .loss-arc {
+      transition: stroke-dashoffset 1s ease-in-out, stroke-dasharray 1s ease-in-out;
+    }
   }
 
   .gauge-counts {
