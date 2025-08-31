@@ -1664,7 +1664,7 @@ isRowAlreadySelected(row: any): boolean {
       }
     }
 
-    console.log('����� Compare to Notion completed! Data updated in simple table.');
+    console.log('��� Compare to Notion completed! Data updated in simple table.');
 
     // Simple change detection - no DataTable refresh needed!
     this.cdr.detectChanges();
@@ -2943,7 +2943,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateBestLoss(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
+    if (!this.tableData || this.tableData.length === 0) {
+      // Return demo data when no trades exist
+      return -87.25;
+    }
 
     const losses = this.tableData
       .map(trade => this.getSafeNumber(trade.netProfit))
