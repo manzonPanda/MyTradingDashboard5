@@ -2985,11 +2985,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       labels: ['Best Loss', 'Break Even', 'Best Profit'],
       datasets: [{
         data: [bestLoss, 0, bestProfit],
-        borderColor: '#6366f1',
         backgroundColor: ['#ef4444', '#6b7280', '#10b981'],
-        fill: false,
-        borderWidth: 2,
-        tension: 0.4
+        borderColor: ['#ef4444', '#6b7280', '#10b981'],
+        borderWidth: 1
       }]
     };
   }
