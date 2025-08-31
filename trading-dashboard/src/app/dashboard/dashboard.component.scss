@@ -3139,8 +3139,9 @@ table.simple-table {
 
     .chart-bars {
       display: flex;
-      align-items: flex-end;
+      align-items: flex-start;
       padding: 0.5rem;
+      height: 60px;
     }
 
     .bar-wrapper {
@@ -3760,7 +3761,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '���� LIVE';
+              content: '������ LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;
@@ -7606,7 +7607,7 @@ table.simple-table {
 // Remove all complex animations for clean look
 
 // =============================================
-// SIMPLE & STUNNING TABLE HEADERS ✨
+// SIMPLE & STUNNING TABLE HEADERS ���
 // =============================================
 
 .header-content {
