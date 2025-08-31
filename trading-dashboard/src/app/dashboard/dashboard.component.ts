@@ -2834,43 +2834,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return '0.00';
   }
 
-  calculateWinRate(): string {
-    if (!this.tableData || this.tableData.length === 0) return '0.00';
-    const winningTrades = this.getWinCount();
-    const totalTrades = this.getTotalTrades();
-    return totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(2) : '0.00';
-  }
-
-  getWinRateDecimal(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    const winningTrades = this.getWinCount();
-    const totalTrades = this.getTotalTrades();
-    return totalTrades > 0 ? (winningTrades / totalTrades) : 0;
-  }
-
-  getWinCount(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    return this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit > 0;
-    }).length;
-  }
-
-  getBreakevenCount(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    return this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit === 0;
-    }).length;
-  }
-
-  getLossCount(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    return this.tableData.filter(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      return netProfit < 0;
-    }).length;
-  }
+  // Removed duplicate methods - keeping the newer implementations above
 
   getWinPercentageForGradient(): number {
     const total = this.getTotalTrades();
@@ -2961,9 +2925,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return totalMinutes;
   }
 
-  getTotalTrades(): number {
-    return this.tableData ? this.tableData.length : 0;
-  }
+  // Removed duplicate getTotalTrades - keeping the newer implementation above
 
   calculateAvgWin(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
