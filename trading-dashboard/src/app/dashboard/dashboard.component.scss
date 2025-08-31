@@ -2689,6 +2689,25 @@ table.simple-table {
       align-items: center;
       gap: 0.5rem;
       width: 100%;
+
+      .ratio-display {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--tf-accent-primary);
+        background: linear-gradient(135deg, rgba(107, 70, 193, 0.1), rgba(139, 92, 246, 0.05));
+        padding: 0.375rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid rgba(107, 70, 193, 0.2);
+        text-align: center;
+        transition: all 0.3s ease;
+        margin-top: 0.25rem;
+
+        &:hover {
+          background: linear-gradient(135deg, rgba(107, 70, 193, 0.15), rgba(139, 92, 246, 0.08));
+          border-color: rgba(107, 70, 193, 0.3);
+          transform: scale(1.05);
+        }
+      }
     }
 
     .win-loss-progress-bar {
