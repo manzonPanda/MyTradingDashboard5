@@ -555,30 +555,24 @@ mt5AccountInfo: AccountSettings = {
     return isNaN(num) ? 0 : num;
   }
 
-  // Gauge chart methods for Trade Win %
-  getGaugeColor(): string {
+  // Simple gauge chart methods for Trade Win %
+  getSimpleGaugeColor(): string {
     const winRate = this.calculateWinRate();
-    if (winRate >= 70) return 'url(#greenGradient)'; // 70%+ = green gradient
-    if (winRate >= 50) return '#3b82f6'; // 50-70% = blue
-    return 'url(#redGradient)'; // <50% = red gradient (including 0%)
+    if (winRate >= 60) return '#10b981'; // Green for 60%+
+    if (winRate >= 40) return '#f59e0b'; // Yellow for 40-59%
+    return '#ef4444'; // Red for <40%
   }
 
-  getGaugeStrokeDash(): string {
-    const radius = 70;
-    const circumference = Math.PI * radius; // Half circle circumference
+  getSimpleGaugeDash(): string {
+    const circumference = Math.PI * 60; // Half circle circumference (radius 60)
     return `${circumference} ${circumference}`;
   }
 
-  getGaugeStrokeOffset(): number {
+  getSimpleGaugeOffset(): number {
     const winRate = this.calculateWinRate();
-    const radius = 70;
-    const circumference = Math.PI * radius;
-    const progress = (100 - winRate) / 100; // Reverse for clockwise fill
+    const circumference = Math.PI * 60;
+    const progress = (100 - winRate) / 100;
     return circumference * progress;
-  }
-
-  getWinRateDecimal(): number {
-    return this.calculateWinRate() / 100;
   }
 
   // Removed dummy data method as requested by user
@@ -673,7 +667,7 @@ async ngOnInit() {
       this.http.get("http://localhost:3000/api/news")
     );
     this.newsData = Array.isArray(news) ? news : [];
-    console.log("��� Forex Factory News Data:", this.newsData);
+    console.log("📈 Forex Factory News Data:", this.newsData);
 
     // Schedule news reminders if FCM is ready
     if (this.newsData.length > 0) {
