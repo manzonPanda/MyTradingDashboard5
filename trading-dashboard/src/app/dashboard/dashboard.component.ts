@@ -141,6 +141,7 @@ interface NotionPerformanceData {
 
 // @Injectable({ providedIn: 'root' })
 export class DashboardComponent implements AfterViewInit {
+  // Additional calculation methods for missing functions
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
@@ -514,30 +515,70 @@ mt5AccountInfo: AccountSettings = {
     return Math.abs(value);
   }
 
-  // Methods for dynamic Trade Win % semicircle gauge
-  getWinRatePath(): string {
-    // Full semicircle path
-    return "M 10 35 A 25 25 0 0 1 60 35";
+  // Trade statistics calculation methods
+  calculateWinRate(): number {
+    const totalTrades = this.getTotalTrades();
+    if (totalTrades === 0) return 0;
+
+    const winningTrades = this.getWinCount();
+    return Math.round((winningTrades / totalTrades) * 100);
   }
 
-  getWinRateColor(): string {
-    const winRate = this.getWinRateDecimal();
-    if (winRate >= 0.7) return 'url(#winGradient)'; // 70%+ = green gradient
-    if (winRate >= 0.5) return '#3b82f6'; // 50-70% = blue
-    return 'url(#lossGradient)'; // <50% = red gradient
+  getWinCount(): number {
+    return this.tableData.filter(trade => {
+      const netProfit = this.getSafeNumber(trade.netProfit);
+      return netProfit > 0;
+    }).length;
   }
 
-  getSemicircleLength(): number {
-    // Approximate length of semicircle with radius 25
-    return Math.PI * 25;
+  getLossCount(): number {
+    return this.tableData.filter(trade => {
+      const netProfit = this.getSafeNumber(trade.netProfit);
+      return netProfit < 0;
+    }).length;
   }
 
-  getWinRateStrokeDash(): string {
-    const winRate = this.getWinRateDecimal();
-    const totalLength = this.getSemicircleLength();
-    const filledLength = winRate * totalLength;
-    const emptyLength = totalLength - filledLength;
-    return `${filledLength} ${emptyLength}`;
+  getBreakevenCount(): number {
+    return this.tableData.filter(trade => {
+      const netProfit = this.getSafeNumber(trade.netProfit);
+      return netProfit === 0;
+    }).length;
+  }
+
+  getTotalTrades(): number {
+    return this.tableData.length;
+  }
+
+  getSafeNumber(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+    return isNaN(num) ? 0 : num;
+  }
+
+  // Gauge chart methods for Trade Win %
+  getGaugeColor(): string {
+    const winRate = this.calculateWinRate();
+    if (winRate >= 70) return 'url(#greenGradient)'; // 70%+ = green gradient
+    if (winRate >= 50) return '#3b82f6'; // 50-70% = blue
+    return 'url(#redGradient)'; // <50% = red gradient
+  }
+
+  getGaugeStrokeDash(): string {
+    const radius = 70;
+    const circumference = Math.PI * radius; // Half circle circumference
+    return `${circumference} ${circumference}`;
+  }
+
+  getGaugeStrokeOffset(): number {
+    const winRate = this.calculateWinRate();
+    const radius = 70;
+    const circumference = Math.PI * radius;
+    const progress = (100 - winRate) / 100; // Reverse for clockwise fill
+    return circumference * progress;
+  }
+
+  getWinRateDecimal(): number {
+    return this.calculateWinRate() / 100;
   }
 
   // Add sample data for testing the visualization
@@ -609,10 +650,54 @@ mt5AccountInfo: AccountSettings = {
           rrr: '1.4R',
           mt5status: 'closed',
           mfe: '160.00'
+        },
+        {
+          openDate: '2024.01.18 11:30:00',
+          tradeNotion: [],
+          status: 'closed',
+          position: '12345681',
+          symbol: 'AUDCAD',
+          type: '0', // Buy
+          volume: '0.12',
+          entry: '0.9150',
+          sL: '0.9100',
+          tP: '0.9250',
+          closeDate: '2024.01.18 15:45:00',
+          exit: '0.9220',
+          commission: '-3.20',
+          swap: '0.00',
+          profit: '84.00',
+          netProfit: '80.80',
+          riskPerTrade: '60.00',
+          rrr: '1.4R',
+          mt5status: 'closed',
+          mfe: '100.00'
+        },
+        {
+          openDate: '2024.01.19 08:45:00',
+          tradeNotion: [],
+          status: 'closed',
+          position: '12345682',
+          symbol: 'NZDJPY',
+          type: '1', // Sell
+          volume: '0.08',
+          entry: '89.50',
+          sL: '90.00',
+          tP: '88.50',
+          closeDate: '2024.01.19 12:30:00',
+          exit: '89.20',
+          commission: '-2.40',
+          swap: '0.00',
+          profit: '24.00',
+          netProfit: '21.60',
+          riskPerTrade: '40.00',
+          rrr: '0.6R',
+          mt5status: 'closed',
+          mfe: '30.00'
         }
       ];
 
-      console.log('✅ Added sample trading data for visualization testing');
+      console.log('✅ Added sample trading data for visualization testing (5 trades: 4 wins, 1 loss = 80% win rate)');
       this.isLoadingMetrics = false; // Stop showing loading spinner
       this.generateTradingChartData(); // Update chart with sample data
     }
