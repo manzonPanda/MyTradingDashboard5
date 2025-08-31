@@ -3146,12 +3146,12 @@ table.simple-table {
 
     .bar-wrapper {
       display: flex;
-      flex-direction: column-reverse;
+      flex-direction: column;
       align-items: center;
       gap: 0.5rem;
       flex: 1;
-      height: 100%;
       position: relative;
+      justify-content: flex-end;
     }
 
     .bar-segment {
@@ -3167,26 +3167,23 @@ table.simple-table {
         0 2px 8px rgba(0, 0, 0, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
-      .bar-label {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: white;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-        transition: all 0.3s ease;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
-
-      &:hover {
+&:hover {
         transform: scale(1.05);
         filter: brightness(1.1);
-
-        .bar-label {
-          transform: scale(1.1);
-        }
       }
+    }
+
+.bar-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
     }
 
     .bar-title {
