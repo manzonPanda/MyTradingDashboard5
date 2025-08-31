@@ -2673,68 +2673,83 @@ table.simple-table {
     gap: 0.25rem;
   }
 
-  // Best Profit/Loss Performance Card Styling
-  &.best-profit-loss {
+  // Best Profit/Loss Performance Card Styling (Compact like Avg Win vs Loss)
+  &.best-profit-loss-combined {
     .metric-content {
-      gap: 0.5rem;
+      padding: 0;
     }
 
-    .performance-section {
-      padding: 0.25rem 0;
-      border-bottom: 1px solid var(--tf-border-primary);
+    .profit-loss-layout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
 
-      &:last-of-type {
-        border-bottom: none;
-        margin-bottom: 0.25rem;
-      }
+    .profit-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.125rem;
+      flex: 1;
+    }
 
-      .performance-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.25rem;
+    .loss-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.125rem;
+      flex: 1;
+    }
 
-        .performance-label {
-          font-size: 0.75rem;
-          color: var(--tf-text-secondary);
-          font-weight: 500;
-        }
+    .profit-percentage, .loss-percentage {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+    }
 
-        .performance-value {
-          font-size: 0.9rem;
-          font-weight: 600;
+    .profit-percentage {
+      color: var(--tf-positive);
+    }
 
-          &.positive {
-            color: var(--tf-positive);
-          }
+    .loss-percentage {
+      color: var(--tf-negative);
+    }
 
-          &.negative {
-            color: var(--tf-negative);
-          }
-        }
-      }
+    .profit-amount, .loss-amount {
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
 
-      .performance-percentage {
-        font-size: 0.7rem;
-        font-weight: 500;
-        text-align: right;
+    .profit-amount {
+      color: var(--tf-positive);
+    }
 
-        &.positive {
-          color: var(--tf-positive);
-        }
+    .loss-amount {
+      color: var(--tf-negative);
+    }
 
-        &.negative {
-          color: var(--tf-negative);
-        }
-      }
+    .profit-label, .loss-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--tf-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .chart-section {
+      margin-top: 0.5rem;
     }
 
     .performance-chart {
-      height: 40px;
-      margin-top: 0.5rem;
+      height: 30px;
 
       canvas {
-        max-height: 40px;
+        max-height: 30px;
       }
     }
   }
