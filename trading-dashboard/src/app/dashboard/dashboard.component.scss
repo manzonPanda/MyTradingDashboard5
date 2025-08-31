@@ -281,8 +281,8 @@
     border-radius: 12px;
     padding: 0.6rem;
     flex: 1;
-    max-width: 180px;
-    min-width: 140px;
+    max-width: 220px;
+    min-width: 180px;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -349,6 +349,7 @@
       line-height: 1;
       margin: 0 0 0.1rem 0;
       white-space: nowrap;
+      flex-shrink: 0;
 
       &.positive {
         color: #059669;
@@ -361,8 +362,15 @@
       }
     }
 
+    .stat-value-group {
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
+      flex-wrap: nowrap;
+    }
+
     .percentage-gain {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 500;
       color: #64748b;
       opacity: 0.9;
@@ -371,6 +379,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex-shrink: 0;
     }
 
     // First stat item (Total P&L) styling
@@ -396,6 +405,11 @@
       }
 
       .stat-value {
+        color: #7c3aed;
+        text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+      }
+
+      .stat-value-group .stat-value {
         color: #7c3aed;
         text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
       }
@@ -449,6 +463,126 @@
   &:nth-child(1) { animation-delay: 0.1s; }
   &:nth-child(2) { animation-delay: 0.2s; }
   &:nth-child(3) { animation-delay: 0.3s; }
+}
+
+// Profit Factor Chart Styling
+.profit-factor-chart {
+  margin: 0.5rem 0;
+  width: 100%;
+
+  .profit-factor-svg {
+    width: 100%;
+    height: 50px;
+    cursor: pointer;
+
+    .chart-label {
+      fill: #64748b;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .break-even-label {
+      fill: #64748b;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    .level-segment {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+
+      &.poor {
+        stroke: rgba(239, 68, 68, 0.2);
+        stroke-width: 0.5;
+      }
+
+      &.concerning {
+        stroke: rgba(245, 158, 11, 0.2);
+        stroke-width: 0.5;
+      }
+
+      &.good {
+        stroke: rgba(34, 197, 94, 0.2);
+        stroke-width: 0.5;
+      }
+
+      &.excellent {
+        stroke: rgba(16, 185, 129, 0.2);
+        stroke-width: 0.5;
+      }
+
+      &.outstanding {
+        stroke: rgba(5, 150, 105, 0.2);
+        stroke-width: 0.5;
+      }
+
+      &.elite {
+        stroke: rgba(6, 95, 70, 0.2);
+        stroke-width: 0.5;
+      }
+    }
+
+    rect {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    line {
+      opacity: 0.7;
+    }
+
+    &:hover .level-segment {
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+      transform: translateY(-0.5px);
+    }
+  }
+
+  .profit-factor-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    gap: 0.25rem;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+
+      &.active {
+        opacity: 1;
+        font-weight: 600;
+      }
+
+      .legend-color {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+
+        &.poor {
+          background-color: #ef4444;
+        }
+
+        &.concerning {
+          background-color: #f59e0b;
+        }
+
+        &.good {
+          background-color: #22c55e;
+        }
+
+        &.excellent {
+          background-color: #10b981;
+        }
+      }
+
+      .legend-text {
+        font-size: 0.65rem;
+        color: #64748b;
+        white-space: nowrap;
+      }
+    }
+  }
 }
 
 // Simple Gauge Chart for Trade Win % (like reference image)
@@ -4510,7 +4644,7 @@ table.simple-table {
     }
   }
 
-  // ✅ POSITIVE R:R (0.1-1.0)
+  // �� POSITIVE R:R (0.1-1.0)
   &.rrr-positive {
     background: rgba(16, 185, 129, 0.05);
     border: 1px solid rgba(16, 185, 129, 0.15);
