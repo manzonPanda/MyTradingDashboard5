@@ -473,14 +473,14 @@
                     <div class="indicator-dot"></div>
                     <span class="indicator-text">Win</span>
                   </div>
+                  <!-- R:R ratio in the middle -->
+                  <div class="ratio-display">
+                    R:R {{ (calculateAvgWin() / mathAbs(calculateAvgLoss())) | number:'1.1-1' }}:1
+                  </div>
                   <div class="indicator loss-indicator">
                     <div class="indicator-dot"></div>
                     <span class="indicator-text">Loss</span>
                   </div>
-                </div>
-                <!-- R:R ratio below the progress bar -->
-                <div class="ratio-display">
-                  R:R {{ (calculateAvgWin() / mathAbs(calculateAvgLoss())) | number:'1.1-1' }}:1
                 </div>
               </div>
             </div>
