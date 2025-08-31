@@ -361,6 +361,12 @@
       }
     }
 
+    .stat-value-group {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
     .percentage-gain {
       font-size: 0.65rem;
       font-weight: 500;
