@@ -473,11 +473,23 @@
   .profit-factor-svg {
     width: 100%;
     height: 50px;
+    cursor: pointer;
 
     .chart-label {
       fill: #64748b;
       font-size: 10px;
       font-weight: 500;
+    }
+
+    .break-even-label {
+      fill: #64748b;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    .value-bar {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     }
 
     rect {
@@ -486,6 +498,11 @@
 
     line {
       opacity: 0.7;
+    }
+
+    &:hover .value-bar {
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+      transform: translateY(-1px);
     }
   }
 }
