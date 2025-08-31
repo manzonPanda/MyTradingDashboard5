@@ -446,11 +446,6 @@
                 <div class="win-amount">{{ calculateAvgWin() | currency:'USD':'symbol':'1.0-0' }}</div>
                 <div class="win-label">Win</div>
               </div>
-              <div class="ratio-section">
-                <div class="ratio-display">
-                  R:R {{ (calculateAvgWin() / mathAbs(calculateAvgLoss())) | number:'1.1-1' }}:1
-                </div>
-              </div>
               <div class="loss-section">
                 <div class="loss-percentage">-{{ calculateAvgLossPercentage() | number:'1.2-2' }}%</div>
                 <div class="loss-amount">{{ calculateAvgLoss() | currency:'USD':'symbol':'1.0-0' }}</div>
@@ -482,6 +477,10 @@
                     <div class="indicator-dot"></div>
                     <span class="indicator-text">Loss</span>
                   </div>
+                </div>
+                <!-- R:R ratio below the progress bar -->
+                <div class="ratio-display">
+                  R:R {{ (calculateAvgWin() / mathAbs(calculateAvgLoss())) | number:'1.1-1' }}:1
                 </div>
               </div>
             </div>
