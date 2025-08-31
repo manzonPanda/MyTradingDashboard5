@@ -543,6 +543,7 @@
                 <rect x="10" y="15" width="180" height="10" rx="5" fill="#e2e8f0" stroke="none"/>
                 <!-- Break-even line -->
                 <line x1="100" y1="10" x2="100" y2="30" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2"/>
+                <text x="100" y="8" text-anchor="middle" class="break-even-label" font-size="7" fill="#64748b">Break Even</text>
                 <!-- Value bar -->
                 <rect
                   x="10"
@@ -551,11 +552,12 @@
                   height="10"
                   rx="5"
                   [attr.fill]="calculateProfitFactor() > 1.5 ? '#10b981' : calculateProfitFactor() > 1 ? '#22c55e' : calculateProfitFactor() > 0.5 ? '#f59e0b' : '#ef4444'"
-                  stroke="none"/>
+                  stroke="none"
+                  class="value-bar"/>
                 <!-- Labels -->
-                <text x="10" y="45" text-anchor="start" class="chart-label" font-size="8">0.0</text>
-                <text x="100" y="45" text-anchor="middle" class="chart-label" font-size="8">1.0</text>
-                <text x="190" y="45" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
+                <text x="10" y="35" text-anchor="start" class="chart-label" font-size="8">0.0</text>
+                <text x="100" y="35" text-anchor="middle" class="chart-label" font-size="8">1.0</text>
+                <text x="190" y="35" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
               </svg>
             </div>
             <div class="metric-subtitle">Gross win / Gross loss</div>
