@@ -2689,27 +2689,6 @@ table.simple-table {
       align-items: center;
       gap: 0.5rem;
       width: 100%;
-
-      .ratio-display {
-        font-size: 0.65rem;
-        font-weight: 600;
-        color: var(--tf-accent-primary);
-        background: rgba(107, 70, 193, 0.08);
-        padding: 0.2rem 0.4rem;
-        border-radius: 4px;
-        border: 1px solid rgba(107, 70, 193, 0.15);
-        text-align: center;
-        transition: all 0.3s ease;
-        margin-top: 0.25rem;
-        display: inline-block;
-        min-width: auto;
-
-        &:hover {
-          background: rgba(107, 70, 193, 0.12);
-          border-color: rgba(107, 70, 193, 0.25);
-          transform: scale(1.02);
-        }
-      }
     }
 
     .win-loss-progress-bar {
