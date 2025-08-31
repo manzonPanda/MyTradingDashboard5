@@ -451,6 +451,207 @@
   &:nth-child(3) { animation-delay: 0.3s; }
 }
 
+// Gauge Chart Styling for Trade Win %
+.gauge-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+
+  .gauge-wrapper {
+    width: 120px;
+    height: 80px;
+    position: relative;
+
+    .gauge-chart {
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1); // Flip horizontally for proper arc direction
+    }
+
+    .gauge-progress {
+      transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .gauge-percentage {
+      font-size: 18px;
+      font-weight: 700;
+      fill: var(--tf-text-primary);
+      transform: scaleX(-1); // Flip text back to normal
+    }
+
+    .gauge-label {
+      font-size: 10px;
+      font-weight: 500;
+      fill: var(--tf-text-secondary);
+      transform: scaleX(-1); // Flip text back to normal
+    }
+  }
+
+  .trade-breakdown {
+    width: 100%;
+
+    .trade-counts {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+
+      .count-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        padding: 0.375rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+
+        &.wins {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
+          border: 1px solid rgba(16, 185, 129, 0.2);
+
+          &:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.08));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+          }
+
+          .count-value {
+            color: #059669;
+            font-weight: 700;
+          }
+
+          .count-label {
+            color: #065f46;
+          }
+        }
+
+        &.breakeven {
+          background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(156, 163, 175, 0.05));
+          border: 1px solid rgba(107, 114, 128, 0.2);
+
+          &:hover {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(156, 163, 175, 0.08));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2);
+          }
+
+          .count-value {
+            color: #374151;
+            font-weight: 700;
+          }
+
+          .count-label {
+            color: #4b5563;
+          }
+        }
+
+        &.losses {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(248, 113, 113, 0.05));
+          border: 1px solid rgba(239, 68, 68, 0.2);
+
+          &:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.08));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+          }
+
+          .count-value {
+            color: #dc2626;
+            font-weight: 700;
+          }
+
+          .count-label {
+            color: #991b1b;
+          }
+        }
+
+        .count-value {
+          font-size: 1.1rem;
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 0.2rem;
+        }
+
+        .count-label {
+          font-size: 0.65rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          line-height: 1;
+        }
+      }
+    }
+  }
+}
+
+// Gauge Chart Animation
+@keyframes gauge-fill {
+  from {
+    stroke-dashoffset: 220; // Full circumference
+  }
+  to {
+    stroke-dashoffset: var(--gauge-offset);
+  }
+}
+
+// Color variations for different win rates
+.gauge-excellent {
+  .gauge-progress {
+    stroke: url(#greenGradient);
+    filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.3));
+  }
+}
+
+.gauge-good {
+  .gauge-progress {
+    stroke: #3b82f6;
+    filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3));
+  }
+}
+
+.gauge-poor {
+  .gauge-progress {
+    stroke: url(#redGradient);
+    filter: drop-shadow(0 2px 8px rgba(239, 68, 68, 0.3));
+  }
+}
+
+// Pulse animation for high win rates
+.metric-card.trade-win-rate {
+  .gauge-wrapper {
+    .gauge-progress {
+      animation: gauge-glow 3s ease-in-out infinite;
+    }
+  }
+
+  // Special glow for excellent win rates (70%+)
+  &:has(.gauge-percentage:contains("7")) .gauge-progress,
+  &:has(.gauge-percentage:contains("8")) .gauge-progress,
+  &:has(.gauge-percentage:contains("9")) .gauge-progress {
+    animation: gauge-excellent-glow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes gauge-glow {
+  0%, 100% {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+  50% {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+  }
+}
+
+@keyframes gauge-excellent-glow {
+  0%, 100% {
+    filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 4px 16px rgba(16, 185, 129, 0.6));
+  }
+}
+
 // Global table styling that overrides everything
 table.modern-table,
 table.simple-table {
