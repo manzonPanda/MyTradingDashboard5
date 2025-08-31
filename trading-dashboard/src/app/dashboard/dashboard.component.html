@@ -326,11 +326,13 @@
               </div>
               <div class="stat-content">
                 <div class="stat-label">Total P&L</div>
-                <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
-                  {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
-                </div>
-                <div class="percentage-gain">
-                  {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                <div class="stat-value-group">
+                  <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
+                    {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
+                  </div>
+                  <div class="percentage-gain">
+                    {{ calculateTotalPnL() | currency:'USD':'symbol':'1.2-2' }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -535,6 +537,109 @@
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
             <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
+            <div class="profit-factor-chart">
+              <svg viewBox="0 0 200 40" class="profit-factor-svg">
+                <!-- Background bar -->
+                <rect x="10" y="15" width="180" height="10" rx="5" fill="#e2e8f0" stroke="none"/>
+
+                <!-- Level segments (each is 30px wide, 6 segments total for 0-3.0) -->
+                <!-- Poor level (0.0-0.5) -->
+                <rect
+                  x="10"
+                  y="15"
+                  width="30"
+                  height="10"
+                  rx="5"
+                  [attr.fill]="calculateProfitFactor() >= 0.5 ? '#ef4444' : (calculateProfitFactor() > 0 ? '#ef4444' : '#e2e8f0')"
+                  [attr.opacity]="calculateProfitFactor() >= 0.5 ? '0.7' : (calculateProfitFactor() > 0 ? '1' : '0.3')"
+                  stroke="none"
+                  class="level-segment poor"/>
+
+                <!-- Concerning level (0.5-1.0) -->
+                <rect
+                  x="40"
+                  y="15"
+                  width="30"
+                  height="10"
+                  [attr.fill]="calculateProfitFactor() >= 1.0 ? '#f59e0b' : (calculateProfitFactor() >= 0.5 ? '#f59e0b' : '#e2e8f0')"
+                  [attr.opacity]="calculateProfitFactor() >= 1.0 ? '0.7' : (calculateProfitFactor() >= 0.5 ? '1' : '0.3')"
+                  stroke="none"
+                  class="level-segment concerning"/>
+
+                <!-- Good level (1.0-1.5) -->
+                <rect
+                  x="70"
+                  y="15"
+                  width="30"
+                  height="10"
+                  [attr.fill]="calculateProfitFactor() >= 1.5 ? '#22c55e' : (calculateProfitFactor() >= 1.0 ? '#22c55e' : '#e2e8f0')"
+                  [attr.opacity]="calculateProfitFactor() >= 1.5 ? '0.7' : (calculateProfitFactor() >= 1.0 ? '1' : '0.3')"
+                  stroke="none"
+                  class="level-segment good"/>
+
+                <!-- Excellent level (1.5-2.0) -->
+                <rect
+                  x="100"
+                  y="15"
+                  width="30"
+                  height="10"
+                  [attr.fill]="calculateProfitFactor() >= 2.0 ? '#10b981' : (calculateProfitFactor() >= 1.5 ? '#10b981' : '#e2e8f0')"
+                  [attr.opacity]="calculateProfitFactor() >= 2.0 ? '0.7' : (calculateProfitFactor() >= 1.5 ? '1' : '0.3')"
+                  stroke="none"
+                  class="level-segment excellent"/>
+
+                <!-- Outstanding level (2.0-2.5) -->
+                <rect
+                  x="130"
+                  y="15"
+                  width="30"
+                  height="10"
+                  [attr.fill]="calculateProfitFactor() >= 2.5 ? '#059669' : (calculateProfitFactor() >= 2.0 ? '#059669' : '#e2e8f0')"
+                  [attr.opacity]="calculateProfitFactor() >= 2.5 ? '0.7' : (calculateProfitFactor() >= 2.0 ? '1' : '0.3')"
+                  stroke="none"
+                  class="level-segment outstanding"/>
+
+                <!-- Elite level (2.5-3.0+) -->
+                <rect
+                  x="160"
+                  y="15"
+                  width="30"
+                  height="10"
+                  rx="5"
+                  [attr.fill]="calculateProfitFactor() >= 2.5 ? '#065f46' : '#e2e8f0'"
+                  [attr.opacity]="calculateProfitFactor() >= 2.5 ? '1' : '0.3'"
+                  stroke="none"
+                  class="level-segment elite"/>
+
+                <!-- Break-even line -->
+                <line x1="70" y1="10" x2="70" y2="30" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2"/>
+                <text x="70" y="8" text-anchor="middle" class="break-even-label" font-size="7" fill="#64748b">Break Even</text>
+
+                <!-- Labels -->
+                <text x="10" y="35" text-anchor="start" class="chart-label" font-size="8">0.0</text>
+                <text x="70" y="35" text-anchor="middle" class="chart-label" font-size="8">1.0</text>
+                <text x="130" y="35" text-anchor="middle" class="chart-label" font-size="8">2.0</text>
+                <text x="190" y="35" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
+              </svg>
+              <div class="profit-factor-legend">
+                <div class="legend-item" [class.active]="calculateProfitFactor() < 0.5">
+                  <div class="legend-color poor"></div>
+                  <span class="legend-text">Poor</span>
+                </div>
+                <div class="legend-item" [class.active]="calculateProfitFactor() >= 0.5 && calculateProfitFactor() < 1.0">
+                  <div class="legend-color concerning"></div>
+                  <span class="legend-text">Concerning</span>
+                </div>
+                <div class="legend-item" [class.active]="calculateProfitFactor() >= 1.0 && calculateProfitFactor() < 1.5">
+                  <div class="legend-color good"></div>
+                  <span class="legend-text">Good</span>
+                </div>
+                <div class="legend-item" [class.active]="calculateProfitFactor() >= 1.5">
+                  <div class="legend-color excellent"></div>
+                  <span class="legend-text">Excellent</span>
+                </div>
+              </div>
+            </div>
             <div class="metric-subtitle">Gross win / Gross loss</div>
           </div>
         </div>
