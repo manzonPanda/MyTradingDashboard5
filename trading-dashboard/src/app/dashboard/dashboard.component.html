@@ -703,8 +703,8 @@
                   <!-- Win count (left) -->
                   <text x="30" y="95" text-anchor="middle" class="gauge-count win-count">{{ getWinCount() }}</text>
 
-                  <!-- Breakeven count (center) -->
-                  <text x="80" y="65" text-anchor="middle" class="gauge-count breakeven-count">{{ getBreakevenCount() }}</text>
+                  <!-- Win rate percentage (center) -->
+                  <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
 
                   <!-- Loss count (right) -->
                   <text x="130" y="95" text-anchor="middle" class="gauge-count loss-count">{{ getLossCount() }}</text>
