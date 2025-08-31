@@ -369,7 +369,7 @@
     }
 
     .percentage-gain {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 500;
       color: #64748b;
       opacity: 0.9;
@@ -378,6 +378,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex-shrink: 0;
     }
 
     // First stat item (Total P&L) styling
