@@ -3150,6 +3150,8 @@ table.simple-table {
       align-items: center;
       gap: 0.5rem;
       flex: 1;
+      height: 100%;
+      justify-content: flex-end;
     }
 
     .bar-segment {
@@ -3761,7 +3763,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '������ LIVE';
+              content: '���� LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;
@@ -7607,7 +7609,7 @@ table.simple-table {
 // Remove all complex animations for clean look
 
 // =============================================
-// SIMPLE & STUNNING TABLE HEADERS ���
+// SIMPLE & STUNNING TABLE HEADERS ✨
 // =============================================
 
 .header-content {
