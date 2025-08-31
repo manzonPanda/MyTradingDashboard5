@@ -2569,10 +2569,10 @@ table.simple-table {
   padding: 0.75rem;
   border: 1px solid var(--tf-border-primary);
   transition: all 0.2s ease;
-  min-height: 100px;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 
   &:hover {
     border-color: var(--tf-border-secondary);
@@ -2654,9 +2654,8 @@ table.simple-table {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60px;
+    min-height: 50px;
     gap: 0.5rem;
-    flex: 1;
 
     .loading-text {
       font-size: 0.7rem;
@@ -2673,7 +2672,6 @@ table.simple-table {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    flex: 1;
   }
 
   // Trade Win Rate Card Special Styling
