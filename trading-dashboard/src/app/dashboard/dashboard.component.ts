@@ -2942,7 +2942,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   calculateBestLoss(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
 
-    const losses = this.tableData.map(trade => parseFloat(trade.netProfit) || 0).filter(profit => profit < 0);
+    const losses = this.tableData
+      .map(trade => this.getSafeNumber(trade.netProfit))
+      .filter(profit => profit < 0);
     return losses.length > 0 ? Math.min(...losses) : 0;
   }
 
