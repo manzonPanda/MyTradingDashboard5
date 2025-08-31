@@ -612,6 +612,28 @@
       fill: var(--tf-text-primary);
       dominant-baseline: middle;
     }
+
+    .gauge-count {
+      font-size: 14px;
+      font-weight: 700;
+      dominant-baseline: middle;
+    }
+
+    .win-count {
+      fill: #10b981;
+    }
+
+    .breakeven-count {
+      fill: #6b7280;
+    }
+
+    .loss-count {
+      fill: #ef4444;
+    }
+
+    .progress-arc, .loss-arc {
+      transition: stroke-dashoffset 1s ease-in-out, stroke-dasharray 1s ease-in-out;
+    }
   }
 
   .gauge-counts {
@@ -2530,13 +2552,12 @@ table.simple-table {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    // grid-template-rows: repeat(5, 1fr);
     gap: 0.75rem;
     min-width: 300px;
 
     // When we have more than 10 cards, adjust the grid
     &:has(.metric-card:nth-child(11)) {
-      grid-template-rows: repeat(6, 1fr);
+      grid-template-rows: repeat(6, auto);
     }
   }
 }
@@ -2547,10 +2568,10 @@ table.simple-table {
   padding: 0.75rem;
   border: 1px solid var(--tf-border-primary);
   transition: all 0.2s ease;
-  min-height: 100px;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 
   &:hover {
     border-color: var(--tf-border-secondary);
@@ -2632,9 +2653,8 @@ table.simple-table {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60px;
+    min-height: 50px;
     gap: 0.5rem;
-    flex: 1;
 
     .loading-text {
       font-size: 0.7rem;
@@ -2651,7 +2671,50 @@ table.simple-table {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    flex: 1;
+  }
+
+  // Best Performance Card Styling (Compact like Trading Activity)
+  &.best-profit-loss-combined {
+    .metric-content {
+      padding: 0;
+    }
+
+    .performance-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.5rem;
+    }
+
+    .stat-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.125rem;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1;
+
+      &.positive {
+        color: var(--tf-positive);
+      }
+
+      &.negative {
+        color: var(--tf-negative);
+      }
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--tf-text-muted);
+      line-height: 1;
+    }
   }
 
   // Trade Win Rate Card Special Styling

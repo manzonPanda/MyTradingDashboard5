@@ -628,19 +628,26 @@
           </div>
         </div>
 
-        <div class="metric-card best-profit">
+        <div class="metric-card best-profit-loss-combined">
           <div class="metric-header">
-            <h3 class="metric-title">Best Profit</h3>
-            <mat-icon class="metric-icon">star</mat-icon>
+            <h3 class="metric-title">Best Performance</h3>
+            <mat-icon class="metric-icon">trending_up</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
             <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="metric-percentage positive">+{{ calculateBestProfitPercentage() | number:'1.2-2' }}%</div>
-            <div class="metric-value positive">{{ calculateBestProfit() | currency }}</div>
-            <div class="metric-subtitle">Largest single win</div>
+            <div class="performance-stats">
+              <div class="stat-group">
+                <div class="stat-value positive">{{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="stat-label">Best Profit</div>
+              </div>
+              <div class="stat-group">
+                <div class="stat-value negative">{{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="stat-label">Worst Loss</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -661,7 +668,7 @@
 
         <div class="metric-card trade-win-rate">
           <div class="metric-header">
-            <h3 class="metric-title">Trade Win %</h3>
+            <h3 class="metric-title">Trade Distribution</h3>
             <mat-icon class="metric-icon">info_outline</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
@@ -677,29 +684,38 @@
                   <path d="M 20 80 A 60 60 0 0 1 140 80"
                         fill="none"
                         stroke="#e5e7eb"
-                        stroke-width="8"
+                        stroke-width="12"
                         stroke-linecap="round"/>
 
-                  <!-- Progress arc -->
+                  <!-- Win arc (green) -->
                   <path d="M 20 80 A 60 60 0 0 1 140 80"
                         fill="none"
-                        [attr.stroke]="getSimpleGaugeColor()"
-                        stroke-width="8"
+                        stroke="#10b981"
+                        stroke-width="12"
                         stroke-linecap="round"
-                        [attr.stroke-dasharray]="getSimpleGaugeDash()"
-                        [attr.stroke-dashoffset]="getSimpleGaugeOffset()"
+                        [attr.stroke-dasharray]="getWinGaugeDash()"
+                        [attr.stroke-dashoffset]="getWinGaugeOffset()"
                         class="progress-arc"/>
 
-                  <!-- Percentage text -->
-                  <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
-                </svg>
-              </div>
+                  <!-- Loss arc (red) -->
+                  <path d="M 20 80 A 60 60 0 0 1 140 80"
+                        fill="none"
+                        stroke="#ef4444"
+                        stroke-width="12"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="getLossGaugeDash()"
+                        [attr.stroke-dashoffset]="getLossGaugeOffset()"
+                        class="loss-arc"/>
 
-              <!-- Counts below gauge -->
-              <div class="gauge-counts">
-                <span class="count-green">{{ getWinCount() }}</span>
-                <span class="count-gray">{{ getBreakevenCount() }}</span>
-                <span class="count-red">{{ getLossCount() }}</span>
+                  <!-- Win count (left) -->
+                  <text x="30" y="95" text-anchor="middle" class="gauge-count win-count">{{ getWinCount() }}</text>
+
+                  <!-- Win rate percentage (center) -->
+                  <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
+
+                  <!-- Loss count (right) -->
+                  <text x="130" y="95" text-anchor="middle" class="gauge-count loss-count">{{ getLossCount() }}</text>
+                </svg>
               </div>
             </div>
           </div>
