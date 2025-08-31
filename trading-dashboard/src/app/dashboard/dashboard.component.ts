@@ -560,7 +560,7 @@ mt5AccountInfo: AccountSettings = {
     const winRate = this.calculateWinRate();
     if (winRate >= 70) return 'url(#greenGradient)'; // 70%+ = green gradient
     if (winRate >= 50) return '#3b82f6'; // 50-70% = blue
-    return 'url(#redGradient)'; // <50% = red gradient
+    return 'url(#redGradient)'; // <50% = red gradient (including 0%)
   }
 
   getGaugeStrokeDash(): string {
@@ -673,7 +673,7 @@ async ngOnInit() {
       this.http.get("http://localhost:3000/api/news")
     );
     this.newsData = Array.isArray(news) ? news : [];
-    console.log("📈 Forex Factory News Data:", this.newsData);
+    console.log("��� Forex Factory News Data:", this.newsData);
 
     // Schedule news reminders if FCM is ready
     if (this.newsData.length > 0) {
