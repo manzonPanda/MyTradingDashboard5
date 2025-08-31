@@ -537,6 +537,27 @@
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
             <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
+            <div class="profit-factor-chart">
+              <svg viewBox="0 0 200 40" class="profit-factor-svg">
+                <!-- Background bar -->
+                <rect x="10" y="15" width="180" height="10" rx="5" fill="#e2e8f0" stroke="none"/>
+                <!-- Break-even line -->
+                <line x1="100" y1="10" x2="100" y2="30" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2"/>
+                <!-- Value bar -->
+                <rect
+                  x="10"
+                  y="15"
+                  [attr.width]="Math.min(180, Math.max(5, (calculateProfitFactor() / 3) * 180))"
+                  height="10"
+                  rx="5"
+                  [attr.fill]="calculateProfitFactor() > 1.5 ? '#10b981' : calculateProfitFactor() > 1 ? '#22c55e' : calculateProfitFactor() > 0.5 ? '#f59e0b' : '#ef4444'"
+                  stroke="none"/>
+                <!-- Labels -->
+                <text x="10" y="45" text-anchor="start" class="chart-label" font-size="8">0.0</text>
+                <text x="100" y="45" text-anchor="middle" class="chart-label" font-size="8">1.0</text>
+                <text x="190" y="45" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
+              </svg>
+            </div>
             <div class="metric-subtitle">Gross win / Gross loss</div>
           </div>
         </div>
