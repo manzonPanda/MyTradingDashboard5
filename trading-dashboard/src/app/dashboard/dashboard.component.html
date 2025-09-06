@@ -673,18 +673,18 @@
                 <div class="chart-container">
                   <div class="chart-bars">
                     <div class="bar-wrapper">
-                      <div class="bar-segment duration-overall-bar"
+                      <div class="bar-segment duration-overall-bar" [style.width.%]="70"
                            [style.height.%]="getDurationBarHeight(calculateAvgTradeDurationMinutes(), calculateAvgTradeDurationMinutes(), calculateAvgLosingTradeDurationMinutes())">
                         <span class="bar-label">{{ calculateAvgTradeDuration() }}</span>
                       </div>
-                      <div class="bar-title">Avg. Duration</div>
+                      <div class="bar-title">Win</div>
                     </div>
                     <div class="bar-wrapper">
-                      <div class="bar-segment duration-losing-bar"
+                      <div class="bar-segment duration-losing-bar" [style.width.%]="70"
                            [style.height.%]="getDurationBarHeight(calculateAvgLosingTradeDurationMinutes(), calculateAvgTradeDurationMinutes(), calculateAvgLosingTradeDurationMinutes())">
                         <span class="bar-label">{{ calculateAvgLosingTradeDuration() }}</span>
                       </div>
-                      <div class="bar-title">Losing Trade Avg. Duration</div>
+                      <div class="bar-title">Lose</div>
                     </div>
                   </div>
                 </div>
