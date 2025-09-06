@@ -3078,8 +3078,9 @@ table.simple-table {
     }
   }
 
-  // Combined Trading Activity Card Special Styling
-  &.trading-activity-combined {
+  // Combined Trading Activity Card Special Styling (shared with Avg Trade Duration)
+  &.trading-activity-combined,
+  &.avg-trade-duration {
     .metric-content {
       padding: 0;
     }
@@ -3276,10 +3277,80 @@ table.simple-table {
       }
     }
 
+    .duration-overall-bar {
+      background: linear-gradient(180deg, #6366f1, #8b5cf6);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(255, 255, 255, 0.1) 100%
+        );
+        animation: shimmer-vertical 3s infinite;
+        border-radius: 6px;
+      }
+    }
+
+    .duration-losing-bar {
+      background: linear-gradient(180deg, #ef4444, #f87171);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(255, 255, 255, 0.1) 100%
+        );
+        animation: shimmer-vertical 3s infinite 1.5s;
+        border-radius: 6px;
+      }
+    }
+
     .chart-metrics {
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    // Specific centering for Avg Trade Duration card (two bars)
+    &.avg-trade-duration {
+      .metric-content {
+        align-items: center !important;
+      }
+      .activity-layout {
+        justify-content: center !important;
+        align-self: center !important;
+        width: auto !important;
+        padding: 0 !important;
+      }
+      .activity-chart {
+        flex: 0 0 auto !important;
+        width: auto !important;
+      }
+      .chart-container {
+        width: auto !important;
+        margin: 0 auto !important;
+      }
+      .chart-bars {
+        justify-content: center !important;
+        gap: 1rem !important;
+        width: auto !important;
+        margin: 0 auto !important;
+      }
+      .bar-wrapper {
+        flex: 0 0 auto !important;
+      }
     }
 
     .metric-ratio {
