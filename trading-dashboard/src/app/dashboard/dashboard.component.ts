@@ -1213,7 +1213,7 @@ onUpload(): void {
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
-          console.log("📊 Using MT5 data only:", this.tableData.length);
+          console.log("�� Using MT5 data only:", this.tableData.length);
         } else {
           this.tableData = [];
         }
@@ -2753,6 +2753,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     const percentage = (totalPnL / startingBalance) * 100;
     return parseFloat(percentage.toFixed(2));
+  }
+
+  private getDistinctTradeDaysCount(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    const validDates = this.tableData
+      .map(t => new Date(t.openDate || ''))
+      .filter(d => d instanceof Date && !isNaN(d.getTime()))
+      .map(d => d.toDateString());
+    return new Set(validDates).size;
+  }
+
+  calculateTradesPerDayAvg(): number {
+    const days = this.getDistinctTradeDaysCount();
+    const trades = this.getTotalTrades();
+    if (days === 0 || trades === 0) return 0;
+    return trades / days;
   }
 
   calculatePnLChangePercent(): string {
