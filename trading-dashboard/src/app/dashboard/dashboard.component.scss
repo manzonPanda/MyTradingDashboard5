@@ -3325,15 +3325,24 @@ table.simple-table {
 
     // Specific centering for Avg Trade Duration card (two bars)
     &.avg-trade-duration {
+      .metric-content {
+        align-items: center;
+      }
       .activity-layout {
         justify-content: center;
+        width: auto;
+        padding: 0; // avoid left padding shifting content
       }
       .activity-chart {
         flex: 0 0 auto;
       }
+      .chart-container {
+        width: auto;
+      }
       .chart-bars {
         justify-content: center;
         gap: 1rem;
+        width: auto;
       }
       .bar-wrapper {
         flex: 0 0 auto;
