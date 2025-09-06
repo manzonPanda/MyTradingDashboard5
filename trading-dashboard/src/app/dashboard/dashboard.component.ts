@@ -1213,7 +1213,7 @@ onUpload(): void {
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
-          console.log("�� Using MT5 data only:", this.tableData.length);
+          console.log("📊 Using MT5 data only:", this.tableData.length);
         } else {
           this.tableData = [];
         }
@@ -1901,7 +1901,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           startCursor = proxyResponse.next_cursor || null;
 
           if (hasMore && startCursor) {
-            console.log(`🔄 More data available, fetching next page...`);
+            console.log(`���� More data available, fetching next page...`);
           } else {
             console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
           }
@@ -2804,23 +2804,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAvgTradeDuration(): string {
-    if (!this.tableData || this.tableData.length === 0) return '0min';
+    const minutes = this.calculateAvgTradeDurationMinutes();
+    return this.formatMinutesToDuration(minutes);
+  }
 
+  calculateAvgTradeDurationMinutes(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
     let totalMinutes = 0;
     let validTrades = 0;
 
     this.tableData.forEach(trade => {
-      // Only calculate for closed trades (not live trades with '-' or empty close dates)
-      if (trade.openDate && trade.closeDate &&
-          trade.closeDate !== '-' &&
-          trade.closeDate !== '' &&
-          trade.closeDate.trim() !== '') {
-
-        // Use the existing calculateHoldTime function logic
+      if (trade.openDate && trade.closeDate && trade.closeDate !== '-' && trade.closeDate.trim() !== '') {
         const holdTimeStr = this.calculateHoldTime(trade.openDate, trade.closeDate);
-
         if (holdTimeStr && holdTimeStr !== '') {
-          // Parse the hold time string to extract minutes
           const minutes = this.parseHoldTimeToMinutes(holdTimeStr);
           if (minutes > 0) {
             totalMinutes += minutes;
@@ -2830,13 +2826,48 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
     });
 
-    if (validTrades === 0) return 'No data';
+    if (validTrades === 0) return 0;
+    return Math.floor(totalMinutes / validTrades);
+  }
 
-    const avgMinutes = Math.floor(totalMinutes / validTrades);
+  calculateAvgLosingTradeDurationMinutes(): number {
+    if (!this.tableData || this.tableData.length === 0) return 0;
+    let totalMinutes = 0;
+    let validTrades = 0;
+
+    this.tableData.forEach(trade => {
+      const netProfit = parseFloat(trade.netProfit) || 0;
+      if (netProfit < 0 && trade.openDate && trade.closeDate && trade.closeDate !== '-' && trade.closeDate.trim() !== '') {
+        const holdTimeStr = this.calculateHoldTime(trade.openDate, trade.closeDate);
+        if (holdTimeStr && holdTimeStr !== '') {
+          const minutes = this.parseHoldTimeToMinutes(holdTimeStr);
+          if (minutes > 0) {
+            totalMinutes += minutes;
+            validTrades++;
+          }
+        }
+      }
+    });
+
+    if (validTrades === 0) return 0;
+    return Math.floor(totalMinutes / validTrades);
+  }
+
+  calculateAvgLosingTradeDuration(): string {
+    const minutes = this.calculateAvgLosingTradeDurationMinutes();
+    return this.formatMinutesToDuration(minutes) || 'No data';
+  }
+
+  getDurationBarHeight(valueMinutes: number, overallMinutes: number, losingMinutes: number): number {
+    const maxVal = Math.max(overallMinutes || 0, losingMinutes || 0);
+    if (!valueMinutes || maxVal === 0) return 20;
+    return Math.max(20, (valueMinutes / maxVal) * 80);
+  }
+
+  private formatMinutesToDuration(avgMinutes: number): string {
+    if (!avgMinutes || avgMinutes <= 0) return '0min';
     const hours = Math.floor(avgMinutes / 60);
     const remainingMinutes = avgMinutes % 60;
-
-    // Format like the existing calculateHoldTime function
     if (hours > 0 && remainingMinutes > 0) {
       return `${hours}hrs ${remainingMinutes}min`;
     } else if (hours > 0) {
@@ -4783,7 +4814,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Step 3: Wait for DOM cleanup
       setTimeout(() => {
         // Step 4: Manually rebuild table HTML if needed
-        console.log('🔨 Rebuilding table structure...');
+        console.log('��� Rebuilding table structure...');
 
         // Step 5: Reinitialize with fresh DataTable
         setTimeout(() => {
