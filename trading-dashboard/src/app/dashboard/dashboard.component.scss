@@ -3089,7 +3089,6 @@ table.simple-table {
       align-items: center;
       gap: 1rem;
       width: 100%;
-      padding: 0.5rem;
     }
 
     .activity-stats {
@@ -3141,7 +3140,6 @@ table.simple-table {
     .chart-bars {
       display: flex;
       align-items: flex-end;
-      padding: 0.5rem;
       height: 80px; // fixed bar drawing area
       overflow: visible; // allow titles to render below the bar area
     }
