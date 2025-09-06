@@ -3326,29 +3326,30 @@ table.simple-table {
     // Specific centering for Avg Trade Duration card (two bars)
     &.avg-trade-duration {
       .metric-content {
-        align-items: center;
+        align-items: center !important;
       }
       .activity-layout {
-        justify-content: center;
-        align-self: center; // prevent stretch and center within column
-        width: auto;
-        padding: 0; // avoid left padding shifting content
+        justify-content: center !important;
+        align-self: center !important;
+        width: auto !important;
+        padding: 0 !important;
       }
       .activity-chart {
-        flex: 0 0 auto;
+        flex: 0 0 auto !important;
+        width: auto !important;
       }
       .chart-container {
-        width: auto;
-        margin: 0 auto;
+        width: auto !important;
+        margin: 0 auto !important;
       }
       .chart-bars {
-        justify-content: center;
-        gap: 1rem;
-        width: auto;
-        margin: 0 auto;
+        justify-content: center !important;
+        gap: 1rem !important;
+        width: auto !important;
+        margin: 0 auto !important;
       }
       .bar-wrapper {
-        flex: 0 0 auto;
+        flex: 0 0 auto !important;
       }
     }
 
