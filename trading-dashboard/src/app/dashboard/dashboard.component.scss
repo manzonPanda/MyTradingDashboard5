@@ -3251,6 +3251,29 @@ table.simple-table {
       }
     }
 
+    .avg-bar {
+      background: linear-gradient(180deg, #06b6d4, #22d3ee);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(255, 255, 255, 0.1) 100%
+        );
+        animation: shimmer-vertical 3s infinite 2s;
+        border-radius: 6px;
+      }
+    }
+
     .chart-metrics {
       display: flex;
       justify-content: center;
