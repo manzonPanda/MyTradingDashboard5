@@ -445,6 +445,13 @@
                       </div>
                       <div class="bar-title">Total Trades</div>
                     </div>
+                    <div class="bar-wrapper">
+                      <div class="bar-segment avg-bar"
+                           [style.height.%]="calculateTradesPerDayAvg() > 0 ? Math.max(20, (calculateTradesPerDayAvg() / Math.max(calculateDaysSinceFirstTrade(), getTotalTrades())) * 80) : 20">
+                        <span class="bar-label">{{ calculateTradesPerDayAvg() | number:'1.1-1' }}</span>
+                      </div>
+                      <div class="bar-title">Trades/Day (Avg.)</div>
+                    </div>
                   </div>
                 </div>
               </div>
