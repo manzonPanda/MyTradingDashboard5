@@ -3323,6 +3323,23 @@ table.simple-table {
       align-items: center;
     }
 
+    // Specific centering for Avg Trade Duration card (two bars)
+    &.avg-trade-duration {
+      .activity-layout {
+        justify-content: center;
+      }
+      .activity-chart {
+        flex: 0 0 auto;
+      }
+      .chart-bars {
+        justify-content: center;
+        gap: 1rem;
+      }
+      .bar-wrapper {
+        flex: 0 0 auto;
+      }
+    }
+
     .metric-ratio {
       font-size: 0.7rem;
       font-weight: 700;
