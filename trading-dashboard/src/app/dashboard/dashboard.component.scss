@@ -3135,16 +3135,14 @@ table.simple-table {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      padding-bottom: 0.5rem; // titles now flow normally, less extra space needed
+      padding-bottom: 1.25rem; // reserve space for titles under bars
     }
 
     .chart-bars {
       display: flex;
       align-items: flex-end;
-      justify-content: space-around; // distribute evenly
-      gap: 1rem; // add spacing between bars
       padding: 0.5rem;
-      height: 90px; // slightly taller to reduce collisions
+      height: 80px; // fixed bar drawing area
       overflow: visible; // allow titles to render below the bar area
     }
 
@@ -3154,7 +3152,6 @@ table.simple-table {
       align-items: center;
       gap: 0.5rem;
       flex: 1;
-      min-width: 90px; // ensure room for labels
       position: relative;
       justify-content: flex-end;
       height: 100%; // make bar-wrapper fill the bar area for consistent positioning
@@ -3200,11 +3197,13 @@ table.simple-table {
       text-transform: uppercase;
       letter-spacing: 0.05em;
       text-align: center;
-      margin-top: 8px; // below the bar
-      position: static; // participate in normal flow to avoid overlap
-      transform: none;
-      white-space: normal; // allow wrapping on small widths
-      line-height: 1.1;
+      position: absolute; // below the bar but not affecting layout
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 72px; // fixed width to allow wrapping under each bar
+      white-space: normal; // wrap text if needed
+      line-height: 1.15;
       pointer-events: none;
     }
 
