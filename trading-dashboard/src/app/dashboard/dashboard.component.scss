@@ -3078,8 +3078,9 @@ table.simple-table {
     }
   }
 
-  // Combined Trading Activity Card Special Styling
-  &.trading-activity-combined {
+  // Combined Trading Activity Card Special Styling (shared with Avg Trade Duration)
+  &.trading-activity-combined,
+  &.avg-trade-duration {
     .metric-content {
       padding: 0;
     }
