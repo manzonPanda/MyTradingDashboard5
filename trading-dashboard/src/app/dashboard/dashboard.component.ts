@@ -616,7 +616,6 @@ mt5AccountInfo: AccountSettings = {
     return circumference * progress;
   }
 
-  // Test data removed - gauge chart now works with real trading data
   private async loadTradingSettings(): Promise<void> {
     const body = {
       "page_size": 1,
@@ -1275,8 +1274,11 @@ isRowAlreadySelected(row: any): boolean {
         res.results.map((prop: any) => {
           const d = new Date(prop.properties.Date.date.start);
           const dayOfWeek = d.getDay();
+          const hours = d.getHours();
+          const minutes = d.getMinutes();
           // Skip weekends (0 = Sunday, 6 = Saturday)
-          if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+          // AND exclude the notion entry if hh:mm = 00:00
+          if (dayOfWeek !== 0 && dayOfWeek !== 6 && hours !== 0 && minutes !== 0)  {
             this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
             tradeId: prop.id });
           }
@@ -1286,7 +1288,13 @@ isRowAlreadySelected(row: any): boolean {
 
         for (const trade of this.trades) {
           // console.log("trade",trade)
-          let relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
+          let relationId
+          try {
+             relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
+            
+          } catch (error) {
+            console.log("ERROR patching:",error)
+          }
           const body = {
             "payload": {
               "properties": {
@@ -1762,11 +1770,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     let completed = 0;
     //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
     const allMatched = this.tableData.every(item => item.status === 'Matched');
-    const propFirmAccountValue = 5000; //change this in the future to read the excel file
+    // const propFirmAccountValue = 5000; //change this in the future to read the excel file
     if (allMatched) {
       console.log('✅ All trades are matched.');
       for (const trade of this.tableData) {
-          const percentPnLTemp = (parseFloat(trade.netProfit) / propFirmAccountValue) * 100; // Assuming 5000 is the base value for PnL percentage calculation
+          const percentPnLTemp = (parseFloat(trade.netProfit) / this.mt5AccountInfo.startingBalance) * 100; // Assuming 5000 is the base value for PnL percentage calculation
           const percentPnL = parseFloat(percentPnLTemp.toFixed(2)); // -0.23
           const body = {
             "payload": {
