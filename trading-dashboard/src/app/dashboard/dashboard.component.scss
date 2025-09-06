@@ -3330,6 +3330,7 @@ table.simple-table {
       }
       .activity-layout {
         justify-content: center;
+        align-self: center; // prevent stretch and center within column
         width: auto;
         padding: 0; // avoid left padding shifting content
       }
@@ -3338,11 +3339,13 @@ table.simple-table {
       }
       .chart-container {
         width: auto;
+        margin: 0 auto;
       }
       .chart-bars {
         justify-content: center;
         gap: 1rem;
         width: auto;
+        margin: 0 auto;
       }
       .bar-wrapper {
         flex: 0 0 auto;
