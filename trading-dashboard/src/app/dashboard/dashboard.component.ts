@@ -4,6 +4,7 @@ import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule } from "@angular/common";
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
@@ -125,6 +126,7 @@ interface NotionPerformanceData {
     MatProgressBarModule,
     MatButtonModule,
     MatIconModule,
+    MatButtonToggleModule,
     FormsModule,
     MatDatepickerModule,
     MatFormFieldModule,
@@ -323,6 +325,7 @@ mt5AccountInfo: AccountSettings = {
   // Chart configuration for beautiful trading visualization
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
+  public isDailyChart: boolean = false;
   public chartData: any = {
     labels: [],
     datasets: [
@@ -431,12 +434,12 @@ mt5AccountInfo: AccountSettings = {
           title: function(context: any) {
             return context[0].label;
           },
-          label: function(context: any) {
+          label: (context: any) => {
             const value = context.parsed.y;
             const index = context.dataIndex;
             const data = context.dataset.data;
+            const changeLabel = this.isDailyChart ? 'Day P&L' : 'Trade P&L';
 
-            // Handle Account Balance tooltip
             if (index === 0) {
               return `Starting Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else {
@@ -445,7 +448,7 @@ mt5AccountInfo: AccountSettings = {
               const changeText = change >= 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`;
               return [
                 `Balance: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                `Trade P&L: ${changeText}`
+                `${changeLabel}: ${changeText}`
               ];
             }
           }
@@ -2000,32 +2003,58 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     pnlData.push(0);
     drawdownData.push(0);
 
-    // Process each trade for chart progression
-    sortedTrades.forEach((trade, index) => {
-      const tradeProfit = parseFloat(trade.netProfit || '0');
-      currentBalance += tradeProfit;
-      cumulativePnL += tradeProfit;
-
-      // Update peak for drawdown calculation
-      if (currentBalance > peakBalance) {
-        peakBalance = currentBalance;
-      }
-
-      // Calculate drawdown percentage
-      const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
-
-      // Format date for label
-      const tradeDate = new Date(trade.openDate || '');
-      const dateLabel = tradeDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
+    if (this.isDailyChart) {
+      const dayMap = new Map<string, { pnl: number; date: Date }>();
+      sortedTrades.forEach(trade => {
+        const d = new Date(trade.openDate || '');
+        if (isNaN(d.getTime())) return;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const pnl = parseFloat(trade.netProfit || '0');
+        if (!dayMap.has(key)) {
+          dayMap.set(key, { pnl: pnl, date: new Date(d.getFullYear(), d.getMonth(), d.getDate()) });
+        } else {
+          const prev = dayMap.get(key)!;
+          prev.pnl += pnl;
+        }
       });
 
-      labels.push(`${dateLabel} #${index + 1}`);
-      balanceData.push(currentBalance);
-      pnlData.push(cumulativePnL);
-      drawdownData.push(drawdown);
-    });
+      const daily = Array.from(dayMap.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+      daily.forEach(day => {
+        currentBalance += day.pnl;
+        cumulativePnL += day.pnl;
+        if (currentBalance > peakBalance) peakBalance = currentBalance;
+        const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
+        const dateLabel = day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        labels.push(`${dateLabel}`);
+        balanceData.push(currentBalance);
+        pnlData.push(cumulativePnL);
+        drawdownData.push(drawdown);
+      });
+    } else {
+      // Process each trade for chart progression
+      sortedTrades.forEach((trade, index) => {
+        const tradeProfit = parseFloat(trade.netProfit || '0');
+        currentBalance += tradeProfit;
+        cumulativePnL += tradeProfit;
+
+        if (currentBalance > peakBalance) {
+          peakBalance = currentBalance;
+        }
+
+        const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
+
+        const tradeDate = new Date(trade.openDate || '');
+        const dateLabel = tradeDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+
+        labels.push(`${dateLabel} #${index + 1}`);
+        balanceData.push(currentBalance);
+        pnlData.push(cumulativePnL);
+        drawdownData.push(drawdown);
+      });
+    }
 
     // If no trades, show empty chart with starting balance and reference lines
     if (sortedTrades.length === 0) {

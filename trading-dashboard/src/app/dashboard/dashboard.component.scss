@@ -2282,6 +2282,46 @@ table.simple-table {
           }
         }
 
+        .chart-title .chart-mode-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          margin-left: 0.5rem;
+
+          .mat-button-toggle-group {
+            border-radius: 999px;
+            background: var(--tf-bg-secondary);
+            border: 1px solid var(--tf-border-primary);
+            overflow: hidden;
+            height: 28px;
+          }
+
+          .mat-button-toggle {
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-height: 28px;
+            line-height: 28px;
+            color: var(--tf-text-secondary);
+          }
+
+          .mat-button-toggle .mat-button-toggle-label-content {
+            padding: 0 8px;
+            line-height: 28px;
+          }
+
+          .mat-button-toggle-checked {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+          }
+
+          .mat-button-toggle .mat-icon {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+            margin-right: 4px;
+          }
+        }
+
         .chart-subtitle {
           font-size: 0.875rem;
           color: var(--tf-text-secondary);
