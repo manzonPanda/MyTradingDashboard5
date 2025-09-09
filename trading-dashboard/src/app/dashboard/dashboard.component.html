@@ -355,7 +355,8 @@
                   <mat-button-toggle-group
                     name="chartMode"
                     [value]="isDailyChart ? 'daily' : 'trades'"
-                    (valueChange)="isDailyChart = $event === 'daily'; generateTradingChartData()"
+                    (change)="onChartModeChanged($event.value)"
+                    (valueChange)="onChartModeChanged($event)"
                     aria-label="Chart mode toggle">
                     <mat-button-toggle value="trades">
                       <mat-icon>scatter_plot</mat-icon>
