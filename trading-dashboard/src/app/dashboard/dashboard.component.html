@@ -358,11 +358,11 @@
                     (change)="onChartModeChanged($event.value)"
                     (valueChange)="onChartModeChanged($event)"
                     aria-label="Chart mode toggle">
-                    <mat-button-toggle value="trades">
+                    <mat-button-toggle value="trades" (click)="onChartModeChanged('trades')">
                       <mat-icon>scatter_plot</mat-icon>
                       Trades
                     </mat-button-toggle>
-                    <mat-button-toggle value="daily">
+                    <mat-button-toggle value="daily" (click)="onChartModeChanged('daily')">
                       <mat-icon>calendar_today</mat-icon>
                       Daily
                     </mat-button-toggle>
