@@ -395,6 +395,14 @@
           </div>
         </div>
 
+        <div class="chart-view-toggle">
+          <span class="mode-label">Dots:</span>
+          <mat-slide-toggle [(ngModel)]="isDailyChart" (change)="generateTradingChartData()" color="primary">
+            Daily
+          </mat-slide-toggle>
+          <span class="mode-hint">Per-trade when off</span>
+        </div>
+
         <div class="chart-canvas-wrapper">
           <!-- Loading spinner when data is not ready -->
           <div *ngIf="isLoadingMT5Data || !chartData?.labels?.length" class="chart-loading-overlay">
