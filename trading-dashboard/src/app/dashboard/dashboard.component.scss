@@ -450,6 +450,12 @@
       background: linear-gradient(90deg, #06b6d4, #3b82f6);
     }
 
+    // Allow enough space for both toggles
+    flex: 0 0 auto;
+    min-width: 260px;
+    max-width: 340px;
+    overflow: visible;
+
     .stat-icon {
       background: linear-gradient(135deg, #ecfeff, #dbeafe);
       border: 2px solid rgba(59, 130, 246, 0.2);
@@ -459,6 +465,7 @@
     .mode-toggle-group {
       display: flex;
       align-items: center;
+      flex-wrap: nowrap;
 
       .mat-button-toggle-group {
         border-radius: 999px;
@@ -466,6 +473,7 @@
         border: 1px solid var(--tf-border-primary);
         overflow: hidden;
         height: 28px;
+        white-space: nowrap;
       }
 
       .mat-button-toggle {
