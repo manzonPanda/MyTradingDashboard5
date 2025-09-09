@@ -317,8 +317,21 @@
             <h3 class="chart-title">
               <mat-icon class="chart-icon">trending_up</mat-icon>
               Trading Performance Dashboard
-              <span class="chart-mode-toggle">
-                <mat-slide-toggle [(ngModel)]="isDailyChart" (change)="generateTradingChartData()" color="primary">Daily</mat-slide-toggle>
+              <span class="chart-mode-toggle" aria-label="Chart mode">
+                <mat-button-toggle-group
+                  name="chartMode"
+                  [value]="isDailyChart ? 'daily' : 'trades'"
+                  (valueChange)="isDailyChart = $event === 'daily'; generateTradingChartData()"
+                  aria-label="Chart mode toggle">
+                  <mat-button-toggle value="trades">
+                    <mat-icon>scatter_plot</mat-icon>
+                    Trades
+                  </mat-button-toggle>
+                  <mat-button-toggle value="daily">
+                    <mat-icon>calendar_today</mat-icon>
+                    Daily
+                  </mat-button-toggle>
+                </mat-button-toggle-group>
               </span>
             </h3>
           </div>
