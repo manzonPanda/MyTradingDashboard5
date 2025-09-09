@@ -2293,13 +2293,20 @@ table.simple-table {
             background: var(--tf-bg-secondary);
             border: 1px solid var(--tf-border-primary);
             overflow: hidden;
+            height: 28px;
           }
 
           .mat-button-toggle {
             font-size: 0.75rem;
             font-weight: 600;
-            padding: 0.2rem 0.6rem;
+            min-height: 28px;
+            line-height: 28px;
             color: var(--tf-text-secondary);
+          }
+
+          .mat-button-toggle .mat-button-toggle-label-content {
+            padding: 0 8px;
+            line-height: 28px;
           }
 
           .mat-button-toggle-checked {
@@ -2308,10 +2315,10 @@ table.simple-table {
           }
 
           .mat-button-toggle .mat-icon {
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
-            margin-right: 6px;
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+            margin-right: 4px;
           }
         }
 
