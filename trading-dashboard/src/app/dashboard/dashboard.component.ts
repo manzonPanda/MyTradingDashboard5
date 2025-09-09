@@ -4,6 +4,7 @@ import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule } from "@angular/common";
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
@@ -125,6 +126,7 @@ interface NotionPerformanceData {
     MatProgressBarModule,
     MatButtonModule,
     MatIconModule,
+    MatButtonToggleModule,
     FormsModule,
     MatDatepickerModule,
     MatFormFieldModule,
