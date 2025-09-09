@@ -345,13 +345,13 @@
                 <div class="stat-value">{{ (mt5AccountInfo.startingBalance) | currency }}</div>
               </div>
             </div>
-            <div class="stat-item chart-mode-card">
+            <div class="stat-item chart-mode-card" (click)="toggleChartMode()">
               <div class="stat-icon">
                 <mat-icon>swap_horiz</mat-icon>
               </div>
               <div class="stat-content">
                 <div class="stat-label">Chart Mode</div>
-                <div class="mode-toggle-group" aria-label="Chart mode">
+                <div class="mode-toggle-group" aria-label="Chart mode" (click)="$event.stopPropagation()">
                   <mat-button-toggle-group
                     name="chartMode"
                     [value]="isDailyChart ? 'daily' : 'trades'"
