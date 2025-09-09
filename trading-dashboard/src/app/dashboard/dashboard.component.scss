@@ -2287,6 +2287,32 @@ table.simple-table {
           align-items: center;
           gap: 0.4rem;
           margin-left: 0.5rem;
+
+          .mat-button-toggle-group {
+            border-radius: 999px;
+            background: var(--tf-bg-secondary);
+            border: 1px solid var(--tf-border-primary);
+            overflow: hidden;
+          }
+
+          .mat-button-toggle {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            color: var(--tf-text-secondary);
+          }
+
+          .mat-button-toggle-checked {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+          }
+
+          .mat-button-toggle .mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+          }
         }
 
         .chart-subtitle {
