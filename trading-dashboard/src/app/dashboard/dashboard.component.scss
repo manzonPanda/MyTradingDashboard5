@@ -450,6 +450,10 @@
       background: linear-gradient(90deg, #06b6d4, #3b82f6);
     }
 
+    // Ensure all children are interactive
+    pointer-events: auto;
+    * { pointer-events: auto; }
+
     // Allow enough space for both toggles
     flex: 0 0 auto;
     min-width: 260px;
@@ -966,7 +970,7 @@ table.simple-table {
   padding: 0.2rem 0.5rem;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   height: 20vh;
   overflow: hidden;
 
