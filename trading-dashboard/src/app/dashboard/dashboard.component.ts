@@ -207,6 +207,16 @@ mt5AccountInfo: AccountSettings = {
   currentPage: number = 1;
   pageSize: number = 10;
 
+  onChartModeChanged(mode: string): void {
+    this.isDailyChart = mode === 'daily';
+    this.generateTradingChartData();
+  }
+
+  toggleChartMode(): void {
+    const next = this.isDailyChart ? 'trades' : 'daily';
+    this.onChartModeChanged(next);
+  }
+
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
 
