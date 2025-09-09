@@ -2292,6 +2292,9 @@ table.simple-table {
       justify-content: space-between;
       align-items: center;
       padding: 0.2rem;
+      position: relative;
+      z-index: 20;
+      pointer-events: auto;
       background: linear-gradient(135deg,
         rgba(16, 185, 129, 0.05),
         rgba(59, 130, 246, 0.03),
@@ -2386,6 +2389,9 @@ table.simple-table {
         display: flex;
         // gap: 2rem;
         align-items: center;
+        position: relative;
+        z-index: 21;
+        pointer-events: auto;
 
         .stat-item {
           display: flex;
