@@ -2282,6 +2282,13 @@ table.simple-table {
           }
         }
 
+        .chart-title .chart-mode-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          margin-left: 0.5rem;
+        }
+
         .chart-subtitle {
           font-size: 0.875rem;
           color: var(--tf-text-secondary);
