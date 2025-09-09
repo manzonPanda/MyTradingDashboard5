@@ -443,6 +443,57 @@
         text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
       }
   }
+
+  // Chart Mode card styling
+  .stat-item.chart-mode-card {
+    &::before {
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+    }
+
+    .stat-icon {
+      background: linear-gradient(135deg, #ecfeff, #dbeafe);
+      border: 2px solid rgba(59, 130, 246, 0.2);
+      color: #0ea5e9;
+    }
+
+    .mode-toggle-group {
+      display: flex;
+      align-items: center;
+
+      .mat-button-toggle-group {
+        border-radius: 999px;
+        background: var(--tf-bg-secondary);
+        border: 1px solid var(--tf-border-primary);
+        overflow: hidden;
+        height: 28px;
+      }
+
+      .mat-button-toggle {
+        font-size: 0.7rem;
+        font-weight: 600;
+        min-height: 28px;
+        line-height: 28px;
+        color: var(--tf-text-secondary);
+      }
+
+      .mat-button-toggle .mat-button-toggle-label-content {
+        padding: 0 10px;
+        line-height: 28px;
+      }
+
+      .mat-button-toggle-checked {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+      }
+
+      .mat-button-toggle .mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+      }
+    }
+  }
 }
 
 // Animation for initial load
