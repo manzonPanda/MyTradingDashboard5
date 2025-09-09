@@ -317,22 +317,6 @@
             <h3 class="chart-title">
               <mat-icon class="chart-icon">trending_up</mat-icon>
               Trading Performance Dashboard
-              <span class="chart-mode-toggle" aria-label="Chart mode">
-                <mat-button-toggle-group
-                  name="chartMode"
-                  [value]="isDailyChart ? 'daily' : 'trades'"
-                  (valueChange)="isDailyChart = $event === 'daily'; generateTradingChartData()"
-                  aria-label="Chart mode toggle">
-                  <mat-button-toggle value="trades">
-                    <mat-icon>scatter_plot</mat-icon>
-                    Trades
-                  </mat-button-toggle>
-                  <mat-button-toggle value="daily">
-                    <mat-icon>calendar_today</mat-icon>
-                    Daily
-                  </mat-button-toggle>
-                </mat-button-toggle-group>
-              </span>
             </h3>
           </div>
           <div class="chart-stats">
@@ -359,6 +343,30 @@
               <div class="stat-content">
                 <div class="stat-label">Account Size</div>
                 <div class="stat-value">{{ (mt5AccountInfo.startingBalance) | currency }}</div>
+              </div>
+            </div>
+            <div class="stat-item chart-mode-card">
+              <div class="stat-icon">
+                <mat-icon>swap_horiz</mat-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Chart Mode</div>
+                <div class="mode-toggle-group" aria-label="Chart mode">
+                  <mat-button-toggle-group
+                    name="chartMode"
+                    [value]="isDailyChart ? 'daily' : 'trades'"
+                    (valueChange)="isDailyChart = $event === 'daily'; generateTradingChartData()"
+                    aria-label="Chart mode toggle">
+                    <mat-button-toggle value="trades">
+                      <mat-icon>scatter_plot</mat-icon>
+                      Trades
+                    </mat-button-toggle>
+                    <mat-button-toggle value="daily">
+                      <mat-icon>calendar_today</mat-icon>
+                      Daily
+                    </mat-button-toggle>
+                  </mat-button-toggle-group>
+                </div>
               </div>
             </div>
             <div class="chart-controls">
