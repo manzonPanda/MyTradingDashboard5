@@ -455,9 +455,9 @@
     * { pointer-events: auto; }
 
     // Allow enough space for both toggles
-    flex: 0 0 auto;
-    min-width: 260px;
-    max-width: 340px;
+    flex: 1;
+    min-width: 140px;
+    max-width: 220px;
     overflow: visible;
 
     .stat-icon {
