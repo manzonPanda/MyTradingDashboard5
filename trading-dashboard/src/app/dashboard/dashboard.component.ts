@@ -221,6 +221,12 @@ mt5AccountInfo: AccountSettings = {
     this.onChartModeChanged(checked ? 'daily' : 'trades');
   }
 
+  getPerformanceBarHeight(value: number, bestProfit: number, worstLossAbs: number): number {
+    const maxVal = Math.max(Math.abs(bestProfit) || 0, Math.abs(worstLossAbs) || 0);
+    if (!value || maxVal === 0) return 20;
+    return Math.max(20, (Math.abs(value) / maxVal) * 80);
+  }
+
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
 
