@@ -217,6 +217,10 @@ mt5AccountInfo: AccountSettings = {
     this.onChartModeChanged(next);
   }
 
+  onSlideModeChanged(checked: boolean): void {
+    this.onChartModeChanged(checked ? 'daily' : 'trades');
+  }
+
   // Live trade tracking
   recentlyAddedTrades: Table[] = [];
 
