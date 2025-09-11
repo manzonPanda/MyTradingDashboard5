@@ -486,14 +486,19 @@
         align-items: center;
         gap: 2px;
         font-size: 0.6rem;
-        .mode-icon { font-size: 12px; height: 12px; width: 12px; }
+        .mode-icon { font-size: 10px; height: 10px; width: 10px; }
       }
 
       :host ::ng-deep .chart-mode-toggle .mdc-switch {
-        transform: scale(0.65);
+        transform: scale(0.55);
         transform-origin: left center;
         margin: 0;
       }
+
+      :host ::ng-deep .chart-mode-toggle .mdc-switch__icons,
+      :host ::ng-deep .chart-mode-toggle .mdc-switch__icon { display: none; }
+      :host ::ng-deep .chart-mode-toggle .mdc-switch__track { height: 16px; }
+      :host ::ng-deep .chart-mode-toggle .mdc-switch__handle { width: 14px; height: 14px; }
 
       .mat-button-toggle {
         font-size: 0.65rem;
