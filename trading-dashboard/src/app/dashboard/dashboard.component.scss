@@ -481,6 +481,14 @@
         white-space: nowrap;
       }
 
+      .chart-mode-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        .mode-icon { font-size: 16px; height: 16px; width: 16px; }
+      }
+
       .mat-button-toggle {
         font-size: 0.65rem;
         font-weight: 600;
