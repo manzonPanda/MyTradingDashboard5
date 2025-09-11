@@ -345,28 +345,24 @@
                 <div class="stat-value">{{ (mt5AccountInfo.startingBalance) | currency }}</div>
               </div>
             </div>
-            <div class="stat-item chart-mode-card" (click)="toggleChartMode()">
+            <div class="stat-item chart-mode-card">
               <div class="stat-icon">
                 <mat-icon>swap_horiz</mat-icon>
               </div>
               <div class="stat-content">
                 <div class="stat-label">Chart Mode</div>
                 <div class="mode-toggle-group" aria-label="Chart mode" (click)="$event.stopPropagation()">
-                  <mat-button-toggle-group
-                    name="chartMode"
-                    [value]="isDailyChart ? 'daily' : 'trades'"
-                    (change)="onChartModeChanged($event.value)"
-                    (valueChange)="onChartModeChanged($event)"
-                    aria-label="Chart mode toggle">
-                    <mat-button-toggle value="trades" (click)="onChartModeChanged('trades')">
-                      <mat-icon>scatter_plot</mat-icon>
-                      Trades
-                    </mat-button-toggle>
-                    <mat-button-toggle value="daily" (click)="onChartModeChanged('daily')">
-                      <mat-icon>calendar_today</mat-icon>
-                      Daily
-                    </mat-button-toggle>
-                  </mat-button-toggle-group>
+                  <mat-slide-toggle
+                    class="chart-mode-toggle"
+                    [checked]="isDailyChart"
+                    (change)="onSlideModeChanged($event.checked)"
+                    color="primary">
+                    <span class="toggle-label">
+                      <mat-icon class="mode-icon" *ngIf="!isDailyChart">scatter_plot</mat-icon>
+                      <mat-icon class="mode-icon" *ngIf="isDailyChart">calendar_today</mat-icon>
+                      {{ isDailyChart ? 'Daily' : 'Trades' }}
+                    </span>
+                  </mat-slide-toggle>
                 </div>
               </div>
             </div>
