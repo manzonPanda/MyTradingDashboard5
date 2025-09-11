@@ -519,12 +519,12 @@
 }
 
 .chart-mode-toggle .mode-icon { display: none; }
-:host ::ng-deep .chart-mode-toggle .mdc-switch { transform: scale(0.5); transform-origin: left center; margin: 0; }
+:host ::ng-deep .chart-mode-toggle .mdc-switch { transform: scale(0.62); transform-origin: left center; margin: 0; }
 :host ::ng-deep .chart-mode-toggle .mdc-switch__icons,
 :host ::ng-deep .chart-mode-toggle .mdc-switch__icon { display: none; }
-:host ::ng-deep .chart-mode-toggle .mdc-switch__track { height: 12px; }
-:host ::ng-deep .chart-mode-toggle .mdc-switch__handle { width: 12px; height: 12px; }
-:host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.55rem; }
+:host ::ng-deep .chart-mode-toggle .mdc-switch__track { height: 14px; }
+:host ::ng-deep .chart-mode-toggle .mdc-switch__handle { width: 14px; height: 14px; }
+:host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.6rem; }
 
 // Animation for initial load
 @keyframes slideInUp {
