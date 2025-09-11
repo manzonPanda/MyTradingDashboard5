@@ -345,28 +345,24 @@
                 <div class="stat-value">{{ (mt5AccountInfo.startingBalance) | currency }}</div>
               </div>
             </div>
-            <div class="stat-item chart-mode-card" (click)="toggleChartMode()">
+            <div class="stat-item chart-mode-card">
               <div class="stat-icon">
                 <mat-icon>swap_horiz</mat-icon>
               </div>
               <div class="stat-content">
                 <div class="stat-label">Chart Mode</div>
                 <div class="mode-toggle-group" aria-label="Chart mode" (click)="$event.stopPropagation()">
-                  <mat-button-toggle-group
-                    name="chartMode"
-                    [value]="isDailyChart ? 'daily' : 'trades'"
-                    (change)="onChartModeChanged($event.value)"
-                    (valueChange)="onChartModeChanged($event)"
-                    aria-label="Chart mode toggle">
-                    <mat-button-toggle value="trades" (click)="onChartModeChanged('trades')">
-                      <mat-icon>scatter_plot</mat-icon>
-                      Trades
-                    </mat-button-toggle>
-                    <mat-button-toggle value="daily" (click)="onChartModeChanged('daily')">
-                      <mat-icon>calendar_today</mat-icon>
-                      Daily
-                    </mat-button-toggle>
-                  </mat-button-toggle-group>
+                  <mat-slide-toggle
+                    class="chart-mode-toggle"
+                    [checked]="isDailyChart"
+                    (change)="onSlideModeChanged($event.checked)"
+                    color="primary">
+                    <span class="toggle-label">
+                      <mat-icon class="mode-icon" *ngIf="!isDailyChart">scatter_plot</mat-icon>
+                      <mat-icon class="mode-icon" *ngIf="isDailyChart">calendar_today</mat-icon>
+                      {{ isDailyChart ? 'Daily' : 'Trades' }}
+                    </span>
+                  </mat-slide-toggle>
                 </div>
               </div>
             </div>
@@ -670,6 +666,28 @@
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
+            <div class="activity-layout">
+              <div class="activity-chart">
+                <div class="chart-container">
+                  <div class="chart-bars">
+                    <div class="bar-wrapper">
+                      <div class="bar-segment best-profit-bar"
+                           [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))">
+                        <span class="bar-label">{{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}</span>
+                      </div>
+                      <div class="bar-title">Best Profit</div>
+                    </div>
+                    <div class="bar-wrapper">
+                      <div class="bar-segment worst-loss-bar"
+                           [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))">
+                        <span class="bar-label">{{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}</span>
+                      </div>
+                      <div class="bar-title">Worst Loss</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="performance-stats">
               <div class="stat-group">
                 <div class="stat-value positive">{{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}</div>
