@@ -456,8 +456,8 @@
 
     // Allow enough space for both toggles
     flex: 1;
-    min-width: 140px;
-    max-width: 220px;
+    min-width: 180px;
+    max-width: 260px;
     overflow: visible;
 
     .stat-icon {
@@ -470,27 +470,28 @@
       display: flex;
       align-items: center;
       flex-wrap: nowrap;
+      width: 100%;
 
       .mat-button-toggle-group {
         border-radius: 999px;
         background: var(--tf-bg-secondary);
         border: 1px solid var(--tf-border-primary);
         overflow: hidden;
-        height: 28px;
+        height: 24px;
         white-space: nowrap;
       }
 
       .mat-button-toggle {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         font-weight: 600;
-        min-height: 28px;
-        line-height: 28px;
+        min-height: 24px;
+        line-height: 24px;
         color: var(--tf-text-secondary);
       }
 
       .mat-button-toggle .mat-button-toggle-label-content {
-        padding: 0 10px;
-        line-height: 28px;
+        padding: 0 8px;
+        line-height: 24px;
       }
 
       .mat-button-toggle-checked {
