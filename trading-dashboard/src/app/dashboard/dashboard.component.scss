@@ -526,6 +526,15 @@
 :host ::ng-deep .chart-mode-toggle .mdc-switch__handle { width: 16px; height: 16px; }
 :host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.7rem; color: var(--tf-text-primary); font-weight: 600; }
 
+/* reusable gradient text utility for this component */
+.gradient-text {
+  background: linear-gradient(144deg, #2980B9, #8E43AD);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
 // Animation for initial load
 @keyframes slideInUp {
   from {
