@@ -2364,6 +2364,14 @@ table.simple-table {
             color: var(--tf-accent-success);
             animation: chart-icon-glow 3s ease-in-out infinite;
           }
+
+          .chart-title-gradient {
+            background: linear-gradient(144deg, #2980B9, #8E43AD);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+          }
         }
 
         .chart-title .chart-mode-toggle {
