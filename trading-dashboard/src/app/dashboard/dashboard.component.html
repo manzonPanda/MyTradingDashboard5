@@ -673,14 +673,20 @@
                     <div class="bar-wrapper">
                       <div class="bar-segment best-profit-bar"
                            [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))">
-                        <span class="bar-label">{{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}</span>
+                        <span class="bar-label">
+                          {{ (calculateBestProfitPercentage() >= 0 ? '+' : '') + (calculateBestProfitPercentage() | number:'1.0-1') + '%' }}<br>
+                          {{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}
+                        </span>
                       </div>
                       <div class="bar-title">Best Profit</div>
                     </div>
                     <div class="bar-wrapper">
                       <div class="bar-segment worst-loss-bar"
                            [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))">
-                        <span class="bar-label">{{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}</span>
+                        <span class="bar-label">
+                          {{ '-' + (calculateBestLossPercentage() | number:'1.0-1') + '%' }}<br>
+                          {{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}
+                        </span>
                       </div>
                       <div class="bar-title">Worst Loss</div>
                     </div>
