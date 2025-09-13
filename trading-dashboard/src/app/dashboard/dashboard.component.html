@@ -325,7 +325,7 @@
                 <mat-icon>account_balance_wallet</mat-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-label">Total P&L</div>
+                <div class="stat-label gradient-text">Total P&L</div>
                 <div class="stat-value-group">
                   <div class="stat-value" [class.positive]="calculateTotalPnL() >= 0" [class.negative]="calculateTotalPnL() < 0">
                     {{ calculateTotalPercentageGain() >= 0 ? '+' : '' }}{{ calculateTotalPercentageGain() | number:'1.2-2' }}%
@@ -341,7 +341,7 @@
                 <mat-icon>emoji_events</mat-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-label">Account Size</div>
+                <div class="stat-label gradient-text">Account Size</div>
                 <div class="stat-value">{{ (mt5AccountInfo.startingBalance) | currency }}</div>
               </div>
             </div>
@@ -350,7 +350,7 @@
                 <mat-icon>swap_horiz</mat-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-label">Chart Mode</div>
+                <div class="stat-label gradient-text">Chart Mode</div>
                 <div class="mode-toggle-group" aria-label="Chart mode" (click)="$event.stopPropagation()">
                   <mat-slide-toggle
                     class="chart-mode-toggle"
@@ -374,7 +374,7 @@
                       <mat-icon>trending_up</mat-icon>
                     </div>
                     <div class="target-content">
-                      <div class="target-label">Profit Target</div>
+                      <div class="target-label gradient-text">Profit Target</div>
                       <div class="target-value-group">
                         <div class="target-value profit">{{ mt5AccountInfo.profitTarget }}%</div>
                         <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.profitTarget / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
@@ -387,7 +387,7 @@
                       <mat-icon>trending_down</mat-icon>
                     </div>
                     <div class="target-content">
-                      <div class="target-label">Max Drawdown</div>
+                      <div class="target-label gradient-text">Max Drawdown</div>
                       <div class="target-value-group">
                         <div class="target-value loss">{{ mt5AccountInfo.maxTotalDrawdown }}%</div>
                         <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.maxTotalDrawdown / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
@@ -400,7 +400,7 @@
                       <mat-icon>calendar_today</mat-icon>
                     </div>
                     <div class="target-content">
-                      <div class="target-label">Daily Limit</div>
+                      <div class="target-label gradient-text">Daily Limit</div>
                       <div class="target-value-group">
                         <div class="target-value warning">{{ mt5AccountInfo.dailyLossLimit }}%</div>
                         <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.dailyLossLimit / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
