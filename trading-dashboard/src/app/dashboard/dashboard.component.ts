@@ -976,17 +976,17 @@ async ngOnInit() {
   
   totalProfit(events: any[]): number {
     console.log(events);
-    return events
+    const sum = events
       .filter(event => event.meta?.profit > 0)
-      .reduce((sum, event) => sum + (event.meta?.profit || 0), 0)
-      .toFixed(2);
+      .reduce((acc: number, event: any) => acc + (event.meta?.profit || 0), 0);
+    return Math.round(sum * 100) / 100;
   }
-  
+
   totalLoss(events: any[]): number {
-    return events
+    const sum = events
       .filter(event => event.meta?.profit < 0)
-      .reduce((sum, event) => sum + (event.meta?.profit || 0), 0)
-      .toFixed(2);
+      .reduce((acc: number, event: any) => acc + (event.meta?.profit || 0), 0);
+    return Math.round(sum * 100) / 100;
   }
   parseTradeDate(dateStr: string): Date | null {
     // MT5 format is like "2025.03.25 09:10:25"
