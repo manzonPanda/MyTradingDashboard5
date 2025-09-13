@@ -2729,6 +2729,15 @@ table.simple-table {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1;
+
+    &.gradient-text {
+      display: inline-block;
+      background: linear-gradient(144deg, #2980B9, #8E43AD);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
   }
 
   .metric-icon {
