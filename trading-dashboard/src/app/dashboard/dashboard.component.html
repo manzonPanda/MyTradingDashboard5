@@ -687,7 +687,7 @@
                   <div class="stat-label">PnL</div>
                   <div class="stat-value" [class.positive]="dailyPnL >= 0" [class.negative]="dailyPnL < 0">{{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}</div>
                 </div>
-                <div class="reset-note">Resets 3:00 PM PHT</div>
+                <div class="reset-note">Resets in {{ resetCountdown }}</div>
               </div>
             </div>
           </div>

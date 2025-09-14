@@ -695,21 +695,6 @@
   .stat-value.positive { color: var(--tf-positive); }
   .stat-value.negative { color: var(--tf-negative); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
-
-  // Glowing effect for doughnut chart
-  .daily-limit-chart .doughnut {
-    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.35));
-    animation: daily-limit-chart-glow 2.5s ease-in-out infinite;
-  }
-}
-
-@keyframes daily-limit-chart-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.35));
-  }
-  50% {
-    filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.65));
-  }
 }
 
 // Simple Gauge Chart for Trade Win % (like reference image)
