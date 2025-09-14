@@ -161,7 +161,6 @@ export class DashboardComponent implements AfterViewInit {
   dailyLimitChartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '70%',
     plugins: { legend: { display: false }, tooltip: { enabled: false } }
   };
 
