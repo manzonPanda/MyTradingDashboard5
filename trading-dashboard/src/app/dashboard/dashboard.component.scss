@@ -2828,10 +2828,16 @@ table.simple-table {
 
   // Best Performance Card Styling (Compact like Trading Activity)
   &.best-profit-loss-combined {
+    display: grid;
+    grid-template-rows: auto 1fr;
+
     .metric-content {
       padding: 0;
       align-items: center;
       gap: 0.5rem;
+      align-self: end;
+      margin-top: 0;
+      padding-bottom: 1.25rem;
     }
 
     .activity-layout {
@@ -2878,6 +2884,7 @@ table.simple-table {
       position: relative;
       transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      overflow: hidden;
 
       &:hover {
         transform: scale(1.05);
@@ -2891,7 +2898,7 @@ table.simple-table {
       color: white;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
       position: absolute;
-      top: 6px;
+      bottom: 6px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
