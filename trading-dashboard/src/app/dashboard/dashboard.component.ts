@@ -146,6 +146,25 @@ export class DashboardComponent implements AfterViewInit {
   // Math object for template calculations
   Math = Math;
 
+  // Daily Limit tracking
+  dailyPnL: number = 0;
+  dailyPnLPercent: number = 0;
+  dailyLimitUsed: number = 0;
+  dailyLimitRemaining: number = 0;
+  dailyLimitNotified: boolean = false;
+
+  // Daily Limit doughnut chart
+  dailyLimitChartData: any = {
+    labels: ['Used', 'Remaining'],
+    datasets: [{ data: [0, 100], backgroundColor: ['#ef4444', '#fbbf24'], borderWidth: 0 }]
+  };
+  dailyLimitChartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+  };
+
   // Additional calculation methods for missing functions
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
   viewDate: Date = new Date();
@@ -534,6 +553,97 @@ mt5AccountInfo: AccountSettings = {
     Chart.register(...registerables);
   }
 
+  private getPhilippinesNow(): Date {
+    // Philippines is UTC+8, no DST
+    const nowUtc = new Date();
+    return new Date(nowUtc.getTime() + 8 * 60 * 60 * 1000);
+  }
+
+  private getCurrentSessionStart(): Date {
+    const phtNow = this.getPhilippinesNow();
+    const sessionStart = new Date(phtNow);
+    sessionStart.setHours(15, 0, 0, 0); // 3:00 PM PHT
+    // If current time is before 3 PM, use yesterday 3 PM
+    if (phtNow.getTime() < sessionStart.getTime()) {
+      sessionStart.setDate(sessionStart.getDate() - 1);
+    }
+    // Convert back to UTC timestamp
+    return new Date(sessionStart.getTime() - 8 * 60 * 60 * 1000);
+  }
+
+  private parseOpenDate(str: string): Date | null {
+    // Expected formats like "MM.DD.YYYY HH:mm" or "YYYY.MM.DD HH:mm:ss"
+    if (!str) return null;
+    const parts = str.trim().split(' ');
+    if (parts.length < 1) return null;
+    const datePart = parts[0];
+    const timePart = parts[1] || '00:00:00';
+    let y = 0, m = 0, d = 0, hh = 0, mm = 0, ss = 0;
+    if (datePart.includes('.')) {
+      const dp = datePart.split('.').map(v => parseInt(v, 10));
+      if (dp.length === 3 && dp[0] > 1900) { // YYYY.MM.DD
+        y = dp[0]; m = dp[1] - 1; d = dp[2];
+      } else if (dp.length === 3) { // MM.DD.YYYY
+        m = dp[0] - 1; d = dp[1]; y = dp[2];
+      }
+    }
+    const tp = timePart.split(':').map(v => parseInt(v, 10));
+    if (tp.length >= 2) { hh = tp[0]; mm = tp[1]; ss = tp.length >= 3 ? tp[2] : 0; }
+    const dt = new Date(y, m, d, hh, mm, ss);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private updateDailyLimitMetrics(): void {
+    const sessionStart = this.getCurrentSessionStart();
+    const now = new Date();
+    let pnl = 0;
+    for (const t of this.tableData) {
+      const od = this.parseOpenDate(t.openDate || '');
+      if (od && od.getTime() >= sessionStart.getTime() && od.getTime() <= now.getTime()) {
+        pnl += this.getSafeNumber(t.netProfit);
+      }
+    }
+    this.dailyPnL = pnl;
+    const startBal = this.mt5AccountInfo?.startingBalance || 0;
+    this.dailyPnLPercent = startBal > 0 ? (pnl / startBal) * 100 : 0;
+
+    const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5; // use configured limit, default 3.5
+    const limitAmt = startBal * (limitPct / 100);
+    const used = Math.min(limitAmt, Math.max(0, -pnl)); // only losses eat the limit
+    const remaining = Math.max(0, limitAmt - used);
+    this.dailyLimitUsed = used;
+    this.dailyLimitRemaining = remaining;
+
+    // Update chart (represent as percentage of limit)
+    const usedPct = limitAmt > 0 ? (used / limitAmt) * 100 : 0;
+    const remPct = Math.max(0, 100 - usedPct);
+    this.dailyLimitChartData = {
+      labels: ['Used', 'Remaining'],
+      datasets: [{ data: [Number(usedPct.toFixed(2)), Number(remPct.toFixed(2))], backgroundColor: ['#ef4444', '#fbbf24'], borderWidth: 0 }]
+    };
+
+    // Notify at -3.5%
+    if (this.dailyPnLPercent <= -3.5 && !this.dailyLimitNotified) {
+      this.dailyLimitNotified = true;
+      this.sendNotif('', 'Daily Limit Alert', `You have reached -3.5% today. Current: ${this.dailyPnLPercent.toFixed(2)}%`);
+    }
+  }
+
+  private setupDailyResetTimer(): void {
+    // Check every minute for new session boundary and recompute
+    setInterval(() => {
+      const sessionStart = this.getCurrentSessionStart();
+      const key = 'daily_limit_session_start';
+      const saved = localStorage.getItem(key);
+      const currentKey = sessionStart.toISOString();
+      if (saved !== currentKey) {
+        localStorage.setItem(key, currentKey);
+        this.dailyLimitNotified = false; // reset notification per session
+      }
+      this.updateDailyLimitMetrics();
+    }, 60 * 1000);
+  }
+
   // Math utility methods for template calculations
   mathMin(a: number, b: number): number {
     return Math.min(a, b);
@@ -727,6 +837,9 @@ async ngOnInit() {
     this.updateMT5TradePrice(data);
   });
 
+  // Start daily limit tracking
+  this.setupDailyResetTimer();
+
   try {
     const news: any = await firstValueFrom(
       this.http.get("http://localhost:3000/api/news")
@@ -811,6 +924,7 @@ async ngOnInit() {
 
     // Generate initial chart data
     this.generateTradingChartData();
+    this.updateDailyLimitMetrics();
 
     // Set loading to false after a short delay to show metrics even without data
     setTimeout(() => {
@@ -4619,6 +4733,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   updateTableDataOnly(): void {
     this.tableData = [...this.mt5LiveTrades, ];
 
+    // Update Daily Limit metrics on live updates
+    this.updateDailyLimitMetrics();
+
     // Check for profit target achievement on live updates
     this.checkForProfitTargetCelebration();
   }
@@ -4638,6 +4755,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Create completely new array reference to trigger Angular change detection
     const previousLength = this.tableData ? this.tableData.length : 0;
     this.tableData = [...this.mt5LiveTrades, ...existingTrades];
+
+    // Recalculate Daily Limit metrics
+    this.updateDailyLimitMetrics();
 
     console.log('✅ After update - tableData:', this.tableData.length, 'trades');
     console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
