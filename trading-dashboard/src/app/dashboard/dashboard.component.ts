@@ -223,8 +223,10 @@ mt5AccountInfo: AccountSettings = {
 
   getPerformanceBarHeight(value: number, bestProfit: number, worstLossAbs: number): number {
     const maxVal = Math.max(Math.abs(bestProfit) || 0, Math.abs(worstLossAbs) || 0);
-    if (!value || maxVal === 0) return 20;
-    return Math.max(20, (Math.abs(value) / maxVal) * 80);
+    if (!value || maxVal === 0) return 0;
+    const ratio = Math.abs(value) / maxVal;
+    const pct = ratio * 100;
+    return Math.max(10, Math.min(100, Math.round(pct)));
   }
 
   // Live trade tracking
