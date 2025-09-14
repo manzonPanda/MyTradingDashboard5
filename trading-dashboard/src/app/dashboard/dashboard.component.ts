@@ -152,6 +152,7 @@ export class DashboardComponent implements AfterViewInit {
   dailyLimitUsed: number = 0;
   dailyLimitRemaining: number = 0;
   dailyLimitNotified: boolean = false;
+  resetCountdown: string = '';
 
   // Daily Limit doughnut chart
   dailyLimitChartData: any = {
@@ -592,6 +593,23 @@ mt5AccountInfo: AccountSettings = {
     return isNaN(dt.getTime()) ? null : dt;
   }
 
+  private updateResetCountdown(): void {
+    const phtNow = this.getPhilippinesNow();
+    const target = new Date(phtNow.getTime());
+    // Use UTC setters so the UTC fields represent PHT local time (since we shifted by +8h)
+    target.setUTCHours(15, 0, 0, 0); // 3:00 PM PHT
+    if (phtNow.getTime() >= target.getTime()) {
+      target.setUTCDate(target.getUTCDate() + 1);
+    }
+    let diff = target.getTime() - phtNow.getTime();
+    if (diff < 0) diff = 0;
+    const hrs = Math.floor(diff / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    this.resetCountdown = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+  }
+
   private updateDailyLimitMetrics(): void {
     const sessionStart = this.getCurrentSessionStart();
     const now = new Date();
@@ -838,6 +856,8 @@ async ngOnInit() {
 
   // Start daily limit tracking
   this.setupDailyResetTimer();
+  this.updateResetCountdown();
+  setInterval(() => this.updateResetCountdown(), 1000);
 
   try {
     const news: any = await firstValueFrom(
