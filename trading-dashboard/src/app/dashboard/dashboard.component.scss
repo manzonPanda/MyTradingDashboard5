@@ -679,22 +679,22 @@
 .metric-card.daily-limit-card {
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
   .daily-limit-content { padding: 0.5rem; }
-  .daily-limit-layout { display: flex; gap: 0.75rem; align-items: center; }
-  .daily-limit-chart { position: relative; width: 110px; height: 110px; flex: 0 0 110px; }
+  .daily-limit-layout { display: flex; gap: 0.5rem; align-items: center; }
+  .daily-limit-chart { position: relative; width: 90px; height: 90px; flex: 0 0 90px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .center-percent { font-weight: 800; font-size: 1rem; color: var(--tf-text-primary); }
+  .center-percent { font-weight: 800; font-size: 0.95rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
   .center-percent.positive { color: #10b981; }
-  .center-label { font-size: 0.65rem; color: var(--tf-text-muted); }
-  .daily-limit-stats { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+  .center-label { font-size: 0.6rem; color: var(--tf-text-muted); }
+  .daily-limit-stats { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 0; }
   .stat-row { display: flex; align-items: baseline; justify-content: space-between; }
-  .stat-label { font-size: 0.7rem; color: var(--tf-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-  .stat-value { font-size: 1rem; font-weight: 700; color: var(--tf-text-primary); }
+  .stat-label { font-size: 0.65rem; color: var(--tf-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-value { font-size: 0.95rem; font-weight: 700; color: var(--tf-text-primary); }
   .stat-value.danger { color: var(--tf-accent-danger); }
   .stat-value.warning { color: var(--tf-accent-warning); }
   .stat-value.positive { color: var(--tf-positive); }
   .stat-value.negative { color: var(--tf-negative); }
-  .reset-note { margin-top: 0.25rem; font-size: 0.65rem; color: var(--tf-text-muted); }
+  .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
 }
 
 // Simple Gauge Chart for Trade Win % (like reference image)
