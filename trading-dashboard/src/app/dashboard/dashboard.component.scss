@@ -2876,7 +2876,7 @@ table.simple-table {
 
     .bar-segment {
       width: 32px;
-      min-height: 0;
+      min-height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2884,6 +2884,7 @@ table.simple-table {
       position: relative;
       transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      overflow: hidden;
 
       &:hover {
         transform: scale(1.05);
