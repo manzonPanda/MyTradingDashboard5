@@ -158,7 +158,7 @@ export class DashboardComponent implements AfterViewInit {
     labels: ['Used', 'Remaining'],
     datasets: [{ data: [0, 100], backgroundColor: ['#ef4444', '#fbbf24'], borderWidth: 0 }]
   };
-  dailyLimitChartOptions: ChartOptions = {
+  dailyLimitChartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '70%',
