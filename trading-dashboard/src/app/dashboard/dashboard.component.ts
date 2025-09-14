@@ -595,10 +595,11 @@ mt5AccountInfo: AccountSettings = {
 
   private updateResetCountdown(): void {
     const phtNow = this.getPhilippinesNow();
-    const target = new Date(phtNow);
-    target.setHours(15, 0, 0, 0); // 3:00 PM PHT
+    const target = new Date(phtNow.getTime());
+    // Use UTC setters so the UTC fields represent PHT local time (since we shifted by +8h)
+    target.setUTCHours(15, 0, 0, 0); // 3:00 PM PHT
     if (phtNow.getTime() >= target.getTime()) {
-      target.setDate(target.getDate() + 1);
+      target.setUTCDate(target.getUTCDate() + 1);
     }
     let diff = target.getTime() - phtNow.getTime();
     if (diff < 0) diff = 0;
