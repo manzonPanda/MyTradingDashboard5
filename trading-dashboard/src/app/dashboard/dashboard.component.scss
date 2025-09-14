@@ -2828,11 +2828,15 @@ table.simple-table {
 
   // Best Performance Card Styling (Compact like Trading Activity)
   &.best-profit-loss-combined {
+    display: grid;
+    grid-template-rows: auto 1fr;
+
     .metric-content {
       padding: 0;
       align-items: center;
       gap: 0.5rem;
-      margin-top: auto;
+      align-self: end;
+      margin-top: 0;
     }
 
     .activity-layout {
