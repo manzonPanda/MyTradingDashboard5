@@ -580,6 +580,16 @@
                 </div>
                 <div class="reset-note">Resets in {{ resetCountdown }}</div>
               </div>
+
+              <div class="wins-gauge" aria-label="Win Rate">
+                <svg viewBox="0 0 100 100" class="wins-gauge-svg">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round"
+                          [attr.stroke-dasharray]="getWinRingDash()" [attr.stroke-dashoffset]="getWinRingOffset()" transform="rotate(-90 50 50)"/>
+                  <text x="50" y="48" text-anchor="middle" dominant-baseline="central" class="wins-percent-text">{{ calculateSessionWinRate() }}%</text>
+                  <text x="50" y="68" text-anchor="middle" class="wins-label">Wins</text>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
