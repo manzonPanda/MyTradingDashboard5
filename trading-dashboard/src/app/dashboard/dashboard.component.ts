@@ -615,20 +615,30 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private updateDailyLimitMetrics(): void {
-    const sessionStart = this.getCurrentSessionStart();
-    const now = new Date();
+    // Compute PHT window: from yesterday 3:00 PM PHT to today 3:00 PM PHT (clamped to now)
+    const phtNow = this.getPhilippinesNow();
+    const today3pmPHT = new Date(phtNow.getTime());
+    today3pmPHT.setHours(15, 0, 0, 0);
+    const windowStartPHT = new Date(today3pmPHT.getTime() - 24 * 60 * 60 * 1000); // yesterday 3 PM PHT
+    const windowEndPHT = new Date(Math.min(today3pmPHT.getTime(), phtNow.getTime())); // up to 3 PM today (or now if before 3 PM)
+
+    // Convert PHT window to UTC timestamps for comparison with parsed local dates
+    const windowStartUTC = new Date(windowStartPHT.getTime() - 8 * 60 * 60 * 1000);
+    const windowEndUTC = new Date(windowEndPHT.getTime() - 8 * 60 * 60 * 1000);
+
     let pnl = 0;
     let winSum = 0;
     let lossSum = 0; // keep negative
     for (const t of this.tableData) {
       const od = this.parseOpenDate(t.openDate || '');
-      if (od && od.getTime() >= sessionStart.getTime() && od.getTime() <= now.getTime()) {
+      if (od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime()) {
         const p = this.getSafeNumber(t.netProfit);
         pnl += p;
         if (p > 0) winSum += p;
         else if (p < 0) lossSum += p;
       }
     }
+
     this.dailyPnL = pnl;
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     this.dailyPnLPercent = startBal > 0 ? (pnl / startBal) * 100 : 0;
