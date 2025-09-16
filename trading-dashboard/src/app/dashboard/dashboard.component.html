@@ -560,22 +560,22 @@
                 <div class="stat-row">
                   <div class="stat-label">Wins</div>
                   <div class="stat-value positive">
+                    <span class="stat-percent positive">{{ dailyWinsPercent | number:'1.1-1' }}%</span>
                     {{ dailyWinsAmount | currency:'USD':'symbol':'1.0-0' }}
-                    <span class="stat-percent positive">({{ dailyWinsPercent | number:'1.1-1' }}%)</span>
                   </div>
                 </div>
                 <div class="stat-row">
                   <div class="stat-label">Lose</div>
                   <div class="stat-value danger">
+                    <span class="stat-percent danger">{{ dailyLossesPercent | number:'1.1-1' }}%</span>
                     {{ dailyLossesAmount | currency:'USD':'symbol':'1.0-0' }}
-                    <span class="stat-percent danger">({{ dailyLossesPercent | number:'1.1-1' }}%)</span>
                   </div>
                 </div>
                 <div class="stat-row">
                   <div class="stat-label">PNL</div>
                   <div class="stat-value" [class.positive]="dailyPnL >= 0" [class.negative]="dailyPnL < 0">
+                    <span class="stat-percent" [class.positive]="dailyPnLPercent >= 0" [class.negative]="dailyPnLPercent < 0">{{ dailyPnLPercent | number:'1.1-1' }}%</span>
                     {{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}
-                    <span class="stat-percent" [class.positive]="dailyPnLPercent >= 0" [class.negative]="dailyPnLPercent < 0">({{ dailyPnLPercent | number:'1.1-1' }}%)</span>
                   </div>
                 </div>
                 <div class="reset-note">Resets in {{ resetCountdown }}</div>
