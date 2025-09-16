@@ -626,6 +626,16 @@ mt5AccountInfo: AccountSettings = {
     };
   }
 
+  private getTodayWindowUtc(): { start: Date, end: Date } {
+    const phtNow = this.getPhilippinesNow();
+    const startPHT = new Date(phtNow.getTime());
+    startPHT.setHours(0, 0, 0, 0); // midnight today PHT
+    return {
+      start: new Date(startPHT.getTime() - 8 * 60 * 60 * 1000),
+      end: new Date(phtNow.getTime() - 8 * 60 * 60 * 1000) // up to now
+    };
+  }
+
   private updateDailyLimitMetrics(): void {
     const { start: windowStartUTC, end: windowEndUTC } = this.getSessionWindowUtc();
 
@@ -684,6 +694,18 @@ mt5AccountInfo: AccountSettings = {
     return Math.round((wins / totalTrades) * 100);
   }
 
+  calculateTodayWinRate(): number {
+    const { start, end } = this.getTodayWindowUtc();
+    const trades = this.tableData.filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+    const totalTrades = trades.length;
+    if (totalTrades === 0) return 0;
+    const wins = trades.filter(t => this.getSafeNumber(t.netProfit) > 0).length;
+    return Math.round((wins / totalTrades) * 100);
+  }
+
   getWinRingCircumference(): number { return 2 * Math.PI * 40; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
@@ -691,7 +713,7 @@ mt5AccountInfo: AccountSettings = {
   }
   getWinRingOffset(): number {
     const c = this.getWinRingCircumference();
-    const winRate = this.calculateSessionWinRate();
+    const winRate = this.calculateTodayWinRate();
     return c * (1 - (winRate / 100));
   }
 
