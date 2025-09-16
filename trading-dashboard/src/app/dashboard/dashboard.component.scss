@@ -695,6 +695,10 @@
   .stat-value.positive { color: var(--tf-positive); }
   .stat-value.negative { color: var(--tf-negative); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
+
+  @media (min-width: 769px) {
+    grid-column: 1 / -1;
+  }
 }
 
 // Simple Gauge Chart for Trade Win % (like reference image)
