@@ -149,6 +149,10 @@ export class DashboardComponent implements AfterViewInit {
   // Daily Limit tracking
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
+  dailyWinsAmount: number = 0;
+  dailyWinsPercent: number = 0;
+  dailyLossesAmount: number = 0; // negative value for losses
+  dailyLossesPercent: number = 0; // negative percent for losses
   dailyLimitUsed: number = 0;
   dailyLimitRemaining: number = 0;
   dailyLimitNotified: boolean = false;
@@ -614,15 +618,24 @@ mt5AccountInfo: AccountSettings = {
     const sessionStart = this.getCurrentSessionStart();
     const now = new Date();
     let pnl = 0;
+    let winSum = 0;
+    let lossSum = 0; // keep negative
     for (const t of this.tableData) {
       const od = this.parseOpenDate(t.openDate || '');
       if (od && od.getTime() >= sessionStart.getTime() && od.getTime() <= now.getTime()) {
-        pnl += this.getSafeNumber(t.netProfit);
+        const p = this.getSafeNumber(t.netProfit);
+        pnl += p;
+        if (p > 0) winSum += p;
+        else if (p < 0) lossSum += p;
       }
     }
     this.dailyPnL = pnl;
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     this.dailyPnLPercent = startBal > 0 ? (pnl / startBal) * 100 : 0;
+    this.dailyWinsAmount = winSum;
+    this.dailyWinsPercent = startBal > 0 ? (winSum / startBal) * 100 : 0;
+    this.dailyLossesAmount = lossSum; // negative value
+    this.dailyLossesPercent = startBal > 0 ? (lossSum / startBal) * 100 : 0;
 
     const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5; // use configured limit, default 3.5
     const limitAmt = startBal * (limitPct / 100);

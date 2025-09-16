@@ -400,7 +400,7 @@
                       <mat-icon>calendar_today</mat-icon>
                     </div>
                     <div class="target-content">
-                      <div class="target-label gradient-text">Daily Limit</div>
+                      <div class="target-label gradient-text">Day Trades</div>
                       <div class="target-value-group">
                         <div class="target-value warning">{{ mt5AccountInfo.dailyLossLimit }}%</div>
                         <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.dailyLossLimit / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
@@ -540,7 +540,7 @@
 
         <div class="metric-card daily-limit-card">
           <div class="metric-header">
-            <h3 class="metric-title gradient-text">Daily Limit</h3>
+            <h3 class="metric-title gradient-text">Day Trades</h3>
             <mat-icon class="metric-icon">calendar_today</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
@@ -558,16 +558,25 @@
               </div>
               <div class="daily-limit-stats">
                 <div class="stat-row">
-                  <div class="stat-label">Left</div>
-                  <div class="stat-value warning">{{ dailyLimitRemaining | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="stat-label">Wins</div>
+                  <div class="stat-value positive">
+                    {{ dailyWinsAmount | currency:'USD':'symbol':'1.0-0' }}
+                    <span class="stat-percent positive">({{ dailyWinsPercent | number:'1.1-1' }}%)</span>
+                  </div>
                 </div>
                 <div class="stat-row">
-                  <div class="stat-label">Used</div>
-                  <div class="stat-value danger">{{ dailyLimitUsed | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="stat-label">Lose</div>
+                  <div class="stat-value danger">
+                    {{ dailyLossesAmount | currency:'USD':'symbol':'1.0-0' }}
+                    <span class="stat-percent danger">({{ dailyLossesPercent | number:'1.1-1' }}%)</span>
+                  </div>
                 </div>
                 <div class="stat-row">
-                  <div class="stat-label">PnL</div>
-                  <div class="stat-value" [class.positive]="dailyPnL >= 0" [class.negative]="dailyPnL < 0">{{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="stat-label">PNL</div>
+                  <div class="stat-value" [class.positive]="dailyPnL >= 0" [class.negative]="dailyPnL < 0">
+                    {{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}
+                    <span class="stat-percent" [class.positive]="dailyPnLPercent >= 0" [class.negative]="dailyPnLPercent < 0">({{ dailyPnLPercent | number:'1.1-1' }}%)</span>
+                  </div>
                 </div>
                 <div class="reset-note">Resets in {{ resetCountdown }}</div>
               </div>
