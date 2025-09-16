@@ -149,6 +149,10 @@ export class DashboardComponent implements AfterViewInit {
   // Daily Limit tracking
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
+  dailyWinsAmount: number = 0;
+  dailyWinsPercent: number = 0;
+  dailyLossesAmount: number = 0; // negative value for losses
+  dailyLossesPercent: number = 0; // negative percent for losses
   dailyLimitUsed: number = 0;
   dailyLimitRemaining: number = 0;
   dailyLimitNotified: boolean = false;
@@ -610,19 +614,51 @@ mt5AccountInfo: AccountSettings = {
     this.resetCountdown = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
   }
 
+  private getSessionWindowUtc(): { start: Date, end: Date } {
+    const phtNow = this.getPhilippinesNow();
+    const today3pmPHT = new Date(phtNow.getTime());
+    today3pmPHT.setHours(15, 0, 0, 0);
+    const windowStartPHT = new Date(today3pmPHT.getTime() - 24 * 60 * 60 * 1000); // yesterday 3 PM PHT
+    const windowEndPHT = new Date(Math.min(today3pmPHT.getTime(), phtNow.getTime())); // up to 3 PM today (or now if before 3 PM)
+    return {
+      start: new Date(windowStartPHT.getTime() - 8 * 60 * 60 * 1000),
+      end: new Date(windowEndPHT.getTime() - 8 * 60 * 60 * 1000)
+    };
+  }
+
+  private getTodayWindowUtc(): { start: Date, end: Date } {
+    const phtNow = this.getPhilippinesNow();
+    const startPHT = new Date(phtNow.getTime());
+    startPHT.setHours(0, 0, 0, 0); // midnight today PHT
+    return {
+      start: new Date(startPHT.getTime() - 8 * 60 * 60 * 1000),
+      end: new Date(phtNow.getTime() - 8 * 60 * 60 * 1000) // up to now
+    };
+  }
+
   private updateDailyLimitMetrics(): void {
-    const sessionStart = this.getCurrentSessionStart();
-    const now = new Date();
+    const { start: windowStartUTC, end: windowEndUTC } = this.getSessionWindowUtc();
+
     let pnl = 0;
+    let winSum = 0;
+    let lossSum = 0; // keep negative
     for (const t of this.tableData) {
       const od = this.parseOpenDate(t.openDate || '');
-      if (od && od.getTime() >= sessionStart.getTime() && od.getTime() <= now.getTime()) {
-        pnl += this.getSafeNumber(t.netProfit);
+      if (od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime()) {
+        const p = this.getSafeNumber(t.netProfit);
+        pnl += p;
+        if (p > 0) winSum += p;
+        else if (p < 0) lossSum += p;
       }
     }
+
     this.dailyPnL = pnl;
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     this.dailyPnLPercent = startBal > 0 ? (pnl / startBal) * 100 : 0;
+    this.dailyWinsAmount = winSum;
+    this.dailyWinsPercent = startBal > 0 ? (winSum / startBal) * 100 : 0;
+    this.dailyLossesAmount = lossSum; // negative value
+    this.dailyLossesPercent = startBal > 0 ? (lossSum / startBal) * 100 : 0;
 
     const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5; // use configured limit, default 3.5
     const limitAmt = startBal * (limitPct / 100);
@@ -644,6 +680,41 @@ mt5AccountInfo: AccountSettings = {
       this.dailyLimitNotified = true;
       this.sendNotif('', 'Daily Limit Alert', `You have reached -3.5% today. Current: ${this.dailyPnLPercent.toFixed(2)}%`);
     }
+  }
+
+  calculateSessionWinRate(): number {
+    const { start, end } = this.getSessionWindowUtc();
+    const trades = this.tableData.filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+    const totalTrades = trades.length;
+    if (totalTrades === 0) return 0;
+    const wins = trades.filter(t => this.getSafeNumber(t.netProfit) > 0).length;
+    return Math.round((wins / totalTrades) * 100);
+  }
+
+  calculateTodayWinRate(): number {
+    const { start, end } = this.getTodayWindowUtc();
+    const trades = this.tableData.filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+    const totalTrades = trades.length;
+    if (totalTrades === 0) return 0;
+    const wins = trades.filter(t => this.getSafeNumber(t.netProfit) > 0).length;
+    return Math.round((wins / totalTrades) * 100);
+  }
+
+  getWinRingCircumference(): number { return 2 * Math.PI * 40; }
+  getWinRingDash(): string {
+    const c = this.getWinRingCircumference();
+    return `${c} ${c}`;
+  }
+  getWinRingOffset(): number {
+    const c = this.getWinRingCircumference();
+    const winRate = this.calculateTodayWinRate();
+    return c * (1 - (winRate / 100));
   }
 
   private setupDailyResetTimer(): void {
