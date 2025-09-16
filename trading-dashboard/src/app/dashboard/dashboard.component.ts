@@ -614,17 +614,20 @@ mt5AccountInfo: AccountSettings = {
     this.resetCountdown = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
   }
 
-  private updateDailyLimitMetrics(): void {
-    // Compute PHT window: from yesterday 3:00 PM PHT to today 3:00 PM PHT (clamped to now)
+  private getSessionWindowUtc(): { start: Date, end: Date } {
     const phtNow = this.getPhilippinesNow();
     const today3pmPHT = new Date(phtNow.getTime());
     today3pmPHT.setHours(15, 0, 0, 0);
     const windowStartPHT = new Date(today3pmPHT.getTime() - 24 * 60 * 60 * 1000); // yesterday 3 PM PHT
     const windowEndPHT = new Date(Math.min(today3pmPHT.getTime(), phtNow.getTime())); // up to 3 PM today (or now if before 3 PM)
+    return {
+      start: new Date(windowStartPHT.getTime() - 8 * 60 * 60 * 1000),
+      end: new Date(windowEndPHT.getTime() - 8 * 60 * 60 * 1000)
+    };
+  }
 
-    // Convert PHT window to UTC timestamps for comparison with parsed local dates
-    const windowStartUTC = new Date(windowStartPHT.getTime() - 8 * 60 * 60 * 1000);
-    const windowEndUTC = new Date(windowEndPHT.getTime() - 8 * 60 * 60 * 1000);
+  private updateDailyLimitMetrics(): void {
+    const { start: windowStartUTC, end: windowEndUTC } = this.getSessionWindowUtc();
 
     let pnl = 0;
     let winSum = 0;
@@ -667,6 +670,29 @@ mt5AccountInfo: AccountSettings = {
       this.dailyLimitNotified = true;
       this.sendNotif('', 'Daily Limit Alert', `You have reached -3.5% today. Current: ${this.dailyPnLPercent.toFixed(2)}%`);
     }
+  }
+
+  calculateSessionWinRate(): number {
+    const { start, end } = this.getSessionWindowUtc();
+    const trades = this.tableData.filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+    const totalTrades = trades.length;
+    if (totalTrades === 0) return 0;
+    const wins = trades.filter(t => this.getSafeNumber(t.netProfit) > 0).length;
+    return Math.round((wins / totalTrades) * 100);
+  }
+
+  getWinRingCircumference(): number { return 2 * Math.PI * 40; }
+  getWinRingDash(): string {
+    const c = this.getWinRingCircumference();
+    return `${c} ${c}`;
+  }
+  getWinRingOffset(): number {
+    const c = this.getWinRingCircumference();
+    const winRate = this.calculateSessionWinRate();
+    return c * (1 - (winRate / 100));
   }
 
   private setupDailyResetTimer(): void {
