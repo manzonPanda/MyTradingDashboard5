@@ -709,8 +709,9 @@ mt5AccountInfo: AccountSettings = {
   getWinRingCircumference(): number { return 2 * Math.PI * 40; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
-    const pct = Math.max(0, Math.min(4, Math.abs(this.dailyWinsPercent)));
-    const arc = (pct / 100) * c;
+    const cap = 4; // 0–4% range mapped to full circle
+    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
+    const arc = fraction * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getWinRingOffset(): number {
