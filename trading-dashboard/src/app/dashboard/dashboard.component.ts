@@ -5291,6 +5291,82 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  // Recent Trades PnL tiles helpers
+  getRecentTrades(limit: number = 10): Table[] {
+    const items = Array.isArray(this.tableData) ? [...this.tableData] : [];
+    items.sort((a, b) => {
+      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
+      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
+      return db - da; // newest first
+    });
+    return items.slice(0, limit);
+  }
+
+  getRecentTradeChunks(): Table[][] {
+    const recent = this.getRecentTrades(10);
+    const chunks: Table[][] = [];
+    for (let i = 0; i < recent.length; i += 5) {
+      chunks.push(recent.slice(i, i + 5));
+    }
+    return chunks;
+  }
+
+  // Session (day) filtering helpers for tiles
+  private getSessionFilteredTrades(): Table[] {
+    const { start, end } = this.getSessionWindowUtc();
+    return (Array.isArray(this.tableData) ? this.tableData : []).filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return !!od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+  }
+
+  getRecentSessionTrades(limit: number = 10): Table[] {
+    const items = this.getSessionFilteredTrades();
+    items.sort((a, b) => {
+      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
+      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
+      return db - da;
+    });
+    return items.slice(0, limit);
+  }
+
+  getRecentSessionTradeChunks(): Table[][] {
+    const recent = this.getRecentSessionTrades(10);
+    const chunks: Table[][] = [];
+    for (let i = 0; i < recent.length; i += 5) {
+      chunks.push(recent.slice(i, i + 5));
+    }
+    return chunks;
+  }
+
+  getNetFromCommissionPlusGross(row: Table): number {
+    const gross = this.getSafeNumber(row.profit);
+    const commission = this.getSafeNumber(row.commission);
+    return gross + commission;
+  }
+
+  private getNetCommissionGrossPercentage(row: Table): number {
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000;
+    if (accountSize <= 0) return 0;
+    const net = this.getNetFromCommissionPlusGross(row);
+    return (net / accountSize) * 100;
+  }
+
+  getSignedPercentage(row: Table): string {
+    const pct = this.getNetCommissionGrossPercentage(row);
+    if (!isFinite(pct) || isNaN(pct)) return '0.0%';
+    const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
+    return `${sign}${pct.toFixed(2)}%`;
+  }
+
+  formatShortDate(dateStr: string): string {
+    const d = this.parseOpenDate(dateStr || '');
+    if (!d) return '';
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${mm}/${dd}`;
+  }
+
   onMaxLossChange(): void {
 
 

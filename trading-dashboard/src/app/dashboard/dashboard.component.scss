@@ -675,10 +675,46 @@
   }
 }
 
+// Recent Trades PnL tiles styles
+.metric-card.pnl-tiles-card {
+  .metric-content { padding: 0.5rem; }
+  .pnl-tiles-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+  .pnl-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+  .pnl-tile {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 10px;
+    padding: 0.25rem 0.35rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex; align-items: center; justify-content: center; min-height: 44px;
+    transition: transform .15s ease, box-shadow .15s ease;
+    &:hover { transform: translateY(-1px); box-shadow: var(--tf-shadow-sm); }
+    &.pnl-positive { border-left: 3px solid var(--tf-positive); }
+    &.pnl-negative { border-left: 3px solid var(--tf-negative); }
+    &.pnl-neutral { border-left: 3px solid var(--tf-border-secondary); }
+    .tile-value { font-size: 1rem; font-weight: 800; line-height: 1; text-align: center; }
+    .tile-value.positive { color: var(--tf-positive); }
+    .tile-value.negative { color: var(--tf-negative); }
+  }
+}
+
 // Daily Limit Card Styles
 .metric-card.daily-limit-card {
+  .metric-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.5rem; }
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
+  .pnl-chip-header-grid { justify-self: center; display: grid; grid-template-rows: repeat(2, auto); gap: 0.2rem; }
+  .pnl-chip-header-grid .chip-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.2rem; }
+  .pnl-chip.mini { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--tf-border-primary); border-radius: 6px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; padding: 0 6px; min-width: 42px; }
+  .pnl-chip.mini.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
+  .pnl-chip.mini.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
+  .pnl-chip.mini.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
   .daily-limit-content { padding: 0.5rem; }
+  .pnl-chip-grid { display: grid; grid-template-rows: repeat(2, auto); gap: 0.35rem; margin-bottom: 0.5rem; }
+  .pnl-chip-grid .chip-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.35rem; }
+  .pnl-chip { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--tf-border-primary); border-radius: 8px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+  .pnl-chip.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
+  .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
+  .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
   .daily-limit-layout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; align-items: center; justify-items: center; }
   .daily-limit-chart { position: relative; width: 90px; height: 90px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -4171,7 +4207,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '���� LIVE';
+              content: '������ LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;
