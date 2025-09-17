@@ -545,8 +545,8 @@
               <div class="chip-row" *ngFor="let row of getRecentSessionTradeChunks()">
                 <div class="pnl-chip mini"
                      *ngFor="let trade of row"
-                     [ngClass]="{ 'p': isPositiveValue(getSafeNumber(trade.netProfit)), 'n': isNegativeValue(getSafeNumber(trade.netProfit)), 'z': getSafeNumber(trade.netProfit) === 0 }"
-                     [title]="(trade.symbol || 'Trade') + ' • ' + (getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.2-2')">
+                     [ngClass]="{ 'p': isPositiveValue(getNetFromCommissionPlusGross(trade)), 'n': isNegativeValue(getNetFromCommissionPlusGross(trade)), 'z': getNetFromCommissionPlusGross(trade) === 0 }"
+                     [title]="(trade.symbol || 'Trade') + ' • ' + (getNetFromCommissionPlusGross(trade) | currency:'USD':'symbol':'1.2-2')">
                   {{ getSignedPercentage(trade) }}
                 </div>
               </div>
