@@ -715,6 +715,25 @@ mt5AccountInfo: AccountSettings = {
     return 0;
   }
 
+  // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
+  getDailyLimitRingCircumference(): number { return 2 * Math.PI * 40; }
+  private getDailyLimitUsedPct(): number {
+    const startBal = this.mt5AccountInfo?.startingBalance || 0;
+    const capPct = this.mt5AccountInfo?.dailyLossLimit || 8; // capacity percent (default 8%)
+    if (startBal <= 0 || capPct <= 0) return 0;
+    const limitAmt = startBal * (capPct / 100);
+    const usedAmt = Math.min(limitAmt, Math.max(0, -this.dailyPnL));
+    const usedPct = limitAmt > 0 ? (usedAmt / limitAmt) * 100 : 0;
+    return Math.max(0, Math.min(100, usedPct));
+  }
+  getDailyLimitRingDash(): string {
+    const c = this.getDailyLimitRingCircumference();
+    const fraction = this.getDailyLimitUsedPct() / 100;
+    const arc = fraction * c;
+    return `${arc} ${Math.max(0, c - arc)}`;
+  }
+  getDailyLimitRingOffset(): number { return 0; }
+
   private setupDailyResetTimer(): void {
     // Check every minute for new session boundary and recompute
     setInterval(() => {
@@ -2050,7 +2069,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       const token = localStorage.getItem('fcm_token');
       if (!token) {
-        console.warn('⚠️ No FCM token available for notification');
+        console.warn('⚠��� No FCM token available for notification');
         return;
       }
 
@@ -2495,7 +2514,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
-    console.log('🔄 Parsing your Notion response. Results count:', results?.length || 0);
+    console.log('�� Parsing your Notion response. Results count:', results?.length || 0);
 
     if (!Array.isArray(results)) {
       console.error('❌ Results is not an array:', results);
