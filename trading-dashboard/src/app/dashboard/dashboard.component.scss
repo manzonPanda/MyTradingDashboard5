@@ -702,6 +702,12 @@
 .metric-card.daily-limit-card {
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
   .daily-limit-content { padding: 0.5rem; }
+  .pnl-chip-grid { display: grid; grid-template-rows: repeat(2, auto); gap: 0.35rem; margin-bottom: 0.5rem; }
+  .pnl-chip-grid .chip-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.35rem; }
+  .pnl-chip { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--tf-border-primary); border-radius: 8px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+  .pnl-chip.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
+  .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
+  .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
   .daily-limit-layout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; align-items: center; justify-items: center; }
   .daily-limit-chart { position: relative; width: 90px; height: 90px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
