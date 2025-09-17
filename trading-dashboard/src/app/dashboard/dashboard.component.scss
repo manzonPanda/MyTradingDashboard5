@@ -679,14 +679,14 @@
 .metric-card.daily-limit-card {
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
   .daily-limit-content { padding: 0.5rem; }
-  .daily-limit-layout { display: flex; gap: 0.5rem; align-items: center; }
+  .daily-limit-layout { display: flex; gap: 0.5rem; align-items: center; justify-content: space-evenly; }
   .daily-limit-chart { position: relative; width: 90px; height: 90px; flex: 0 0 90px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .center-percent { font-weight: 800; font-size: 0.95rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
   .center-percent.positive { color: #10b981; }
   .center-label { font-size: 0.6rem; color: var(--tf-text-muted); }
-  .daily-limit-stats { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 0; }
+  .daily-limit-stats { display: flex; flex-direction: column; gap: 0.3rem; flex: 0 1 auto; min-width: 0; align-items: center; }
   .stat-row { display: flex; align-items: baseline; justify-content: space-between; }
   .stat-label { font-size: 0.65rem; color: var(--tf-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
   .stat-value { font-size: 0.95rem; font-weight: 700; color: var(--tf-text-primary); }
