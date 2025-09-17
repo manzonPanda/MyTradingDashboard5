@@ -359,9 +359,6 @@ mt5AccountInfo: AccountSettings = {
   // Backend configuration
   private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
 
-  // Trading settings properties
-  profitTarget: number = 5; // Default 5%
-  maxLoss: number = 2; // Default 2%
 
   // Confetti celebration tracking
   private lastCelebratedTarget: number = 0;
@@ -876,6 +873,7 @@ mt5AccountInfo: AccountSettings = {
         }, 100);
 
       }
+      console.warn('✅ Loaded PropFirm Account settings from Notion: ', this.mt5AccountInfo);
     } catch (error) {
       console.warn('⚠️ Could not load MT5 account settings from backend');
     }
@@ -883,7 +881,7 @@ mt5AccountInfo: AccountSettings = {
 
 async ngOnInit() {
     // Load saved trading settings
-    this.loadTradingSettings();
+    await this.loadTradingSettings();
 
     const socket = io("http://localhost:5000",{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
@@ -5181,7 +5179,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Trading settings handler methods
   onProfitTargetChange(): void {
-    console.log('🎯 Profit target changed to:', this.profitTarget + '%');
 
     // Add visual feedback
     const dropdown = document.querySelector('.setting-dropdown') as HTMLElement;
@@ -5210,7 +5207,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.confetti.stopCurrentCelebration();
     // Start new celebration
     setTimeout(() => {
-      this.confetti.celebrateProfitTarget(this.profitTarget);
+      this.confetti.celebrateProfitTarget(this.mt5AccountInfo.profitTarget);
     }, 100);
   }
 
@@ -5219,20 +5216,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const currentPercentageGain = this.calculateTotalPercentageGain();
 
     // Show celebration whenever we're at or above target
-    if (currentPercentageGain >= this.profitTarget) {
+    if (currentPercentageGain >= this.mt5AccountInfo.profitTarget) {
       // Only trigger if we haven't celebrated this target yet
       if (!this.hasCelebratedCurrentTarget) {
         console.log('🎉 PROFIT TARGET REACHED! Triggering celebration...', {
           currentGain: currentPercentageGain,
-          target: this.profitTarget
+          target: this.mt5AccountInfo.profitTarget
         });
 
         // Mark as celebrated to prevent multiple triggers
         this.hasCelebratedCurrentTarget = true;
-        this.lastCelebratedTarget = this.profitTarget;
+        this.lastCelebratedTarget = this.mt5AccountInfo.profitTarget;
 
         // Trigger the amazing persistent confetti celebration!
-        this.confetti.celebrateProfitTarget(this.profitTarget);
+        this.confetti.celebrateProfitTarget(this.mt5AccountInfo.profitTarget);
 
         // Optional: Also play sound for big wins (trades over $100 profit)
         const totalPnL = this.calculateTotalPnL();
@@ -5275,7 +5272,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   onMaxLossChange(): void {
-    console.log('🛑 Max loss changed to:', this.maxLoss + '%');
+
 
     // Add visual feedback
     const dropdowns = document.querySelectorAll('.setting-dropdown');
@@ -5290,14 +5287,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   private updateTradingTargets(): void {
     // Update any chart reference lines or calculations based on new targets
-    console.log('📊 Updating trading targets - Profit:', this.profitTarget + '%, Max Loss:', this.maxLoss + '%');
+    console.log('📊 Updating trading targets - Profit:', this.mt5AccountInfo.profitTarget + '%, Max Loss:', this.mt5AccountInfo.maxTotalDrawdown + '%');
 
     // Trigger chart refresh to update profit target line
     this.generateTradingChartData();
 
     // Save to localStorage for persistence
-    localStorage.setItem('tradingProfitTarget', this.profitTarget.toString());
-    localStorage.setItem('tradingMaxLoss', this.maxLoss.toString());
+    localStorage.setItem('tradingProfitTarget', this.mt5AccountInfo.profitTarget.toString());
+    localStorage.setItem('tradingMaxLoss', this.mt5AccountInfo.maxTotalDrawdown.toString());
   }
 
 

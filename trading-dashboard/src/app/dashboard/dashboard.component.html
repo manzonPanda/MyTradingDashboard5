@@ -553,7 +553,7 @@
                 <canvas baseChart [type]="'doughnut'" [data]="dailyLimitChartData" [options]="dailyLimitChartOptions" class="doughnut"></canvas>
                 <div class="chart-center">
                   <div class="center-percent" [class.negative]="dailyPnL < 0" [class.positive]="dailyPnL >= 0">{{ dailyPnLPercent | number:'1.1-1' }}%</div>
-                  <div class="center-label">Today</div>
+                  <div class="center-label">Total</div>
                 </div>
               </div>
               <div class="daily-limit-stats">
