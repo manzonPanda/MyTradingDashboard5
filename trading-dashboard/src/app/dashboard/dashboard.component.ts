@@ -5339,8 +5339,21 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return chunks;
   }
 
+  getNetFromCommissionPlusGross(row: Table): number {
+    const gross = this.getSafeNumber(row.profit);
+    const commission = this.getSafeNumber(row.commission);
+    return gross + commission;
+  }
+
+  private getNetCommissionGrossPercentage(row: Table): number {
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000;
+    if (accountSize <= 0) return 0;
+    const net = this.getNetFromCommissionPlusGross(row);
+    return (net / accountSize) * 100;
+  }
+
   getSignedPercentage(row: Table): string {
-    const pct = parseFloat(this.getNetPnLPercentage(row));
+    const pct = this.getNetCommissionGrossPercentage(row);
     if (!isFinite(pct) || isNaN(pct)) return '0.0%';
     const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
     return `${sign}${pct.toFixed(2)}%`;
