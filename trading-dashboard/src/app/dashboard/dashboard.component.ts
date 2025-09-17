@@ -5311,6 +5311,34 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return chunks;
   }
 
+  // Session (day) filtering helpers for tiles
+  private getSessionFilteredTrades(): Table[] {
+    const { start, end } = this.getSessionWindowUtc();
+    return (Array.isArray(this.tableData) ? this.tableData : []).filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return !!od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+  }
+
+  getRecentSessionTrades(limit: number = 10): Table[] {
+    const items = this.getSessionFilteredTrades();
+    items.sort((a, b) => {
+      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
+      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
+      return db - da;
+    });
+    return items.slice(0, limit);
+  }
+
+  getRecentSessionTradeChunks(): Table[][] {
+    const recent = this.getRecentSessionTrades(10);
+    const chunks: Table[][] = [];
+    for (let i = 0; i < recent.length; i += 5) {
+      chunks.push(recent.slice(i, i + 5));
+    }
+    return chunks;
+  }
+
   getSignedPercentage(row: Table): string {
     const pct = parseFloat(this.getNetPnLPercentage(row));
     if (!isFinite(pct) || isNaN(pct)) return '0.0%';
