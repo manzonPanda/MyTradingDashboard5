@@ -539,14 +539,14 @@
         </div>
 
         <!-- Recent Trades PnL (2 rows x 5 boxes) -->
-        <div class="metric-card pnl-tiles-card" *ngIf="!isLoadingMetrics && getRecentTradeChunks().length">
+        <div class="metric-card pnl-tiles-card" *ngIf="!isLoadingMetrics && getRecentSessionTradeChunks().length">
           <div class="metric-header">
-            <h3 class="metric-title gradient-text">Recent Trades PnL (%)</h3>
+            <h3 class="metric-title gradient-text">Day Trades PnL (%)</h3>
             <mat-icon class="metric-icon">percent</mat-icon>
           </div>
           <div class="metric-content">
             <div class="pnl-tiles-grid">
-              <div class="pnl-row" *ngFor="let row of getRecentTradeChunks(); let r = index">
+              <div class="pnl-row" *ngFor="let row of getRecentSessionTradeChunks(); let r = index">
                 <div
                   class="pnl-tile"
                   *ngFor="let trade of row; let i = index"
@@ -556,15 +556,8 @@
                     'pnl-neutral': getSafeNumber(trade.netProfit) === 0
                   }"
                   [title]="(trade.symbol || 'Trade') + ' • ' + (getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.2-2')">
-                  <div class="tile-top">
-                    <span class="tile-symbol">{{ trade.symbol || '—' }}</span>
-                    <span class="tile-type" [class.buy]="(trade.type || '').toLowerCase() === 'buy'" [class.sell]="(trade.type || '').toLowerCase() === 'sell'">{{ trade.type || '' }}</span>
-                  </div>
                   <div class="tile-value" [class.positive]="isPositiveValue(getSafeNumber(trade.netProfit))" [class.negative]="isNegativeValue(getSafeNumber(trade.netProfit))">
                     {{ getSignedPercentage(trade) }}
-                  </div>
-                  <div class="tile-meta">
-                    <span class="tile-date">{{ formatShortDate(trade.openDate) }}</span>
                   </div>
                 </div>
               </div>
