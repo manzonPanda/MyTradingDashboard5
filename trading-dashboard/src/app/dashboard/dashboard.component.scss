@@ -684,23 +684,17 @@
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border: 1px solid var(--tf-border-primary);
     border-radius: 10px;
-    padding: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    display: flex; flex-direction: column; gap: 0.25rem; min-height: 70px;
-    transition: transform .2s ease, box-shadow .2s ease;
-    &:hover { transform: translateY(-2px); box-shadow: var(--tf-shadow-md); }
-    &.pnl-positive { border-left: 4px solid var(--tf-positive); }
-    &.pnl-negative { border-left: 4px solid var(--tf-negative); }
-    &.pnl-neutral { border-left: 4px solid var(--tf-border-secondary); }
-    .tile-top { display: flex; align-items: center; justify-content: space-between; }
-    .tile-symbol { font-weight: 700; font-size: .8rem; color: var(--tf-text-primary); }
-    .tile-type { font-size: .6rem; font-weight: 700; padding: 2px 6px; border-radius: 999px; text-transform: uppercase; }
-    .tile-type.buy { background: rgba(16,185,129,.12); color: #059669; border: 1px solid rgba(16,185,129,.2); }
-    .tile-type.sell { background: rgba(239,68,68,.12); color: #dc2626; border: 1px solid rgba(239,68,68,.2); }
-    .tile-value { font-size: 1.1rem; font-weight: 800; line-height: 1; }
+    padding: 0.25rem 0.35rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex; align-items: center; justify-content: center; min-height: 44px;
+    transition: transform .15s ease, box-shadow .15s ease;
+    &:hover { transform: translateY(-1px); box-shadow: var(--tf-shadow-sm); }
+    &.pnl-positive { border-left: 3px solid var(--tf-positive); }
+    &.pnl-negative { border-left: 3px solid var(--tf-negative); }
+    &.pnl-neutral { border-left: 3px solid var(--tf-border-secondary); }
+    .tile-value { font-size: 1rem; font-weight: 800; line-height: 1; text-align: center; }
     .tile-value.positive { color: var(--tf-positive); }
     .tile-value.negative { color: var(--tf-negative); }
-    .tile-meta { font-size: .6rem; color: var(--tf-text-muted); }
   }
 }
 
@@ -4200,7 +4194,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '���� LIVE';
+              content: '������ LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;
