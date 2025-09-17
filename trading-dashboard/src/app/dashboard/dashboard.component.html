@@ -538,33 +538,6 @@
           </div>
         </div>
 
-        <!-- Recent Trades PnL (2 rows x 5 boxes) -->
-        <div class="metric-card pnl-tiles-card" *ngIf="!isLoadingMetrics && getRecentSessionTradeChunks().length">
-          <div class="metric-header">
-            <h3 class="metric-title gradient-text">Day Trades PnL (%)</h3>
-            <mat-icon class="metric-icon">percent</mat-icon>
-          </div>
-          <div class="metric-content">
-            <div class="pnl-tiles-grid">
-              <div class="pnl-row" *ngFor="let row of getRecentSessionTradeChunks(); let r = index">
-                <div
-                  class="pnl-tile"
-                  *ngFor="let trade of row; let i = index"
-                  [ngClass]="{
-                    'pnl-positive': isPositiveValue(getSafeNumber(trade.netProfit)),
-                    'pnl-negative': isNegativeValue(getSafeNumber(trade.netProfit)),
-                    'pnl-neutral': getSafeNumber(trade.netProfit) === 0
-                  }"
-                  [title]="(trade.symbol || 'Trade') + ' • ' + (getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.2-2')">
-                  <div class="tile-value" [class.positive]="isPositiveValue(getSafeNumber(trade.netProfit))" [class.negative]="isNegativeValue(getSafeNumber(trade.netProfit))">
-                    {{ getSignedPercentage(trade) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="metric-card daily-limit-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Day Trades</h3>
