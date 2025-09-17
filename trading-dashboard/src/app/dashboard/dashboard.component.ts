@@ -5291,6 +5291,41 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  // Recent Trades PnL tiles helpers
+  getRecentTrades(limit: number = 10): Table[] {
+    const items = Array.isArray(this.tableData) ? [...this.tableData] : [];
+    items.sort((a, b) => {
+      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
+      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
+      return db - da; // newest first
+    });
+    return items.slice(0, limit);
+  }
+
+  getRecentTradeChunks(): Table[][] {
+    const recent = this.getRecentTrades(10);
+    const chunks: Table[][] = [];
+    for (let i = 0; i < recent.length; i += 5) {
+      chunks.push(recent.slice(i, i + 5));
+    }
+    return chunks;
+  }
+
+  getSignedPercentage(row: Table): string {
+    const pct = parseFloat(this.getNetPnLPercentage(row));
+    if (!isFinite(pct) || isNaN(pct)) return '0.0%';
+    const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
+    return `${sign}${pct.toFixed(2)}%`;
+  }
+
+  formatShortDate(dateStr: string): string {
+    const d = this.parseOpenDate(dateStr || '');
+    if (!d) return '';
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${mm}/${dd}`;
+  }
+
   onMaxLossChange(): void {
 
 
