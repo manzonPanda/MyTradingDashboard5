@@ -541,16 +541,9 @@
         <div class="metric-card daily-limit-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Day Trades</h3>
-            <mat-icon class="metric-icon">calendar_today</mat-icon>
-          </div>
-          <div *ngIf="isLoadingMetrics" class="metric-loading">
-            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
-            <span class="loading-text">Loading...</span>
-          </div>
-          <div *ngIf="!isLoadingMetrics" class="metric-content daily-limit-content">
-            <div class="pnl-chip-grid" *ngIf="getRecentSessionTradeChunks().length">
+            <div class="pnl-chip-header-grid" *ngIf="getRecentSessionTradeChunks().length">
               <div class="chip-row" *ngFor="let row of getRecentSessionTradeChunks()">
-                <div class="pnl-chip"
+                <div class="pnl-chip mini"
                      *ngFor="let trade of row"
                      [ngClass]="{ 'p': isPositiveValue(getSafeNumber(trade.netProfit)), 'n': isNegativeValue(getSafeNumber(trade.netProfit)), 'z': getSafeNumber(trade.netProfit) === 0 }"
                      [title]="(trade.symbol || 'Trade') + ' • ' + (getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.2-2')">
@@ -558,6 +551,13 @@
                 </div>
               </div>
             </div>
+            <mat-icon class="metric-icon">calendar_today</mat-icon>
+          </div>
+          <div *ngIf="isLoadingMetrics" class="metric-loading">
+            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
+            <span class="loading-text">Loading...</span>
+          </div>
+          <div *ngIf="!isLoadingMetrics" class="metric-content daily-limit-content">
             <div class="daily-limit-layout">
               <div class="daily-limit-chart">
                 <svg viewBox="0 0 100 100" class="wins-gauge-svg daily-limit-gauge-svg">
