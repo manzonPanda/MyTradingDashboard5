@@ -1072,7 +1072,7 @@ async ngOnInit() {
       // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
         if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('🗑️ Destroying existing Angular DataTable');
+          console.log('��️ Destroying existing Angular DataTable');
           $('#myTable').DataTable().destroy();
         }
 
@@ -2097,7 +2097,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('��� Checking backend availability...');
+      console.log('����� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -5322,12 +5322,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getRecentSessionTrades(limit: number = 10): Table[] {
     const items = this.getSessionFilteredTrades();
+    // Sort ascending (oldest -> newest) to display chronologically, but keep the most recent 'limit' trades
     items.sort((a, b) => {
       const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
       const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
-      return db - da;
+      return da - db;
     });
-    return items.slice(0, limit);
+    return items.slice(-limit);
   }
 
   getRecentSessionTradeChunks(): Table[][] {
