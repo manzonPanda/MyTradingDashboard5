@@ -5320,9 +5320,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
   }
 
+  // Today-only filtering helpers for Day Trades chips (midnight PHT to now)
+  private getTodayFilteredTrades(): Table[] {
+    const { start, end } = this.getTodayWindowUtc();
+    return (Array.isArray(this.tableData) ? this.tableData : []).filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return !!od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
+    });
+  }
+
   getRecentSessionTrades(limit: number = 10): Table[] {
-    const items = this.getSessionFilteredTrades();
-    // Sort ascending (oldest -> newest) and take the first 'limit' to show chronological order from start of session
+    // Use today's trades for the Day Trades header chips
+    const items = this.getTodayFilteredTrades();
+    // Sort ascending (oldest -> newest) and take the first 'limit'
     items.sort((a, b) => {
       const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
       const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
