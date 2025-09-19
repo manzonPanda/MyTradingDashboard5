@@ -5343,14 +5343,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getRecentSessionTrades(limit: number = 10): Table[] {
-    // Use today's trades (midnight PHT to now) to mirror the table's "during the day" view
+    // Use today's trades in the exact order they appear in the table (no sorting)
     const items = this.getTodayFilteredTrades();
-    // Sort ascending (oldest -> newest) and take the first 'limit'
-    items.sort((a, b) => {
-      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
-      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
-      return da - db;
-    });
     return items.slice(0, limit);
   }
 
