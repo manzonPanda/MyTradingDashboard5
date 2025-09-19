@@ -567,6 +567,7 @@
                 </svg>
                 <div class="chart-center">
                   <div class="center-percent" [class.negative]="dailyPnL < 0" [class.positive]="dailyPnL >= 0">{{ dailyPnLPercent | number:'1.2-2' }}%</div>
+                  <div class="center-amount">{{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}</div>
                   <div class="center-label">Total</div>
                 </div>
               </div>
