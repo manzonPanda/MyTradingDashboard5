@@ -5330,8 +5330,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   getRecentSessionTrades(limit: number = 10): Table[] {
-    // Use today's trades for the Day Trades header chips
-    const items = this.getTodayFilteredTrades();
+    // Use session window (3 PM PHT to next 3 PM PHT) to reflect how trades are entered during the trading day
+    const items = this.getSessionFilteredTrades();
     // Sort ascending (oldest -> newest) and take the first 'limit'
     items.sort((a, b) => {
       const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
