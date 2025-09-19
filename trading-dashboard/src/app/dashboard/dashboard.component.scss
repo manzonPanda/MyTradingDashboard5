@@ -736,6 +736,7 @@
   .wins-gauge { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; justify-self: center; }
   .wins-gauge-svg { width: 100%; height: 100%; }
   .wins-percent-text { font-size: 1rem; font-weight: 800; fill: var(--tf-text-primary); }
+  .wins-amount-text { font-size: 0.8rem; font-weight: 700; fill: var(--tf-text-secondary); }
   .wins-label { font-size: 0.6rem; fill: var(--tf-text-muted); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
 
