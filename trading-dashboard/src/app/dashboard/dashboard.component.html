@@ -780,7 +780,7 @@
 
         <div class="metric-card best-profit-loss-combined">
           <div class="metric-header">
-            <h3 class="metric-title gradient-text">Best Performance</h3>
+            <h3 class="metric-title gradient-text">Best Performance + Avg. Trade Duration</h3>
             <mat-icon class="metric-icon">trending_up</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
@@ -788,29 +788,53 @@
             <span class="loading-text">Loading...</span>
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="activity-layout">
-              <div class="activity-chart">
-                <div class="chart-container">
-                  <div class="chart-bars">
-                    <div class="bar-wrapper">
-                      <div class="bar-segment best-profit-bar"
-                           [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
-                        <span class="bar-label">
-                          {{ (calculateBestProfitPercentage() >= 0 ? '+' : '') + (calculateBestProfitPercentage() | number:'1.0-1') + '%' }}<br>
-                          {{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}
-                        </span>
+            <div class="combined-sections">
+              <div class="activity-layout">
+                <div class="activity-chart">
+                  <div class="chart-container">
+                    <div class="chart-bars">
+                      <div class="bar-wrapper">
+                        <div class="bar-segment best-profit-bar"
+                             [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
+                          <span class="bar-label">
+                            {{ (calculateBestProfitPercentage() >= 0 ? '+' : '') + (calculateBestProfitPercentage() | number:'1.0-1') + '%' }}<br>
+                            {{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}
+                          </span>
+                        </div>
+                        <div class="bar-title">Best Profit</div>
                       </div>
-                      <div class="bar-title">Best Profit</div>
+                      <div class="bar-wrapper">
+                        <div class="bar-segment worst-loss-bar"
+                             [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
+                          <span class="bar-label">
+                            {{ '-' + (calculateBestLossPercentage() | number:'1.0-1') + '%' }}<br>
+                            {{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}
+                          </span>
+                        </div>
+                        <div class="bar-title">Worst Loss</div>
+                      </div>
                     </div>
-                    <div class="bar-wrapper">
-                      <div class="bar-segment worst-loss-bar"
-                           [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
-                        <span class="bar-label">
-                          {{ '-' + (calculateBestLossPercentage() | number:'1.0-1') + '%' }}<br>
-                          {{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}
-                        </span>
+                  </div>
+                </div>
+              </div>
+              <div class="activity-layout">
+                <div class="activity-chart">
+                  <div class="chart-container">
+                    <div class="chart-bars">
+                      <div class="bar-wrapper">
+                        <div class="bar-segment duration-overall-bar" [style.width.%]="70"
+                             [style.height.%]="getDurationBarHeight(calculateAvgTradeDurationMinutes(), calculateAvgTradeDurationMinutes(), calculateAvgLosingTradeDurationMinutes())">
+                          <span class="bar-label">{{ calculateAvgTradeDuration() }}</span>
+                        </div>
+                        <div class="bar-title">Win</div>
                       </div>
-                      <div class="bar-title">Worst Loss</div>
+                      <div class="bar-wrapper">
+                        <div class="bar-segment duration-losing-bar" [style.width.%]="70"
+                             [style.height.%]="getDurationBarHeight(calculateAvgLosingTradeDurationMinutes(), calculateAvgTradeDurationMinutes(), calculateAvgLosingTradeDurationMinutes())">
+                          <span class="bar-label">{{ calculateAvgLosingTradeDuration() }}</span>
+                        </div>
+                        <div class="bar-title">Lose</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -819,40 +843,6 @@
           </div>
         </div>
 
-        <div class="metric-card avg-trade-duration">
-          <div class="metric-header">
-            <h3 class="metric-title gradient-text">Avg. Trade Duration</h3>
-            <mat-icon class="metric-icon">schedule</mat-icon>
-          </div>
-          <div *ngIf="isLoadingMetrics" class="metric-loading">
-            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
-            <span class="loading-text">Loading...</span>
-          </div>
-          <div *ngIf="!isLoadingMetrics" class="metric-content">
-            <div class="activity-layout">
-              <div class="activity-chart">
-                <div class="chart-container">
-                  <div class="chart-bars">
-                    <div class="bar-wrapper">
-                      <div class="bar-segment duration-overall-bar" [style.width.%]="70"
-                           [style.height.%]="getDurationBarHeight(calculateAvgTradeDurationMinutes(), calculateAvgTradeDurationMinutes(), calculateAvgLosingTradeDurationMinutes())">
-                        <span class="bar-label">{{ calculateAvgTradeDuration() }}</span>
-                      </div>
-                      <div class="bar-title">Win</div>
-                    </div>
-                    <div class="bar-wrapper">
-                      <div class="bar-segment duration-losing-bar" [style.width.%]="70"
-                           [style.height.%]="getDurationBarHeight(calculateAvgLosingTradeDurationMinutes(), calculateAvgTradeDurationMinutes(), calculateAvgLosingTradeDurationMinutes())">
-                        <span class="bar-label">{{ calculateAvgLosingTradeDuration() }}</span>
-                      </div>
-                      <div class="bar-title">Lose</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
       </div>
     </div>
