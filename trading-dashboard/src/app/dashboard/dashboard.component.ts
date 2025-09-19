@@ -5322,13 +5322,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getRecentSessionTrades(limit: number = 10): Table[] {
     const items = this.getSessionFilteredTrades();
-    // Sort ascending (oldest -> newest) to display chronologically, but keep the most recent 'limit' trades
+    // Sort ascending (oldest -> newest) and take the first 'limit' to show chronological order from start of session
     items.sort((a, b) => {
       const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
       const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
       return da - db;
     });
-    return items.slice(-limit);
+    return items.slice(0, limit);
   }
 
   getRecentSessionTradeChunks(): Table[][] {
