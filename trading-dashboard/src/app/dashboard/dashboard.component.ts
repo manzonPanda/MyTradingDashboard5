@@ -573,12 +573,23 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private parseOpenDate(str: string): Date | null {
-    // Expected formats like "MM.DD.YYYY HH:mm" or "YYYY.MM.DD HH:mm:ss"
+    // Accept multiple formats, including:
+    // - "MM.DD.YYYY HH:mm[:ss]"
+    // - "YYYY.MM.DD HH:mm[:ss]"
+    // - Natural strings like "Sep 19, 2025, 08:21 PM"
     if (!str) return null;
-    const parts = str.trim().split(' ');
+    const raw = str.trim();
+
+    // Try native parser first for flexible formats (e.g., with month names and AM/PM)
+    const native = new Date(raw);
+    if (!isNaN(native.getTime())) return native;
+
+    // Fallback to dot-separated formats
+    const parts = raw.split(' ');
     if (parts.length < 1) return null;
     const datePart = parts[0];
     const timePart = parts[1] || '00:00:00';
+
     let y = 0, m = 0, d = 0, hh = 0, mm = 0, ss = 0;
     if (datePart.includes('.')) {
       const dp = datePart.split('.').map(v => parseInt(v, 10));
@@ -588,8 +599,10 @@ mt5AccountInfo: AccountSettings = {
         m = dp[0] - 1; d = dp[1]; y = dp[2];
       }
     }
+
     const tp = timePart.split(':').map(v => parseInt(v, 10));
     if (tp.length >= 2) { hh = tp[0]; mm = tp[1]; ss = tp.length >= 3 ? tp[2] : 0; }
+
     const dt = new Date(y, m, d, hh, mm, ss);
     return isNaN(dt.getTime()) ? null : dt;
   }
@@ -1072,7 +1085,7 @@ async ngOnInit() {
       // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
         if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('🗑️ Destroying existing Angular DataTable');
+          console.log('��️ Destroying existing Angular DataTable');
           $('#myTable').DataTable().destroy();
         }
 
@@ -2097,7 +2110,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     try {
       // Check if backend is running first
-      console.log('��� Checking backend availability...');
+      console.log('����� Checking backend availability...');
 
       const backendRunning = await this.isBackendRunning();
 
@@ -5320,13 +5333,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
   }
 
-  getRecentSessionTrades(limit: number = 10): Table[] {
-    const items = this.getSessionFilteredTrades();
-    items.sort((a, b) => {
-      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
-      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
-      return db - da;
+  // Today-only filtering helpers for Day Trades chips (midnight PHT to now)
+  private getTodayFilteredTrades(): Table[] {
+    const { start, end } = this.getTodayWindowUtc();
+    return (Array.isArray(this.tableData) ? this.tableData : []).filter(t => {
+      const od = this.parseOpenDate(t.openDate || '');
+      return !!od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
     });
+  }
+
+  getRecentSessionTrades(limit: number = 10): Table[] {
+    // Use today's trades in the exact order they appear in the table (no sorting)
+    const items = this.getTodayFilteredTrades();
     return items.slice(0, limit);
   }
 
