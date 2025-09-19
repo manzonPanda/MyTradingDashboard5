@@ -573,12 +573,23 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private parseOpenDate(str: string): Date | null {
-    // Expected formats like "MM.DD.YYYY HH:mm" or "YYYY.MM.DD HH:mm:ss"
+    // Accept multiple formats, including:
+    // - "MM.DD.YYYY HH:mm[:ss]"
+    // - "YYYY.MM.DD HH:mm[:ss]"
+    // - Natural strings like "Sep 19, 2025, 08:21 PM"
     if (!str) return null;
-    const parts = str.trim().split(' ');
+    const raw = str.trim();
+
+    // Try native parser first for flexible formats (e.g., with month names and AM/PM)
+    const native = new Date(raw);
+    if (!isNaN(native.getTime())) return native;
+
+    // Fallback to dot-separated formats
+    const parts = raw.split(' ');
     if (parts.length < 1) return null;
     const datePart = parts[0];
     const timePart = parts[1] || '00:00:00';
+
     let y = 0, m = 0, d = 0, hh = 0, mm = 0, ss = 0;
     if (datePart.includes('.')) {
       const dp = datePart.split('.').map(v => parseInt(v, 10));
@@ -588,8 +599,10 @@ mt5AccountInfo: AccountSettings = {
         m = dp[0] - 1; d = dp[1]; y = dp[2];
       }
     }
+
     const tp = timePart.split(':').map(v => parseInt(v, 10));
     if (tp.length >= 2) { hh = tp[0]; mm = tp[1]; ss = tp.length >= 3 ? tp[2] : 0; }
+
     const dt = new Date(y, m, d, hh, mm, ss);
     return isNaN(dt.getTime()) ? null : dt;
   }
