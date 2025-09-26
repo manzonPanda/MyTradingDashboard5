@@ -719,13 +719,34 @@ mt5AccountInfo: AccountSettings = {
   getWinRingCircumference(): number { return 2 * Math.PI * 40; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
-    const cap = 4; // 0–4% range mapped to full circle
-    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
-    const arc = fraction * c;
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) return `${0} ${c}`;
+    const arc = (wins / total) * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getWinRingOffset(): number {
     return 0;
+  }
+
+  getLossRingDash(): string {
+    const c = this.getWinRingCircumference();
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) return `${0} ${c}`;
+    const arc = (losses / total) * c;
+    return `${arc} ${Math.max(0, c - arc)}`;
+  }
+  getLossRingOffset(): number {
+    const c = this.getWinRingCircumference();
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) return 0;
+    const winArc = (wins / total) * c;
+    return -winArc;
   }
 
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
@@ -2161,7 +2182,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           startCursor = proxyResponse.next_cursor || null;
 
           if (hasMore && startCursor) {
-            console.log(`���� More data available, fetching next page...`);
+            console.log(`������ More data available, fetching next page...`);
           } else {
             console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
           }
