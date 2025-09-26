@@ -789,6 +789,17 @@ mt5AccountInfo: AccountSettings = {
 
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
   getDailyLimitRingCircumference(): number { return 2 * Math.PI * 40; }
+
+  // Right circle (Win Rate) – map 0–4% to full circle
+  getRightWinRingCircumference(): number { return 2 * Math.PI * 40; }
+  getRightWinRingDash(): string {
+    const c = this.getRightWinRingCircumference();
+    const cap = 4; // 0–4% mapped to full circle
+    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
+    const arc = fraction * c;
+    return `${arc} ${Math.max(0, c - arc)}`;
+  }
+  getRightWinRingOffset(): number { return 0; }
   private getDailyLimitUsedPct(): number {
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     const capPct = this.mt5AccountInfo?.dailyLossLimit || 8; // capacity percent (default 8%)
@@ -4953,7 +4964,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Update chart with real-time trade data
   updateChartWithNewTrade(newTrade: Table): void {
-    console.log('📈 Updating chart with new trade data...', newTrade);
+    console.log('��� Updating chart with new trade data...', newTrade);
 
     // Add animation class temporarily
     const chartContainer = document.querySelector('.trading-chart-container');
