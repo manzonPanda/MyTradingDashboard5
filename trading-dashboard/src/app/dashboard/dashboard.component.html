@@ -583,12 +583,12 @@
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="10"/>
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round"
                           [attr.stroke-dasharray]="getRightWinRingDash()" [attr.stroke-dashoffset]="getRightWinRingOffset()" transform="rotate(-90 50 50)"/>
-                  <g class="wins-center-group" transform="translate(50,50)">
-                    <text text-anchor="middle" dominant-baseline="central" class="wins-percent-text" dy="-10">{{ dailyWinsPercent | number:'1.2-2' }}%</text>
-                    <text text-anchor="middle" dominant-baseline="central" class="wins-amount-text" dy="4">{{ dailyWinsAmount | currency:'USD':'symbol':'1.0-0' }}</text>
-                    <text text-anchor="middle" dominant-baseline="central" class="wins-label" dy="18">Pyramiding</text>
-                  </g>
                 </svg>
+                <div class="wins-gauge-center">
+                  <div class="wins-percent-text">{{ dailyWinsPercent | number:'1.2-2' }}%</div>
+                  <div class="wins-amount-text">{{ dailyWinsAmount | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="wins-label">Pyramiding</div>
+                </div>
               </div>
               <div class="reset-note">Resets in {{ resetCountdown }}</div>
             </div>
