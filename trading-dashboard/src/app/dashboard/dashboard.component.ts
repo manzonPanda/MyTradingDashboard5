@@ -5423,10 +5423,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private getNetCommissionGrossPercentage(row: Table): number {
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000;
-    if (accountSize <= 0) return 0;
+    const base = (this.mt5AccountInfo?.startingBalance && this.mt5AccountInfo.startingBalance > 0)
+      ? this.mt5AccountInfo.startingBalance
+      : (this.calculateAccountSize() || 5000);
+    if (base <= 0) return 0;
     const net = this.getNetFromCommissionPlusGross(row);
-    return (net / accountSize) * 100;
+    return (net / base) * 100;
   }
 
   getSignedPercentage(row: Table): string {
