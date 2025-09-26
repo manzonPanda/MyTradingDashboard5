@@ -559,14 +559,19 @@
           </div>
           <div *ngIf="!isLoadingMetrics" class="metric-content daily-limit-content">
             <div class="daily-limit-layout">
-              <div class="daily-limit-chart">
+              <div class="daily-limit-chart" #dailyLimitChartRef>
                 <svg viewBox="0 0 100 100" class="wins-gauge-svg daily-limit-gauge-svg">
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="10"/>
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round"
-                          [attr.stroke-dasharray]="getWinRingDash()" [attr.stroke-dashoffset]="getWinRingOffset()" transform="rotate(-90 50 50)"/>
+                          [attr.stroke-dasharray]="getWinRingDash()" [attr.stroke-dashoffset]="getWinRingOffset()" transform="rotate(-90 50 50)"
+                          (mouseenter)="onDonutArcEnter($event, true)" (mousemove)="onDonutArcMove($event, true)" (mouseleave)="onDonutArcLeave()"/>
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="10" stroke-linecap="round"
-                          [attr.stroke-dasharray]="getLossRingDash()" [attr.stroke-dashoffset]="getLossRingOffset()" transform="rotate(-90 50 50)"/>
+                          [attr.stroke-dasharray]="getLossRingDash()" [attr.stroke-dashoffset]="getLossRingOffset()" transform="rotate(-90 50 50)"
+                          (mouseenter)="onDonutArcEnter($event, false)" (mousemove)="onDonutArcMove($event, false)" (mouseleave)="onDonutArcLeave()"/>
                 </svg>
+                <div *ngIf="donutTooltipVisible" class="donut-tooltip" [ngClass]="donutTooltipClass" [ngStyle]="{ left: donutTooltipX + 'px', top: donutTooltipY + 'px' }">
+                  <div class="donut-tooltip-line" *ngFor="let line of donutTooltipLines; let i = index">{{ line }}</div>
+                </div>
                 <div class="chart-center">
                   <div class="center-percent" [class.negative]="dailyPnL < 0" [class.positive]="dailyPnL >= 0">{{ dailyPnLPercent | number:'1.2-2' }}%</div>
                   <div class="center-amount">{{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}</div>
@@ -922,7 +927,7 @@
   <section class="table-section">
     <div class="table-card">
       <div class="table-header">
-        <h2 class="section-title">Active Account: 5ers4️���5k [#25475923]
+        <h2 class="section-title">Active Account: 5ers4️⃣5k [#25475923]
           <small style="font-size: 0.8rem; color: #666; font-weight: normal;">
             ({{ tableData.length }} trades)
           </small>
