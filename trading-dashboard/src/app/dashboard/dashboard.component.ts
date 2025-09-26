@@ -763,10 +763,13 @@ mt5AccountInfo: AccountSettings = {
     const total = wins + losses;
     if (total <= 0) { this.donutTooltipVisible = false; return; }
 
-    const amount = isWin ? wins : losses;
-    const pct = isWin ? Math.abs(this.dailyWinsPercent) : Math.abs(this.dailyLossesPercent);
-    const percentText = `${pct.toFixed(2)}%`;
-    const amountText = `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+    const label = isWin ? 'Wins' : 'Losses';
+    const pctSigned = isWin ? this.dailyWinsPercent : this.dailyLossesPercent;
+    const percentText = `${label} ${pctSigned >= 0 ? '+' : ''}${pctSigned.toFixed(2)}%`;
+
+    const amountUnsigned = isWin ? wins : losses; // positive number
+    const amountSigned = isWin ? amountUnsigned : -amountUnsigned;
+    const amountText = `${amountSigned >= 0 ? '+' : ''}$${Math.abs(amountSigned).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
     const container = this.dailyLimitChartRef?.nativeElement;
     if (container) {
@@ -4964,7 +4967,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Update chart with real-time trade data
   updateChartWithNewTrade(newTrade: Table): void {
-    console.log('��� Updating chart with new trade data...', newTrade);
+    console.log('📈 Updating chart with new trade data...', newTrade);
 
     // Add animation class temporarily
     const chartContainer = document.querySelector('.trading-chart-container');
@@ -5223,7 +5226,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   clearAllReminders(): void {
-    console.log('🧹 Clearing all news reminders...');
+    console.log('���� Clearing all news reminders...');
     this.newsReminder.clearAllReminders();
   }
 
