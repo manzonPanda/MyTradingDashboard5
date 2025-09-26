@@ -719,17 +719,89 @@ mt5AccountInfo: AccountSettings = {
   getWinRingCircumference(): number { return 2 * Math.PI * 40; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
-    const cap = 4; // 0–4% range mapped to full circle
-    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
-    const arc = fraction * c;
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) return `${0} ${c}`;
+    const arc = (wins / total) * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getWinRingOffset(): number {
     return 0;
   }
 
+  getLossRingDash(): string {
+    const c = this.getWinRingCircumference();
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) return `${0} ${c}`;
+    const arc = (losses / total) * c;
+    return `${arc} ${Math.max(0, c - arc)}`;
+  }
+  getLossRingOffset(): number {
+    const c = this.getWinRingCircumference();
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) return 0;
+    const winArc = (wins / total) * c;
+    return -winArc;
+  }
+
+  // Tooltip state for left donut
+  donutTooltipVisible: boolean = false;
+  donutTooltipX: number = 0;
+  donutTooltipY: number = 0;
+  donutTooltipLines: string[] = [];
+  donutTooltipClass: string = '';
+  @ViewChild('dailyLimitChartRef') dailyLimitChartRef?: ElementRef<HTMLDivElement>;
+
+  private showDonutTooltip(evt: MouseEvent, isWin: boolean): void {
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) { this.donutTooltipVisible = false; return; }
+
+    const pctSigned = isWin ? this.dailyWinsPercent : this.dailyLossesPercent;
+    const percentText = `${pctSigned >= 0 ? '+' : ''}${pctSigned.toFixed(2)}%`;
+
+    const amountUnsigned = isWin ? wins : losses; // positive number
+    const amountSigned = isWin ? amountUnsigned : -amountUnsigned;
+    const amountText = `${amountSigned >= 0 ? '+' : '-'}$${Math.abs(amountSigned).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+
+    const container = this.dailyLimitChartRef?.nativeElement;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      this.donutTooltipX = evt.clientX - rect.left;
+      this.donutTooltipY = evt.clientY - rect.top;
+    } else {
+      this.donutTooltipX = evt.offsetX;
+      this.donutTooltipY = evt.offsetY;
+    }
+
+    this.donutTooltipLines = [percentText, amountText];
+    this.donutTooltipClass = isWin ? 'tooltip-positive' : 'tooltip-danger';
+    this.donutTooltipVisible = true;
+  }
+
+  onDonutArcEnter(evt: MouseEvent, isWin: boolean): void { this.showDonutTooltip(evt, isWin); }
+  onDonutArcMove(evt: MouseEvent, isWin: boolean): void { this.showDonutTooltip(evt, isWin); }
+  onDonutArcLeave(): void { this.donutTooltipVisible = false; }
+
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
   getDailyLimitRingCircumference(): number { return 2 * Math.PI * 40; }
+
+  // Right circle (Win Rate) – map 0–4% to full circle
+  getRightWinRingCircumference(): number { return 2 * Math.PI * 40; }
+  getRightWinRingDash(): string {
+    const c = this.getRightWinRingCircumference();
+    const cap = 4; // 0–4% mapped to full circle
+    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
+    const arc = fraction * c;
+    return `${arc} ${Math.max(0, c - arc)}`;
+  }
+  getRightWinRingOffset(): number { return 0; }
   private getDailyLimitUsedPct(): number {
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     const capPct = this.mt5AccountInfo?.dailyLossLimit || 8; // capacity percent (default 8%)
@@ -2161,7 +2233,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           startCursor = proxyResponse.next_cursor || null;
 
           if (hasMore && startCursor) {
-            console.log(`���� More data available, fetching next page...`);
+            console.log(`������ More data available, fetching next page...`);
           } else {
             console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
           }
@@ -2189,7 +2261,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
   
       } else {
-        console.warn('⚠️ No results found in your Notion database after pagination');
+        console.warn('⚠��� No results found in your Notion database after pagination');
         this.notionPerformanceData = [];
    
       }
@@ -2483,7 +2555,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           shadowColor: 'rgba(16, 185, 129, 0.4)'
         },
         {
-          label: '🟣 --- Starting Balance',
+          label: '���� --- Starting Balance',
           data: new Array(labels.length).fill(accountSize),
           borderColor: '#3d3aed',
           backgroundColor: 'transparent',
@@ -5364,10 +5436,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private getNetCommissionGrossPercentage(row: Table): number {
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000;
-    if (accountSize <= 0) return 0;
+    const base = (this.mt5AccountInfo?.startingBalance && this.mt5AccountInfo.startingBalance > 0)
+      ? this.mt5AccountInfo.startingBalance
+      : (this.calculateAccountSize() || 5000);
+    if (base <= 0) return 0;
     const net = this.getNetFromCommissionPlusGross(row);
-    return (net / accountSize) * 100;
+    return (net / base) * 100;
   }
 
   getSignedPercentage(row: Table): string {
