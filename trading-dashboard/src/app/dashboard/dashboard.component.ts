@@ -749,6 +749,44 @@ mt5AccountInfo: AccountSettings = {
     return -winArc;
   }
 
+  // Tooltip state for left donut
+  donutTooltipVisible: boolean = false;
+  donutTooltipX: number = 0;
+  donutTooltipY: number = 0;
+  donutTooltipLines: string[] = [];
+  donutTooltipClass: string = '';
+  @ViewChild('dailyLimitChartRef') dailyLimitChartRef?: ElementRef<HTMLDivElement>;
+
+  private showDonutTooltip(evt: MouseEvent, isWin: boolean): void {
+    const wins = Math.max(0, this.dailyWinsAmount);
+    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
+    const total = wins + losses;
+    if (total <= 0) { this.donutTooltipVisible = false; return; }
+
+    const portion = isWin ? (wins / total) : (losses / total);
+    const amount = isWin ? wins : losses;
+    const percentText = `${(portion * 100).toFixed(2)}%`;
+    const amountText = `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+
+    const container = this.dailyLimitChartRef?.nativeElement;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      this.donutTooltipX = evt.clientX - rect.left;
+      this.donutTooltipY = evt.clientY - rect.top;
+    } else {
+      this.donutTooltipX = evt.offsetX;
+      this.donutTooltipY = evt.offsetY;
+    }
+
+    this.donutTooltipLines = [percentText, amountText];
+    this.donutTooltipClass = isWin ? 'tooltip-positive' : 'tooltip-danger';
+    this.donutTooltipVisible = true;
+  }
+
+  onDonutArcEnter(evt: MouseEvent, isWin: boolean): void { this.showDonutTooltip(evt, isWin); }
+  onDonutArcMove(evt: MouseEvent, isWin: boolean): void { this.showDonutTooltip(evt, isWin); }
+  onDonutArcLeave(): void { this.donutTooltipVisible = false; }
+
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
   getDailyLimitRingCircumference(): number { return 2 * Math.PI * 40; }
   private getDailyLimitUsedPct(): number {
