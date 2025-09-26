@@ -739,6 +739,7 @@
   .wins-amount-text { font-size: 0.75rem; font-weight: 700; fill: var(--tf-text-secondary); }
   .wins-label { font-size: 0.6rem; fill: var(--tf-text-muted); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
+  .daily-limit-layout .reset-note { grid-column: 1 / -1; justify-self: center; }
 
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
