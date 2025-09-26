@@ -763,9 +763,9 @@ mt5AccountInfo: AccountSettings = {
     const total = wins + losses;
     if (total <= 0) { this.donutTooltipVisible = false; return; }
 
-    const portion = isWin ? (wins / total) : (losses / total);
     const amount = isWin ? wins : losses;
-    const percentText = `${(portion * 100).toFixed(2)}%`;
+    const pct = isWin ? Math.abs(this.dailyWinsPercent) : Math.abs(this.dailyLossesPercent);
+    const percentText = `${pct.toFixed(2)}%`;
     const amountText = `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
     const container = this.dailyLimitChartRef?.nativeElement;
@@ -2542,7 +2542,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           shadowColor: 'rgba(16, 185, 129, 0.4)'
         },
         {
-          label: '🟣 --- Starting Balance',
+          label: '���� --- Starting Balance',
           data: new Array(labels.length).fill(accountSize),
           borderColor: '#3d3aed',
           backgroundColor: 'transparent',
