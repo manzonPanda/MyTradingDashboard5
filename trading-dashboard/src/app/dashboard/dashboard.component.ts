@@ -716,7 +716,7 @@ mt5AccountInfo: AccountSettings = {
     return Math.round((wins / totalTrades) * 100);
   }
 
-  getWinRingCircumference(): number { return 2 * Math.PI * 40; }
+  getWinRingCircumference(): number { return 2 * Math.PI * 44; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
     const wins = Math.max(0, this.dailyWinsAmount);
@@ -790,10 +790,10 @@ mt5AccountInfo: AccountSettings = {
   onDonutArcLeave(): void { this.donutTooltipVisible = false; }
 
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
-  getDailyLimitRingCircumference(): number { return 2 * Math.PI * 40; }
+  getDailyLimitRingCircumference(): number { return 2 * Math.PI * 44; }
 
   // Right circle (Win Rate) – map 0–4% to full circle
-  getRightWinRingCircumference(): number { return 2 * Math.PI * 40; }
+  getRightWinRingCircumference(): number { return 2 * Math.PI * 44; }
   getRightWinRingDash(): string {
     const c = this.getRightWinRingCircumference();
     const cap = 4; // 0–4% mapped to full circle
@@ -2947,7 +2947,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   checkBackendInstructions(): void {
     const instructions = `
-        🔧 How to start the Notion backend server:
+        ��� How to start the Notion backend server:
 
         1. Open a new terminal window/tab
         2. Navigate to the backend directory:
@@ -4639,7 +4639,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   //       // Don't overwrite existing tableData, merge with MT5 trades
   //       if (this.mt5LiveTrades.length > 0) {
-  //         console.log("🔴 Preserving existing MT5 trades:", this.mt5LiveTrades.length);
+  //         console.log("���� Preserving existing MT5 trades:", this.mt5LiveTrades.length);
   //         // Keep MT5 trades and add Firestore trades
   //         this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
   //       } else {
