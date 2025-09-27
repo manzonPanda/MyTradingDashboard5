@@ -1040,6 +1040,11 @@ async ngOnInit() {
     this.newsData = Array.isArray(news) ? news : [];
     console.log("📈 Forex Factory News Data:", this.newsData);
 
+    // Ensure in-app UI reminders (sound + modal) are active regardless of FCM
+    this.newsReminder.setUiReminderCallback((events: any[], minutesBefore: number) => {
+      this.handleNewsUiReminder(events, minutesBefore);
+    });
+
     // Schedule news reminders if FCM is ready
     if (this.newsData.length > 0) {
       // Delay scheduling to ensure FCM is set up
@@ -2233,7 +2238,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           startCursor = proxyResponse.next_cursor || null;
 
           if (hasMore && startCursor) {
-            console.log(`������� More data available, fetching next page...`);
+            console.log(`������ More data available, fetching next page...`);
           } else {
             console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
           }
@@ -2249,7 +2254,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`���� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`������ Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
