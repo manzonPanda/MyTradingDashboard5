@@ -761,8 +761,8 @@
   padding: 1rem;
 
   .simple-gauge {
-    width: 180px;
-    height: 100px;
+    width: 120px;
+    height: 70px;
 
     .gauge-svg {
       width: 100%;
@@ -3068,6 +3068,10 @@ table.simple-table {
   &.trade-win-rate {
     .metric-content {
       padding: 0;
+    }
+
+    .simple-gauge-container {
+      padding: 0.25rem 0;
     }
 
     .trade-win-layout {
