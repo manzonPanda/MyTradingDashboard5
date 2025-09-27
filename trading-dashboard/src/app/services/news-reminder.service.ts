@@ -19,8 +19,9 @@ interface ReminderTimeout {
 })
 export class NewsReminderService {
   private reminderTimeouts: ReminderTimeout[] = [];
-  private reminderIntervals = [60, 30, 15, 10, 8, 5, 3, 1]; // minutes before news
+  private reminderIntervals = [180, 60, 30, 10]; // minutes before news (3h, 1h, 30m, 10m)
   private sendNotificationCallback: ((title: string, body: string) => void) | null = null;
+  private uiReminderCallback: ((events: NewsEvent[], minutesBefore: number) => void) | null = null;
 
   constructor() {}
 
@@ -29,6 +30,13 @@ export class NewsReminderService {
    */
   setSendNotificationCallback(callback: (title: string, body: string) => void) {
     this.sendNotificationCallback = callback;
+  }
+
+  /**
+   * Set the UI reminder callback to trigger in-app alerts/modals
+   */
+  setUiReminderCallback(callback: (events: NewsEvent[], minutesBefore: number) => void) {
+    this.uiReminderCallback = callback;
   }
 
   /**
@@ -150,6 +158,11 @@ export class NewsReminderService {
       this.sendNotificationCallback(title, body);
     } else {
       console.warn('⚠️ No notification callback set');
+    }
+
+    // Trigger in-app UI callback (sound + modal)
+    if (this.uiReminderCallback) {
+      this.uiReminderCallback(events, minutesBefore);
     }
 
     // Remove timeouts for this reminder interval
