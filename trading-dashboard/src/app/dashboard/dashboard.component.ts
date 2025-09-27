@@ -1040,6 +1040,11 @@ async ngOnInit() {
     this.newsData = Array.isArray(news) ? news : [];
     console.log("📈 Forex Factory News Data:", this.newsData);
 
+    // Ensure in-app UI reminders (sound + modal) are active regardless of FCM
+    this.newsReminder.setUiReminderCallback((events: any[], minutesBefore: number) => {
+      this.handleNewsUiReminder(events, minutesBefore);
+    });
+
     // Schedule news reminders if FCM is ready
     if (this.newsData.length > 0) {
       // Delay scheduling to ensure FCM is set up
@@ -2249,7 +2254,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`���� Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
+      console.log(`������ Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
 
       if (allResults.length > 0) {
         // Show first page structure for debugging
@@ -5373,6 +5378,55 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
       console.warn('Could not play celebration sound:', error);
+    }
+  }
+
+  // Play concise alert sound for upcoming news
+  private playAlertSound(): void {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const beep = (time: number, freq: number, duration: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.001, time);
+        gain.gain.exponentialRampToValueAtTime(0.2, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + duration);
+      };
+      const start = ctx.currentTime + 0.01;
+      beep(start, 880, 0.12);
+      beep(start + 0.2, 660, 0.12);
+    } catch (e) {
+      console.warn('Audio context unavailable for alert sound');
+    }
+  }
+
+  // Open the news modal with the grouped events and play alert
+  private handleNewsUiReminder(events: any[], minutesBefore: number): void {
+    try {
+      if (!events || events.length === 0) return;
+      const time = events[0].time || 'Unknown';
+      const currencies = [...new Set(events.map((e: any) => e.currency))];
+      const timeGroup = {
+        time,
+        events,
+        isMultiple: events.length > 1,
+        expanded: true,
+        currencies,
+        dominantCurrency: this.getDominantCurrency(events),
+        id: `reminder-${time}-${Date.now()}`
+      };
+      this.selectedTimeGroup = timeGroup;
+      this.showNewsModal = true;
+      this.cdr.detectChanges();
+      this.playAlertSound();
+    } catch (err) {
+      console.warn('Failed to handle UI reminder:', err);
     }
   }
 
