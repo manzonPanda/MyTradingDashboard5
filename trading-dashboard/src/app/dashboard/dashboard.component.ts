@@ -947,13 +947,13 @@ mt5AccountInfo: AccountSettings = {
       "filter": {
         "property": "Account",
         "multi_select": {
-          "contains": "5ers4️⃣5k [#25475923]"
+          "contains": "5ers5️⃣5k [#25626989]"
         }
       },
       "sorts": [
         {
           "timestamp": "created_time",
-          "direction": "ascending"
+          "direction": "descending"
         }
       ]
     };
@@ -963,8 +963,9 @@ mt5AccountInfo: AccountSettings = {
       );
       if (accountSettings.results[0]) {
         const info = accountSettings.results[0].properties["Daily Reflection"]?.rich_text?.[0]?.plain_text || "";
+        console.warn('info:', info);
         const startingBalance = info.match(/InitialBalance:\s*(\d+)/i)?.[1] || null;
-        const profitTarget = info.match(/ProfitTarget:\s*([\d.]+%)/i)?.[1] || null;
+        const profitTarget = info.match(/ProfitTarget:\s*([\d.]+%)/i)?.[1] || null; 
         const maxTotalDrawdown = info.match(/MaxTotalDrawdown:\s*([\d.]+%)/i)?.[1] || null;
         const dailyLossLimit = info.match(/DailyLossLimit:\s*([\d.]+%)/i)?.[1] || null;
         this.mt5AccountInfo.startingBalance = parseInt(startingBalance)
@@ -980,7 +981,7 @@ mt5AccountInfo: AccountSettings = {
       }
       console.warn('✅ Loaded PropFirm Account settings from Notion: ', this.mt5AccountInfo);
     } catch (error) {
-      console.warn('⚠️ Could not load MT5 account settings from backend');
+      console.warn('⚠️ Could not load MT5 account settings from backend',error);
     }
   }
 
@@ -1806,7 +1807,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "5ers4️⃣5k [#25475923]" }
+              { "name": "5ers5️⃣5k [#25626989]" }
             ]
           },
           "ticket":{
