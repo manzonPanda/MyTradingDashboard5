@@ -943,20 +943,21 @@ mt5AccountInfo: AccountSettings = {
 
   private async loadTradingSettings(): Promise<void> {
     const body = {
-      "page_size": 1,
-      "filter": {
-        "property": "Account",
-        "multi_select": {
-          "contains": "5ers5️⃣5k [#25626989]"
-        }
-      },
-      "sorts": [
-        {
-          "timestamp": "created_time",
-          "direction": "descending"
-        }
-      ]
-    };
+        "page_size": 1,
+        "filter": {
+          "property": "Account",
+          "multi_select": {
+            "contains": "5ers5️⃣5k [#25626989]"
+          }
+        },
+        "sorts": [
+          {
+            "property": "Date",
+            "direction": "ascending"
+          }
+        ]
+      }
+    ;
     try {
       const accountSettings: any = await firstValueFrom(
         this.http.post("http://localhost:3000/api/getPropFirmAccountSettings", body) //Patching
