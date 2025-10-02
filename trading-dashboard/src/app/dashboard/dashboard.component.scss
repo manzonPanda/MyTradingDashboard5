@@ -6905,6 +6905,50 @@ table.simple-table {
   }
 }
 
+@media (max-width: 1024px) {
+  .metric-card.profitability-winrate-card {
+    grid-column: 1 / -1;
+
+    .combined-top-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .win-rate-chart {
+      justify-content: flex-start;
+
+      .simple-gauge-container {
+        align-items: flex-start;
+      }
+    }
+
+    .combined-bottom-row {
+      grid-template-columns: 1fr;
+    }
+
+    .win-rate-details {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .metric-card.profitability-winrate-card {
+    .win-rate-details {
+      padding: 0.5rem;
+    }
+
+    .win-rate-percentage {
+      font-size: 1.2rem;
+    }
+
+    .combined-top-row {
+      gap: 0.75rem;
+    }
+  }
+}
+
 // 🚀 HERO ANALYTICS SECTION - ENHANCED DESIGN
 .hero-analytics-section {
   @media (max-width: 1200px) {
