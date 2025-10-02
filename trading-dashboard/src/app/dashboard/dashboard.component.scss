@@ -627,56 +627,6 @@
     }
   }
 
-  .profit-factor-legend {
-    display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-    gap: 0.5rem 0.5rem;
-    width: 100%;
-    overflow: hidden;
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      opacity: 0.6;
-      transition: opacity 0.3s ease;
-
-      &.active {
-        opacity: 1;
-        font-weight: 600;
-      }
-
-      .legend-color {
-        width: 8px;
-        height: 8px;
-        border-radius: 2px;
-
-        &.poor {
-          background-color: #ef4444;
-        }
-
-        &.concerning {
-          background-color: #f59e0b;
-        }
-
-        &.good {
-          background-color: #22c55e;
-        }
-
-        &.excellent {
-          background-color: #10b981;
-        }
-      }
-
-      .legend-text {
-        font-size: 0.65rem;
-        color: #64748b;
-        white-space: nowrap;
-      }
-    }
-  }
 }
 
 // Recent Trades PnL tiles styles
