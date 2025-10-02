@@ -706,6 +706,17 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .metrics-grid {
+    --tall-metric-card-height: 22rem;
+  }
+
+  .metric-card.daily-limit-card,
+  .metric-card.profitability-winrate-card {
+    min-height: var(--tall-metric-card-height);
+  }
+}
+
 // Simple Gauge Chart for Trade Win % (like reference image)
 .simple-gauge-container {
   display: flex;
