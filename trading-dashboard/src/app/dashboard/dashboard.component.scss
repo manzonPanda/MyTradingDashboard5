@@ -2897,12 +2897,12 @@ table.simple-table {
       .simple-gauge-container {
         padding: 0.25rem 0.2rem;
         align-items: center;
-        transform: scale(0.9);
+        transform: none;
         transform-origin: center;
 
         .simple-gauge {
-          width: 120px;
-          height: 72px;
+          width: 150px;
+          height: 92px;
         }
       }
     }
@@ -2920,8 +2920,19 @@ table.simple-table {
       gap: 0.4rem;
 
       .profit-factor-chart {
-        transform: scale(0.88);
+        transform: scale(0.94);
         transform-origin: center;
+
+        .profit-factor-svg {
+          width: 100%;
+        }
+
+        rect,
+        line,
+        text {
+          transform: scaleX(1.05);
+          transform-origin: 50% 50%;
+        }
       }
     }
 
