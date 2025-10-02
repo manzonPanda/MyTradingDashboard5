@@ -2837,6 +2837,7 @@ table.simple-table {
 
   &.profitability-winrate-card {
     grid-column: span 2;
+    min-height: var(--tall-metric-card-height, auto);
 
     .combined-metric-header {
       display: flex;
@@ -2864,6 +2865,8 @@ table.simple-table {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      flex: 1;
+      justify-content: space-between;
     }
 
     .combined-top-row {
@@ -2896,6 +2899,8 @@ table.simple-table {
       grid-template-columns: minmax(0, 1fr);
       gap: 1.25rem;
       align-items: stretch;
+      flex: 1;
+      align-content: center;
     }
 
     .profit-factor-visual {
