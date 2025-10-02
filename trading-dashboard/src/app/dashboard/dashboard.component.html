@@ -56,10 +56,6 @@
                               [ngClass]="getCurrencyBackgroundClass(currency)">{{ currency }}</span>
                       </div>
                     </div>
-                    <div *ngIf="timeGroup.isMultiple" class="group-controls">
-                      <span class="event-count">{{ timeGroup.events.length }}</span>
-                      <mat-icon class="expand-icon" [ngClass]="{expanded: timeGroup.expanded}">expand_more</mat-icon>
-                    </div>
                   </div>
 
                   <!-- Single Event (when only 1 event at this time) -->
