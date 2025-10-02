@@ -2837,7 +2837,7 @@ table.simple-table {
 
   &.profitability-winrate-card {
     grid-column: span 2;
-    padding: 0.5rem 0.6rem;
+    padding: 0.45rem 0.55rem;
 
     .combined-metric-header {
       display: flex;
@@ -2864,14 +2864,14 @@ table.simple-table {
     .combined-content {
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
+      gap: 0.45rem;
     }
 
     .combined-top-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
     }
 
     .profit-factor-summary {
@@ -2895,14 +2895,14 @@ table.simple-table {
       align-items: center;
 
       .simple-gauge-container {
-        padding: 0.25rem 0.2rem;
+        padding: 0.2rem 0.15rem;
         align-items: center;
         transform: none;
         transform-origin: center;
 
         .simple-gauge {
-          width: 150px;
-          height: 92px;
+          width: 140px;
+          height: 86px;
         }
       }
     }
@@ -2910,28 +2910,25 @@ table.simple-table {
     .combined-bottom-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 0.65rem;
+      gap: 0.5rem;
       align-items: stretch;
     }
 
     .profit-factor-visual {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.35rem;
 
       .profit-factor-chart {
-        transform: scale(0.94);
+        width: calc(100% + 1.1rem);
+        margin: 0 -0.55rem;
+        transform: none;
         transform-origin: center;
+        overflow: visible;
 
         .profit-factor-svg {
           width: 100%;
-        }
-
-        rect,
-        line,
-        text {
-          transform: scaleX(1.05);
-          transform-origin: 50% 50%;
+          display: block;
         }
       }
     }
