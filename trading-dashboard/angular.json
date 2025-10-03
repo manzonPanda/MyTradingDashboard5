@@ -106,8 +106,11 @@
             ],
             "scripts": []
           }
-        }
-      }
     }
+  },
+  "cli": {
+    "analytics": false
+  }
+}
   }
 }
