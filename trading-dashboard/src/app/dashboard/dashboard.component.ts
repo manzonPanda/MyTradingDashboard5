@@ -4090,6 +4090,30 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return (totalWins / totalLosses).toFixed(2);
   }
 
+  // Helper methods for Profit Factor visual marker
+  getProfitFactorNumeric(): number {
+    const pf = this.calculateProfitFactor();
+    if (!isFinite(pf) || isNaN(pf)) return 0;
+    return pf;
+  }
+
+  getProfitFactorX(): number {
+    // Map [0, 3+] -> [0, 180] (viewBox width)
+    const clamped = Math.max(0, Math.min(this.getProfitFactorNumeric(), 3));
+    return clamped * 60; // 180 / 3 = 60
+  }
+
+  getProfitFactorMarkerColor(): string {
+    const pf = this.getProfitFactorNumeric();
+    if (pf >= 2.5) return '#065f46';
+    if (pf >= 2.0) return '#059669';
+    if (pf >= 1.5) return '#10b981';
+    if (pf >= 1.0) return '#22c55e';
+    if (pf >= 0.5) return '#f59e0b';
+    if (pf > 0) return '#ef4444';
+    return '#e2e8f0';
+  }
+
   getAvgRiskPerTrade(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
 
