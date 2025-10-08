@@ -621,6 +621,9 @@
       opacity: 0.7;
     }
 
+    .pf-marker-line { opacity: 1; stroke-linecap: round; }
+    .pf-marker-dot { filter: drop-shadow(0 1px 1.5px rgba(0,0,0,0.15)); }
+
     &:hover .level-segment {
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
       transform: translateY(-0.5px);
@@ -4261,7 +4264,7 @@ table.simple-table {
             position: relative;
 
             &::after {
-              content: '������ LIVE';
+              content: '�������� LIVE';
               position: absolute;
               top: 0.125rem;
               left: 0.125rem;

@@ -705,7 +705,10 @@
                       stroke="none"
                       class="level-segment elite"/>
                     <line x1="60" y1="12" x2="60" y2="30" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2"/>
-                    <text x="60" y="14" text-anchor="middle" class="break-even-label" font-size="7" fill="#64748b">Break Even</text>
+                    <text [attr.x]="getProfitFactorLabelX()" y="12" [attr.text-anchor]="getProfitFactorTextAnchor()" class="break-even-label" font-size="7" fill="#64748b">{{ getProfitFactorLabel() }}</text>
+                    <!-- Dynamic PF marker -->
+                    <line [attr.x1]="getProfitFactorX()" y1="10" [attr.x2]="getProfitFactorX()" y2="32" [attr.stroke]="getProfitFactorMarkerColor()" stroke-width="2" class="pf-marker-line"/>
+                    <circle [attr.cx]="getProfitFactorX()" cy="20" r="3" [attr.fill]="getProfitFactorMarkerColor()" class="pf-marker-dot"/>
                     <text x="0" y="35" text-anchor="start" class="chart-label" font-size="8">0.0</text>
                     <text x="60" y="35" text-anchor="middle" class="chart-label" font-size="8">1.0</text>
                     <text x="120" y="35" text-anchor="middle" class="chart-label" font-size="8">2.0</text>
