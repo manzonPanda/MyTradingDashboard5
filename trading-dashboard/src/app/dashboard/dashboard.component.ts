@@ -4114,6 +4114,37 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return '#e2e8f0';
   }
 
+  getProfitFactorTier(): string {
+    const pf = this.getProfitFactorNumeric();
+    if (!isFinite(pf) || isNaN(pf)) return 'N/A';
+    if (pf >= 2.5) return 'Elite';
+    if (pf >= 2.0) return 'Outstanding';
+    if (pf >= 1.5) return 'Excellent';
+    if (pf >= 1.0) return 'Good';
+    if (pf >= 0.5) return 'Concerning';
+    if (pf > 0) return 'Poor';
+    return 'Zero';
+  }
+
+  getProfitFactorLabel(): string {
+    const pf = this.getProfitFactorNumeric();
+    if (!isFinite(pf) || isNaN(pf)) return 'PF 0.00 — Zero';
+    const capped = pf > 3 ? '3.00+' : pf.toFixed(2);
+    return `PF ${capped} — ${this.getProfitFactorTier()}`;
+  }
+
+  getProfitFactorLabelX(): number {
+    const x = this.getProfitFactorX();
+    return Math.max(15, Math.min(165, x));
+  }
+
+  getProfitFactorTextAnchor(): 'start' | 'middle' | 'end' {
+    const x = this.getProfitFactorX();
+    if (x <= 25) return 'start';
+    if (x >= 155) return 'end';
+    return 'middle';
+  }
+
   getAvgRiskPerTrade(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
 
