@@ -294,6 +294,31 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return null;
   }
 
+  private normalizeDate(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private isSameDay(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  private getFirstTradeDate(): Date | null {
+    if (!this.tableData || this.tableData.length === 0) return null;
+    let earliest: Date | null = null;
+    for (const trade of this.tableData) {
+      const d = this.parseTradeDate(trade.openDate);
+      if (!d) continue;
+      if (!earliest || d < earliest) earliest = d;
+    }
+    return earliest ? this.normalizeDate(earliest) : null;
+  }
+
+  isFirstTradeDay(date: Date): boolean {
+    if (!this.firstTradeDate) return false;
+    const normalized = this.normalizeDate(date);
+    return this.isSameDay(normalized, this.firstTradeDate);
+  }
+
   calculateDayPnL(trades: Table[]): number {
     return trades.reduce((sum, trade) => {
       const profit = parseFloat(trade.netProfit) || 0;
