@@ -10,10 +10,11 @@ import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-ca
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
 import { addMonths, subMonths } from 'date-fns';
-import { DataTablesModule  } from 'angular-datatables';
+// DataTables removed to avoid heavy pre-bundling issues
+// import { DataTablesModule  } from 'angular-datatables';
 import { Subject } from 'rxjs';
-import * as DataTables from 'datatables.net';
-import 'datatables.net'; // Ensure DataTables functionality is available
+// import * as DataTables from 'datatables.net';
+// import 'datatables.net'; // Removed for build stability
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -122,7 +123,7 @@ interface NotionPerformanceData {
     MatCardModule,
     CommonModule,
     CalendarModule,
-    DataTablesModule,
+    // DataTablesModule,
     MatProgressBarModule,
     MatButtonModule,
     MatIconModule,

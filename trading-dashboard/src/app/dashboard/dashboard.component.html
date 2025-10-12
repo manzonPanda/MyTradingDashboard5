@@ -1438,7 +1438,7 @@
           <span class="loading-text">Loading performance data...</span>
         </div>
 
-        <table class="modern-table notion-performance-table" id="notionTable" datatable [dtOptions]="dtOptionsNotion" [dtTrigger]="dtTriggerNotion" *ngIf="!showLoadButton">
+        <table class="modern-table notion-performance-table" id="notionTable"  *ngIf="!showLoadButton">
           <thead>
             <tr>
               <th *ngIf="columnVisibility.id" class="col-id">ID</th>
