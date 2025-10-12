@@ -94,7 +94,7 @@ interface WeekSummary {
                 'weekend': !isWeekday(day.date)
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date)">
+              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date)">
                 <span class="badge-dot"></span>
                 <span class="badge-text">No trades</span>
               </div>
