@@ -94,6 +94,10 @@ interface WeekSummary {
                 'weekend': !isWeekday(day.date)
               }">
               <div class="day-number">{{ day.date.getDate() }}</div>
+              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date)">
+                <span class="badge-dot"></span>
+                <span class="badge-text">No trades</span>
+              </div>
               <div class="day-content" *ngIf="day.tradeCount > 0">
                 <!-- Always show percentage on trading days, even if null or 0 -->
                 <div class="day-percentage-display" [ngClass]="getDayPnLClass(day.pnl)">
@@ -372,5 +376,11 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   isWeekday(date: Date): boolean {
     const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday through Friday
+  }
+
+  isFutureDate(date: Date): boolean {
+    const now = new Date();
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return date.getTime() > endOfToday.getTime();
   }
 }
