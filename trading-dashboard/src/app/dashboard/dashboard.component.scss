@@ -2873,7 +2873,7 @@ table.simple-table {
     .combined-top-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 0.65rem;
     }
 
@@ -2895,7 +2895,9 @@ table.simple-table {
       flex: 1;
       display: flex;
       justify-content: flex-end;
-      align-items: center;
+      align-items: flex-start;
+      transform: translateY(-12px);
+      transform-origin: center;
 
       .simple-gauge-container {
         padding: 0.2rem 0.15rem;
@@ -2935,7 +2937,7 @@ table.simple-table {
       .profit-factor-chart {
         width: auto;
         margin: 0;
-        transform: translateY(-20px);
+        transform: translateY(-10px);
         transform-origin: center;
         overflow: visible;
 
