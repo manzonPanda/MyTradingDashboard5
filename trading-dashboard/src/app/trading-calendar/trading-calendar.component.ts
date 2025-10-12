@@ -93,8 +93,12 @@ interface WeekSummary {
                 'weekday-loss': isWeekday(day.date) && day.pnl < 0,
                 'weekend': !isWeekday(day.date)
               }">
+              <div class="new-account-badge" *ngIf="isFirstTradeDay(day.date)">
+                <span class="badge-star">★</span>
+                <span class="badge-label">New Account</span>
+              </div>
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date)">
+              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date)">
                 <span class="badge-dot"></span>
                 <span class="badge-text">No trades</span>
               </div>
@@ -157,12 +161,14 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   currentDate: Date = new Date();
   calendarDays: CalendarDay[] = [];
   weekSummaries: WeekSummary[] = [];
+  firstTradeDate: Date | null = null;
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 5000; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   ngOnInit() {
     this.currentDate = this.viewDate || new Date();
+    this.firstTradeDate = this.getFirstTradeDate();
     this.generateCalendar();
   }
 
@@ -171,6 +177,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       if (changes['viewDate'] && changes['viewDate'].currentValue) {
         this.currentDate = new Date(changes['viewDate'].currentValue);
       }
+      this.firstTradeDate = this.getFirstTradeDate();
       this.generateCalendar();
     }
   }
@@ -285,6 +292,31 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     }
     
     return null;
+  }
+
+  private normalizeDate(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private isSameDay(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  private getFirstTradeDate(): Date | null {
+    if (!this.tableData || this.tableData.length === 0) return null;
+    let earliest: Date | null = null;
+    for (const trade of this.tableData) {
+      const d = this.parseTradeDate(trade.openDate);
+      if (!d) continue;
+      if (!earliest || d < earliest) earliest = d;
+    }
+    return earliest ? this.normalizeDate(earliest) : null;
+  }
+
+  isFirstTradeDay(date: Date): boolean {
+    if (!this.firstTradeDate) return false;
+    const normalized = this.normalizeDate(date);
+    return this.isSameDay(normalized, this.firstTradeDate);
   }
 
   calculateDayPnL(trades: Table[]): number {
