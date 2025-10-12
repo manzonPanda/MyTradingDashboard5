@@ -2930,16 +2930,17 @@ table.simple-table {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
+      align-items: flex-start;
 
       .profit-factor-chart {
-        width: calc(100% + 0.55rem);
-        margin: 0 0 0 -0.55rem;
-        transform: translateY(-4px);
+        width: auto;
+        margin: 0;
+        transform: translateY(-8px);
         transform-origin: center;
         overflow: visible;
 
         .profit-factor-svg {
-          width: 100%;
+          width: 180px;
           display: block;
         }
       }
