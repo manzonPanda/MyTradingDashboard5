@@ -177,6 +177,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       if (changes['viewDate'] && changes['viewDate'].currentValue) {
         this.currentDate = new Date(changes['viewDate'].currentValue);
       }
+      this.firstTradeDate = this.getFirstTradeDate();
       this.generateCalendar();
     }
   }
