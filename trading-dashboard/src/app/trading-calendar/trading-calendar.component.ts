@@ -168,6 +168,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.currentDate = this.viewDate || new Date();
+    this.firstTradeDate = this.getFirstTradeDate();
     this.generateCalendar();
   }
 
