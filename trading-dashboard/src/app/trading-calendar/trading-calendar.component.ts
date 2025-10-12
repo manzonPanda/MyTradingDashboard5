@@ -98,7 +98,7 @@ interface WeekSummary {
                 <span class="badge-label">New Account</span>
               </div>
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date)">
+              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date) && !isBeforeAccountStart(day.date)">
                 <span class="badge-dot"></span>
                 <span class="badge-text">No trades</span>
               </div>
@@ -414,5 +414,11 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     const now = new Date();
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     return date.getTime() > endOfToday.getTime();
+  }
+
+  isBeforeAccountStart(date: Date): boolean {
+    if (!this.firstTradeDate) return false;
+    const normalized = this.normalizeDate(date);
+    return normalized.getTime() < this.firstTradeDate.getTime();
   }
 }
