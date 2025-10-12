@@ -608,43 +608,6 @@
               <div class="profit-factor-summary">
                 <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
                 <div class="metric-subtitle">Gross win / Gross loss</div>
-              </div>
-              <div class="win-rate-chart" aria-label="Win Rate">
-                <div class="simple-gauge-container">
-                  <div class="win-rate-heading">Win rate</div>
-                  <div class="simple-gauge">
-                    <svg viewBox="0 0 160 100" class="gauge-svg">
-                      <path d="M 20 80 A 60 60 0 0 1 140 80"
-                            fill="none"
-                            stroke="#e5e7eb"
-                            stroke-width="12"
-                            stroke-linecap="round"/>
-                      <path d="M 20 80 A 60 60 0 0 1 140 80"
-                            fill="none"
-                            stroke="#10b981"
-                            stroke-width="12"
-                            stroke-linecap="round"
-                            [attr.stroke-dasharray]="getWinGaugeDash()"
-                            [attr.stroke-dashoffset]="getWinGaugeOffset()"
-                            class="progress-arc"/>
-                      <path d="M 20 80 A 60 60 0 0 1 140 80"
-                            fill="none"
-                            stroke="#ef4444"
-                            stroke-width="12"
-                            stroke-linecap="round"
-                            [attr.stroke-dasharray]="getLossGaugeDash()"
-                            [attr.stroke-dashoffset]="getLossGaugeOffset()"
-                            class="loss-arc"/>
-                      <text x="30" y="95" text-anchor="middle" class="gauge-count win-count">{{ getWinCount() }}</text>
-                      <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
-                      <text x="130" y="95" text-anchor="middle" class="gauge-count loss-count">{{ getLossCount() }}</text>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="combined-bottom-row">
-              <div class="profit-factor-visual">
                 <div class="profit-factor-chart">
                   <svg viewBox="0 0 180 40" class="profit-factor-svg">
                     <rect x="0" y="15" width="180" height="10" rx="5" fill="#e2e8f0" stroke="none"/>
@@ -714,6 +677,39 @@
                     <text x="120" y="35" text-anchor="middle" class="chart-label" font-size="8">2.0</text>
                     <text x="180" y="35" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
                   </svg>
+                </div>
+              </div>
+              <div class="win-rate-chart" aria-label="Win Rate">
+                <div class="simple-gauge-container">
+                  <div class="win-rate-heading">Win rate</div>
+                  <div class="simple-gauge">
+                    <svg viewBox="0 0 160 100" class="gauge-svg">
+                      <path d="M 20 80 A 60 60 0 0 1 140 80"
+                            fill="none"
+                            stroke="#e5e7eb"
+                            stroke-width="12"
+                            stroke-linecap="round"/>
+                      <path d="M 20 80 A 60 60 0 0 1 140 80"
+                            fill="none"
+                            stroke="#10b981"
+                            stroke-width="12"
+                            stroke-linecap="round"
+                            [attr.stroke-dasharray]="getWinGaugeDash()"
+                            [attr.stroke-dashoffset]="getWinGaugeOffset()"
+                            class="progress-arc"/>
+                      <path d="M 20 80 A 60 60 0 0 1 140 80"
+                            fill="none"
+                            stroke="#ef4444"
+                            stroke-width="12"
+                            stroke-linecap="round"
+                            [attr.stroke-dasharray]="getLossGaugeDash()"
+                            [attr.stroke-dashoffset]="getLossGaugeOffset()"
+                            class="loss-arc"/>
+                      <text x="30" y="95" text-anchor="middle" class="gauge-count win-count">{{ getWinCount() }}</text>
+                      <text x="80" y="65" text-anchor="middle" class="gauge-percent">{{ calculateWinRate() }}%</text>
+                      <text x="130" y="95" text-anchor="middle" class="gauge-count loss-count">{{ getLossCount() }}</text>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
