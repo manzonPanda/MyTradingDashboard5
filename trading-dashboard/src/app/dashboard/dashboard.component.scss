@@ -2867,7 +2867,7 @@ table.simple-table {
     .combined-content {
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
+      gap: 0.2rem;
     }
 
     .combined-top-row {
@@ -2935,7 +2935,7 @@ table.simple-table {
       .profit-factor-chart {
         width: auto;
         margin: 0;
-        transform: translateY(-8px);
+        transform: translateY(-20px);
         transform-origin: center;
         overflow: visible;
 
