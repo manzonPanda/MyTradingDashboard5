@@ -2932,9 +2932,9 @@ table.simple-table {
       gap: 0.35rem;
 
       .profit-factor-chart {
-        width: calc(100% + 1.1rem);
-        margin: 0 -0.55rem;
-        transform: none;
+        width: calc(100% + 0.55rem);
+        margin: 0 0 0 -0.55rem;
+        transform: translateY(-4px);
         transform-origin: center;
         overflow: visible;
 
