@@ -701,7 +701,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  margin-top: auto;
+  margin-top: 0;
   padding: 0.35rem 0.5rem;
   border-radius: 8px;
   background: var(--tf-bg-tertiary);
@@ -710,6 +710,10 @@
   font-weight: 600;
   font-size: 0.75rem;
   box-shadow: var(--shadow-soft);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .calendar-days .calendar-day .no-trades-badge .badge-dot {
