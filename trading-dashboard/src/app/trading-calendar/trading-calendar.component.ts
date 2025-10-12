@@ -93,6 +93,10 @@ interface WeekSummary {
                 'weekday-loss': isWeekday(day.date) && day.pnl < 0,
                 'weekend': !isWeekday(day.date)
               }">
+              <div class="new-account-badge" *ngIf="isFirstTradeDay(day.date)">
+                <span class="badge-star">★</span>
+                <span class="badge-label">New Account</span>
+              </div>
               <div class="day-number">{{ day.date.getDate() }}</div>
               <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date)">
                 <span class="badge-dot"></span>
