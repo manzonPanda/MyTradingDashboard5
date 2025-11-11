@@ -555,6 +555,14 @@ mt5AccountInfo: AccountSettings = {
     Chart.register(...registerables);
   }
 
+  startReconnect() {
+    this.http.post('http://localhost:5000/api/start-reconnect', {})
+      .subscribe({
+        next: (res) => console.log(res),
+        error: (err) => console.error(err)
+      });
+  }
+  
   private getPhilippinesNow(): Date {
     // Philippines is UTC+8, no DST
     const nowUtc = new Date();
@@ -948,7 +956,7 @@ mt5AccountInfo: AccountSettings = {
         "filter": {
           "property": "Account",
           "multi_select": {
-            "contains": "5ers5️⃣5k [#25736015]"
+            "contains": "5ers6️⃣5k [#25736015]"
           }
         },
         "sorts": [
@@ -1809,7 +1817,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "5ers5️⃣5k [#25736015]" }
+              { "name": "5ers6️⃣5k [#25736015]" }
             ]
           },
           "ticket":{

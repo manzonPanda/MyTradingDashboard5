@@ -13,6 +13,8 @@ from pandas.errors import EmptyDataError
 from zoneinfo import ZoneInfo
 from math import isclose
 import numpy as np
+from threading import Timer
+import eventlet
 
 eventlet.monkey_patch()  # <- important for eventlet
 
@@ -20,6 +22,8 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")  # Allow WebSocket connections
 local_tz = ZoneInfo("Asia/Manila")
+last_disconnect_time = None
+reconnect_delay = 30  # seconds
 
 if not mt5.initialize():
     raise Exception(f"❌MT5 Initialization failed: {mt5.last_error()}")
@@ -296,15 +300,54 @@ def full_history():
 
 @app.route("/api/health", methods=["GET"])
 def health_check():
-    """Health check endpoint for connection monitoring"""
-    mt5_connected = mt5.terminal_info() is not None
+    global last_disconnect_time
+
+    info = mt5.terminal_info()
+    mt5_connected = info is not None
+    
+    # use this if you want auto-reconnect logic
+    # if mt5_connected:
+    #     # Reset disconnect timer because it's healthy again
+    #     last_disconnect_time = None
+    # else:
+    #     # If this is the first time detecting disconnect, start the timer
+    #     if last_disconnect_time is None:
+    #         last_disconnect_time = time.time()
+    #     # If 10 seconds passed since losing connection → reconnect
+    #     if time.time() - last_disconnect_time >= reconnect_delay:
+    #         eventlet.spawn_n(reconnect_mt5)
+    #         # Prevent multiple scheduled reconnects
+    #         last_disconnect_time = time.time()  # reset timer after scheduling
+
     return jsonify({
         'status': 'healthy' if mt5_connected else 'unhealthy',
         'service': 'MT5_API',
         'mt5_connected': mt5_connected,
+        'time_since_disconnect': (
+            int(time.time() - last_disconnect_time)
+            if last_disconnect_time else 0
+        ),
+        'reconnect_in_seconds': (
+            reconnect_delay - int(time.time() - last_disconnect_time)
+            if last_disconnect_time else 0
+        ),
         'timestamp': datetime.now().isoformat(),
         'port': 5000
     })
+
+
+def reconnect_mt5():
+    print("⏳ Attempting MT5 reconnect...")
+    mt5.shutdown()
+    time.sleep(1)
+    mt5.initialize()
+    print("✅ Reconnect Attempt Done")
+
+@app.route("/api/start-reconnect", methods=["POST"])
+def start_reconnect():
+    # Start the reconnect timer only when this endpoint is hit
+    Timer(10, reconnect_mt5).start()
+    return jsonify({"message": "Reconnect countdown started"})
 
 @socketio.on('connect')
 def on_connect():

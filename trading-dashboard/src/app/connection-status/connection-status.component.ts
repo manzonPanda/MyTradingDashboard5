@@ -16,6 +16,14 @@ interface ServerStatus {
   lastChecked?: Date;
 }
 
+interface MT5HealthResponse {
+  status: string;
+  service: string;
+  mt5_connected:boolean;
+  timestamp: string;
+  port: string;
+}
+
 @Component({
   selector: 'app-connection-status',
   templateUrl: './connection-status.component.html',
@@ -103,7 +111,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
       try {
         const response = await firstValueFrom(
-          this.http.get(server.url).pipe(
+          this.http.get<MT5HealthResponse>(server.url).pipe(
             catchError(error => {
               console.warn(`Connection check failed for ${server.name}:`, error);
               return of(null);
@@ -111,7 +119,12 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
           )
         );
 
-        server.status = response !== null ? 'online' : 'offline';
+        if (response && response.status === 'healthy') {
+          server.status = 'online';
+        } else {
+          server.status = 'offline';
+        }
+
       } catch (error) {
         server.status = 'offline';
       }
