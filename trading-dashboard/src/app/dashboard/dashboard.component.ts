@@ -948,7 +948,7 @@ mt5AccountInfo: AccountSettings = {
         "filter": {
           "property": "Account",
           "multi_select": {
-            "contains": "5ers5️⃣5k [#25626989]"
+            "contains": "5ers5️⃣5k [#25736015]"
           }
         },
         "sorts": [
@@ -1809,7 +1809,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "5ers5️⃣5k [#25626989]" }
+              { "name": "5ers5️⃣5k [#25736015]" }
             ]
           },
           "ticket":{
