@@ -17,10 +17,7 @@
         <div class="status-indicator" [ngClass]="'indicator-' + server.status">
           <div class="status-dot" [ngClass]="'dot-' + server.status"></div>
         </div>
-      </div>
 
-      <div class="server-label-wrapper">
-        <div class="server-label">{{ server.name }}</div>
         <button
           *ngIf="server.name === 'MT5 API' && server.status === 'offline'"
           class="reconnect-icon-btn"
@@ -31,6 +28,8 @@
           ↻
         </button>
       </div>
+
+      <div class="server-label">{{ server.name }}</div>
     </div>
   </div>
 
