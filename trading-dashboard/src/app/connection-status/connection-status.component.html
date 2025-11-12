@@ -23,12 +23,12 @@
         <div class="server-label">{{ server.name }}</div>
         <button
           *ngIf="server.name === 'MT5 API' && server.status === 'offline'"
-          class="reconnect-btn"
+          class="reconnect-icon-btn"
           (click)="reconnectMT5()"
-          [matTooltip]="'Attempt to reconnect to MT5 API'"
-          matTooltipPosition="below">
-          <span class="reconnect-icon">↻</span>
-          Reconnect
+          [matTooltip]="'Reconnect to MT5 API'"
+          matTooltipPosition="above"
+          aria-label="Reconnect MT5">
+          ↻
         </button>
       </div>
     </div>
