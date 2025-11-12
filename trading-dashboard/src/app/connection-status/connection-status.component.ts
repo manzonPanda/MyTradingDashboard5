@@ -150,4 +150,13 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     if (onlineCount === 0) return 'offline';
     return 'mixed';
   }
+
+  async reconnectMT5(): Promise<void> {
+    const mt5Server = this.servers.find(s => s.name === 'MT5 API');
+    if (mt5Server) {
+      mt5Server.status = 'checking';
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await this.checkAllServerStatus();
+    }
+  }
 }
