@@ -183,7 +183,7 @@ export class DashboardComponent implements AfterViewInit {
 
   // MT5 Live Trading properties
 mt5AccountInfo: AccountSettings = {
-  startingBalance: 0,
+  startingBalance: 5000,
   balance: 0,
   profitTarget: 0,
   maxTotalDrawdown: 0,
@@ -956,7 +956,7 @@ mt5AccountInfo: AccountSettings = {
         "filter": {
           "property": "Account",
           "multi_select": {
-            "contains": "5ers6️⃣5k [#25736015]"
+            "contains": "AppTestData"
           }
         },
         "sorts": [
@@ -1013,7 +1013,7 @@ async ngOnInit() {
 
   socket.on("account_info", (data) => {
     if (this.mt5AccountInfo) {
-      this.mt5AccountInfo.balance = data.balance;
+      this.mt5AccountInfo.balance = 5500;
     }
     console.warn("���� Account Info Received:", data);
   });
@@ -1817,7 +1817,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "5ers6️⃣5k [#25736015]" }
+              { "name": "AppTestData" }
             ]
           },
           "ticket":{
@@ -4721,50 +4721,68 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   //   });
   // }
 
-  async loadMT5Data(): Promise<void> {
-    try {
-      const response = await this.getMt5API();
-      if (response && response.length > 0) {
-        const mt5Trades = response.map((trade: any) => { 
-          return {
-            openDate: this.convertAndFormatMT5Date(trade.time_open),
-            closeDate: trade.time_close? this.convertAndFormatMT5Date(trade.time_close): "-",
-            tradeNotion: [],
-            status: "",
-            position: trade.position_id,
-            symbol: trade.symbol || '',
-            type: trade.type === 0 ? 'Buy' : 'Sell',
-            volume: trade.volume ? trade.volume.toString() : '0',
-            entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
-            sL: trade.sl ? trade.sl.toString() : '0',
-            tP: trade.tp ? trade.tp.toString() : '0',
-            exit: trade.price_current ? trade.price_current.toString() : '0',
-            commission: trade.commission ? trade.commission.toString() : '0',
-            swap: trade.swap ? trade.swap.toString() : '0',
-            profit: trade.profit ? trade.profit.toString() : '0',
-            netProfit: (trade.profit + trade.commission).toString(),
-            riskPerTrade: trade.risk_usd? trade.risk_usd.toString() :'0',
-            rrr:trade.reward_risk_ratio ? trade.reward_risk_ratio.toString(): '0',
-            mt5status: trade.status || '',
-            mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
-          } as Table;
-        });
+async loadMT5Data(): Promise<void> {
+  let response: any[] = [];
 
-        this.mt5LiveTrades = mt5Trades;
-        console.log("this.mt5LiveTrades", this.mt5LiveTrades);
-        this.updateTableData();
-
-        // Generate stunning chart with loaded data
-        setTimeout(() => {
-          this.generateTradingChartData();
-        }, 500);
-      }
-
-     // Go to last page of the table to show the latest trade
-     this.setPage(this.getTotalPages());
-    } catch (error) {
-        console.error('Error loading MT5 data:', error);
+  try {
+    // Try live API
+    response = await this.getMt5API();
+    if (!response || response.length === 0) {
+      console.warn('MT5 API returned no data, loading local JSON...');
+      response = await this.getLocalTrades();
     }
+  } catch (error) {
+    console.error('Error fetching MT5 API, using local JSON fallback:', error);
+    try {
+      response = await this.getLocalTrades();
+    } catch (localError) {
+      console.error('Failed to load local JSON fallback:', localError);
+      response = []; // Ensure response is always an array
+    }
+  }
+
+  // Map the trades once, regardless of source
+  const mt5Trades = (response || []).map((trade: any) => ({
+    openDate: this.convertAndFormatMT5Date(trade.time_open),
+    closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
+    tradeNotion: [],
+    status: "",
+    position: trade.position_id,
+    symbol: trade.symbol || '',
+    type: trade.trade_type === 0 ? 'Buy' : 'Sell',
+    volume: trade.volume ? trade.volume.toString() : '0',
+    entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
+    sL: trade.sl ? trade.sl.toString() : '0',
+    tP: trade.tp ? trade.tp.toString() : '0',
+    exit: trade.exit_price ? trade.exit_price.toString() : '0',
+    commission: trade.commission ? trade.commission.toString() : '0',
+    swap: trade.swap ? trade.swap.toString() : '0',
+    profit: trade.profit ? trade.profit.toString() : '0',
+    netProfit: (trade.profit + trade.commission).toString(),
+    riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
+    rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
+    mt5status: trade.status || '',
+    mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
+  } as Table));
+
+  this.mt5LiveTrades = mt5Trades;
+  console.log("this.mt5LiveTrades", this.mt5LiveTrades);
+  this.updateTableData();
+
+// Generate stunning chart with loaded data
+  setTimeout(() => {
+    this.generateTradingChartData();
+  }, 500);
+
+  // Go to last page of the table to show the latest trade
+  this.setPage(this.getTotalPages());
+}
+
+  
+  async getLocalTrades(): Promise<any[]> {
+    return this.http.get<any[]>('assets/testDataTrades.json')
+      .toPromise()
+      .then(res => res || []);
   }
 
 
