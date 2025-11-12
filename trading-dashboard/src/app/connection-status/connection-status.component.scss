@@ -138,7 +138,10 @@
 }
 
 .reconnect-icon-btn {
-  display: inline-flex;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
@@ -147,19 +150,20 @@
   font-size: 12px;
   font-weight: bold;
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(255, 255, 255, 0.95);
   border: 1.5px solid #ef4444;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
   animation: slideIn 0.3s ease-out;
+  z-index: 10;
 
   &:hover {
     transform: scale(1.15);
     background: #ef4444;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
     animation: spin 0.8s linear infinite;
   }
 
