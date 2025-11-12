@@ -1,0 +1,31 @@
+// Footer Styles - Fixed to viewport bottom
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-top: 1px solid rgba(226, 232, 240, 0.1);
+  text-align: center;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .copyright-text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: rgba(226, 232, 240, 0.7);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: rgba(226, 232, 240, 1);
+    }
+  }
+}
