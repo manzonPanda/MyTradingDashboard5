@@ -1,28 +1,38 @@
 <div class="connection-status-container">
   <div class="servers-grid">
-    <div 
-      *ngFor="let server of servers" 
+    <div
+      *ngFor="let server of servers"
       class="server-status-item"
       [ngClass]="'status-' + server.status"
       [matTooltip]="getServerTooltip(server)"
       matTooltipPosition="below">
-      
+
       <div class="server-icon-container">
-        <img 
-          [src]="server.icon" 
+        <img
+          [src]="server.icon"
           [alt]="server.name + ' icon'"
           class="server-icon"
           [ngClass]="'icon-' + server.status">
-        
+
         <div class="status-indicator" [ngClass]="'indicator-' + server.status">
           <div class="status-dot" [ngClass]="'dot-' + server.status"></div>
         </div>
+
+        <button
+          *ngIf="server.name === 'MT5 API' && server.status === 'offline'"
+          class="reconnect-icon-btn"
+          (click)="reconnectMT5()"
+          [matTooltip]="'Reconnect to MT5 API'"
+          matTooltipPosition="above"
+          aria-label="Reconnect MT5">
+          ↻
+        </button>
       </div>
-      
+
       <div class="server-label">{{ server.name }}</div>
     </div>
   </div>
-  
+
   <!-- Overall status indicator -->
   <!-- <div class="overall-status" [ngClass]="'overall-' + getOverallStatus()">
     <div class="overall-dot" [ngClass]="'overall-dot-' + getOverallStatus()"></div>
