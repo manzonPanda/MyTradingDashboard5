@@ -64,6 +64,8 @@ html {
 // Ensure clean light background
 app-root {
   display: block;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   background-color: #ffffff;
 }
