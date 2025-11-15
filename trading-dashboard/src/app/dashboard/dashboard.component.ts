@@ -515,6 +515,7 @@ mt5AccountInfo: AccountSettings = {
       },
       y: {
         display: true,
+        //min: 89000,
         grid: {
           display: true,
           color: 'rgba(0, 0, 0, 0.08)',
@@ -951,12 +952,16 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private async loadTradingSettings(): Promise<void> {
+     // Try live API
+    let response: any[] = await this.getMt5API();
+    let notionAccountName = (!response || response.length === 0) ? "AppTestData" : "5ers6️⃣5k [#25736015]";
+
     const body = {
         "page_size": 1,
         "filter": {
           "property": "Account",
           "multi_select": {
-            "contains": "AppTestData"
+            "contains": notionAccountName
           }
         },
         "sorts": [
@@ -1014,6 +1019,7 @@ async ngOnInit() {
   socket.on("account_info", (data) => {
     if (this.mt5AccountInfo) {
       this.mt5AccountInfo.balance = 5500;
+      // this.mt5AccountInfo.balance = 100000; //data.balance;
     }
     console.warn("���� Account Info Received:", data);
   });
@@ -1817,7 +1823,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "AppTestData" }
+              { "name": "5ers6️⃣5k [#25736015]" }
             ]
           },
           "ticket":{
@@ -2162,7 +2168,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const res: any = await firstValueFrom(
       this.http.get("http://localhost:5000/api/history")
     );
-    console.warn(res)
     return res;
   }
 
