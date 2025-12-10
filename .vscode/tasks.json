@@ -8,8 +8,10 @@
       "options": {
         "cwd": "${workspaceFolder}/trading-dashboard",
         "shell": {
-            "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
-            "args": ["-c"]
+          "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+          "args": [
+            "-c"
+          ]
         }
       },
       "problemMatcher": []
@@ -21,8 +23,10 @@
       "options": {
         "cwd": "${workspaceFolder}/notionproxyapi",
         "shell": {
-            "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
-            "args": ["-c"]
+          "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+          "args": [
+            "-c"
+          ]
         }
       },
       "problemMatcher": []
@@ -34,16 +38,23 @@
       "options": {
         "cwd": "${workspaceFolder}/pythonMt5",
         "shell": {
-            "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
-            "args": ["-c"]
+          "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+          "args": [
+            "-c"
+          ]
         }
       },
       "problemMatcher": []
     },
     {
       "label": "Start All",
-      "dependsOn": ["Frontend-Angular", "Backend-NotionApi", "Backend-MT5api"],
-      "dependsOrder": "parallel"
+      "dependsOn": [
+        "Frontend-Angular",
+        "Backend-NotionApi",
+        "Backend-MT5api"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     }
   ]
 }

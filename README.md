@@ -14,3 +14,8 @@ npm run dev --prefix NotionProxyApi
 Builder.io - Dev command
 npm run dev --prefix NotionProxyApi
 npm run start --prefix trading-dashboard
+
+
+**************************
+VScode extension:
+Task runner plus
