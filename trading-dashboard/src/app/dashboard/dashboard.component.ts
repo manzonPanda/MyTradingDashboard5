@@ -953,7 +953,7 @@ mt5AccountInfo: AccountSettings = {
   private async loadTradingSettings(): Promise<void> {
      // Try live API
     let response: any[] = await this.getMt5API();
-    let notionAccountName = (!response || response.length === 0) ? "AppTestData" : "5ers6️⃣.2️⃣5k [#25801697]";
+    let notionAccountName = (!response || response.length === 0) ? "AppTestData" : "5ers7️⃣5k [#25815838]";
 
     const body = {
         "page_size": 1,
@@ -1822,7 +1822,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "55ers6️⃣.2️⃣5k [#25801697]" }
+              { "name": "5ers7️⃣5k [#25815838]" }
             ]
           },
           "ticket":{
