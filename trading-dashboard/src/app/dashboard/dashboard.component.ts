@@ -2120,7 +2120,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   async populateData(){
     //for progress bar populating
     const total = this.tableData.length;
-    let completed = 0;
+    let completed = 0;  
     //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
     const allMatched = this.tableData.every(item => item.status === 'Matched');
     // const propFirmAccountValue = 5000; //change this in the future to read the excel file
