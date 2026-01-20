@@ -13,16 +13,16 @@ const vm = require('vm'); // ✅ Add this
 
 const fcmAdmin = require("firebase-admin");
 
-const NOTION_TOKEN = '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'; // 🔐 Replace with your Notion token
+const NOTION_TOKEN = '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'; // 🔐 Replace with your Notion token
 const NOTION_VERSION = '2022-06-28';
 //ef10ac6f79524ea49e4bc0997e0ee704 == DB-TradingJournal
 //5e00bcb25c3d4276b1de54de3576894a == DB-MonthlyLog
 
 // Load FCM SDKadmin service account key
-const serviceAccount = require('./serviceAccountKey.json');
-fcmAdmin.initializeApp({
-  credential: fcmAdmin.credential.cert(serviceAccount)
-});
+// const serviceAccount = require('./serviceAccountKey.json');
+// fcmAdmin.initializeApp({
+//   credential: fcmAdmin.credential.cert(serviceAccount)
+// });
 
 
 app.post('/api/createRelationId', async (req, res) => {

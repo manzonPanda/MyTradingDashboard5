@@ -182,7 +182,7 @@ export class DashboardComponent implements AfterViewInit {
 
   // MT5 Live Trading properties
 mt5AccountInfo: AccountSettings = {
-  startingBalance: 5000,
+  startingBalance: 2500,
   balance: 0,
   profitTarget: 0,
   maxTotalDrawdown: 0,
@@ -514,21 +514,27 @@ mt5AccountInfo: AccountSettings = {
       },
       y: {
         display: true,
-        //min: 89000,
+        min: this.mt5AccountInfo.startingBalance * 0.9,
+        max: this.mt5AccountInfo.startingBalance * 1.1,
         grid: {
           display: true,
           color: 'rgba(0, 0, 0, 0.08)',
           lineWidth: 1
         },
         ticks: {
-          maxTicksLimit: 15,
-          stepSize: 50,
+          // maxTicksLimit: 15,
           font: {
-            size: 13,
+            size: 15,
             weight: 'normal'
           },
           color: '#64748b',
-          callback: function(value: any) {
+          stepSize: 50,
+          // callback: (value: string | number) => {
+          //   const v = Number(value);
+          //   const sign = v > 0 ? '+' : '';
+          //   return `${sign}${v}%`;
+          // }
+     callback: function(value: any) {
             return '$' + value.toLocaleString('en-US', {
               minimumFractionDigits: 0,
               maximumFractionDigits: 0
@@ -953,7 +959,7 @@ mt5AccountInfo: AccountSettings = {
   private async loadTradingSettings(): Promise<void> {
      // Try live API
     let response: any[] = await this.getMt5API();
-    let notionAccountName = (!response || response.length === 0) ? "AppTestData" : "5ers7️⃣5k [#25815838]";
+    let notionAccountName = (!response || response.length === 0) ? "AppTestData" : "5ers8️⃣2.5k [#25939419]";
 
     const body = {
         "page_size": 1,
@@ -986,11 +992,11 @@ mt5AccountInfo: AccountSettings = {
         this.mt5AccountInfo.profitTarget = parseInt(profitTarget.replace('%', ''))
         this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', ''))
         this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', ''))
-
+        console.log('✅ Loaded MT5 Account settings from Notion:', this.mt5AccountInfo);
         // Refresh chart with updated MT5 account info
         setTimeout(() => {
-          this.generateTradingChartData();
-        }, 100);
+           this.generateTradingChartData();
+        }, 3000);
 
       }
       console.warn('✅ Loaded PropFirm Account settings from Notion: ', this.mt5AccountInfo);
@@ -1008,106 +1014,105 @@ async ngOnInit() {
       upgrade: false,              // Optional, disables fallback to long-polling
     });
 
-  socket.on("connect", async () => {
-    console.warn("✅ Connected to WebSocket server");
-    // Set metrics loading to false after connection
-    this.isLoadingMetrics = false;
-    await this.loadMT5Data(); // Load MT5 trades
-  });
-
-  socket.on("account_info", (data) => {
-    if (this.mt5AccountInfo) {
-      this.mt5AccountInfo.balance = 5500;
-      // this.mt5AccountInfo.balance = 100000; //data.balance;
-    }
-    console.warn("���� Account Info Received:", data);
-  });
-
-  socket.on("connect_error", (err: any) => {
-    console.warn("❌ Socket connection error:", err);
-    // Even if socket fails, show the metrics (they'll just be 0)
-    this.isLoadingMetrics = false;
-  });
-
-  socket.on("trade_opened", (data: any) => {
-    console.warn("New trade opened:", data);
-    this.addMT5LiveTrade(data);
-  });
-
-  socket.on("trade_closed", (data: any) => {
-    console.warn("Trade closed:", data);
-    this.closeMT5Trade(data);
-  });
-
-  socket.on('price_update', (data: any) => {
-    console.log("Live price update:", data);
-    this.updateMT5TradePrice(data);
-  });
-
-  // Start daily limit tracking
-  this.setupDailyResetTimer();
-  this.updateResetCountdown();
-  setInterval(() => this.updateResetCountdown(), 1000);
-
-  try {
-    const news: any = await firstValueFrom(
-      this.http.get("http://localhost:3000/api/news")
-    );
-    this.newsData = Array.isArray(news) ? news : [];
-    console.log("📈 Forex Factory News Data:", this.newsData);
-
-    // Ensure in-app UI reminders (sound + modal) are active regardless of FCM
-    this.newsReminder.setUiReminderCallback((events: any[], minutesBefore: number) => {
-      this.handleNewsUiReminder(events, minutesBefore);
+    socket.on("connect", async () => {
+      console.warn("✅ Connected to WebSocket server");
+      // Set metrics loading to false after connection
+      this.isLoadingMetrics = false;
+      await this.loadMT5Data(); // Load MT5 trades
     });
 
-    // Schedule news reminders if FCM is ready
-    if (this.newsData.length > 0) {
-      // Delay scheduling to ensure FCM is set up
-      setTimeout(() => {
+    socket.on("account_info", (data) => {
+      if (this.mt5AccountInfo) {
+        this.mt5AccountInfo.balance = 5500;
+      }
+      console.warn("���� Account Info Received:", data);
+    });
+
+    socket.on("connect_error", (err: any) => {
+      console.warn("❌ Socket connection error:", err);
+      // Even if socket fails, show the metrics (they'll just be 0)
+      this.isLoadingMetrics = false;
+    });
+
+    socket.on("trade_opened", (data: any) => {
+      console.warn("New trade opened:", data);
+      this.addMT5LiveTrade(data);
+    });
+
+    socket.on("trade_closed", (data: any) => {
+      console.warn("Trade closed:", data);
+      this.closeMT5Trade(data);
+    });
+
+    socket.on('price_update', (data: any) => {
+      console.log("Live price update:", data);
+      this.updateMT5TradePrice(data);
+    });
+
+    // Start daily limit tracking
+    this.setupDailyResetTimer();
+    this.updateResetCountdown();
+    setInterval(() => this.updateResetCountdown(), 1000);
+
+    try {
+      const news: any = await firstValueFrom(
+        this.http.get("http://localhost:3000/api/news")
+      );
+      this.newsData = Array.isArray(news) ? news : [];
+      console.log("📈 Forex Factory News Data:", this.newsData);
+
+      // Ensure in-app UI reminders (sound + modal) are active regardless of FCM
+      this.newsReminder.setUiReminderCallback((events: any[], minutesBefore: number) => {
+        this.handleNewsUiReminder(events, minutesBefore);
+      });
+
+      // Schedule news reminders if FCM is ready
+      if (this.newsData.length > 0) {
+        // Delay scheduling to ensure FCM is set up
+        setTimeout(() => {
+          this.newsReminder.scheduleAllReminders(this.newsData);
+        }, 1000);
+      }
+    } catch (error) {
+      console.warn("⚠️ Failed to load forex news:", error);
+      this.newsData = [];
+    } finally {
+      this.isNewsLoading = false;
+    }
+
+    //Firebase Cloud Messaging setup
+    const token = await this.fcm.requestPermission();
+    if (token) {
+      // You would store this token in your backend DB tied to the user
+      this.fcm.listen();
+
+      // Set up news reminder callback
+      this.newsReminder.setSendNotificationCallback((title: string, body: string) => {
+        this.sendNotif(token, title, body);
+      });
+
+      // Schedule reminders for loaded news
+      if (this.newsData && this.newsData.length > 0) {
         this.newsReminder.scheduleAllReminders(this.newsData);
-      }, 1000);
+      }
     }
-  } catch (error) {
-    console.warn("⚠️ Failed to load forex news:", error);
-    this.newsData = [];
-  } finally {
-    this.isNewsLoading = false;
-  }
 
-  //Firebase Cloud Messaging setup
-  const token = await this.fcm.requestPermission();
-  if (token) {
-    // You would store this token in your backend DB tied to the user
-    this.fcm.listen();
-
-    // Set up news reminder callback
-    this.newsReminder.setSendNotificationCallback((title: string, body: string) => {
-      this.sendNotif(token, title, body);
-    });
-
-    // Schedule reminders for loaded news
-    if (this.newsData && this.newsData.length > 0) {
-      this.newsReminder.scheduleAllReminders(this.newsData);
-    }
-  }
-
-  this.dtOptions = {
-    paging: true,
-    searching: true,
-    ordering: true,
-    pageLength: 10,
-    processing: false,
-    responsive: true,
-    keys: true,
-    retrieve: true,
-    language: {
-      emptyTable: "No trading data available",
-      info: "Showing _START_ to _END_ of _TOTAL_ trades",
-      infoEmpty: "Showing 0 to 0 of 0 trades",
-      lengthMenu: "Show _MENU_ trades per page"
-    }
-  };
+    this.dtOptions = {
+      paging: true,
+      searching: true,
+      ordering: true,
+      pageLength: 10,
+      processing: false,
+      responsive: true,
+      keys: true,
+      retrieve: true,
+      language: {
+        emptyTable: "No trading data available",
+        info: "Showing _START_ to _END_ of _TOTAL_ trades",
+        infoEmpty: "Showing 0 to 0 of 0 trades",
+        lengthMenu: "Show _MENU_ trades per page"
+      }
+    };
 
     this.dtOptionsNotion = {
       destroy: true,
@@ -1822,7 +1827,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "5ers7️⃣5k [#25815838]" }
+              { "name": "5ers8️⃣2.5k [#25939419]" }
             ]
           },
           "ticket":{
@@ -2313,22 +2318,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Refresh chart with beautiful animation
-  refreshChart(): void {
-    const refreshBtn = document.querySelector('.chart-refresh-btn');
-    if (refreshBtn) {
-      refreshBtn.classList.add('spinning');
-      setTimeout(() => {
-        refreshBtn.classList.remove('spinning');
-      }, 1000);
-    }
-    this.generateTradingChartData();
-  }
+
 
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
-
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
     let currentBalance = startingBalance;
     let cumulativePnL = 0;
@@ -3313,7 +3307,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateAvgWinPercentage(): number {
     const avgWin = this.calculateAvgWin();
-    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 2500;
 
     if (avgWin <= 0 || accountSize <= 0) return 0;
 
@@ -3322,7 +3316,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateAvgLossPercentage(): number {
     const avgLoss = Math.abs(this.calculateAvgLoss());
-    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 2500;
 
     if (avgLoss <= 0 || accountSize <= 0) return 0;
 
@@ -3368,7 +3362,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateBestProfitPercentage(): number {
     const bestProfit = this.calculateBestProfit();
-    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 2500;
 
     if (bestProfit <= 0 || accountSize <= 0) return 0;
 
@@ -3389,7 +3383,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   calculateBestLossPercentage(): number {
     const bestLoss = Math.abs(this.calculateBestLoss());
-    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 5000;
+    const accountSize = this.mt5AccountInfo?.startingBalance || this.calculateAccountSize() || 2500;
 
     if (bestLoss <= 0 || accountSize <= 0) return 0;
 
@@ -4058,7 +4052,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getMaxDrawdownPercent(): string {
     const maxDrawdown = Math.abs(this.getMaxDrawdown());
-    const initialBalance = 5000; // Prop firm account value
+    const initialBalance = 2500; // Prop firm account value
     return ((maxDrawdown / initialBalance) * 100).toFixed(2);
   }
 
@@ -4725,62 +4719,62 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   //   });
   // }
 
-async loadMT5Data(): Promise<void> {
-  let response: any[] = [];
+  async loadMT5Data(): Promise<void> {
+    let response: any[] = [];
 
-  try {
-    // Try live API
-    response = await this.getMt5API();
-    if (!response || response.length === 0) {
-      console.warn('MT5 API returned no data, loading local JSON...');
-      response = await this.getLocalTrades();
-    }
-  } catch (error) {
-    console.error('Error fetching MT5 API, using local JSON fallback:', error);
     try {
-      response = await this.getLocalTrades();
-    } catch (localError) {
-      console.error('Failed to load local JSON fallback:', localError);
-      response = []; // Ensure response is always an array
+      // Try live API
+      response = await this.getMt5API();
+      if (!response || response.length === 0) {
+        console.warn('MT5 API returned no data, loading local JSON...');
+        response = await this.getLocalTrades();
+      }
+    } catch (error) {
+      console.error('Error fetching MT5 API, using local JSON fallback:', error);
+      try {
+        response = await this.getLocalTrades();
+      } catch (localError) {
+        console.error('Failed to load local JSON fallback:', localError);
+        response = []; // Ensure response is always an array
+      }
     }
+
+    // Map the trades once, regardless of source
+    const mt5Trades = (response || []).map((trade: any) => ({
+      openDate: this.convertAndFormatMT5Date(trade.time_open),
+      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
+      tradeNotion: [],
+      status: "",
+      position: trade.position_id,
+      symbol: trade.symbol || '',
+      type: trade.trade_type === 0 ? 'Buy' : 'Sell',
+      volume: trade.volume ? trade.volume.toString() : '0',
+      entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
+      sL: trade.sl ? trade.sl.toString() : '0',
+      tP: trade.tp ? trade.tp.toString() : '0',
+      exit: trade.exit_price ? trade.exit_price.toString() : '0',
+      commission: trade.commission ? trade.commission.toString() : '0',
+      swap: trade.swap ? trade.swap.toString() : '0',
+      profit: trade.profit ? trade.profit.toString() : '0',
+      netProfit: (trade.profit + trade.commission).toString(),
+      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
+      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
+      mt5status: trade.status || '',
+      mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
+    } as Table));
+
+    this.mt5LiveTrades = mt5Trades;
+    console.log("this.mt5LiveTrades", this.mt5LiveTrades);
+    this.updateTableData();
+
+    // Generate stunning chart with loaded data
+    // setTimeout(() => {
+      // this.generateTradingChartData();
+    // }, 500);
+
+    // Go to last page of the table to show the latest trade
+    this.setPage(this.getTotalPages());
   }
-
-  // Map the trades once, regardless of source
-  const mt5Trades = (response || []).map((trade: any) => ({
-    openDate: this.convertAndFormatMT5Date(trade.time_open),
-    closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
-    tradeNotion: [],
-    status: "",
-    position: trade.position_id,
-    symbol: trade.symbol || '',
-    type: trade.trade_type === 0 ? 'Buy' : 'Sell',
-    volume: trade.volume ? trade.volume.toString() : '0',
-    entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
-    sL: trade.sl ? trade.sl.toString() : '0',
-    tP: trade.tp ? trade.tp.toString() : '0',
-    exit: trade.exit_price ? trade.exit_price.toString() : '0',
-    commission: trade.commission ? trade.commission.toString() : '0',
-    swap: trade.swap ? trade.swap.toString() : '0',
-    profit: trade.profit ? trade.profit.toString() : '0',
-    netProfit: (trade.profit + trade.commission).toString(),
-    riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-    rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
-    mt5status: trade.status || '',
-    mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
-  } as Table));
-
-  this.mt5LiveTrades = mt5Trades;
-  console.log("this.mt5LiveTrades", this.mt5LiveTrades);
-  this.updateTableData();
-
-// Generate stunning chart with loaded data
-  setTimeout(() => {
-    this.generateTradingChartData();
-  }, 500);
-
-  // Go to last page of the table to show the latest trade
-  this.setPage(this.getTotalPages());
-}
 
   
   async getLocalTrades(): Promise<any[]> {
@@ -4810,7 +4804,7 @@ async loadMT5Data(): Promise<void> {
     const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
     const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
     const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
-    const randomPrice = (1.0000 + Math.random() * 0.5000).toFixed(4); // 1.0000 to 1.5000
+    const randomPrice = (1.0000 + Math.random() * 0.2500).toFixed(4); // 1.0000 to 1.5000
     const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
     const mockTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
 
@@ -5134,7 +5128,7 @@ async loadMT5Data(): Promise<void> {
 
   getRiskPercentage(row: Table): string {
     // Calculate risk percentage based on actual account size
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
     const riskAmount = this.getSafeNumber(row.riskPerTrade);
 
     if (riskAmount <= 0 || accountSize <= 0) {
@@ -5149,7 +5143,7 @@ async loadMT5Data(): Promise<void> {
     // Calculate percentage gained based on R:R ratio and risk amount
     const rrr = row.rrr ? parseFloat(row.rrr.toString().replace('R', '')) : 0;
     const riskAmount = this.getSafeNumber(row.riskPerTrade);
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
 
     if (rrr <= 0 || riskAmount <= 0 || accountSize <= 0) {
       return '0.0';
@@ -5162,7 +5156,7 @@ async loadMT5Data(): Promise<void> {
 
   getMURPercentage(row: Table): string {
     // Calculate MUR percentage based on actual account size
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
     const murAmount = this.getSafeNumber(row.mfe);
 
     if (murAmount <= 0 || accountSize <= 0) {
@@ -5175,7 +5169,7 @@ async loadMT5Data(): Promise<void> {
 
   getNetPnLPercentage(row: Table): string {
     // Calculate Net P&L percentage based on actual account size
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 5000; // Fallback to 5k
+    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
     const netPnL = this.getSafeNumber(row.netProfit);
 
     if (accountSize <= 0) {
@@ -5580,7 +5574,7 @@ async loadMT5Data(): Promise<void> {
   private getNetCommissionGrossPercentage(row: Table): number {
     const base = (this.mt5AccountInfo?.startingBalance && this.mt5AccountInfo.startingBalance > 0)
       ? this.mt5AccountInfo.startingBalance
-      : (this.calculateAccountSize() || 5000);
+      : (this.calculateAccountSize() || 2500);
     if (base <= 0) return 0;
     const net = this.getNetFromCommissionPlusGross(row);
     return (net / base) * 100;
