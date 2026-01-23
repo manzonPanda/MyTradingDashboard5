@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  backendUrl: 'http://localhost:3000',
   firebaseConfig: {
     apiKey: "AIzaSyB5-Z3aLRr-HyopLGF6kXDPR1DdOKoEI_Q",
     authDomain: "tradingdashboard-fce7d.firebaseapp.com",

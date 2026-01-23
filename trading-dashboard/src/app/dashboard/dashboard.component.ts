@@ -34,6 +34,8 @@ import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
+import { environment } from '../../../src/environments/environment';
+
 
 declare var $: any;
 
@@ -357,7 +359,8 @@ mt5AccountInfo: AccountSettings = {
   private isRefreshingTable = false;
 
   // Backend configuration
-  private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
+  // private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
+     private BACKEND_URL_NOTION = environment.backendUrl;
 
 
   // Confetti celebration tracking
@@ -979,7 +982,7 @@ mt5AccountInfo: AccountSettings = {
     ;
     try {
       const accountSettings: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getPropFirmAccountSettings", body) //Patching
+        this.http.post(`${this.BACKEND_URL_NOTION}/api/getPropFirmAccountSettings`, body) //Patching
       );
       if (accountSettings.results[0]) {
         const info = accountSettings.results[0].properties["Daily Reflection"]?.rich_text?.[0]?.plain_text || "";
@@ -1056,7 +1059,7 @@ async ngOnInit() {
 
     try {
       const news: any = await firstValueFrom(
-        this.http.get("http://localhost:3000/api/news")
+        this.http.get(`${this.BACKEND_URL_NOTION}/api/news`)
       );
       this.newsData = Array.isArray(news) ? news : [];
       console.log("📈 Forex Factory News Data:", this.newsData);
@@ -1624,7 +1627,7 @@ isRowAlreadySelected(row: any): boolean {
         ]
       }
     }
-    this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+    this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
     .subscribe({
       next: async (res:any) => {
         // console.log(res)
@@ -1669,7 +1672,7 @@ isRowAlreadySelected(row: any): boolean {
           }
           try {
             const res: any = await firstValueFrom(
-              this.http.patch("http://localhost:3000/api/patchRelationIdToTrade", body) //Patching
+              this.http.patch(`${this.BACKEND_URL_NOTION}/api/patchRelationIdToTrade`, body) //Patching
             );
             if (res) {
               console.log("Patching successful: "+trade.tradeDate)
@@ -1748,7 +1751,7 @@ isRowAlreadySelected(row: any): boolean {
         }
         try {
           const res: any = await firstValueFrom(
-            this.http.post("http://localhost:3000/api/getRelationName", body)
+            this.http.post(`${this.BACKEND_URL_NOTION}/api/getRelationName`, body)
           );
           //To check if an object with the same relationName already exists in the this.relations array before pushing
           if (res.results.length > 0) {
@@ -1800,7 +1803,7 @@ isRowAlreadySelected(row: any): boolean {
       }
     }
     const res: any = await firstValueFrom(
-      this.http.post("http://localhost:3000/api/createRelationId", body)
+      this.http.post(`${this.BACKEND_URL_NOTION}/api/createRelationId`, body)
     );
     if (res) {
       // this.relations = []
@@ -1888,7 +1891,7 @@ isRowAlreadySelected(row: any): boolean {
         }
       }
     const res: any = await firstValueFrom(
-      this.http.post("http://localhost:3000/api/createNewEntry", body)
+      this.http.post(`${this.BACKEND_URL_NOTION}/api/createNewEntry`, body)
     );
     // if (res) {
       
@@ -1908,7 +1911,7 @@ isRowAlreadySelected(row: any): boolean {
     }
     try {
       const res: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+        this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
       );
       if (res.results.length > 0) {
         const pageId = res.results[0].id; // Get the first result's ID
@@ -1961,7 +1964,7 @@ isRowAlreadySelected(row: any): boolean {
 
         try {
           const res: any = await firstValueFrom(
-            this.http.patch("http://localhost:3000/api/updatePropertiesToTrade", body)
+            this.http.patch(`${this.BACKEND_URL_NOTION}/api/updatePropertiesToTrade`, body)
           );
           if (res) {
             console.log("Updated existing entry for ticket:", res);
@@ -2005,7 +2008,7 @@ isRowAlreadySelected(row: any): boolean {
 
       try {
         const res: any = await firstValueFrom(
-          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+          this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
         );
         if (res.results && res.results.length > 0) {
           // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
@@ -2078,7 +2081,7 @@ isRowAlreadySelected(row: any): boolean {
       }
     }
     const res: any = await firstValueFrom(
-      this.http.post("http://localhost:3000/api/getAllPagesFromDB", body));
+      this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body));
 
     const tradesFoundForUnmatched:Trades[] = []
      if (res.results && res.results.length > 0) {
@@ -2150,7 +2153,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
           try {
             const res: any = await firstValueFrom(
-              this.http.patch("http://localhost:3000/api/updatePropertiesToTrade", body)
+              this.http.patch(`${this.BACKEND_URL_NOTION}/api/updatePropertiesToTrade`, body)
             );
             if (res) {
               console.log("Updating successful: ",res)
@@ -2190,7 +2193,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       };
 
       const res: any = await firstValueFrom(
-        this.http.post("http://localhost:3000/api/sendNotif", payload)
+        this.http.post(`${this.BACKEND_URL_NOTION}/api/sendNotif`, payload)
       );
 
       if (res) {
@@ -2239,7 +2242,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Use the proxy endpoint that matches your database ID exactly
         const proxyResponse: any = await firstValueFrom(
-          this.http.post("http://localhost:3000/api/getAllPagesFromDB", body)
+          this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
         );
 
         console.log(`📥 Page ${pageCount} response:`, {
@@ -2927,7 +2930,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const quickTestBody = {}; // Empty body as per your specification
 
       await firstValueFrom(
-        this.http.post('http://localhost:3000/api/getAllPagesFromDB', quickTestBody, {
+        this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, quickTestBody, {
           headers: { 'Cache-Control': 'no-cache' }
         })
       );
@@ -2989,7 +2992,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async testBackendConnection(): Promise<boolean> {
     console.log('🔍 Testing backend connection...');
-    console.log('Backend URL:', this.BACKEND_URL);
+    console.log('Backend URL:', this.BACKEND_URL_NOTION);
 
     try {
       console.log('Testing POST request to /api/getAllPagesFromDB with empty body...');
@@ -2998,7 +3001,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const testBody = {}; // Empty body as per your sample request
 
       const testResponse = await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL}/api/getAllPagesFromDB`, testBody)
+        this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, testBody)
       );
 
       console.log('✅ Backend POST request successful:', testResponse);
