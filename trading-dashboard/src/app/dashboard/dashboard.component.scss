@@ -2461,18 +2461,33 @@ table.simple-table {
             flex: 1;
             padding: 1.25rem 0.75rem;
 
-            .percentage-value {
-              font-size: 1.5rem;
-              font-weight: 800;
-              color: #7c3aed;
-              line-height: 1;
+            .value-display {
+              display: flex;
+              align-items: baseline;
+              justify-content: center;
+              gap: 0.5rem;
+              flex-wrap: wrap;
 
-              &.positive {
-                background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-                -webkit-background-clip: text;
-                background-clip: text;
-                -webkit-text-fill-color: transparent;
-                color: transparent;
+              .percentage-value {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #7c3aed;
+                line-height: 1;
+
+                &.positive {
+                  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                  -webkit-background-clip: text;
+                  background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  color: transparent;
+                }
+              }
+
+              .percentage-text {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #7c3aed;
+                opacity: 0.85;
               }
             }
           }
