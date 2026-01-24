@@ -1186,6 +1186,7 @@ async ngOnInit() {
       this.newsData = [];
     } finally {
       this.isNewsLoading = false;
+      this.cdr.markForCheck();
     }
 
     //Firebase Cloud Messaging setup
