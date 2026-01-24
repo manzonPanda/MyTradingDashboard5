@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -116,6 +116,7 @@ interface NotionPerformanceData {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ConnectionStatusComponent,
     TradingCalendarComponent,
@@ -150,6 +151,7 @@ export class DashboardComponent implements AfterViewInit {
 
   // Account Size Calculator
   accountSizeInput: number = 0;
+  selectedAccountSize: number | null = null;
   accountSizes = [
     { size: 5000, label: '5K' },
     { size: 10000, label: '10K' },
@@ -166,6 +168,17 @@ export class DashboardComponent implements AfterViewInit {
     { size: 50000, label: '50K' },
     { size: 100000, label: '100K' }
   ];
+
+  selectAccountSize(size: number): void {
+    this.selectedAccountSize = this.selectedAccountSize === size ? null : size;
+    this.cdr.markForCheck();
+  }
+
+  setAccountSizeByPercentage(percentage: number): void {
+    const startingBalance = this.mt5AccountInfo?.startingBalance || 0;
+    this.accountSizeInput = (percentage / 100) * startingBalance;
+    this.cdr.markForCheck();
+  }
 
   calculateAccountSizePercentages(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
@@ -193,10 +206,31 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   calculateAccountSizesSecondary(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
+    // Use selected account size as reference, or return zeros if no input
+    const referenceSize = this.selectedAccountSize || null;
+
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
       return this.accountSizesSecondary.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
+    // If a reference size is selected, calculate based on that
+    if (referenceSize && referenceSize > 0) {
+      // Calculate what percentage the input represents of the selected account size
+      const percentageOfSelectedAccount = (this.accountSizeInput / referenceSize) * 100;
+
+      return this.accountSizesSecondary.map(acc => {
+        // Apply that same percentage to each account size
+        const dollarValue = (percentageOfSelectedAccount / 100) * acc.size;
+        return {
+          size: acc.size,
+          label: acc.label,
+          percentage: percentageOfSelectedAccount,
+          displayValue: '$' + dollarValue.toFixed(2)
+        };
+      });
+    }
+
+    // Fallback: calculate based on starting balance (original behavior)
     const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
     if (currentBalance <= 0) {
       return this.accountSizesSecondary.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
