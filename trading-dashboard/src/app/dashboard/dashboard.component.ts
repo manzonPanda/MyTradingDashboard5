@@ -4834,6 +4834,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // }
 
   async loadMT5Data(): Promise<void> {
+    this.isLoadingMT5Data = true;
     let response: any[] = [];
 
     try {
@@ -4851,6 +4852,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.error('Failed to load local JSON fallback:', localError);
         response = []; // Ensure response is always an array
       }
+    } finally {
+      this.isLoadingMT5Data = false;
+      this.cdr.markForCheck();
     }
 
     // Map the trades once, regardless of source
