@@ -2336,6 +2336,127 @@ table.simple-table {
         0 8px 20px rgba(0, 0, 0, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
+
+    .account-size-calculator {
+      width: 100%;
+      height: 100%;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      .calculator-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+
+        .calculator-icon {
+          font-size: 1.5rem;
+          width: 1.5rem;
+          height: 1.5rem;
+          color: #3b82f6;
+          animation: icon-pulse 2s ease-in-out infinite;
+        }
+
+        .calculator-title {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: var(--tf-text-primary);
+          margin: 0;
+          letter-spacing: -0.01em;
+        }
+      }
+
+      .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .calculator-input {
+          flex: 1;
+          padding: 0.875rem 1rem;
+          font-size: 1rem;
+          font-weight: 600;
+          border: 2px solid var(--tf-border-primary);
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.5));
+          color: var(--tf-text-primary);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+
+          &:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.8));
+          }
+
+          &::placeholder {
+            color: var(--tf-text-muted);
+            font-weight: 500;
+          }
+        }
+
+        .input-label {
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: var(--tf-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+      }
+
+      .results-container {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.75rem;
+        flex: 1;
+
+        .percentage-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem 0.5rem;
+          background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(248,250,252,0.3));
+          border: 1.5px solid rgba(226, 232, 240, 0.6);
+          border-radius: 12px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          gap: 0.5rem;
+
+          &.active {
+            background: linear-gradient(135deg, #f0f9ff, #eff6ff);
+            border-color: #bfdbfe;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+          }
+
+          .account-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--tf-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .percentage-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--tf-text-primary);
+            line-height: 1;
+
+            &.positive {
+              background: linear-gradient(135deg, #3b82f6, #2563eb);
+              -webkit-background-clip: text;
+              background-clip: text;
+              -webkit-text-fill-color: transparent;
+              color: transparent;
+            }
+          }
+        }
+      }
+    }
   }
 
   .trading-chart-container {
