@@ -329,7 +329,9 @@
             <div *ngFor="let result of calculateAccountSizesSecondary()"
                  class="percentage-card"
                  [class.active]="accountSizeInput > 0"
-                 [class.matched-account]="result.size === mt5AccountInfo.startingBalance">
+                 [class.matched-account]="result.size === mt5AccountInfo.startingBalance"
+                 [class.selected]="selectedAccountSize === result.size"
+                 (click)="selectAccountSize(result.size)">
               <div class="card-header" [class.matched-header]="result.size === mt5AccountInfo.startingBalance">
                 <div class="account-label">{{ result.label }}</div>
               </div>
