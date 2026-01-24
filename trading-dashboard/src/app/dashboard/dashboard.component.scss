@@ -2494,11 +2494,11 @@ table.simple-table {
               .percentage-value {
                 font-size: 1.5rem;
                 font-weight: 800;
-                color: #7c3aed;
+                color: #0891b2;
                 line-height: 1;
 
                 &.positive {
-                  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                  background: linear-gradient(135deg, #06b6d4, #0891b2);
                   -webkit-background-clip: text;
                   background-clip: text;
                   -webkit-text-fill-color: transparent;
@@ -2509,15 +2509,15 @@ table.simple-table {
               .value-divider {
                 width: 2px;
                 height: 1.8rem;
-                background-color: #9ca3af;
-                opacity: 0.6;
+                background-color: #cbd5e1;
+                opacity: 0.5;
               }
 
               .percentage-text {
                 font-size: 1.5rem;
                 font-weight: 800;
-                color: #7c3aed;
-                opacity: 0.85;
+                color: #0891b2;
+                opacity: 0.8;
               }
             }
           }
