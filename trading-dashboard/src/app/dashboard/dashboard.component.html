@@ -307,7 +307,34 @@
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
-      <div class="left-feature-square"></div>
+      <div class="left-feature-square">
+        <div class="account-size-calculator">
+          <div class="calculator-header">
+            <mat-icon class="calculator-icon">calculate</mat-icon>
+            <h4 class="calculator-title">Account Calculator</h4>
+          </div>
+
+          <div class="input-wrapper">
+            <input
+              type="number"
+              [(ngModel)]="accountSizeInput"
+              placeholder="Enter P&L value..."
+              class="calculator-input"
+              min="0"
+              step="10">
+            <span class="input-label">USD</span>
+          </div>
+
+          <div class="results-container">
+            <div *ngFor="let result of calculateAccountSizePercentages()"
+                 class="percentage-card"
+                 [class.active]="accountSizeInput > 0">
+              <div class="account-label">{{ result.label }}</div>
+              <div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="trading-chart-container">
         <div class="chart-header">
           <div class="chart-title-section">
