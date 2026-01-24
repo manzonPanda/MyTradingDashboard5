@@ -1124,6 +1124,7 @@ async ngOnInit() {
       console.warn("✅ Connected to WebSocket server");
       // Set metrics loading to false after connection
       this.isLoadingMetrics = false;
+      this.cdr.markForCheck();
       await this.loadMT5Data(); // Load MT5 trades
     });
 
@@ -1138,6 +1139,7 @@ async ngOnInit() {
       console.warn("❌ Socket connection error:", err);
       // Even if socket fails, show the metrics (they'll just be 0)
       this.isLoadingMetrics = false;
+      this.cdr.markForCheck();
     });
 
     socket.on("trade_opened", (data: any) => {
@@ -1184,6 +1186,7 @@ async ngOnInit() {
       this.newsData = [];
     } finally {
       this.isNewsLoading = false;
+      this.cdr.markForCheck();
     }
 
     //Firebase Cloud Messaging setup
@@ -1252,9 +1255,16 @@ async ngOnInit() {
     this.updateDailyLimitMetrics();
 
     // Set loading to false after a short delay to show metrics even without data
+    // This is a fallback in case socket connection fails
     setTimeout(() => {
-      this.isLoadingMetrics = false;
-    }, 3000);
+      if (this.isLoadingMetrics) {
+        console.warn('⚠️ Metrics still loading after 1.5s, forcing completion');
+        this.isLoadingMetrics = false;
+        this.isLoadingMT5Data = false;
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      }
+    }, 1500);
 
     // Removed complex dummy data as requested by user
   }
@@ -2420,7 +2430,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     } finally {
       this.isLoadingNotionData = false;
-    console.log('🏁 Finished loading your complete Notion data');
+      this.cdr.markForCheck();
+      console.log('🏁 Finished loading your complete Notion data');
     }
   }
 
@@ -2715,6 +2726,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (this.chart) {
       this.chart.update('active');
     }
+
+    // Trigger change detection to update chart display
+    this.cdr.markForCheck();
   }
 
 
@@ -4826,6 +4840,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   // }
 
   async loadMT5Data(): Promise<void> {
+    this.isLoadingMT5Data = true;
     let response: any[] = [];
 
     try {
@@ -4843,6 +4858,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.error('Failed to load local JSON fallback:', localError);
         response = []; // Ensure response is always an array
       }
+    } finally {
+      this.isLoadingMT5Data = false;
+      this.cdr.markForCheck();
     }
 
     // Map the trades once, regardless of source
@@ -5152,6 +5170,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
+    this.cdr.markForCheck();
 
     // Check for profit target achievement and celebrate! 🎉
     this.checkForProfitTargetCelebration();
