@@ -2506,13 +2506,18 @@ table.simple-table {
                 }
               }
 
+              .value-divider {
+                width: 2px;
+                height: 1.8rem;
+                background-color: #9ca3af;
+                opacity: 0.6;
+              }
+
               .percentage-text {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
                 font-weight: 800;
-                color: #9ca3af;
-                opacity: 1;
-                line-height: 1.2;
-                letter-spacing: 0.08em;
+                color: #7c3aed;
+                opacity: 0.85;
               }
             }
           }
