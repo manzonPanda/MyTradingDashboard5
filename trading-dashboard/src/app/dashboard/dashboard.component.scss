@@ -2425,6 +2425,12 @@ table.simple-table {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           gap: 0.5rem;
 
+          &:nth-child(5) {
+            grid-column: 1 / -1;
+            max-width: 50%;
+            margin: 0 auto;
+          }
+
           &.active {
             background: linear-gradient(135deg, #f0f9ff, #eff6ff);
             border-color: #bfdbfe;
