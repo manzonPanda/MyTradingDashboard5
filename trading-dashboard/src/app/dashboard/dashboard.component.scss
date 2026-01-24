@@ -2508,12 +2508,6 @@ table.simple-table {
 
           &:not(.selected) {
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-            &:hover {
-              transform: translateY(-4px);
-              box-shadow: 0 12px 24px rgba(124, 58, 237, 0.2);
-            }
           }
 
         }
