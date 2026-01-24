@@ -198,10 +198,31 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   calculateAccountSizesSecondary(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
+    // Use selected account size as reference, or return zeros if no input
+    const referenceSize = this.selectedAccountSize || null;
+
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
       return this.accountSizesSecondary.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
+    // If a reference size is selected, calculate based on that
+    if (referenceSize && referenceSize > 0) {
+      // Calculate what percentage the input represents of the selected account size
+      const percentageOfSelectedAccount = (this.accountSizeInput / referenceSize) * 100;
+
+      return this.accountSizesSecondary.map(acc => {
+        // Apply that same percentage to each account size
+        const dollarValue = (percentageOfSelectedAccount / 100) * acc.size;
+        return {
+          size: acc.size,
+          label: acc.label,
+          percentage: percentageOfSelectedAccount,
+          displayValue: '$' + dollarValue.toFixed(2)
+        };
+      });
+    }
+
+    // Fallback: calculate based on starting balance (original behavior)
     const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
     if (currentBalance <= 0) {
       return this.accountSizesSecondary.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
