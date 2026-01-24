@@ -116,6 +116,7 @@ interface NotionPerformanceData {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ConnectionStatusComponent,
     TradingCalendarComponent,
