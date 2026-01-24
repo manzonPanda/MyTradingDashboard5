@@ -2496,9 +2496,17 @@ table.simple-table {
                 font-weight: 800;
                 color: #000000;
                 line-height: 1;
+                background: none;
+                -webkit-background-clip: unset;
+                background-clip: unset;
+                -webkit-text-fill-color: unset;
 
                 &.positive {
                   color: #000000;
+                  background: none;
+                  -webkit-background-clip: unset;
+                  background-clip: unset;
+                  -webkit-text-fill-color: unset;
                 }
               }
 
