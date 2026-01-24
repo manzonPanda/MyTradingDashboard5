@@ -1,6 +1,5 @@
 export const environment = {
   production: false,
-  // backendUrl: 'http://localhost:3000',
   backendUrl: 'https://notionproxyapi.onrender.com',
   firebaseConfig: {
     apiKey: "AIzaSyB5-Z3aLRr-HyopLGF6kXDPR1DdOKoEI_Q",
