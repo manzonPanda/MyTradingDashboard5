@@ -2775,7 +2775,7 @@ table.simple-table {
 
     .chart-canvas-wrapper {
       position: relative;
-      height: 640px;
+      height: 700px;
       background: linear-gradient(180deg,
         rgba(255, 255, 255, 0.8),
         rgba(248, 250, 252, 0.4)
@@ -3097,6 +3097,7 @@ table.simple-table {
   &.profitability-winrate-card {
     grid-column: span 2;
     padding: 0.45rem 0.55rem;
+    min-height: 200px;
 
     .combined-metric-header {
       display: flex;
