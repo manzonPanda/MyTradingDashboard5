@@ -171,6 +171,7 @@ export class DashboardComponent implements AfterViewInit {
 
   selectAccountSize(size: number): void {
     this.selectedAccountSize = this.selectedAccountSize === size ? null : size;
+    this.cdr.markForCheck();
   }
 
   calculateAccountSizePercentages(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
