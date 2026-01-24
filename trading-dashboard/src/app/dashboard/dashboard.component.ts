@@ -158,6 +158,15 @@ export class DashboardComponent implements AfterViewInit {
     { size: 100000, label: '100K' }
   ];
 
+  accountSizesSecondary = [
+    { size: 2500, label: '2.5K' },
+    { size: 5000, label: '5K' },
+    { size: 10000, label: '10K' },
+    { size: 25000, label: '25K' },
+    { size: 50000, label: '50K' },
+    { size: 100000, label: '100K' }
+  ];
+
   calculateAccountSizePercentages(): Array<{ label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
       return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
