@@ -1254,9 +1254,14 @@ async ngOnInit() {
     this.updateDailyLimitMetrics();
 
     // Set loading to false after a short delay to show metrics even without data
+    // This is a fallback in case socket connection fails
     setTimeout(() => {
-      this.isLoadingMetrics = false;
-    }, 3000);
+      if (this.isLoadingMetrics) {
+        console.warn('⚠️ Metrics still loading after 1.5s, forcing completion');
+        this.isLoadingMetrics = false;
+        this.cdr.markForCheck();
+      }
+    }, 1500);
 
     // Removed complex dummy data as requested by user
   }
