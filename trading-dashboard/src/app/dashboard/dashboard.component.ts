@@ -148,6 +148,31 @@ export class DashboardComponent implements AfterViewInit {
   // Math object for template calculations
   Math = Math;
 
+  // Account Size Calculator
+  accountSizeInput: number = 0;
+  accountSizes = [
+    { size: 5000, label: '5K' },
+    { size: 10000, label: '10K' },
+    { size: 25000, label: '25K' },
+    { size: 50000, label: '50K' },
+    { size: 100000, label: '100K' }
+  ];
+
+  calculateAccountSizePercentages(): Array<{ label: string; percentage: number; displayValue: string }> {
+    if (!this.accountSizeInput || this.accountSizeInput <= 0) {
+      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '0.00%' }));
+    }
+
+    return this.accountSizes.map(acc => {
+      const percentage = (this.accountSizeInput / acc.size) * 100;
+      return {
+        label: acc.label,
+        percentage,
+        displayValue: percentage.toFixed(2) + '%'
+      };
+    });
+  }
+
   // Daily Limit tracking
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
