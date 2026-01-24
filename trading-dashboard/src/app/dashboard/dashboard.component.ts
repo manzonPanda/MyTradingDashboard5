@@ -1124,6 +1124,7 @@ async ngOnInit() {
       console.warn("✅ Connected to WebSocket server");
       // Set metrics loading to false after connection
       this.isLoadingMetrics = false;
+      this.cdr.markForCheck();
       await this.loadMT5Data(); // Load MT5 trades
     });
 
@@ -1138,6 +1139,7 @@ async ngOnInit() {
       console.warn("❌ Socket connection error:", err);
       // Even if socket fails, show the metrics (they'll just be 0)
       this.isLoadingMetrics = false;
+      this.cdr.markForCheck();
     });
 
     socket.on("trade_opened", (data: any) => {
