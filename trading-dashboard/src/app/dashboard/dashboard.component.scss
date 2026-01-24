@@ -2421,9 +2421,8 @@ table.simple-table {
           padding: 0;
           background: transparent;
           border: none;
-          border-radius: 0;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          gap: 0.5rem;
+          transition: all 0.2s ease;
+          gap: 0.4rem;
 
           &:nth-child(5) {
             grid-column: 1 / -1;
@@ -2431,56 +2430,39 @@ table.simple-table {
           }
 
           .account-label {
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: #64748b;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 0.4rem 0;
+            letter-spacing: 0.08em;
+            padding: 0.35rem 0;
             text-align: center;
             width: 100%;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04));
-            border-radius: 8px 8px 0 0;
-            border-top: 2px solid #3b82f6;
-            border-left: 2px solid #3b82f6;
-            border-right: 2px solid #3b82f6;
-            position: relative;
-            z-index: 2;
           }
 
           .percentage-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--tf-text-primary);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #3b82f6;
             line-height: 1;
-            padding: 1rem 0.5rem;
+            padding: 0.75rem;
             width: 100%;
             text-align: center;
-            background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(248,250,252,0.5));
-            border: 1.5px solid rgba(226, 232, 240, 0.6);
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
 
             &.positive {
-              background: linear-gradient(135deg, #f0f9ff, #eff6ff);
+              background: #f0f9ff;
               border-color: #bfdbfe;
-              color: #3b82f6;
-              font-weight: 900;
-              box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12);
-            }
-          }
-
-          &.active {
-            .percentage-value {
-              transform: translateY(-2px);
+              color: #0ea5e9;
             }
           }
 
           &:hover .percentage-value {
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
-            transform: translateY(-1px);
+            border-color: #bfdbfe;
+            background: #f0f9ff;
           }
         }
       }
