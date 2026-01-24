@@ -661,7 +661,7 @@
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
   .pnl-chip-header-grid { justify-self: center; display: grid; grid-template-rows: repeat(2, auto); gap: 0.2rem; }
   .pnl-chip-header-grid .chip-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.2rem; }
-  .pnl-chip.mini { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--tf-border-primary); border-radius: 6px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; padding: 0 6px; min-width: 42px; }
+  .pnl-chip.mini { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--tf-border-primary); border-radius: 6px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; padding: 0 6px; min-width: 42px; }
   .pnl-chip.mini.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
   .pnl-chip.mini.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
   .pnl-chip.mini.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
@@ -674,10 +674,10 @@
   .daily-limit-layout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; align-items: center; justify-items: center; }
   .daily-limit-chart { position: relative; width: 110px; height: 110px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-  .center-percent { font-weight: 800; font-size: 0.95rem; color: var(--tf-text-primary); }
+  .center-percent { font-weight: 800; font-size: 1.2rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
   .center-percent.positive { color: #10b981; }
-  .center-amount { font-size: 0.7rem; font-weight: 700; color: var(--tf-text-secondary); }
+  .center-amount { font-size: 0.85rem; font-weight: 700; color: var(--tf-text-secondary); }
   .center-label { font-size: 0.6rem; color: var(--tf-text-muted); }
   .daily-limit-stats { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; align-items: center; justify-self: center; }
   .stat-row { display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; }
@@ -692,8 +692,8 @@
   .wins-gauge { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; justify-self: center; position: relative; }
   .wins-gauge-svg { width: 100%; height: 100%; }
   .wins-gauge-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-  .wins-percent-text { font-size: 1rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
-  .wins-amount-text { font-size: 0.75rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
+  .wins-percent-text { font-size: 1.3rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
+  .wins-amount-text { font-size: 0.9rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
   .wins-label { font-size: 0.6rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
   .daily-limit-layout .reset-note { grid-column: 1 / -1; justify-self: center; }
@@ -2312,8 +2312,161 @@ table.simple-table {
     width: 100%;
   }
 
+  .left-feature-square {
+    flex: 1.2;
+    background: var(--tf-bg-card);
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 16px;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.1),
+      0 4px 12px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 640px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .account-size-calculator {
+      width: 100%;
+      height: 100%;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      .calculator-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+
+        .calculator-icon {
+          font-size: 1.5rem;
+          width: 1.5rem;
+          height: 1.5rem;
+          color: #3b82f6;
+          animation: icon-pulse 2s ease-in-out infinite;
+        }
+
+        .calculator-title {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: var(--tf-text-primary);
+          margin: 0;
+          letter-spacing: -0.01em;
+        }
+      }
+
+      .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .calculator-input {
+          flex: 1;
+          padding: 0.875rem 1rem;
+          font-size: 1rem;
+          font-weight: 600;
+          border: 2px solid var(--tf-border-primary);
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.5));
+          color: var(--tf-text-primary);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+
+          &:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.8));
+          }
+
+          &::placeholder {
+            color: var(--tf-text-muted);
+            font-weight: 500;
+          }
+        }
+
+        .input-label {
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: var(--tf-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+      }
+
+      .results-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        flex: 1;
+
+        .percentage-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem 0.5rem;
+          background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(248,250,252,0.3));
+          border: 1.5px solid rgba(226, 232, 240, 0.6);
+          border-radius: 12px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          gap: 0.5rem;
+
+          &:nth-child(5) {
+            grid-column: 1 / -1;
+            max-width: 50%;
+            margin: 0 auto;
+          }
+
+          &.active {
+            background: linear-gradient(135deg, #f0f9ff, #eff6ff);
+            border-color: #bfdbfe;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+          }
+
+          .account-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--tf-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .percentage-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--tf-text-primary);
+            line-height: 1;
+
+            &.positive {
+              background: linear-gradient(135deg, #3b82f6, #2563eb);
+              -webkit-background-clip: text;
+              background-clip: text;
+              -webkit-text-fill-color: transparent;
+              color: transparent;
+            }
+          }
+        }
+      }
+    }
+  }
+
   .trading-chart-container {
-    flex: 3;
+    flex: 2.7;
     background: var(--tf-bg-card);
     border: 1px solid var(--tf-border-primary);
     border-radius: 16px;
@@ -2651,6 +2804,15 @@ table.simple-table {
         text-shadow:
           0 0 10px rgba(16, 185, 129, 0.6),
           0 0 20px rgba(34, 197, 94, 0.4);
+      }
+    }
+
+    @keyframes icon-pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
       }
     }
 
