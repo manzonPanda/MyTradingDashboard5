@@ -2494,19 +2494,19 @@ table.simple-table {
               .percentage-value {
                 font-size: 1.5rem;
                 font-weight: 800;
-                color: #000000;
+                color: #000000 !important;
                 line-height: 1;
-                background: none;
-                -webkit-background-clip: unset;
-                background-clip: unset;
-                -webkit-text-fill-color: unset;
+                background: none !important;
+                -webkit-background-clip: unset !important;
+                background-clip: unset !important;
+                -webkit-text-fill-color: unset !important;
 
                 &.positive {
-                  color: #000000;
-                  background: none;
-                  -webkit-background-clip: unset;
-                  background-clip: unset;
-                  -webkit-text-fill-color: unset;
+                  color: #000000 !important;
+                  background: none !important;
+                  -webkit-background-clip: unset !important;
+                  background-clip: unset !important;
+                  -webkit-text-fill-color: unset !important;
                 }
               }
 
