@@ -150,6 +150,7 @@ export class DashboardComponent implements AfterViewInit {
 
   // Account Size Calculator
   accountSizeInput: number = 0;
+  selectedAccountSize: number | null = null;
   accountSizes = [
     { size: 5000, label: '5K' },
     { size: 10000, label: '10K' },
@@ -166,6 +167,10 @@ export class DashboardComponent implements AfterViewInit {
     { size: 50000, label: '50K' },
     { size: 100000, label: '100K' }
   ];
+
+  selectAccountSize(size: number): void {
+    this.selectedAccountSize = this.selectedAccountSize === size ? null : size;
+  }
 
   calculateAccountSizePercentages(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
