@@ -2312,6 +2312,32 @@ table.simple-table {
     width: 100%;
   }
 
+  .left-feature-square {
+    flex: 1;
+    background: var(--tf-bg-card);
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 16px;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.1),
+      0 4px 12px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 640px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+  }
+
   .trading-chart-container {
     flex: 1;
     background: var(--tf-bg-card);
