@@ -2506,7 +2506,6 @@ table.simple-table {
           &.active {
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1));
             border-color: rgba(168, 85, 247, 0.5);
-            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(168, 85, 247, 0.15);
 
             .card-header {
@@ -2523,7 +2522,6 @@ table.simple-table {
 
           &:hover {
             border-color: rgba(168, 85, 247, 0.6);
-            transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
 
             .card-header {
