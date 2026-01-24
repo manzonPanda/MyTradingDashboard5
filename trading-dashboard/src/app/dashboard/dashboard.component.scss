@@ -2452,11 +2452,6 @@ table.simple-table {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(34, 197, 94, 0.06));
             border-color: rgba(16, 185, 129, 0.5);
             box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 8px 20px rgba(16, 185, 129, 0.12);
-
-            &:hover {
-              border-color: rgba(16, 185, 129, 0.7);
-              box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 8px 20px rgba(16, 185, 129, 0.18);
-            }
           }
 
           &.active {
