@@ -311,26 +311,28 @@
         <div class="account-size-calculator">
           <div class="calculator-header">
             <mat-icon class="calculator-icon">calculate</mat-icon>
-            <h4 class="calculator-title">Account Calculator</h4>
+            <h4 class="calculator-title">Account Risk Calculator</h4>
           </div>
 
-          <div class="quick-percentage-buttons">
-            <button class="pct-btn" (click)="setAccountSizeByPercentage(0.25)" title="Calculate 0.25% of starting balance">0.25%</button>
-            <button class="pct-btn" (click)="setAccountSizeByPercentage(0.5)" title="Calculate 0.5% of starting balance">0.5%</button>
-            <button class="pct-btn" (click)="setAccountSizeByPercentage(1)" title="Calculate 1% of starting balance">1%</button>
-            <button class="pct-btn" (click)="setAccountSizeByPercentage(1.5)" title="Calculate 1.5% of starting balance">1.5%</button>
-            <button class="pct-btn" (click)="setAccountSizeByPercentage(2)" title="Calculate 2% of starting balance">2%</button>
-          </div>
+          <div class="input-and-buttons-row">
+            <div class="input-wrapper">
+              <span class="input-prefix">$</span>
+              <input
+                type="number"
+                [(ngModel)]="accountSizeInput"
+                placeholder="Enter P&L value..."
+                class="calculator-input"
+                min="0"
+                step="10">
+            </div>
 
-          <div class="input-wrapper">
-            <input
-              type="number"
-              [(ngModel)]="accountSizeInput"
-              placeholder="Enter P&L value..."
-              class="calculator-input"
-              min="0"
-              step="10">
-            <span class="input-label">USD</span>
+            <div class="quick-percentage-buttons">
+              <button class="pct-btn" (click)="setAccountSizeByPercentage(0.25)" title="Calculate 0.25% of starting balance">0.25%</button>
+              <button class="pct-btn" (click)="setAccountSizeByPercentage(0.5)" title="Calculate 0.5% of starting balance">0.5%</button>
+              <button class="pct-btn" (click)="setAccountSizeByPercentage(1)" title="Calculate 1% of starting balance">1%</button>
+              <button class="pct-btn" (click)="setAccountSizeByPercentage(1.5)" title="Calculate 1.5% of starting balance">1.5%</button>
+              <button class="pct-btn" (click)="setAccountSizeByPercentage(2)" title="Calculate 2% of starting balance">2%</button>
+            </div>
           </div>
 
           <div class="results-container">
@@ -346,7 +348,8 @@
               <div class="card-content">
                 <div class="value-display">
                   <div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div>
-                  <div class="percentage-text">/ {{ result.percentage | number:'1.2-2' }}%</div>
+                  <div class="value-divider"></div>
+                  <div class="percentage-text">{{ result.percentage | number:'1.2-2' }}%</div>
                 </div>
               </div>
             </div>
