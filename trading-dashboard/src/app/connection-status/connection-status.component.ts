@@ -6,6 +6,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { environment } from '../../../src/environments/environment';
 
 interface ServerStatus {
   name: string;
@@ -42,7 +43,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     },
     {
       name: 'NotionProxy',
-      url: 'http://localhost:3000/api/health',
+      url: `${environment.backendUrl}/api/health`,
       status: 'checking',
       icon: '/assets/images/notion-icon.png',
       tooltip: 'Notion Proxy API Server'
