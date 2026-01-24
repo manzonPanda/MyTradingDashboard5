@@ -2440,8 +2440,8 @@ table.simple-table {
           display: flex;
           flex-direction: column;
           padding: 0;
-          background: linear-gradient(135deg, rgba(14, 165, 233, 0.07), rgba(6, 182, 212, 0.05));
-          border: 1.5px solid rgba(14, 165, 233, 0.25);
+          background: #ffffff;
+          border: none;
           border-radius: 12px;
           overflow: hidden;
           cursor: pointer;
@@ -2494,15 +2494,11 @@ table.simple-table {
               .percentage-value {
                 font-size: 1.5rem;
                 font-weight: 800;
-                color: #0891b2;
+                color: #000000;
                 line-height: 1;
 
                 &.positive {
-                  background: linear-gradient(135deg, #06b6d4, #0891b2);
-                  -webkit-background-clip: text;
-                  background-clip: text;
-                  -webkit-text-fill-color: transparent;
-                  color: transparent;
+                  color: #000000;
                 }
               }
 
@@ -2516,47 +2512,47 @@ table.simple-table {
               .percentage-text {
                 font-size: 1.5rem;
                 font-weight: 800;
-                color: #0891b2;
-                opacity: 0.8;
+                color: #000000;
+                opacity: 1;
               }
             }
           }
 
           &.matched-account {
-            background: rgba(34, 197, 94, 0.05);
-            border-color: rgba(34, 197, 94, 0.45);
+            background: #ffffff;
+            border: none;
           }
 
           &.active {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.13), rgba(6, 182, 212, 0.08));
-            border-color: rgba(14, 165, 233, 0.45);
+            background: #ffffff;
+            border: none;
 
             .card-header {
-              background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(6, 182, 212, 0.14));
-              border-bottom-color: rgba(14, 165, 233, 0.45);
+              background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(6, 182, 212, 0.08));
+              border-bottom-color: rgba(14, 165, 233, 0.25);
             }
           }
 
           &.selected {
-            background: #f0fdf4;
-            border: 2px solid #22c55e;
+            background: #ffffff;
+            border: none;
 
             .card-header {
-              background: rgba(34, 197, 94, 0.18);
-              border-bottom-color: #22c55e;
+              background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.12));
+              border-bottom-color: rgba(34, 197, 94, 0.45);
 
               .account-label {
-                color: #16a34a;
+                color: #059669;
               }
             }
 
             .card-content .value-display {
               .percentage-value {
-                color: #16a34a;
+                color: #000000;
               }
 
               .percentage-text {
-                color: #16a34a;
+                color: #000000;
               }
             }
           }
