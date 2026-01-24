@@ -167,14 +167,14 @@ export class DashboardComponent implements AfterViewInit {
     { size: 100000, label: '100K' }
   ];
 
-  calculateAccountSizePercentages(): Array<{ label: string; percentage: number; displayValue: string }> {
+  calculateAccountSizePercentages(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
-      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+      return this.accountSizes.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
     const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
     if (currentBalance <= 0) {
-      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+      return this.accountSizes.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
     // Calculate percentage of current account
@@ -184,6 +184,7 @@ export class DashboardComponent implements AfterViewInit {
       // Calculate dollar value for this account size
       const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
       return {
+        size: acc.size,
         label: acc.label,
         percentage: percentageOfCurrentAccount,
         displayValue: '$' + dollarValue.toFixed(2)
@@ -191,14 +192,14 @@ export class DashboardComponent implements AfterViewInit {
     });
   }
 
-  calculateAccountSizesSecondary(): Array<{ label: string; percentage: number; displayValue: string }> {
+  calculateAccountSizesSecondary(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
-      return this.accountSizesSecondary.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+      return this.accountSizesSecondary.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
     const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
     if (currentBalance <= 0) {
-      return this.accountSizesSecondary.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+      return this.accountSizesSecondary.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
     // Calculate percentage of current account
@@ -208,6 +209,7 @@ export class DashboardComponent implements AfterViewInit {
       // Calculate dollar value for this account size
       const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
       return {
+        size: acc.size,
         label: acc.label,
         percentage: percentageOfCurrentAccount,
         displayValue: '$' + dollarValue.toFixed(2)

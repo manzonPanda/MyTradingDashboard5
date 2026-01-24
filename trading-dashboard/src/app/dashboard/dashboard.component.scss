@@ -43,53 +43,17 @@
       &::before {
         background: linear-gradient(90deg, #10b981, #34d399);
       }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow:
-          0 12px 40px rgba(16, 185, 129, 0.2),
-          0 6px 16px rgba(16, 185, 129, 0.15);
-
-        .target-icon {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-      }
     }
 
     &.max-loss {
       &::before {
         background: linear-gradient(90deg, #ef4444, #f87171);
       }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow:
-          0 12px 40px rgba(239, 68, 68, 0.2),
-          0 6px 16px rgba(239, 68, 68, 0.15);
-
-        .target-icon {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-      }
     }
 
     &.daily-limit {
       &::before {
         background: linear-gradient(90deg, #f59e0b, #fbbf24);
-      }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow:
-          0 12px 40px rgba(245, 158, 11, 0.2),
-          0 6px 16px rgba(245, 158, 11, 0.15);
-
-        .target-icon {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-        }
       }
     }
 
@@ -2329,14 +2293,6 @@ table.simple-table {
     align-items: center;
     justify-content: center;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 8px 20px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
     .account-size-calculator {
       width: 100%;
       height: 100%;
@@ -2416,50 +2372,105 @@ table.simple-table {
         .percentage-card {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 1.25rem 0.75rem;
+          padding: 0;
           background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(147, 51, 234, 0.04));
           border: 1.5px solid rgba(168, 85, 247, 0.3);
           border-radius: 12px;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          gap: 0.6rem;
+          overflow: hidden;
 
-          .account-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #7c3aed;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+          .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem 0.75rem;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(168, 85, 247, 0.1));
+            border-bottom: 1.5px solid rgba(168, 85, 247, 0.3);
+            min-height: auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            .account-label {
+              font-size: 0.95rem;
+              font-weight: 700;
+              color: #7c3aed;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin: 0;
+            }
+
+            &.matched-header {
+              background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(34, 197, 94, 0.15));
+              border-bottom-color: rgba(16, 185, 129, 0.5);
+
+              .account-label {
+                color: #059669;
+                font-weight: 800;
+                text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+              }
+            }
           }
 
-          .percentage-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #7c3aed;
-            line-height: 1;
+          .card-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 1.25rem 0.75rem;
 
-            &.positive {
-              background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-              -webkit-background-clip: text;
-              background-clip: text;
-              -webkit-text-fill-color: transparent;
-              color: transparent;
+            .value-display {
+              display: flex;
+              align-items: baseline;
+              justify-content: center;
+              gap: 0.5rem;
+              flex-wrap: wrap;
+
+              .percentage-value {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #7c3aed;
+                line-height: 1;
+
+                &.positive {
+                  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                  -webkit-background-clip: text;
+                  background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  color: transparent;
+                }
+              }
+
+              .percentage-text {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #7c3aed;
+                opacity: 0.85;
+              }
             }
+          }
+
+          &.matched-account {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(34, 197, 94, 0.06));
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 8px 20px rgba(16, 185, 129, 0.12);
           }
 
           &.active {
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1));
             border-color: rgba(168, 85, 247, 0.5);
-            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(168, 85, 247, 0.15);
+
+            .card-header {
+              background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(168, 85, 247, 0.2));
+              border-bottom-color: rgba(168, 85, 247, 0.5);
+            }
+
+            &.matched-account {
+              background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.12));
+              border-color: rgba(16, 185, 129, 0.6);
+              box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 8px 20px rgba(16, 185, 129, 0.2);
+            }
           }
 
-          &:hover {
-            border-color: rgba(168, 85, 247, 0.6);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
-          }
         }
       }
 
@@ -2478,14 +2489,6 @@ table.simple-table {
     overflow: hidden;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 8px 20px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
 
     .chart-header {
       display: flex;

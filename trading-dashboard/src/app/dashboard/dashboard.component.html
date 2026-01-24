@@ -328,9 +328,17 @@
           <div class="results-container">
             <div *ngFor="let result of calculateAccountSizesSecondary()"
                  class="percentage-card"
-                 [class.active]="accountSizeInput > 0">
-              <div class="account-label">{{ result.label }}</div>
-              <div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div>
+                 [class.active]="accountSizeInput > 0"
+                 [class.matched-account]="result.size === mt5AccountInfo.startingBalance">
+              <div class="card-header" [class.matched-header]="result.size === mt5AccountInfo.startingBalance">
+                <div class="account-label">{{ result.label }}</div>
+              </div>
+              <div class="card-content">
+                <div class="value-display">
+                  <div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div>
+                  <div class="percentage-text">/ {{ result.percentage | number:'1.2-2' }}%</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
