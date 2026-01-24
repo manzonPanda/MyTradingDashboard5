@@ -191,6 +191,30 @@ export class DashboardComponent implements AfterViewInit {
     });
   }
 
+  calculateAccountSizesSecondary(): Array<{ label: string; percentage: number; displayValue: string }> {
+    if (!this.accountSizeInput || this.accountSizeInput <= 0) {
+      return this.accountSizesSecondary.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+    }
+
+    const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
+    if (currentBalance <= 0) {
+      return this.accountSizesSecondary.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+    }
+
+    // Calculate percentage of current account
+    const percentageOfCurrentAccount = (this.accountSizeInput / currentBalance) * 100;
+
+    return this.accountSizesSecondary.map(acc => {
+      // Calculate dollar value for this account size
+      const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
+      return {
+        label: acc.label,
+        percentage: percentageOfCurrentAccount,
+        displayValue: '$' + dollarValue.toFixed(2)
+      };
+    });
+  }
+
   // Daily Limit tracking
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
