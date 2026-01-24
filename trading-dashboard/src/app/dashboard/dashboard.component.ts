@@ -160,15 +160,24 @@ export class DashboardComponent implements AfterViewInit {
 
   calculateAccountSizePercentages(): Array<{ label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
-      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '0.00%' }));
+      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
+    const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
+    if (currentBalance <= 0) {
+      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+    }
+
+    // Calculate percentage of current account
+    const percentageOfCurrentAccount = (this.accountSizeInput / currentBalance) * 100;
+
     return this.accountSizes.map(acc => {
-      const percentage = (this.accountSizeInput / acc.size) * 100;
+      // Calculate dollar value for this account size
+      const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
       return {
         label: acc.label,
-        percentage,
-        displayValue: percentage.toFixed(2) + '%'
+        percentage: percentageOfCurrentAccount,
+        displayValue: '$' + dollarValue.toFixed(2)
       };
     });
   }
