@@ -2538,25 +2538,25 @@ table.simple-table {
           }
 
           &.selected {
-            background: #ecfdf5;
-            border: 2px solid #10b981;
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
 
             .card-header {
-              background: rgba(16, 185, 129, 0.2);
-              border-bottom-color: #10b981;
+              background: rgba(34, 197, 94, 0.18);
+              border-bottom-color: #22c55e;
 
               .account-label {
-                color: #10b981;
+                color: #16a34a;
               }
             }
 
             .card-content .value-display {
               .percentage-value {
-                color: #10b981;
+                color: #16a34a;
               }
 
               .percentage-text {
-                color: #10b981;
+                color: #16a34a;
               }
             }
           }
