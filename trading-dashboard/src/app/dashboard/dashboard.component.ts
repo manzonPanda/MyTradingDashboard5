@@ -2427,7 +2427,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     } finally {
       this.isLoadingNotionData = false;
-    console.log('🏁 Finished loading your complete Notion data');
+      this.cdr.markForCheck();
+      console.log('🏁 Finished loading your complete Notion data');
     }
   }
 
