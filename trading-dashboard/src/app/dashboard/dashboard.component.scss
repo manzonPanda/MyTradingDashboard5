@@ -43,53 +43,17 @@
       &::before {
         background: linear-gradient(90deg, #10b981, #34d399);
       }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow:
-          0 12px 40px rgba(16, 185, 129, 0.2),
-          0 6px 16px rgba(16, 185, 129, 0.15);
-
-        .target-icon {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-      }
     }
 
     &.max-loss {
       &::before {
         background: linear-gradient(90deg, #ef4444, #f87171);
       }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow:
-          0 12px 40px rgba(239, 68, 68, 0.2),
-          0 6px 16px rgba(239, 68, 68, 0.15);
-
-        .target-icon {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-      }
     }
 
     &.daily-limit {
       &::before {
         background: linear-gradient(90deg, #f59e0b, #fbbf24);
-      }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow:
-          0 12px 40px rgba(245, 158, 11, 0.2),
-          0 6px 16px rgba(245, 158, 11, 0.15);
-
-        .target-icon {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-        }
       }
     }
 
