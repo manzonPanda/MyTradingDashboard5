@@ -1260,7 +1260,9 @@ async ngOnInit() {
       if (this.isLoadingMetrics) {
         console.warn('⚠️ Metrics still loading after 1.5s, forcing completion');
         this.isLoadingMetrics = false;
+        this.isLoadingMT5Data = false;
         this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }
     }, 1500);
 
