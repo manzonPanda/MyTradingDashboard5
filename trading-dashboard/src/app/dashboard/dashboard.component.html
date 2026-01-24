@@ -326,15 +326,6 @@
           </div>
 
           <div class="results-container">
-            <div *ngFor="let result of calculateAccountSizePercentages()"
-                 class="percentage-card"
-                 [class.active]="accountSizeInput > 0">
-              <div class="account-label">{{ result.label }}</div>
-              <div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div>
-            </div>
-          </div>
-
-          <div class="results-container-secondary">
             <div *ngFor="let result of calculateAccountSizesSecondary()"
                  class="percentage-card"
                  [class.active]="accountSizeInput > 0">
