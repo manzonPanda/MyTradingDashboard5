@@ -174,6 +174,12 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  setAccountSizeByPercentage(percentage: number): void {
+    const startingBalance = this.mt5AccountInfo?.startingBalance || 0;
+    this.accountSizeInput = (percentage / 100) * startingBalance;
+    this.cdr.markForCheck();
+  }
+
   calculateAccountSizePercentages(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
       return this.accountSizes.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
