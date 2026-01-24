@@ -5159,6 +5159,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
+    this.cdr.markForCheck();
 
     // Check for profit target achievement and celebrate! 🎉
     this.checkForProfitTargetCelebration();
