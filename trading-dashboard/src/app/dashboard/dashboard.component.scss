@@ -2801,6 +2801,15 @@ table.simple-table {
       }
     }
 
+    @keyframes icon-pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+
     @keyframes live-pulse {
       0%, 100% {
         opacity: 1;
