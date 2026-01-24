@@ -2318,7 +2318,11 @@ table.simple-table {
         .calculator-title {
           font-size: 1.1rem;
           font-weight: 700;
-          color: var(--tf-text-primary);
+          background: linear-gradient(144deg, #2980B9, #8E43AD);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
           margin: 0;
           letter-spacing: -0.01em;
         }
