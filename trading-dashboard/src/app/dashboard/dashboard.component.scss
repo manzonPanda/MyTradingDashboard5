@@ -2407,7 +2407,8 @@ table.simple-table {
         }
       }
 
-      .results-container {
+      .results-container,
+      .results-container-secondary {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
