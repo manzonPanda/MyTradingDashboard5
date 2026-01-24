@@ -2324,14 +2324,33 @@ table.simple-table {
         }
       }
 
+      .input-and-buttons-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+      }
+
       .input-wrapper {
         position: relative;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0;
+        flex: 0 0 auto;
+        padding: 0.875rem 0;
+
+        .input-prefix {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #10b981;
+          padding: 0 0.75rem 0 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
 
         .calculator-input {
-          flex: 1;
           padding: 0.875rem 1rem;
           font-size: 1rem;
           font-weight: 600;
@@ -2341,6 +2360,7 @@ table.simple-table {
           color: var(--tf-text-primary);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           outline: none;
+          min-width: 200px;
 
           &:focus {
             border-color: #3b82f6;
@@ -2353,22 +2373,15 @@ table.simple-table {
             font-weight: 500;
           }
         }
-
-        .input-label {
-          font-size: 0.875rem;
-          font-weight: 700;
-          color: var(--tf-text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
       }
 
       .quick-percentage-buttons {
         display: flex;
         gap: 0.5rem;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 0.75rem 0;
         flex-wrap: wrap;
+        align-items: center;
 
         .pct-btn {
           background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(168, 85, 247, 0.08));
