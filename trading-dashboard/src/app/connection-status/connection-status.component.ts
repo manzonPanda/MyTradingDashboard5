@@ -43,14 +43,14 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     },
     {
       name: 'NotionProxy',
-      url: `${environment.backendUrl}/api/health`,
+      url: `${environment.backendUrlNotion}/api/health`,
       status: 'checking',
       icon: '/assets/images/notion-icon.png',
       tooltip: 'Notion Proxy API Server'
     },
     {
       name: 'MT5 API',
-      url: 'http://localhost:5000/api/health',
+      url: `${environment.backendUrlMt5}/api/health`,
       status: 'checking',
       icon: '/assets/images/mt5_icon.png',
       tooltip: 'MetaTrader 5 API Server'

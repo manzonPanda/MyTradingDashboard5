@@ -360,8 +360,8 @@ mt5AccountInfo: AccountSettings = {
 
   // Backend configuration
   // private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
-     private BACKEND_URL_NOTION = environment.backendUrl;
-
+     private BACKEND_URL_NOTION = environment.backendUrlNotion;
+     private BACKEND_URL_MT5 = environment.backendUrlMt5;
 
   // Confetti celebration tracking
   private lastCelebratedTarget: number = 0;
@@ -565,7 +565,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
   startReconnect() {
-    this.http.post('http://localhost:5000/api/start-reconnect', {})
+    this.http.post(`${this.BACKEND_URL_MT5}/api/start-reconnect`, {})
       .subscribe({
         next: (res) => console.log(res),
         error: (err) => console.error(err)
@@ -1012,7 +1012,7 @@ async ngOnInit() {
     // Load saved trading settings
     await this.loadTradingSettings();
 
-    const socket = io("http://localhost:5000",{
+    const socket = io(`${this.BACKEND_URL_MT5}/`,{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
     });
@@ -2173,7 +2173,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async getMt5API(){
     const res: any = await firstValueFrom(
-      this.http.get("http://localhost:5000/api/history")
+      this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
     );
     return res;
   }
@@ -2182,7 +2182,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       const token = localStorage.getItem('fcm_token');
       if (!token) {
-        console.warn('⚠��� No FCM token available for notification');
+        console.warn('⚠No FCM token available for notification');
         return;
       }
 

@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  backendUrl: 'https://notionproxyapi.onrender.com'
+  backendUrlNotion: 'https://notionproxyapi.onrender.com',
+  backendUrlMt5: 'https://mt5-api.jakemt5.host',
 };
