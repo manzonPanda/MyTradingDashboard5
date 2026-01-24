@@ -2726,6 +2726,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (this.chart) {
       this.chart.update('active');
     }
+
+    // Trigger change detection to update chart display
+    this.cdr.markForCheck();
   }
 
 
