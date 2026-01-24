@@ -2520,14 +2520,6 @@ table.simple-table {
             }
           }
 
-          &:hover {
-            border-color: rgba(168, 85, 247, 0.6);
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
-
-            .card-header {
-              background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.15));
-            }
-          }
         }
       }
 
