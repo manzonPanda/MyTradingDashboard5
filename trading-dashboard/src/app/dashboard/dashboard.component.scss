@@ -2531,14 +2531,6 @@ table.simple-table {
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 8px 20px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
     .chart-header {
       display: flex;
       justify-content: space-between;
