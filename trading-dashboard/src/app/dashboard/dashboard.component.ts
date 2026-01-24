@@ -158,17 +158,59 @@ export class DashboardComponent implements AfterViewInit {
     { size: 100000, label: '100K' }
   ];
 
+  accountSizesSecondary = [
+    { size: 2500, label: '2.5K' },
+    { size: 5000, label: '5K' },
+    { size: 10000, label: '10K' },
+    { size: 25000, label: '25K' },
+    { size: 50000, label: '50K' },
+    { size: 100000, label: '100K' }
+  ];
+
   calculateAccountSizePercentages(): Array<{ label: string; percentage: number; displayValue: string }> {
     if (!this.accountSizeInput || this.accountSizeInput <= 0) {
-      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '0.00%' }));
+      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
     }
 
+    const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
+    if (currentBalance <= 0) {
+      return this.accountSizes.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+    }
+
+    // Calculate percentage of current account
+    const percentageOfCurrentAccount = (this.accountSizeInput / currentBalance) * 100;
+
     return this.accountSizes.map(acc => {
-      const percentage = (this.accountSizeInput / acc.size) * 100;
+      // Calculate dollar value for this account size
+      const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
       return {
         label: acc.label,
-        percentage,
-        displayValue: percentage.toFixed(2) + '%'
+        percentage: percentageOfCurrentAccount,
+        displayValue: '$' + dollarValue.toFixed(2)
+      };
+    });
+  }
+
+  calculateAccountSizesSecondary(): Array<{ label: string; percentage: number; displayValue: string }> {
+    if (!this.accountSizeInput || this.accountSizeInput <= 0) {
+      return this.accountSizesSecondary.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+    }
+
+    const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
+    if (currentBalance <= 0) {
+      return this.accountSizesSecondary.map(acc => ({ label: acc.label, percentage: 0, displayValue: '$0.00' }));
+    }
+
+    // Calculate percentage of current account
+    const percentageOfCurrentAccount = (this.accountSizeInput / currentBalance) * 100;
+
+    return this.accountSizesSecondary.map(acc => {
+      // Calculate dollar value for this account size
+      const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
+      return {
+        label: acc.label,
+        percentage: percentageOfCurrentAccount,
+        displayValue: '$' + dollarValue.toFixed(2)
       };
     });
   }
