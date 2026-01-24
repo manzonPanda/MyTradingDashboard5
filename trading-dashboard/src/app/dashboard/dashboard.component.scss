@@ -4056,6 +4056,11 @@ table.simple-table {
   }
 }
 
+// Explicit height for Profit Factor card
+.metric-card.profitability-winrate-card {
+  min-height: 180px !important;
+}
+
 // Section Styling
 .upload-section,
 .calendar-section,
