@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
-  backendUrl: 'https://notionproxyapi.onrender.com',
+  backendUrlNotion: 'http://localhost:3000',
+  // backendUrlNotion: 'https://notionproxyapi.onrender.com',
+  backendUrlMt5: 'https://mt5-api.jakemt5.host',
   firebaseConfig: {
     apiKey: "AIzaSyB5-Z3aLRr-HyopLGF6kXDPR1DdOKoEI_Q",
     authDomain: "tradingdashboard-fce7d.firebaseapp.com",
