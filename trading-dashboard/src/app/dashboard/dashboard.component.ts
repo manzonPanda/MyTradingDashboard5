@@ -182,7 +182,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   selectAccountSizeFromDropdown(size: number): void {
-    this.selectedAccountSize = size;
+    this.dropdownSelectedSize = size; // Update dropdown only (independent)
     this.showAccountSizeDropdown = false;
     this.cdr.markForCheck();
   }
@@ -193,8 +193,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   getSelectedAccountSizeLabel(): string {
-    if (!this.selectedAccountSize) return 'Size';
-    const selected = this.accountSizesSecondary.find(size => size.size === this.selectedAccountSize);
+    const selected = this.accountSizesSecondary.find(size => size.size === this.dropdownSelectedSize);
     return selected?.label || 'Size';
   }
 
