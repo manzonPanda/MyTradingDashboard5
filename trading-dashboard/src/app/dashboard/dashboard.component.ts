@@ -154,6 +154,7 @@ export class DashboardComponent implements AfterViewInit {
   selectedAccountSize: number | null = null; // For account card selection
   dropdownSelectedSize: number = 2500; // Default dropdown to 2.5K (independent)
   showAccountSizeDropdown: boolean = false;
+  selectedPercentage: number | null = null; // Track selected percentage button
   accountSizes = [
     { size: 5000, label: '5K' },
     { size: 10000, label: '10K' },
