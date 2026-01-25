@@ -30,7 +30,7 @@ import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.compone
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { ViewChild, ElementRef, AfterViewInit, Renderer2, ChangeDetectorRef } from '@angular/core';
+import { ViewChild, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
