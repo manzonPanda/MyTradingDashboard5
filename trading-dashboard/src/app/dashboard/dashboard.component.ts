@@ -1164,6 +1164,9 @@ mt5AccountInfo: AccountSettings = {
   }
 
 async ngOnInit() {
+    // Set up click outside listener for dropdown
+    this.setupClickOutsideListener();
+
     // Load saved trading settings
     await this.loadTradingSettings();
 
