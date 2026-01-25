@@ -202,6 +202,7 @@ export class DashboardComponent implements AfterViewInit {
     // Use dropdown selected size as the base for percentage calculations
     const baseAmount = this.dropdownSelectedSize || this.mt5AccountInfo?.startingBalance || 0;
     this.accountSizeInput = (percentage / 100) * baseAmount;
+    this.selectedPercentage = percentage; // Track which percentage is selected
     this.cdr.markForCheck();
   }
 
