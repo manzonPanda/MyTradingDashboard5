@@ -185,6 +185,12 @@ export class DashboardComponent implements AfterViewInit {
   selectAccountSizeFromDropdown(size: number): void {
     this.dropdownSelectedSize = size; // Update dropdown only (independent)
     this.showAccountSizeDropdown = false;
+
+    // If a percentage button is currently selected, recalculate the input
+    if (this.selectedPercentage !== null) {
+      this.accountSizeInput = (this.selectedPercentage / 100) * size;
+    }
+
     this.cdr.markForCheck();
   }
 
