@@ -332,6 +332,21 @@
               <button class="pct-btn" (click)="setAccountSizeByPercentage(1)" title="Calculate 1% of starting balance">1%</button>
               <button class="pct-btn" (click)="setAccountSizeByPercentage(1.5)" title="Calculate 1.5% of starting balance">1.5%</button>
               <button class="pct-btn" (click)="setAccountSizeByPercentage(2)" title="Calculate 2% of starting balance">2%</button>
+
+              <div class="account-size-dropdown-wrapper">
+                <button class="size-dropdown-btn" (click)="toggleAccountSizeDropdown()" title="Select account size">
+                  <mat-icon class="dropdown-icon">expand_more</mat-icon>
+                </button>
+                <div class="account-size-dropdown" *ngIf="showAccountSizeDropdown">
+                  <button
+                    *ngFor="let size of accountSizesSecondary"
+                    class="dropdown-option"
+                    (click)="selectAccountSizeFromDropdown(size.size)"
+                    [class.active]="selectedAccountSize === size.size">
+                    <span class="size-label">{{ size.label }}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
