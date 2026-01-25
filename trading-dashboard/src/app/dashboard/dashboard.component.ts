@@ -202,6 +202,23 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  private setupClickOutsideListener(): void {
+    this.clickOutsideListener = this.renderer.listen('document', 'click', (event: any) => {
+      if (this.accountSizeDropdownWrapper && !this.accountSizeDropdownWrapper.nativeElement.contains(event.target)) {
+        if (this.showAccountSizeDropdown) {
+          this.closeAccountSizeDropdown();
+        }
+      }
+    });
+  }
+
+  private removeClickOutsideListener(): void {
+    if (this.clickOutsideListener) {
+      this.clickOutsideListener();
+      this.clickOutsideListener = null;
+    }
+  }
+
   getSelectedAccountSizeLabel(): string {
     const selected = this.accountSizesSecondary.find(size => size.size === this.dropdownSelectedSize);
     return selected?.label || 'Size';
