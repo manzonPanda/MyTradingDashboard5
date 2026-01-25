@@ -2469,6 +2469,7 @@ table.simple-table {
         .account-size-dropdown-wrapper {
           position: relative;
           flex-shrink: 0;
+          width: 90px;
 
           .size-dropdown-btn {
             background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(6, 182, 212, 0.08));
@@ -2487,7 +2488,7 @@ table.simple-table {
             align-items: center;
             justify-content: center;
             gap: 0.3rem;
-            width: 90px;
+            width: 100%;
 
             .selected-value-text {
               display: inline-block;
