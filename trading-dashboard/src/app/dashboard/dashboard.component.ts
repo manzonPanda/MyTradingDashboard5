@@ -198,8 +198,8 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   setAccountSizeByPercentage(percentage: number): void {
-    // Use selected account size (2.5K) as the base for percentage calculations
-    const baseAmount = this.selectedAccountSize || this.mt5AccountInfo?.startingBalance || 0;
+    // Use dropdown selected size as the base for percentage calculations
+    const baseAmount = this.dropdownSelectedSize || this.mt5AccountInfo?.startingBalance || 0;
     this.accountSizeInput = (percentage / 100) * baseAmount;
     this.cdr.markForCheck();
   }
