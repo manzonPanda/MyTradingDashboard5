@@ -343,9 +343,9 @@
                     *ngFor="let size of accountSizesSecondary"
                     class="dropdown-option"
                     (click)="selectAccountSizeFromDropdown(size.size)"
-                    [class.active]="selectedAccountSize === size.size">
+                    [class.active]="dropdownSelectedSize === size.size">
                     <span class="size-label">{{ size.label }}</span>
-                    <span class="checkmark-icon" *ngIf="selectedAccountSize === size.size">✓</span>
+                    <span class="checkmark-icon" *ngIf="dropdownSelectedSize === size.size">✓</span>
                   </button>
                 </div>
               </div>
