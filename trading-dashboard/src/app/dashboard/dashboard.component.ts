@@ -1371,6 +1371,9 @@ async ngOnInit() {
   }
 
   ngOnDestroy(): void {
+    // Clean up click outside listener
+    this.removeClickOutsideListener();
+
     this.dtTrigger.unsubscribe();
     this.dtTriggerNotion.unsubscribe();
 
