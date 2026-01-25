@@ -172,6 +172,9 @@ export class DashboardComponent implements AfterViewInit {
     { size: 100000, label: '100K' }
   ];
 
+  @ViewChild('accountSizeDropdownWrapper', { static: false }) accountSizeDropdownWrapper: ElementRef | undefined;
+  private clickOutsideListener: (() => void) | null = null;
+
   selectAccountSize(size: number): void {
     this.selectedAccountSize = this.selectedAccountSize === size ? null : size;
     this.cdr.markForCheck();
