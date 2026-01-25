@@ -152,6 +152,7 @@ export class DashboardComponent implements AfterViewInit {
   // Account Size Calculator
   accountSizeInput: number = 0;
   selectedAccountSize: number | null = null;
+  showAccountSizeDropdown: boolean = false;
   accountSizes = [
     { size: 5000, label: '5K' },
     { size: 10000, label: '10K' },
