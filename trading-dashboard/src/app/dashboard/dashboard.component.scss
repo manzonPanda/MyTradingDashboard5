@@ -2545,7 +2545,7 @@ table.simple-table {
             flex-direction: column;
             gap: 0.3rem;
             padding: 0.7rem;
-            min-width: 240px;
+            min-width: 150px;
             animation: dropdownSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
             .dropdown-option {
