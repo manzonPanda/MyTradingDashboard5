@@ -335,7 +335,13 @@
 
               <div class="account-size-dropdown-wrapper" (click)="$event.stopPropagation()">
                 <button class="size-dropdown-btn" (click)="toggleAccountSizeDropdown()" title="Select account size">
-                  <mat-icon class="dropdown-icon">expand_more</mat-icon>
+                  <span class="selected-value" *ngIf="selectedAccountSize">
+                    {{ (accountSizesSecondary | filter: selectedAccountSize)[0]?.label || 'Select' }}
+                  </span>
+                  <span class="selected-value-placeholder" *ngIf="!selectedAccountSize">
+                    Size
+                  </span>
+                  <mat-icon class="dropdown-icon" [class.rotated]="showAccountSizeDropdown">expand_more</mat-icon>
                 </button>
                 <div class="account-size-dropdown" *ngIf="showAccountSizeDropdown" (click)="$event.stopPropagation()">
                   <button
@@ -344,6 +350,7 @@
                     (click)="selectAccountSizeFromDropdown(size.size)"
                     [class.active]="selectedAccountSize === size.size">
                     <span class="size-label">{{ size.label }}</span>
+                    <span class="checkmark-icon" *ngIf="selectedAccountSize === size.size">✓</span>
                   </button>
                 </div>
               </div>
