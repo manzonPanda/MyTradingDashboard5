@@ -175,6 +175,17 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  toggleAccountSizeDropdown(): void {
+    this.showAccountSizeDropdown = !this.showAccountSizeDropdown;
+    this.cdr.markForCheck();
+  }
+
+  selectAccountSizeFromDropdown(size: number): void {
+    this.selectedAccountSize = size;
+    this.showAccountSizeDropdown = false;
+    this.cdr.markForCheck();
+  }
+
   setAccountSizeByPercentage(percentage: number): void {
     const startingBalance = this.mt5AccountInfo?.startingBalance || 0;
     this.accountSizeInput = (percentage / 100) * startingBalance;
