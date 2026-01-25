@@ -2411,6 +2411,7 @@ table.simple-table {
         padding: 0;
         flex-wrap: nowrap;
         align-items: center;
+        overflow: visible;
 
         .pct-btn {
           background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(75, 85, 99, 0.06));
