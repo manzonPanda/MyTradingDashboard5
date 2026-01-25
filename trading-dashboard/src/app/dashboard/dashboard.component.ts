@@ -191,6 +191,12 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  getSelectedAccountSizeLabel(): string {
+    if (!this.selectedAccountSize) return 'Size';
+    const selected = this.accountSizesSecondary.find(size => size.size === this.selectedAccountSize);
+    return selected?.label || 'Size';
+  }
+
   setAccountSizeByPercentage(percentage: number): void {
     const startingBalance = this.mt5AccountInfo?.startingBalance || 0;
     this.accountSizeInput = (percentage / 100) * startingBalance;
