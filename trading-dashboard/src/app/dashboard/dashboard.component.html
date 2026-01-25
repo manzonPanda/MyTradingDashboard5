@@ -333,7 +333,7 @@
               <button class="pct-btn" [class.active]="selectedPercentage === 1.5" (click)="setAccountSizeByPercentage(1.5)" title="Calculate 1.5% of starting balance">1.5%</button>
               <button class="pct-btn" [class.active]="selectedPercentage === 2" (click)="setAccountSizeByPercentage(2)" title="Calculate 2% of starting balance">2%</button>
 
-              <div class="account-size-dropdown-wrapper" (click)="$event.stopPropagation()">
+              <div #accountSizeDropdownWrapper class="account-size-dropdown-wrapper" (click)="$event.stopPropagation()">
                 <button class="size-dropdown-btn" [class.has-selection]="dropdownSelectedSize" (click)="toggleAccountSizeDropdown()" title="Select account size">
                   <span class="selected-value-text">{{ getSelectedAccountSizeLabel() }}</span>
                   <mat-icon class="dropdown-icon" [class.rotated]="showAccountSizeDropdown">expand_more</mat-icon>

@@ -30,7 +30,7 @@ import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.compone
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { ViewChild, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
@@ -172,6 +172,9 @@ export class DashboardComponent implements AfterViewInit {
     { size: 100000, label: '100K' }
   ];
 
+  @ViewChild('accountSizeDropdownWrapper', { static: false }) accountSizeDropdownWrapper: ElementRef | undefined;
+  private clickOutsideListener: (() => void) | null = null;
+
   selectAccountSize(size: number): void {
     this.selectedAccountSize = this.selectedAccountSize === size ? null : size;
     this.cdr.markForCheck();
@@ -185,12 +188,35 @@ export class DashboardComponent implements AfterViewInit {
   selectAccountSizeFromDropdown(size: number): void {
     this.dropdownSelectedSize = size; // Update dropdown only (independent)
     this.showAccountSizeDropdown = false;
+
+    // If a percentage button is currently selected, recalculate the input
+    if (this.selectedPercentage !== null) {
+      this.accountSizeInput = (this.selectedPercentage / 100) * size;
+    }
+
     this.cdr.markForCheck();
   }
 
   closeAccountSizeDropdown(): void {
     this.showAccountSizeDropdown = false;
     this.cdr.markForCheck();
+  }
+
+  private setupClickOutsideListener(): void {
+    this.clickOutsideListener = this.renderer.listen('document', 'click', (event: any) => {
+      if (this.accountSizeDropdownWrapper && !this.accountSizeDropdownWrapper.nativeElement.contains(event.target)) {
+        if (this.showAccountSizeDropdown) {
+          this.closeAccountSizeDropdown();
+        }
+      }
+    });
+  }
+
+  private removeClickOutsideListener(): void {
+    if (this.clickOutsideListener) {
+      this.clickOutsideListener();
+      this.clickOutsideListener = null;
+    }
   }
 
   getSelectedAccountSizeLabel(): string {
@@ -688,7 +714,7 @@ mt5AccountInfo: AccountSettings = {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
@@ -1138,6 +1164,9 @@ mt5AccountInfo: AccountSettings = {
   }
 
 async ngOnInit() {
+    // Set up click outside listener for dropdown
+    this.setupClickOutsideListener();
+
     // Load saved trading settings
     await this.loadTradingSettings();
 
@@ -1342,6 +1371,9 @@ async ngOnInit() {
   }
 
   ngOnDestroy(): void {
+    // Clean up click outside listener
+    this.removeClickOutsideListener();
+
     this.dtTrigger.unsubscribe();
     this.dtTriggerNotion.unsubscribe();
 
