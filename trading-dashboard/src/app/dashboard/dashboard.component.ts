@@ -151,7 +151,10 @@ export class DashboardComponent implements AfterViewInit {
 
   // Account Size Calculator
   accountSizeInput: number = 0;
-  selectedAccountSize: number | null = null;
+  selectedAccountSize: number | null = null; // For account card selection
+  dropdownSelectedSize: number = 2500; // Default dropdown to 2.5K (independent)
+  showAccountSizeDropdown: boolean = false;
+  selectedPercentage: number | null = null; // Track selected percentage button
   accountSizes = [
     { size: 5000, label: '5K' },
     { size: 10000, label: '10K' },
@@ -174,9 +177,32 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  toggleAccountSizeDropdown(): void {
+    this.showAccountSizeDropdown = !this.showAccountSizeDropdown;
+    this.cdr.markForCheck();
+  }
+
+  selectAccountSizeFromDropdown(size: number): void {
+    this.dropdownSelectedSize = size; // Update dropdown only (independent)
+    this.showAccountSizeDropdown = false;
+    this.cdr.markForCheck();
+  }
+
+  closeAccountSizeDropdown(): void {
+    this.showAccountSizeDropdown = false;
+    this.cdr.markForCheck();
+  }
+
+  getSelectedAccountSizeLabel(): string {
+    const selected = this.accountSizesSecondary.find(size => size.size === this.dropdownSelectedSize);
+    return selected?.label || 'Size';
+  }
+
   setAccountSizeByPercentage(percentage: number): void {
-    const startingBalance = this.mt5AccountInfo?.startingBalance || 0;
-    this.accountSizeInput = (percentage / 100) * startingBalance;
+    // Use dropdown selected size as the base for percentage calculations
+    const baseAmount = this.dropdownSelectedSize || this.mt5AccountInfo?.startingBalance || 0;
+    this.accountSizeInput = (percentage / 100) * baseAmount;
+    this.selectedPercentage = percentage; // Track which percentage is selected
     this.cdr.markForCheck();
   }
 

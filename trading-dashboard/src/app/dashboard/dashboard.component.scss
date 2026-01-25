@@ -511,6 +511,18 @@
   }
 }
 
+// Dropdown slide down animation
+@keyframes dropdownSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .target-card {
   animation: slideInUp 0.6s ease-out;
 
@@ -2401,35 +2413,207 @@ table.simple-table {
         align-items: center;
 
         .pct-btn {
-          background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(6, 182, 212, 0.08));
-          border: 1px solid rgba(14, 165, 233, 0.35);
+          background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(75, 85, 99, 0.06));
+          border: 1.5px solid rgba(107, 114, 128, 0.3);
           border-radius: 6px;
           padding: 0.4rem 0.75rem;
           font-size: 0.82rem;
           font-weight: 700;
-          color: #0891b2;
+          color: #6b7280;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           outline: none;
           user-select: none;
           white-space: nowrap;
           flex-shrink: 0;
 
           &:hover {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(6, 182, 212, 0.14));
-            border-color: rgba(14, 165, 233, 0.55);
-            color: #0891b2;
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(75, 85, 99, 0.12));
+            border-color: rgba(107, 114, 128, 0.5);
+            color: #4b5563;
             transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           }
 
           &:active {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(6, 182, 212, 0.18));
-            transform: scale(0.96);
+            transform: scale(0.98);
           }
 
           &:focus {
-            outline: 2px solid #0ea5e9;
+            outline: 2px solid #6b7280;
             outline-offset: 1px;
+          }
+
+          // Active/Selected state
+          &.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(6, 182, 212, 0.15));
+            border: 1.5px solid rgba(14, 165, 233, 0.6);
+            border-radius: 6px;
+            color: #0891b2;
+            box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25), 0 0 0 3px rgba(14, 165, 233, 0.1);
+            font-weight: 700;
+
+            &:hover {
+              background: linear-gradient(135deg, rgba(14, 165, 233, 0.28), rgba(6, 182, 212, 0.22));
+              border-color: rgba(14, 165, 233, 0.75);
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35), 0 0 0 3px rgba(14, 165, 233, 0.15);
+            }
+
+            &:active {
+              transform: translateY(-1px) scale(0.98);
+            }
+          }
+        }
+
+        .account-size-dropdown-wrapper {
+          position: relative;
+          flex-shrink: 0;
+
+          .size-dropdown-btn {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(6, 182, 212, 0.08));
+            border: 1.5px solid rgba(14, 165, 233, 0.35);
+            border-radius: 6px;
+            padding: 0.4rem 0.7rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0891b2;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            user-select: none;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            min-width: auto;
+
+            .selected-value-text {
+              display: inline-block;
+              font-weight: 700;
+              letter-spacing: 0.3px;
+              text-transform: uppercase;
+            }
+
+            .dropdown-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+              transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              flex-shrink: 0;
+
+              &.rotated {
+                transform: rotate(180deg);
+              }
+            }
+
+            &:hover {
+              background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(6, 182, 212, 0.14));
+              border-color: rgba(14, 165, 233, 0.55);
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+            }
+
+            &:active {
+              background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(6, 182, 212, 0.18));
+              transform: scale(0.96);
+            }
+
+            &:focus {
+              outline: 2px solid #0ea5e9;
+              outline-offset: 1px;
+            }
+
+            &.has-selection {
+              border-color: rgba(14, 165, 233, 0.55);
+              background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 182, 212, 0.1));
+              box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+            }
+          }
+
+          .account-size-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1.5px solid rgba(14, 165, 233, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 6px 16px rgba(14, 165, 233, 0.25);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            padding: 0.7rem;
+            min-width: 150px;
+            animation: dropdownSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            .dropdown-option {
+              background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(6, 182, 212, 0.05));
+              border: 1.5px solid rgba(14, 165, 233, 0.2);
+              border-radius: 8px;
+              padding: 0.55rem 0.8rem;
+              font-size: 0.8rem;
+              font-weight: 600;
+              color: #0891b2;
+              cursor: pointer;
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+              outline: none;
+              user-select: none;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 0.5rem;
+              position: relative;
+
+              .size-label {
+                display: block;
+                font-weight: 700;
+                letter-spacing: 0.3px;
+                flex: 1;
+                text-align: center;
+              }
+
+              .checkmark-icon {
+                display: inline-block;
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #10b981;
+                opacity: 0;
+                transform: scale(0);
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                flex-shrink: 0;
+              }
+
+              &:hover {
+                background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(6, 182, 212, 0.12));
+                border-color: rgba(14, 165, 233, 0.45);
+                transform: translateX(3px);
+                box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+              }
+
+              &:active {
+                transform: translateX(3px) scale(0.98);
+              }
+
+              &.active {
+                background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(6, 182, 212, 0.18));
+                border: 1.5px solid #0a7ea4;
+                color: #0a7ea4;
+                font-weight: 700;
+                box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15), 0 6px 16px rgba(14, 165, 233, 0.3);
+
+                .checkmark-icon {
+                  opacity: 1;
+                  transform: scale(1);
+                }
+              }
+
+              &:focus {
+                outline: 2px solid #0ea5e9;
+                outline-offset: 1px;
+              }
+            }
           }
         }
       }
