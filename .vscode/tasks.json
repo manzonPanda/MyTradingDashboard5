@@ -47,11 +47,27 @@
       "problemMatcher": []
     },
     {
+      "label": "Tunnel-Cloudflare",
+      "type": "shell",
+      "command": "cloudflared tunnel run mt5-api",
+      "options": {
+        "cwd": "${workspaceFolder}/notionproxyapi",
+        "shell": {
+          "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+          "args": [
+            "-c"
+          ]
+        }
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Start All",
       "dependsOn": [
         "Frontend-Angular",
         "Backend-NotionApi",
-        "Backend-MT5api"
+        "Backend-MT5api",
+        "Tunnel-Cloudflare"
       ],
       "dependsOrder": "parallel",
       "problemMatcher": []

@@ -1219,7 +1219,7 @@ async ngOnInit() {
 
     try {
       const news: any = await firstValueFrom(
-        this.http.get(`${this.BACKEND_URL_NOTION}/api/news`)
+        this.http.get("http://localhost:3000/api/news")
       );
       this.newsData = Array.isArray(news) ? news : [];
       console.log("📈 Forex Factory News Data:", this.newsData);
