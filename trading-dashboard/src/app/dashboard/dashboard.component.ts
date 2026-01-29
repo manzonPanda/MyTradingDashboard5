@@ -148,7 +148,7 @@ interface NotionPerformanceData {
 export class DashboardComponent implements AfterViewInit {
   // Math object for template calculations
   Math = Math;
-
+  environment = environment;
   // Account Size Calculator
   accountSizeInput: number = 0;
   selectedAccountSize: number | null = null; // For account card selection
@@ -1115,16 +1115,12 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private async loadTradingSettings(): Promise<void> {
-     // Try live API
-    let response: any[] = await this.getMt5API();
-    let notionAccountName = (!response || response.length === 0) ? "AppTestData" : "5ers8️⃣2.5k [#25939419]";
-
     const body = {
         "page_size": 1,
         "filter": {
           "property": "Account",
           "multi_select": {
-            "contains": notionAccountName
+            "contains": environment.propfirmAccountName
           }
         },
         "sorts": [
@@ -2001,7 +1997,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": "5ers8️⃣2.5k [#25939419]" }
+              { "name": environment.propfirmAccountName }
             ]
           },
           "ticket":{
@@ -4904,10 +4900,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       // Try live API
       response = await this.getMt5API();
-      if (!response || response.length === 0) {
-        console.warn('MT5 API returned no data, loading local JSON...');
-        response = await this.getLocalTrades();
-      }
+      // if (!response || response.length === 0) {
+      //   console.warn('MT5 API returned no data, loading local JSON...');
+      //   response = await this.getLocalTrades();
+      // }
     } catch (error) {
       console.error('Error fetching MT5 API, using local JSON fallback:', error);
       try {
