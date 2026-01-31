@@ -326,8 +326,5 @@ export class NewsReminderService {
   /**
    * Enable/disable reminders for specific impact levels
    */
-  updateReminderSettings(enabledImpacts: string[]) {
-    // This could be extended to filter by impact level
-    console.log('📊 Updated reminder settings for impacts:', enabledImpacts);
-  }
+  // (removed unused updateReminderSettings)
 }

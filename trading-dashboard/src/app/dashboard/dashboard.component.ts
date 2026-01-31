@@ -1513,9 +1513,6 @@ async ngOnInit() {
     );
   }
 
-  onDayClicked(date: Date) {
-    alert('Clicked: ' + date.toDateString());
-  }
 
 async onPaste(event: ClipboardEvent): Promise<void> {
     const clipboardItems = event.clipboardData?.items;
@@ -1699,25 +1696,8 @@ onUpload(): void {
   });
 }
   
-  loadTradesRealtime() {
-    const collectionRef = collection(this.firestore, 'trades');
-    onSnapshot(collectionRef, (querySnapshot) => {
-      const loadedData: any[] = [];
-
-      querySnapshot.forEach((doc) => {
-        loadedData.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-      console.log('Real-time trades:', loadedData);
-      this.tableData = loadedData;
-    }, (error) => {
-      console.warn('⚠️ Firestore realtime listener error - continuing in offline mode:', error.message);
-      // Keep existing data, don't update
-    });
-  }
-
+  // (removed unused real-time trades listener)
+  
   loadTrades(): Promise<void> {
     return new Promise((resolve, reject) => {
       const tradesRef = collection(this.firestore, 'trades');
@@ -3565,55 +3545,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   // Chart data for Best Profit/Loss visualization
-  getProfitLossChartData() {
-    if (!this.tableData || this.tableData.length === 0) {
-      // Show demo data when no trades exist
-      return {
-        labels: ['Best Loss', 'Break Even', 'Best Profit'],
-        datasets: [{
-          data: [-87.25, 0, 125.50],
-          backgroundColor: ['#ef4444', '#6b7280', '#10b981'],
-          borderColor: ['#ef4444', '#6b7280', '#10b981'],
-          borderWidth: 1
-        }]
-      };
-    }
-
-    const bestProfit = this.calculateBestProfit();
-    const bestLoss = this.calculateBestLoss();
-
-    return {
-      labels: ['Best Loss', 'Break Even', 'Best Profit'],
-      datasets: [{
-        data: [bestLoss, 0, bestProfit],
-        backgroundColor: ['#ef4444', '#6b7280', '#10b981'],
-        borderColor: ['#ef4444', '#6b7280', '#10b981'],
-        borderWidth: 1
-      }]
-    };
-  }
-
-  getProfitLossChartOptions() {
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { display: false },
-        y: { display: false }
-      },
-      elements: {
-        point: { radius: 3 },
-        line: { borderWidth: 2 }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: false }
-      },
-      layout: {
-        padding: 5
-      }
-    };
-  }
+  // (Removed unused profit/loss chart helpers)
 
   // Emotional tracking methods for individual trades
   getTradeKey(trade: Table): string {
@@ -3937,11 +3869,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return item.day;
   }
 
-  toggleTradeEmotionalForm(trade: Table) {
-    const tradeKey = this.getTradeKey(trade);
-    this.initializeTradeEmotionalState(trade);
-    this.tradeEmotionalStates[tradeKey].isExpanded = !this.tradeEmotionalStates[tradeKey].isExpanded;
-  }
 
   selectEmotionForTrade(trade: Table, emotion: any) {
     const tradeKey = this.getTradeKey(trade);
@@ -3950,12 +3877,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tradeEmotionalStates[tradeKey].customEmotion = ''; // Clear custom if predefined is selected
   }
 
-  onCustomEmotionChangeForTrade(trade: Table) {
-    const tradeKey = this.getTradeKey(trade);
-    if (this.tradeEmotionalStates[tradeKey]?.customEmotion?.trim()) {
-      this.tradeEmotionalStates[tradeKey].selectedEmotion = ''; // Clear predefined if custom is entered
-    }
-  }
 
   updateTradeCustomEmotion(trade: Table, value: string) {
     const tradeKey = this.getTradeKey(trade);
@@ -3972,11 +3893,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tradeEmotionalStates[tradeKey].intensity = value;
   }
 
-  updateTradeNotes(trade: Table, value: string) {
-    const tradeKey = this.getTradeKey(trade);
-    this.initializeTradeEmotionalState(trade);
-    this.tradeEmotionalStates[tradeKey].notes = value;
-  }
 
   submitEmotionalEntryForTrade(trade: Table) {
     const tradeKey = this.getTradeKey(trade);
@@ -4906,12 +4822,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // }
     } catch (error) {
       console.error('Error fetching MT5 API, using local JSON fallback:', error);
-      try {
-        response = await this.getLocalTrades();
-      } catch (localError) {
-        console.error('Failed to load local JSON fallback:', localError);
-        response = []; // Ensure response is always an array
-      }
+      // try {
+      //   response = await this.getLocalTrades();
+      // } catch (localError) {
+      //   console.error('Failed to load local JSON fallback:', localError);
+      //   response = []; // Ensure response is always an array
+      // }
     } finally {
       this.isLoadingMT5Data = false;
       this.cdr.markForCheck();
@@ -4973,40 +4889,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
   }
 
-  mockMT5newTrade(){
-    console.log('🚀 Mock button clicked! Current state:');
-    console.log('📊 Current tableData length:', this.tableData.length);
-    console.log('��� Current mt5LiveTrades length:', this.mt5LiveTrades.length);
-
-    // Generate random mock data for testing
-    const symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
-    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-    const randomVolume = (Math.random() * 2 + 0.1).toFixed(2); // 0.1 to 2.1
-    const randomPrice = (1.0000 + Math.random() * 0.2500).toFixed(4); // 1.0000 to 1.5000
-    const randomProfit = (Math.random() * 200 - 100).toFixed(2); // -100 to +100
-    const mockTicket = Math.floor(Math.random() * 999999999) + 100000000; // 9-digit ticket
-
-    const mock = {
-      "ticket": mockTicket,
-      "symbol": randomSymbol,
-      "volume": parseFloat(randomVolume),
-      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
-      "price_open": parseFloat(randomPrice),
-      "sl": (parseFloat(randomPrice) - 0.0100).toFixed(4),
-      "tp": (parseFloat(randomPrice) + 0.0150).toFixed(4),
-      "profit": parseFloat(randomProfit),
-      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
-      "commission": (Math.random() * 5).toFixed(2),
-    }
-
-    console.log('🎯 Generated mock trade:', mock);
-    this.addMT5LiveTrade(mock);
-
-    // Simulate price updates to show MFE in action
-    setTimeout(() => {
-      this.simulateMFEUpdates(mockTicket);
-    }, 2000);
-  }
+  
 
   simulateMFEUpdates(ticket: number): void {
     console.log('📈 Starting MFE simulation for ticket:', ticket);
@@ -5035,23 +4918,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }, 1000); // Update every second for demo
   }
 
-  mockMT5closeTrade(){
-    const mock = {
-      "ticket": this.mockTicket,
-      "symbol": "test",
-      "volume": 1.00,
-      "type": Math.floor(Math.random() * 2), // 0 for Buy, 1 for Sell
-      "price_open": 'test',
-      "sl": "test",
-      "tp": "test",
-      "profit": parseFloat((Math.random() * 200 - 100).toFixed(2)),
-      "time": new Date().toISOString().slice(0, 19).replace('T', ' '),
-      "commission": (Math.random() * 5).toFixed(2),
-    }
-
-    console.log('🎯 Generated mock trade:', mock);
-    this.closeMT5Trade(mock);
-  }
+  
 
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
