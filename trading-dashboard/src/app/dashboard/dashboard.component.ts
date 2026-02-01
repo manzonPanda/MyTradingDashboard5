@@ -1170,6 +1170,58 @@ async ngOnInit() {
     try {
       await this.loadMT5Data();
       console.log('✅ ngOnInit: MT5 data loaded successfully');
+      // If no data loaded, set test data
+      if (!this.tableData || this.tableData.length === 0) {
+        console.log('📌 ngOnInit: tableData is empty, setting test data');
+        this.tableData = [
+          {
+            openDate: '07.23.2025 13:26',
+            closeDate: '07.23.2025 13:46',
+            tradeNotion: [],
+            status: '',
+            position: 100,
+            symbol: 'GBPUSD',
+            type: 'Sell',
+            volume: '0.47',
+            entry: 215.19,
+            sL: '310',
+            tP: '1.31484',
+            exit: '946',
+            commission: '-4',
+            swap: '0',
+            profit: '1945.6',
+            netProfit: '1941.6',
+            riskPerTrade: '23.97',
+            rrr: '2.5',
+            mt5status: 'closed',
+            mfe: '0'
+          } as Table,
+          {
+            openDate: '07.24.2025 12:35',
+            closeDate: '07.24.2025 12:45',
+            tradeNotion: [],
+            status: '',
+            position: 102,
+            symbol: 'GBPUSD',
+            type: 'Sell',
+            volume: '0.47',
+            entry: 681.32,
+            sL: '639',
+            tP: '1.31484',
+            exit: '791',
+            commission: '-4',
+            swap: '0',
+            profit: '-580.8',
+            netProfit: '-584.8',
+            riskPerTrade: '23.97',
+            rrr: '1.2',
+            mt5status: 'closed',
+            mfe: '0'
+          } as Table
+        ];
+        this.isLoadingMetrics = false;
+        this.cdr.markForCheck();
+      }
     } catch (error) {
       console.error('❌ ngOnInit: Error loading MT5 data:', error);
     }
