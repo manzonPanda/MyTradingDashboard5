@@ -4838,6 +4838,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     // Map the trades once, regardless of source
+    console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
     const mt5Trades = (response || []).map((trade: any) => ({
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
@@ -4861,8 +4862,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
     } as Table));
 
+    console.log('✅ Mapped trades:', mt5Trades.length);
+    console.log('📊 First trade sample:', mt5Trades[0]);
     this.mt5LiveTrades = mt5Trades;
-    console.log("this.mt5LiveTrades", this.mt5LiveTrades);
+    console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     this.updateTableData();
 
     // Generate stunning chart with loaded data
