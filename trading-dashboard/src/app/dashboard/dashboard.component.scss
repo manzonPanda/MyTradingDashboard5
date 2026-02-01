@@ -648,7 +648,7 @@
   .pnl-chip.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
   .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
   .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
-  .daily-limit-layout { display: grid; grid-template-columns: 140px 140px 1fr 160px; gap: 1rem; align-items: start; justify-items: center; width: 100%; }
+  .daily-limit-layout { display: grid; grid-template-columns: 60px 140px 140px 1fr 140px; gap: 0.5rem; align-items: start; justify-items: center; width: 100%; }
   .daily-limit-chart { position: relative; width: 140px; height: 140px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
   .center-percent { font-weight: 800; font-size: 1.5rem; color: var(--tf-text-primary); }
@@ -672,15 +672,16 @@
   .wins-percent-text { font-size: 1.5rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
   .wins-amount-text { font-size: 1rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
   .wins-label { font-size: 0.7rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
-  .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); grid-column: 1 / 4; justify-self: center; }
+  .reset-note { margin-top: 0.5rem; font-size: 1rem; color: var(--tf-text-muted); grid-column: 1 / -1; justify-self: center; text-align: center; font-weight: 700; }
 
-  .pnl-chip-sidebar { grid-column: 4; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.2rem; padding: 0 0.1rem; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; align-self: start; }
+  .pnl-chip-sidebar { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.06rem; padding: 0; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; align-self: start; justify-content: flex-start; }
   .pnl-chip-sidebar .sidebar-label { display: none; }
-  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.1rem; }
-  .pnl-chip-sidebar .chip-row { display: flex; gap: 0.1rem; justify-content: center; flex-wrap: wrap; }
-  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.6rem; padding: 0.15rem 0.25rem; font-weight: 700; height: 18px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.15rem; }
-  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.15rem; }
+  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.06rem; width: 100%; }
+  .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.06rem; align-items: stretch; width: 100%; }
+  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.5rem; padding: 0.05rem 0.1rem; font-weight: 700; height: 12px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.06rem; width: 100%; }
+  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.06rem; align-items: stretch; width: 100%; }
+  .pnl-chip-sidebar .example-chips .pnl-chip.mini { font-size: 0.5rem; padding: 0.05rem 0.1rem; height: 12px; width: 100%; min-width: 0; }
 
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
