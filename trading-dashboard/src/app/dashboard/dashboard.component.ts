@@ -975,6 +975,14 @@ mt5AccountInfo: AccountSettings = {
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getRightWinRingOffset(): number { return 0; }
+  getRightLossRingDash(): string {
+    const c = this.getRightWinRingCircumference();
+    const cap = 8; // 0–8% mapped to full circle (default loss limit)
+    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyLossesPercent) / cap));
+    const arc = fraction * c;
+    return `${arc} ${Math.max(0, c - arc)}`;
+  }
+  getRightLossRingOffset(): number { return 0; }
   private getDailyLimitUsedPct(): number {
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     const capPct = this.mt5AccountInfo?.dailyLossLimit || 8; // capacity percent (default 8%)
