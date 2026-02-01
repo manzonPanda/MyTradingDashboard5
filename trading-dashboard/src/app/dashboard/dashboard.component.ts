@@ -1167,7 +1167,12 @@ async ngOnInit() {
     await this.loadTradingSettings();
 
     // Load MT5 data immediately
-    await this.loadMT5Data();
+    try {
+      await this.loadMT5Data();
+      console.log('✅ ngOnInit: MT5 data loaded successfully');
+    } catch (error) {
+      console.error('❌ ngOnInit: Error loading MT5 data:', error);
+    }
 
     const socket = io(`${this.BACKEND_URL_MT5}/`,{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
