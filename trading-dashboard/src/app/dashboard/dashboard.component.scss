@@ -633,6 +633,7 @@
 
 // Daily Limit Card Styles
 .metric-card.daily-limit-card {
+  grid-column: 1 / -1;
   .metric-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.5rem; }
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
   .pnl-chip-header-grid { justify-self: center; display: grid; grid-template-rows: repeat(2, auto); gap: 0.2rem; }
