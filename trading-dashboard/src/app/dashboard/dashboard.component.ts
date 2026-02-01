@@ -1179,11 +1179,11 @@ async ngOnInit() {
             closeDate: '07.23.2025 13:46',
             tradeNotion: [],
             status: '',
-            position: 100,
+            position: '100',
             symbol: 'GBPUSD',
             type: 'Sell',
             volume: '0.47',
-            entry: 215.19,
+            entry: '215.19',
             sL: '310',
             tP: '1.31484',
             exit: '946',
@@ -1195,17 +1195,17 @@ async ngOnInit() {
             rrr: '2.5',
             mt5status: 'closed',
             mfe: '0'
-          } as Table,
+          },
           {
             openDate: '07.24.2025 12:35',
             closeDate: '07.24.2025 12:45',
             tradeNotion: [],
             status: '',
-            position: 102,
+            position: '102',
             symbol: 'GBPUSD',
             type: 'Sell',
             volume: '0.47',
-            entry: 681.32,
+            entry: '681.32',
             sL: '639',
             tP: '1.31484',
             exit: '791',
@@ -1217,7 +1217,7 @@ async ngOnInit() {
             rrr: '1.2',
             mt5status: 'closed',
             mfe: '0'
-          } as Table
+          }
         ];
         this.isLoadingMetrics = false;
         this.cdr.markForCheck();
