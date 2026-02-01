@@ -676,9 +676,9 @@
 
   .pnl-chip-sidebar { grid-column: 4; display: flex; flex-direction: column; gap: 0.3rem; padding: 0; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; }
   .pnl-chip-sidebar .sidebar-label { display: none; }
-  .pnl-chip-sidebar .pnl-chip-header-grid { display: grid; grid-template-columns: 1fr; gap: 0.2rem; }
-  .pnl-chip-sidebar .pnl-chip-header-grid:has(.chip-row:nth-child(2)) { grid-template-columns: repeat(2, 1fr); }
-  .pnl-chip-sidebar .chip-row { display: contents; }
+  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.2rem; }
+  .pnl-chip-sidebar .pnl-chip-header-grid:has(.chip-row:nth-child(2)) { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem; }
+  .pnl-chip-sidebar .chip-row { display: flex; gap: 0.2rem; flex-wrap: wrap; justify-content: center; }
   .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.65rem; padding: 0.25rem 0.4rem; min-width: 45px; font-weight: 700; }
   .pnl-chip-sidebar .example-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); gap: 0.2rem; }
   .pnl-chip-sidebar .example-chips .chip-row { display: contents; }
