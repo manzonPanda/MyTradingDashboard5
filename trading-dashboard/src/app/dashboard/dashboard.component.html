@@ -644,6 +644,18 @@
                 </div>
               </div>
               <div class="reset-note">Resets in {{ resetCountdown }}</div>
+              <div class="pnl-chip-sidebar" *ngIf="getRecentSessionTradeChunks().length">
+                <div class="pnl-chip-header-grid">
+                  <div class="chip-row" *ngFor="let row of getRecentSessionTradeChunks()">
+                    <div class="pnl-chip mini"
+                         *ngFor="let trade of row"
+                         [ngClass]="{ 'p': isPositiveValue(getNetFromCommissionPlusGross(trade)), 'n': isNegativeValue(getNetFromCommissionPlusGross(trade)), 'z': getNetFromCommissionPlusGross(trade) === 0 }"
+                         [title]="(trade.symbol || 'Trade') + ' • ' + (getNetFromCommissionPlusGross(trade) | currency:'USD':'symbol':'1.2-2')">
+                      {{ getSignedPercentage(trade) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
