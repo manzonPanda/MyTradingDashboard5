@@ -9,11 +9,7 @@
   border-top: 1px solid #e5e7eb;
   text-align: center;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-  z-index: 10;
-  transform: scale(1.25);
-  transform-origin: bottom left;
-  width: 80%;
-  height: auto;
+  z-index: 1000;
 
   .footer-content {
     max-width: 1200px;
