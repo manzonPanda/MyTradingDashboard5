@@ -674,13 +674,13 @@
   .wins-label { font-size: 0.6rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
   .reset-note { margin-top: 0.5rem; font-size: 1rem; color: var(--tf-text-muted); grid-column: 1 / -1; justify-self: center; text-align: center; font-weight: 700; }
 
-  .pnl-chip-sidebar { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.06rem; padding: 0; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; align-self: start; justify-content: flex-start; }
+  .pnl-chip-sidebar { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.35rem; padding: 0; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; align-self: start; justify-content: flex-start; }
   .pnl-chip-sidebar .sidebar-label { display: none; }
-  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.06rem; width: 100%; }
-  .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.06rem; align-items: stretch; width: 100%; }
+  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.35rem; width: 100%; }
+  .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; width: 100%; }
   .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.95rem; padding: 0.15rem 0.3rem; font-weight: 700; height: 20px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.06rem; width: 100%; }
-  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.06rem; align-items: stretch; width: 100%; }
+  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.35rem; width: 100%; }
+  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; width: 100%; }
   .pnl-chip-sidebar .example-chips .pnl-chip.mini { font-size: 0.95rem; padding: 0.15rem 0.3rem; height: 20px; width: 100%; min-width: 0; }
 
   /* Tooltip for left donut */
