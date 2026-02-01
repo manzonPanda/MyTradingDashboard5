@@ -680,8 +680,9 @@
   .pnl-chip-sidebar .pnl-chip-header-grid:has(.chip-row:nth-child(2)) { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem; }
   .pnl-chip-sidebar .chip-row { display: flex; gap: 0.2rem; flex-wrap: wrap; justify-content: center; }
   .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.65rem; padding: 0.25rem 0.4rem; min-width: 45px; font-weight: 700; }
-  .pnl-chip-sidebar .example-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); gap: 0.2rem; }
-  .pnl-chip-sidebar .example-chips .chip-row { display: contents; }
+  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.2rem; }
+  .pnl-chip-sidebar .example-chips:has(.chip-row:nth-child(2)) { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem; }
+  .pnl-chip-sidebar .example-chips .chip-row { display: flex; gap: 0.2rem; flex-wrap: wrap; justify-content: center; }
 
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
