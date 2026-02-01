@@ -1188,9 +1188,8 @@ async ngOnInit() {
 
     socket.on("connect_error", (err: any) => {
       console.warn("❌ Socket connection error:", err);
-      // Even if socket fails, show the metrics (they'll just be 0)
-      this.isLoadingMetrics = false;
-      this.cdr.markForCheck();
+      // Load MT5 data even if socket fails
+      this.loadMT5Data();
     });
 
     socket.on("trade_opened", (data: any) => {
