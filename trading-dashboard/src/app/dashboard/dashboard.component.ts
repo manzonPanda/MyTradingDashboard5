@@ -4871,7 +4871,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('📊 First trade sample:', mt5Trades[0]);
     this.mt5LiveTrades = mt5Trades;
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
+    console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
+
     this.updateTableData();
+
+    console.log('✅ After updateTableData - tableData length:', this.tableData.length);
+    console.log('📊 Sample from tableData:', this.tableData[0]);
+    console.log('🧮 calculateProfitFactor():', this.calculateProfitFactor());
 
     // Generate stunning chart with loaded data
     // setTimeout(() => {
@@ -4879,7 +4885,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // }, 500);
 
     // Go to last page of the table to show the latest trade
-    this.setPage(this.getTotalPages());
+    try {
+      this.setPage(this.getTotalPages());
+    } catch (error) {
+      console.error('Error setting page:', error);
+    }
   }
 
   
