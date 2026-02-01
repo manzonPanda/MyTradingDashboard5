@@ -644,8 +644,9 @@
                 </div>
               </div>
               <div class="reset-note">Resets in {{ resetCountdown }}</div>
-              <div class="pnl-chip-sidebar" *ngIf="getRecentSessionTradeChunks().length">
-                <div class="pnl-chip-header-grid">
+              <div class="pnl-chip-sidebar">
+                <div class="sidebar-label">Recent Trades</div>
+                <div class="pnl-chip-header-grid" *ngIf="getRecentSessionTradeChunks().length">
                   <div class="chip-row" *ngFor="let row of getRecentSessionTradeChunks()">
                     <div class="pnl-chip mini"
                          *ngFor="let trade of row"
@@ -653,6 +654,20 @@
                          [title]="(trade.symbol || 'Trade') + ' • ' + (getNetFromCommissionPlusGross(trade) | currency:'USD':'symbol':'1.2-2')">
                       {{ getSignedPercentage(trade) }}
                     </div>
+                  </div>
+                </div>
+                <!-- Example placeholder when no trades -->
+                <div *ngIf="!getRecentSessionTradeChunks().length" class="example-chips">
+                  <div class="chip-row">
+                    <div class="pnl-chip mini p" title="EURUSD • +$45.50">+0.5%</div>
+                    <div class="pnl-chip mini p" title="GBPUSD • +$32.00">+0.4%</div>
+                  </div>
+                  <div class="chip-row">
+                    <div class="pnl-chip mini n" title="USDJPY • -$28.30">-0.3%</div>
+                    <div class="pnl-chip mini p" title="AUDUSD • +$15.75">+0.2%</div>
+                  </div>
+                  <div class="chip-row">
+                    <div class="pnl-chip mini n" title="NZDUSD • -$12.00">-0.1%</div>
                   </div>
                 </div>
               </div>
