@@ -648,13 +648,13 @@
   .pnl-chip.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
   .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
   .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
-  .daily-limit-layout { display: grid; grid-template-columns: 60px 140px 140px 140px 1fr; grid-template-rows: auto auto; gap: 0.5rem; align-items: start; justify-items: center; width: 100%; }
+  .daily-limit-layout { display: grid; grid-template-columns: 60px 110px 110px 110px 1fr; grid-template-rows: auto auto; gap: 0.3rem; align-items: start; justify-items: center; width: 100%; }
   .daily-limit-layout .daily-limit-chart { grid-column: 2; grid-row: 1; }
   .daily-limit-layout .wins-gauge { grid-column: 3; grid-row: 1; }
   .daily-limit-layout .loss-gauge { grid-column: 4; grid-row: 1; }
-  .daily-limit-chart { position: relative; width: 140px; height: 140px; }
+  .daily-limit-chart { position: relative; width: 110px; height: 110px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-  .center-percent { font-weight: 800; font-size: 2.2rem; color: var(--tf-text-primary); }
+  .center-percent { font-weight: 800; font-size: 1.6rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
   .center-percent.positive { color: #10b981; }
   .center-amount { font-size: 1rem; font-weight: 700; color: var(--tf-text-secondary); }
