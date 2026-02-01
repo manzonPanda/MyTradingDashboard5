@@ -648,13 +648,13 @@
   .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
   .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
   .daily-limit-layout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; align-items: center; justify-items: center; }
-  .daily-limit-chart { position: relative; width: 110px; height: 110px; }
+  .daily-limit-chart { position: relative; width: 140px; height: 140px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-  .center-percent { font-weight: 800; font-size: 1.2rem; color: var(--tf-text-primary); }
+  .center-percent { font-weight: 800; font-size: 1.5rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
   .center-percent.positive { color: #10b981; }
-  .center-amount { font-size: 0.85rem; font-weight: 700; color: var(--tf-text-secondary); }
-  .center-label { font-size: 0.6rem; color: var(--tf-text-muted); }
+  .center-amount { font-size: 1rem; font-weight: 700; color: var(--tf-text-secondary); }
+  .center-label { font-size: 0.7rem; color: var(--tf-text-muted); }
   .daily-limit-stats { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; align-items: center; justify-self: center; }
   .stat-row { display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; }
   .stat-label { font-size: 0.65rem; color: var(--tf-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
@@ -665,12 +665,12 @@
   .stat-value.negative { color: var(--tf-negative); }
   .stat-percent { font-size: 1.3rem; font-weight: 800; color: inherit; margin: 0 0.4rem 0 0; line-height: 1; }
   .stat-currency { font-size: 0.85rem; font-weight: 600; color: var(--tf-text-muted); margin-left: 0.25rem; }
-  .wins-gauge { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; justify-self: center; position: relative; }
+  .wins-gauge { width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; justify-self: center; position: relative; }
   .wins-gauge-svg { width: 100%; height: 100%; }
   .wins-gauge-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-  .wins-percent-text { font-size: 1.3rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
-  .wins-amount-text { font-size: 0.9rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
-  .wins-label { font-size: 0.6rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
+  .wins-percent-text { font-size: 1.5rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
+  .wins-amount-text { font-size: 1rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
+  .wins-label { font-size: 0.7rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); }
   .daily-limit-layout .reset-note { grid-column: 1 / -1; justify-self: center; }
 
