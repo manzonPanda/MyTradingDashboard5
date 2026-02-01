@@ -3177,11 +3177,16 @@ table.simple-table {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  overflow: visible;
 
   &:hover {
     border-color: var(--tf-border-secondary);
     transform: translateY(-1px);
     box-shadow: var(--tf-shadow-md);
+  }
+
+  &.daily-limit-card {
+    overflow: visible;
   }
 
   .metric-header {
