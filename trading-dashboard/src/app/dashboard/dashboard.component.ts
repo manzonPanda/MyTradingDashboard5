@@ -4816,18 +4816,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       // Try live API
       response = await this.getMt5API();
-      // if (!response || response.length === 0) {
-      //   console.warn('MT5 API returned no data, loading local JSON...');
-      //   response = await this.getLocalTrades();
-      // }
+      if (!response || response.length === 0) {
+        console.warn('MT5 API returned no data, loading local JSON...');
+        response = await this.getLocalTrades();
+      }
     } catch (error) {
       console.error('Error fetching MT5 API, using local JSON fallback:', error);
-      // try {
-      //   response = await this.getLocalTrades();
-      // } catch (localError) {
-      //   console.error('Failed to load local JSON fallback:', localError);
-      //   response = []; // Ensure response is always an array
-      // }
+      try {
+        response = await this.getLocalTrades();
+      } catch (localError) {
+        console.error('Failed to load local JSON fallback:', localError);
+        response = []; // Ensure response is always an array
+      }
     } finally {
       this.isLoadingMT5Data = false;
       this.cdr.markForCheck();
