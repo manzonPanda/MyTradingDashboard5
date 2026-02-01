@@ -5628,7 +5628,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getSignedPercentage(row: Table): string {
     const pct = this.getNetCommissionGrossPercentage(row);
-    if (!isFinite(pct) || isNaN(pct)) return '0.0%';
+    if (!isFinite(pct) || isNaN(pct)) return '0.00%';
     const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
     return `${sign}${pct.toFixed(2)}%`;
   }
