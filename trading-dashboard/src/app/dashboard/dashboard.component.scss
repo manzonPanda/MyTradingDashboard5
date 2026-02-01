@@ -673,10 +673,13 @@
   .wins-label { font-size: 0.7rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
   .reset-note { margin-top: 0.2rem; font-size: 0.6rem; color: var(--tf-text-muted); grid-column: 1 / 4; justify-self: center; }
 
-  .pnl-chip-sidebar { grid-column: 4; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(34, 197, 94, 0.04)); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); width: 100%; height: fit-content; }
+  .pnl-chip-sidebar { grid-column: 4; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.6rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05)); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25); width: 100%; height: fit-content; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08); }
+  .pnl-chip-sidebar .sidebar-label { font-size: 0.65rem; font-weight: 700; color: var(--tf-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; text-align: center; }
   .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.35rem; }
   .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.25rem; }
-  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.7rem; padding: 0.25rem 0.4rem; min-width: auto; }
+  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.65rem; padding: 0.3rem 0.5rem; min-width: 48px; }
+  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.35rem; opacity: 0.65; }
+  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.25rem; }
 
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
