@@ -679,8 +679,8 @@
   .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.15rem; }
   .pnl-chip-sidebar .chip-row { display: grid; grid-template-columns: 1fr; gap: 0.15rem; }
   .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.55rem; padding: 0.1rem 0.2rem; font-weight: 700; height: 16px; }
-  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.2rem; }
-  .pnl-chip-sidebar .example-chips .chip-row { display: grid; grid-template-columns: 1fr; gap: 0.2rem; }
+  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.15rem; }
+  .pnl-chip-sidebar .example-chips .chip-row { display: grid; grid-template-columns: 1fr; gap: 0.15rem; }
 
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
