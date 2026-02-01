@@ -3493,7 +3493,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateProfitFactor(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
+    if (!this.tableData || this.tableData.length === 0) {
+      if (this.tableData && this.tableData.length === 0) {
+        console.warn('⚠️ calculateProfitFactor: tableData is empty array');
+      }
+      return 0;
+    }
 
     const grossProfit = this.tableData
       .filter(trade => (parseFloat(trade.netProfit) || 0) > 0)
@@ -3503,9 +3508,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
       .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
 
-    if (grossLoss === 0) return grossProfit > 0 ? 999 : 0;
+    if (grossLoss === 0) {
+      console.log('⚠️ calculateProfitFactor: grossLoss is 0, returning', grossProfit > 0 ? 999 : 0);
+      return grossProfit > 0 ? 999 : 0;
+    }
 
-    return parseFloat((grossProfit / grossLoss).toFixed(2));
+    const result = parseFloat((grossProfit / grossLoss).toFixed(2));
+    console.log('✅ calculateProfitFactor:', result, '(profit:', grossProfit, ', loss:', grossLoss, ')');
+    return result;
   }
 
   calculateBestProfit(): number {
