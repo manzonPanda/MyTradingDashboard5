@@ -648,14 +648,14 @@
   .pnl-chip.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
   .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
   .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
-  .daily-limit-layout { display: grid; grid-template-columns: 60px 140px 140px 1fr 140px; gap: 0.5rem; align-items: start; justify-items: center; width: 100%; }
-  .daily-limit-chart { position: relative; width: 140px; height: 140px; }
+  .daily-limit-layout { display: grid; grid-template-columns: 60px 1fr 130px; align-items: start; justify-items: center; width: 100%; }
+  .daily-limit-chart { position: relative; width: 130px; height: 130px; grid-column: 2; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-  .center-percent { font-weight: 800; font-size: 1.5rem; color: var(--tf-text-primary); }
+  .center-percent { font-weight: 800; font-size: 1.8rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
   .center-percent.positive { color: #10b981; }
-  .center-amount { font-size: 1rem; font-weight: 700; color: var(--tf-text-secondary); }
-  .center-label { font-size: 0.7rem; color: var(--tf-text-muted); }
+  .center-amount { font-size: 1.1rem; font-weight: 700; color: var(--tf-text-secondary); }
+  .center-label { font-size: 0.95rem; color: var(--tf-text-muted); }
   .daily-limit-stats { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; align-items: center; justify-self: center; }
   .stat-row { display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; }
   .stat-label { font-size: 0.65rem; color: var(--tf-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
@@ -666,22 +666,22 @@
   .stat-value.negative { color: var(--tf-negative); }
   .stat-percent { font-size: 1.3rem; font-weight: 800; color: inherit; margin: 0 0.4rem 0 0; line-height: 1; }
   .stat-currency { font-size: 0.85rem; font-weight: 600; color: var(--tf-text-muted); margin-left: 0.25rem; }
-  .wins-gauge { width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; justify-self: center; position: relative; }
+  .wins-gauge { width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; justify-self: end; position: relative; grid-column: 3; }
   .wins-gauge-svg { width: 100%; height: 100%; }
   .wins-gauge-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-  .wins-percent-text { font-size: 1.5rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
-  .wins-amount-text { font-size: 1rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
-  .wins-label { font-size: 0.7rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
-  .reset-note { margin-top: 0.5rem; font-size: 1rem; color: var(--tf-text-muted); grid-column: 1 / -1; justify-self: center; text-align: center; font-weight: 700; }
+  .wins-percent-text { font-size: 1.8rem; font-weight: 800; fill: var(--tf-positive); color: var(--tf-positive); }
+  .wins-amount-text { font-size: 1.1rem; font-weight: 700; fill: var(--tf-text-secondary); color: var(--tf-text-secondary); }
+  .wins-label { font-size: 0.95rem; fill: var(--tf-text-muted); color: var(--tf-text-muted); }
+  .reset-note { margin-top: 0.1rem; font-size: 1rem; color: var(--tf-text-muted); grid-column: 1 / -1; justify-self: center; text-align: center; font-weight: 700; }
 
-  .pnl-chip-sidebar { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.06rem; padding: 0; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; align-self: start; justify-content: flex-start; }
+  .pnl-chip-sidebar { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 0.35rem; padding: 0; background: transparent; border-radius: 0; border: none; width: 100%; height: fit-content; box-shadow: none; align-self: start; justify-content: flex-start; }
   .pnl-chip-sidebar .sidebar-label { display: none; }
-  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.06rem; width: 100%; }
-  .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.06rem; align-items: stretch; width: 100%; }
-  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.5rem; padding: 0.05rem 0.1rem; font-weight: 700; height: 12px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.06rem; width: 100%; }
-  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.06rem; align-items: stretch; width: 100%; }
-  .pnl-chip-sidebar .example-chips .pnl-chip.mini { font-size: 0.5rem; padding: 0.05rem 0.1rem; height: 12px; width: 100%; min-width: 0; }
+  .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.35rem; width: 100%; }
+  .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; width: 100%; }
+  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.95rem; padding: 0.15rem 0.3rem; font-weight: 700; height: 20px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.35rem; width: 100%; }
+  .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; width: 100%; }
+  .pnl-chip-sidebar .example-chips .pnl-chip.mini { font-size: 0.95rem; padding: 0.15rem 0.3rem; height: 20px; width: 100%; min-width: 0; }
 
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
@@ -3297,7 +3297,7 @@ table.simple-table {
   &.profitability-winrate-card {
     grid-column: span 2;
     padding: 0.45rem 0.55rem;
-    min-height: 200px;
+   
 
     .combined-metric-header {
       display: flex;

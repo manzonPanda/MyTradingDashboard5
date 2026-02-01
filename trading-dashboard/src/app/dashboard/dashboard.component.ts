@@ -965,11 +965,11 @@ mt5AccountInfo: AccountSettings = {
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
   getDailyLimitRingCircumference(): number { return 2 * Math.PI * 44; }
 
-  // Right circle (Max 2%) – map 0–2% to full circle
+  // Right circle (Max 4%) – map 0–4% to full circle
   getRightWinRingCircumference(): number { return 2 * Math.PI * 44; }
   getRightWinRingDash(): string {
     const c = this.getRightWinRingCircumference();
-    const cap = 2; // 0–2% mapped to full circle
+    const cap = 4; // 0–4% mapped to full circle
     const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
     const arc = fraction * c;
     return `${arc} ${Math.max(0, c - arc)}`;
@@ -5628,7 +5628,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   getSignedPercentage(row: Table): string {
     const pct = this.getNetCommissionGrossPercentage(row);
-    if (!isFinite(pct) || isNaN(pct)) return '0.0%';
+    if (!isFinite(pct) || isNaN(pct)) return '0.00%';
     const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
     return `${sign}${pct.toFixed(2)}%`;
   }
