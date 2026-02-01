@@ -4885,11 +4885,50 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   
   async getLocalTrades(): Promise<any[]> {
     try {
+      console.log('📥 Attempting to load test data from assets/testDataTrades.json');
       const data = await firstValueFrom(this.http.get<any[]>('assets/testDataTrades.json'));
+      console.log('✅ Test data loaded successfully:', data?.length ?? 0, 'trades');
       return data || [];
     } catch (error) {
-      console.error('Failed to load test data:', error);
-      return [];
+      console.error('❌ Failed to load test data from file:', error);
+      console.log('🔨 Creating fallback test data...');
+      // Fallback test data in case file loading fails
+      return [
+        {
+          commission: -4,
+          entry_price: 215.19,
+          exit_price: 946,
+          position_id: 100,
+          profit: 1945.6,
+          reward_risk_ratio: "2.5",
+          risk_usd: 23.97,
+          sl: 310,
+          status: "closed",
+          symbol: "GBPUSD",
+          time_open: "2025-07-23 13:26:37",
+          time_close: "2025-07-23 13:46:37",
+          tp: 1.31484,
+          trade_type: 1,
+          volume: "0.47"
+        },
+        {
+          commission: -4,
+          entry_price: 681.32,
+          exit_price: 791,
+          position_id: 102,
+          profit: -580.8,
+          reward_risk_ratio: "1.2",
+          risk_usd: 23.97,
+          sl: 639,
+          status: "closed",
+          symbol: "GBPUSD",
+          time_open: "2025-07-24 12:35:06",
+          time_close: "2025-07-24 12:45:28",
+          tp: 1.31484,
+          trade_type: 1,
+          volume: "0.47"
+        }
+      ];
     }
   }
 
