@@ -4821,21 +4821,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       // Try live API
       console.log('📡 Attempting to fetch from MT5 API:', this.BACKEND_URL_MT5);
-      response = await this.getMt5API();
-      console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
-      if (!response || response.length === 0) {
-        console.warn('⚠️ MT5 API returned no data, loading local JSON...');
-        response = await this.getLocalTrades();
-        console.log('📁 Local trades loaded:', response?.length ?? 0, 'trades');
-      }
-    } catch (error) {
-      console.error('❌ Error fetching MT5 API, using local JSON fallback:', error);
       try {
-        response = await this.getLocalTrades();
-        console.log('📁 Local trades loaded as fallback:', response?.length ?? 0, 'trades');
-      } catch (localError) {
-        console.error('❌ Failed to load local JSON fallback:', localError);
-        response = []; // Ensure response is always an array
+        response = await this.getMt5API();
+        console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
+      } catch (apiError) {
+        console.error('❌ Error fetching MT5 API:', apiError);
+      }
+
+      // If API returned no data or failed, use fallback
+      if (!response || response.length === 0) {
+        console.warn('⚠️ Using fallback data source...');
+        try {
+          response = await this.getLocalTrades();
+          console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
+        } catch (localError) {
+          console.error('❌ Failed to load fallback data:', localError);
+          response = []; // Ensure response is always an array
+        }
       }
     } finally {
       this.isLoadingMT5Data = false;
