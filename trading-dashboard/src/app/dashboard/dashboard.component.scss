@@ -678,7 +678,7 @@
   .pnl-chip-sidebar .sidebar-label { display: none; }
   .pnl-chip-sidebar .pnl-chip-header-grid { display: flex; flex-direction: column; gap: 0.15rem; }
   .pnl-chip-sidebar .chip-row { display: flex; flex-direction: column; gap: 0.15rem; }
-  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.65rem; padding: 0.12rem 0.25rem; font-weight: 700; height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: yellow !important; border: 1px solid red !important; }
+  .pnl-chip-sidebar .pnl-chip.mini { font-size: 0.55rem; padding: 0.1rem 0.2rem; font-weight: 700; min-height: 16px; }
   .pnl-chip-sidebar .example-chips { display: flex; flex-direction: column; gap: 0.15rem; }
   .pnl-chip-sidebar .example-chips .chip-row { display: flex; flex-direction: column; gap: 0.15rem; }
 
