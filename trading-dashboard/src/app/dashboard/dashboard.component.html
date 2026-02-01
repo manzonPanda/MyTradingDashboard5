@@ -604,16 +604,6 @@
         <div class="metric-card daily-limit-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Day Trades</h3>
-            <div class="pnl-chip-header-grid" *ngIf="getRecentSessionTradeChunks().length">
-              <div class="chip-row" *ngFor="let row of getRecentSessionTradeChunks()">
-                <div class="pnl-chip mini"
-                     *ngFor="let trade of row"
-                     [ngClass]="{ 'p': isPositiveValue(getNetFromCommissionPlusGross(trade)), 'n': isNegativeValue(getNetFromCommissionPlusGross(trade)), 'z': getNetFromCommissionPlusGross(trade) === 0 }"
-                     [title]="(trade.symbol || 'Trade') + ' • ' + (getNetFromCommissionPlusGross(trade) | currency:'USD':'symbol':'1.2-2')">
-                  {{ getSignedPercentage(trade) }}
-                </div>
-              </div>
-            </div>
             <mat-icon class="metric-icon">calendar_today</mat-icon>
           </div>
           <div *ngIf="isLoadingMetrics" class="metric-loading">
@@ -641,7 +631,7 @@
                   <div class="center-label">Total</div>
                 </div>
               </div>
-              <div class="wins-gauge" aria-label="Win Rate">
+              <div class="wins-gauge" aria-label="Max 2% Gauge">
                 <svg viewBox="0 0 100 100" class="wins-gauge-svg">
                   <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
                   <circle cx="50" cy="50" r="44" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round"
@@ -650,10 +640,37 @@
                 <div class="wins-gauge-center">
                   <div class="wins-percent-text">{{ dailyWinsPercent | number:'1.2-2' }}%</div>
                   <div class="wins-amount-text">{{ dailyWinsAmount | currency:'USD':'symbol':'1.0-0' }}</div>
-                  <div class="wins-label">Pyramiding</div>
+                  <div class="wins-label">Max 2%</div>
                 </div>
               </div>
               <div class="reset-note">Resets in {{ resetCountdown }}</div>
+              <div class="pnl-chip-sidebar">
+                <div class="sidebar-label">Recent Trades</div>
+                <div class="pnl-chip-header-grid" *ngIf="getRecentSessionTradeChunks().length">
+                  <div class="chip-row" *ngFor="let row of getRecentSessionTradeChunks()">
+                    <div class="pnl-chip mini"
+                         *ngFor="let trade of row"
+                         [ngClass]="{ 'p': isPositiveValue(getNetFromCommissionPlusGross(trade)), 'n': isNegativeValue(getNetFromCommissionPlusGross(trade)), 'z': getNetFromCommissionPlusGross(trade) === 0 }"
+                         [title]="(trade.symbol || 'Trade') + ' • ' + (getNetFromCommissionPlusGross(trade) | currency:'USD':'symbol':'1.2-2')">
+                      {{ getSignedPercentage(trade) }}
+                    </div>
+                  </div>
+                </div>
+                <!-- Example placeholder when no trades -->
+                <div *ngIf="!getRecentSessionTradeChunks().length" class="example-chips">
+                  <div class="chip-row">
+                    <div class="pnl-chip mini p" title="EURUSD • +$45.50">+0.5%</div>
+                    <div class="pnl-chip mini p" title="GBPUSD • +$32.00">+0.4%</div>
+                  </div>
+                  <div class="chip-row">
+                    <div class="pnl-chip mini n" title="USDJPY • -$28.30">-0.3%</div>
+                    <div class="pnl-chip mini p" title="AUDUSD • +$15.75">+0.2%</div>
+                  </div>
+                  <div class="chip-row">
+                    <div class="pnl-chip mini n" title="NZDUSD • -$12.00">-0.1%</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
