@@ -4871,9 +4871,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
   async getLocalTrades(): Promise<any[]> {
-    return this.http.get<any[]>('assets/testDataTrades.json')
-      .toPromise()
-      .then(res => res || []);
+    try {
+      const data = await firstValueFrom(this.http.get<any[]>('assets/testDataTrades.json'));
+      return data || [];
+    } catch (error) {
+      console.error('Failed to load test data:', error);
+      return [];
+    }
   }
 
 
