@@ -1166,6 +1166,9 @@ async ngOnInit() {
     // Load saved trading settings
     await this.loadTradingSettings();
 
+    // Load MT5 data immediately
+    await this.loadMT5Data();
+
     const socket = io(`${this.BACKEND_URL_MT5}/`,{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
@@ -1173,10 +1176,8 @@ async ngOnInit() {
 
     socket.on("connect", async () => {
       console.warn("✅ Connected to WebSocket server");
-      // Set metrics loading to false after connection
-      this.isLoadingMetrics = false;
-      this.cdr.markForCheck();
-      await this.loadMT5Data(); // Load MT5 trades
+      // Reload MT5 data for live updates
+      await this.loadMT5Data();
     });
 
     socket.on("account_info", (data) => {
@@ -1188,8 +1189,7 @@ async ngOnInit() {
 
     socket.on("connect_error", (err: any) => {
       console.warn("❌ Socket connection error:", err);
-      // Load MT5 data even if socket fails
-      this.loadMT5Data();
+      // Data already loaded at startup
     });
 
     socket.on("trade_opened", (data: any) => {
