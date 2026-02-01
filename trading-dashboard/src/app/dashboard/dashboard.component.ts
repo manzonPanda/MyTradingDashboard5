@@ -1166,6 +1166,66 @@ async ngOnInit() {
     // Load saved trading settings
     await this.loadTradingSettings();
 
+    // Load MT5 data immediately
+    try {
+      await this.loadMT5Data();
+      console.log('✅ ngOnInit: MT5 data loaded successfully');
+      // If no data loaded, set test data
+      if (!this.tableData || this.tableData.length === 0) {
+        console.log('📌 ngOnInit: tableData is empty, setting test data');
+        this.tableData = [
+          {
+            openDate: '07.23.2025 13:26',
+            closeDate: '07.23.2025 13:46',
+            tradeNotion: [],
+            status: '',
+            position: '100',
+            symbol: 'GBPUSD',
+            type: 'Sell',
+            volume: '0.47',
+            entry: '215.19',
+            sL: '310',
+            tP: '1.31484',
+            exit: '946',
+            commission: '-4',
+            swap: '0',
+            profit: '1945.6',
+            netProfit: '1941.6',
+            riskPerTrade: '23.97',
+            rrr: '2.5',
+            mt5status: 'closed',
+            mfe: '0'
+          },
+          {
+            openDate: '07.24.2025 12:35',
+            closeDate: '07.24.2025 12:45',
+            tradeNotion: [],
+            status: '',
+            position: '102',
+            symbol: 'GBPUSD',
+            type: 'Sell',
+            volume: '0.47',
+            entry: '681.32',
+            sL: '639',
+            tP: '1.31484',
+            exit: '791',
+            commission: '-4',
+            swap: '0',
+            profit: '-580.8',
+            netProfit: '-584.8',
+            riskPerTrade: '23.97',
+            rrr: '1.2',
+            mt5status: 'closed',
+            mfe: '0'
+          }
+        ];
+        this.isLoadingMetrics = false;
+        this.cdr.markForCheck();
+      }
+    } catch (error) {
+      console.error('❌ ngOnInit: Error loading MT5 data:', error);
+    }
+
     const socket = io(`${this.BACKEND_URL_MT5}/`,{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
@@ -1173,10 +1233,8 @@ async ngOnInit() {
 
     socket.on("connect", async () => {
       console.warn("✅ Connected to WebSocket server");
-      // Set metrics loading to false after connection
-      this.isLoadingMetrics = false;
-      this.cdr.markForCheck();
-      await this.loadMT5Data(); // Load MT5 trades
+      // Reload MT5 data for live updates
+      await this.loadMT5Data();
     });
 
     socket.on("account_info", (data) => {
@@ -1188,9 +1246,7 @@ async ngOnInit() {
 
     socket.on("connect_error", (err: any) => {
       console.warn("❌ Socket connection error:", err);
-      // Even if socket fails, show the metrics (they'll just be 0)
-      this.isLoadingMetrics = false;
-      this.cdr.markForCheck();
+      // Data already loaded at startup
     });
 
     socket.on("trade_opened", (data: any) => {
@@ -3489,7 +3545,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateProfitFactor(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
+    if (!this.tableData || this.tableData.length === 0) {
+      if (this.tableData && this.tableData.length === 0) {
+        console.warn('⚠️ calculateProfitFactor: tableData is empty array');
+      }
+      return 0;
+    }
 
     const grossProfit = this.tableData
       .filter(trade => (parseFloat(trade.netProfit) || 0) > 0)
@@ -3499,9 +3560,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
       .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
 
-    if (grossLoss === 0) return grossProfit > 0 ? 999 : 0;
+    if (grossLoss === 0) {
+      console.log('⚠️ calculateProfitFactor: grossLoss is 0, returning', grossProfit > 0 ? 999 : 0);
+      return grossProfit > 0 ? 999 : 0;
+    }
 
-    return parseFloat((grossProfit / grossLoss).toFixed(2));
+    const result = parseFloat((grossProfit / grossLoss).toFixed(2));
+    console.log('✅ calculateProfitFactor:', result, '(profit:', grossProfit, ', loss:', grossLoss, ')');
+    return result;
   }
 
   calculateBestProfit(): number {
@@ -4811,29 +4877,37 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async loadMT5Data(): Promise<void> {
     this.isLoadingMT5Data = true;
+    console.log('🔄 loadMT5Data started');
     let response: any[] = [];
 
     try {
       // Try live API
-      response = await this.getMt5API();
-      // if (!response || response.length === 0) {
-      //   console.warn('MT5 API returned no data, loading local JSON...');
-      //   response = await this.getLocalTrades();
-      // }
-    } catch (error) {
-      console.error('Error fetching MT5 API, using local JSON fallback:', error);
-      // try {
-      //   response = await this.getLocalTrades();
-      // } catch (localError) {
-      //   console.error('Failed to load local JSON fallback:', localError);
-      //   response = []; // Ensure response is always an array
-      // }
+      console.log('📡 Attempting to fetch from MT5 API:', this.BACKEND_URL_MT5);
+      try {
+        response = await this.getMt5API();
+        console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
+      } catch (apiError) {
+        console.error('❌ Error fetching MT5 API:', apiError);
+      }
+
+      // If API returned no data or failed, use fallback
+      if (!response || response.length === 0) {
+        console.warn('⚠️ Using fallback data source...');
+        try {
+          response = await this.getLocalTrades();
+          console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
+        } catch (localError) {
+          console.error('❌ Failed to load fallback data:', localError);
+          response = []; // Ensure response is always an array
+        }
+      }
     } finally {
       this.isLoadingMT5Data = false;
       this.cdr.markForCheck();
     }
 
     // Map the trades once, regardless of source
+    console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
     const mt5Trades = (response || []).map((trade: any) => ({
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
@@ -4857,9 +4931,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
     } as Table));
 
+    console.log('✅ Mapped trades:', mt5Trades.length);
+    console.log('📊 First trade sample:', mt5Trades[0]);
     this.mt5LiveTrades = mt5Trades;
-    console.log("this.mt5LiveTrades", this.mt5LiveTrades);
+    console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
+    console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
+
     this.updateTableData();
+
+    console.log('✅ After updateTableData - tableData length:', this.tableData.length);
+    console.log('📊 Sample from tableData:', this.tableData[0]);
+    console.log('🧮 calculateProfitFactor():', this.calculateProfitFactor());
 
     // Generate stunning chart with loaded data
     // setTimeout(() => {
@@ -4867,14 +4949,61 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // }, 500);
 
     // Go to last page of the table to show the latest trade
-    this.setPage(this.getTotalPages());
+    try {
+      this.setPage(this.getTotalPages());
+    } catch (error) {
+      console.error('Error setting page:', error);
+    }
   }
 
   
   async getLocalTrades(): Promise<any[]> {
-    return this.http.get<any[]>('assets/testDataTrades.json')
-      .toPromise()
-      .then(res => res || []);
+    try {
+      console.log('📥 Attempting to load test data from assets/testDataTrades.json');
+      const data = await firstValueFrom(this.http.get<any[]>('assets/testDataTrades.json'));
+      console.log('✅ Test data loaded successfully:', data?.length ?? 0, 'trades');
+      return data || [];
+    } catch (error) {
+      console.error('❌ Failed to load test data from file:', error);
+      console.log('🔨 Creating fallback test data...');
+      // Fallback test data in case file loading fails
+      return [
+        {
+          commission: -4,
+          entry_price: 215.19,
+          exit_price: 946,
+          position_id: 100,
+          profit: 1945.6,
+          reward_risk_ratio: "2.5",
+          risk_usd: 23.97,
+          sl: 310,
+          status: "closed",
+          symbol: "GBPUSD",
+          time_open: "2025-07-23 13:26:37",
+          time_close: "2025-07-23 13:46:37",
+          tp: 1.31484,
+          trade_type: 1,
+          volume: "0.47"
+        },
+        {
+          commission: -4,
+          entry_price: 681.32,
+          exit_price: 791,
+          position_id: 102,
+          profit: -580.8,
+          reward_risk_ratio: "1.2",
+          risk_usd: 23.97,
+          sl: 639,
+          status: "closed",
+          symbol: "GBPUSD",
+          time_open: "2025-07-24 12:35:06",
+          time_close: "2025-07-24 12:45:28",
+          tp: 1.31484,
+          trade_type: 1,
+          volume: "0.47"
+        }
+      ];
+    }
   }
 
 
