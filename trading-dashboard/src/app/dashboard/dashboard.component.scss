@@ -648,7 +648,7 @@
   .pnl-chip.p { color: var(--tf-positive); border-left: 3px solid var(--tf-positive); }
   .pnl-chip.n { color: var(--tf-negative); border-left: 3px solid var(--tf-negative); }
   .pnl-chip.z { color: var(--tf-text-muted); border-left: 3px solid var(--tf-border-secondary); }
-  .daily-limit-layout { display: grid; grid-template-columns: 60px 100px 100px 1fr 100px; gap: 0.5rem; align-items: start; justify-items: center; width: 100%; }
+  .daily-limit-layout { display: grid; grid-template-columns: 60px 1fr 100px; gap: 0.5rem; align-items: start; justify-items: center; width: 100%; }
   .daily-limit-chart { position: relative; width: 100px; height: 100px; }
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
   .center-percent { font-weight: 800; font-size: 1.2rem; color: var(--tf-text-primary); }
