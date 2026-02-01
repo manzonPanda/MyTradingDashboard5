@@ -392,10 +392,15 @@
         }
 
         .day-win-loss-amounts {
+          width: 100%;
+          overflow: hidden;
+
           .amounts-row {
             display: flex;
             gap: 0.25rem;
             justify-content: space-between;
+            width: 100%;
+            overflow: hidden;
           }
 
           .win-amount, .loss-amount {
