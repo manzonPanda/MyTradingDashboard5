@@ -4810,21 +4810,26 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async loadMT5Data(): Promise<void> {
     this.isLoadingMT5Data = true;
+    console.log('🔄 loadMT5Data started');
     let response: any[] = [];
 
     try {
       // Try live API
+      console.log('📡 Attempting to fetch from MT5 API:', this.BACKEND_URL_MT5);
       response = await this.getMt5API();
+      console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
       if (!response || response.length === 0) {
-        console.warn('MT5 API returned no data, loading local JSON...');
+        console.warn('⚠️ MT5 API returned no data, loading local JSON...');
         response = await this.getLocalTrades();
+        console.log('📁 Local trades loaded:', response?.length ?? 0, 'trades');
       }
     } catch (error) {
-      console.error('Error fetching MT5 API, using local JSON fallback:', error);
+      console.error('❌ Error fetching MT5 API, using local JSON fallback:', error);
       try {
         response = await this.getLocalTrades();
+        console.log('📁 Local trades loaded as fallback:', response?.length ?? 0, 'trades');
       } catch (localError) {
-        console.error('Failed to load local JSON fallback:', localError);
+        console.error('❌ Failed to load local JSON fallback:', localError);
         response = []; // Ensure response is always an array
       }
     } finally {
