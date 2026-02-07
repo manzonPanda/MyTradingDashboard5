@@ -91,13 +91,18 @@ app-root {
   }
 
   .mat-mdc-button {
-    color: #ffffff !important;
-    text-decoration: underline;
-    font-weight: 600 !important;
-    margin-left: 16px;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    color: #06b6d4 !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    margin-left: 16px !important;
+    padding: 6px 16px !important;
+    border-radius: 4px !important;
+    text-decoration: none !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.15) !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
     }
   }
 }
