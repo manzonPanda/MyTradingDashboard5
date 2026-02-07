@@ -5742,17 +5742,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Test method for news notification
-  testSoundNotification(): void {
-    try {
-      console.log('🔔 Testing news notification...');
-      this.showNewsNotification('Test News Event', 5);
-      console.log('✅ Test notification shown successfully');
-    } catch (error) {
-      console.error('❌ Failed to show test notification:', error);
-    }
-  }
-
   // Recent Trades PnL tiles helpers
   getRecentTrades(limit: number = 10): Table[] {
     const items = Array.isArray(this.tableData) ? [...this.tableData] : [];
