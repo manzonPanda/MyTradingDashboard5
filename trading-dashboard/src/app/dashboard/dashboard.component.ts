@@ -138,6 +138,7 @@ interface NotionPerformanceData {
     ReactiveFormsModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
