@@ -9211,33 +9211,3 @@ table.simple-table {
   position: relative;
   width: 100%;
 }
-
-// News notification snackbar styling
-::ng-deep .news-notification-snackbar {
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;
-  color: white !important;
-  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.4) !important;
-  border-left: 4px solid #00d4ff !important;
-  min-width: 350px !important;
-  padding: 16px 24px !important;
-  border-radius: 8px !important;
-  font-weight: 500 !important;
-  white-space: pre-wrap !important;
-  line-height: 1.5 !important;
-
-  .mdc-snackbar__label {
-    font-size: 14px;
-    letter-spacing: 0.5px;
-  }
-
-  .mat-mdc-button {
-    color: #ffffff !important;
-    text-decoration: underline;
-    font-weight: 600 !important;
-    margin-left: 16px;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.15) !important;
-    }
-  }
-}
