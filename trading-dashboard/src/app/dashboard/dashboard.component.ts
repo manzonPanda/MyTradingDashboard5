@@ -716,7 +716,7 @@ mt5AccountInfo: AccountSettings = {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
