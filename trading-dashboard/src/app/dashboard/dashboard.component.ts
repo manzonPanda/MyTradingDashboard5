@@ -23,6 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatNativeDateModule } from '@angular/material/core'; // for default JS Date support
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
@@ -137,6 +138,7 @@ interface NotionPerformanceData {
     ReactiveFormsModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     BaseChartDirective
   ],
   templateUrl: './dashboard.component.html',
@@ -714,7 +716,7 @@ mt5AccountInfo: AccountSettings = {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
@@ -5638,7 +5640,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Play concise alert sound for upcoming news
+  private activeNotificationSoundInterval: any = null;
+
+  // Play repeating alert sound for news notification
   private playAlertSound(): void {
     try {
       const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
@@ -5649,7 +5653,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, time);
         gain.gain.setValueAtTime(0.001, time);
-        gain.gain.exponentialRampToValueAtTime(0.2, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.8, time + 0.01); // Increased from 0.2 to 0.8 (4x louder)
         gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
         osc.connect(gain).connect(ctx.destination);
         osc.start(time);
@@ -5663,7 +5667,55 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Open the news modal with the grouped events and play alert
+  // Show news notification with dismissible toast and repeating sound
+  private showNewsNotification(title: string, minutesBefore: number): void {
+    try {
+      const message = `📰 ${title}\n⏰ Coming in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''}`;
+
+      // Stop any existing notification sound
+      if (this.activeNotificationSoundInterval) {
+        clearInterval(this.activeNotificationSoundInterval);
+      }
+
+      // Play initial sound immediately
+      this.playAlertSound();
+
+      // Set up repeating sound every 3 seconds
+      this.activeNotificationSoundInterval = setInterval(() => {
+        this.playAlertSound();
+      }, 3000);
+
+      const snackBarRef = this.snackBar.open(message, 'Dismiss', {
+        duration: 0, // Keep open until user dismisses
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['news-notification-snackbar']
+      });
+
+      // Stop sound when user dismisses notification
+      snackBarRef.onAction().subscribe(() => {
+        if (this.activeNotificationSoundInterval) {
+          clearInterval(this.activeNotificationSoundInterval);
+          this.activeNotificationSoundInterval = null;
+        }
+        console.log('🔔 Notification dismissed');
+      });
+
+      // Also stop sound if notification auto-closes (just in case)
+      snackBarRef.afterDismissed().subscribe(() => {
+        if (this.activeNotificationSoundInterval) {
+          clearInterval(this.activeNotificationSoundInterval);
+          this.activeNotificationSoundInterval = null;
+        }
+      });
+
+      console.log(`🔔 News notification shown with repeating sound: ${title}`);
+    } catch (e) {
+      console.warn('Failed to show notification:', e);
+    }
+  }
+
+  // Open the news modal with the grouped events and show notification
   private handleNewsUiReminder(events: any[], minutesBefore: number): void {
     try {
       if (!events || events.length === 0) return;
@@ -5681,7 +5733,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.selectedTimeGroup = timeGroup;
       this.showNewsModal = true;
       this.cdr.detectChanges();
-      this.playAlertSound();
+
+      // Show dismissible notification instead of sound
+      const title = events.length > 1 ? `${events.length} News Events` : events[0].event;
+      this.showNewsNotification(title, minutesBefore);
     } catch (err) {
       console.warn('Failed to handle UI reminder:', err);
     }

@@ -19,7 +19,7 @@ interface ReminderTimeout {
 })
 export class NewsReminderService {
   private reminderTimeouts: ReminderTimeout[] = [];
-  private reminderIntervals = [180, 60, 30, 10]; // minutes before news (3h, 1h, 30m, 10m)
+  private reminderIntervals = [5, 3, 1]; // minutes before news (5min, 3min, 1min) - sound notifications
   private sendNotificationCallback: ((title: string, body: string) => void) | null = null;
   private uiReminderCallback: ((events: NewsEvent[], minutesBefore: number) => void) | null = null;
 
