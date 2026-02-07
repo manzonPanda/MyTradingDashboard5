@@ -5658,7 +5658,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Open the news modal with the grouped events and play alert
+  // Open the news modal with the grouped events and show notification
   private handleNewsUiReminder(events: any[], minutesBefore: number): void {
     try {
       if (!events || events.length === 0) return;
@@ -5676,7 +5676,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.selectedTimeGroup = timeGroup;
       this.showNewsModal = true;
       this.cdr.detectChanges();
-      this.playAlertSound();
+
+      // Show dismissible notification instead of sound
+      const title = events.length > 1 ? `${events.length} News Events` : events[0].event;
+      this.showNewsNotification(title, minutesBefore);
     } catch (err) {
       console.warn('Failed to handle UI reminder:', err);
     }
