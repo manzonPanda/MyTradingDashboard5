@@ -5653,7 +5653,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, time);
         gain.gain.setValueAtTime(0.001, time);
-        gain.gain.exponentialRampToValueAtTime(0.2, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.8, time + 0.01); // Increased from 0.2 to 0.8 (4x louder)
         gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
         osc.connect(gain).connect(ctx.destination);
         osc.start(time);
