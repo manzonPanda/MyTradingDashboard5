@@ -5685,14 +5685,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Test method for news sound notification
+  // Test method for news notification
   testSoundNotification(): void {
     try {
-      console.log('🔊 Testing news sound notification...');
-      this.playAlertSound();
-      console.log('✅ Test sound played successfully');
+      console.log('🔔 Testing news notification...');
+      this.showNewsNotification('Test News Event', 5);
+      console.log('✅ Test notification shown successfully');
     } catch (error) {
-      console.error('❌ Failed to play test sound:', error);
+      console.error('❌ Failed to show test notification:', error);
     }
   }
 
