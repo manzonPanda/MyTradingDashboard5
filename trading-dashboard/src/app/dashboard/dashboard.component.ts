@@ -5640,19 +5640,76 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // Show news notification with dismissible toast
+  private activeNotificationSoundInterval: any = null;
+
+  // Play repeating alert sound for news notification
+  private playAlertSound(): void {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const beep = (time: number, freq: number, duration: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.001, time);
+        gain.gain.exponentialRampToValueAtTime(0.2, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + duration);
+      };
+      const start = ctx.currentTime + 0.01;
+      beep(start, 880, 0.12);
+      beep(start + 0.2, 660, 0.12);
+    } catch (e) {
+      console.warn('Audio context unavailable for alert sound');
+    }
+  }
+
+  // Show news notification with dismissible toast and repeating sound
   private showNewsNotification(title: string, minutesBefore: number): void {
     try {
       const message = `📰 ${title}\n⏰ Coming in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''}`;
 
-      this.snackBar.open(message, 'Dismiss', {
+      // Stop any existing notification sound
+      if (this.activeNotificationSoundInterval) {
+        clearInterval(this.activeNotificationSoundInterval);
+      }
+
+      // Play initial sound immediately
+      this.playAlertSound();
+
+      // Set up repeating sound every 3 seconds
+      this.activeNotificationSoundInterval = setInterval(() => {
+        this.playAlertSound();
+      }, 3000);
+
+      const snackBarRef = this.snackBar.open(message, 'Dismiss', {
         duration: 0, // Keep open until user dismisses
         horizontalPosition: 'end',
         verticalPosition: 'top',
         panelClass: ['news-notification-snackbar']
       });
 
-      console.log(`🔔 News notification shown: ${title}`);
+      // Stop sound when user dismisses notification
+      snackBarRef.onAction().subscribe(() => {
+        if (this.activeNotificationSoundInterval) {
+          clearInterval(this.activeNotificationSoundInterval);
+          this.activeNotificationSoundInterval = null;
+        }
+        console.log('🔔 Notification dismissed');
+      });
+
+      // Also stop sound if notification auto-closes (just in case)
+      snackBarRef.afterDismissed().subscribe(() => {
+        if (this.activeNotificationSoundInterval) {
+          clearInterval(this.activeNotificationSoundInterval);
+          this.activeNotificationSoundInterval = null;
+        }
+      });
+
+      console.log(`🔔 News notification shown with repeating sound: ${title}`);
     } catch (e) {
       console.warn('Failed to show notification:', e);
     }
