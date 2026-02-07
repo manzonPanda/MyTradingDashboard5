@@ -84,6 +84,7 @@ app-root {
   font-weight: 500 !important;
   white-space: pre-wrap !important;
   line-height: 1.5 !important;
+  animation: newsNotificationPulse 1.5s ease-in-out infinite !important;
 
   .mdc-snackbar__label {
     font-size: 14px;
