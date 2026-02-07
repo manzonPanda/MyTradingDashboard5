@@ -5647,7 +5647,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       this.snackBar.open(message, 'Dismiss', {
         duration: 0, // Keep open until user dismisses
-        horizontalPosition: 'top',
+        horizontalPosition: 'end',
         verticalPosition: 'top',
         panelClass: ['news-notification-snackbar']
       });
