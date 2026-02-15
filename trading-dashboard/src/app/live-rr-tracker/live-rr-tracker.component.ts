@@ -38,50 +38,53 @@ interface Table {
             <div class="floating-orb orb-3"></div>
           </div>
 
-          <!-- Main Icon -->
-          <div class="empty-state-icon">
-            <div class="icon-wrapper">
-              <mat-icon class="main-icon">trending_up</mat-icon>
-              <div class="icon-pulse-ring"></div>
-            </div>
-          </div>
+          <!-- Two Column Layout -->
+          <div class="two-column-layout">
+            <!-- Left Column: Icon and Title -->
+            <div class="column left-column">
+              <!-- Main Icon -->
+              <div class="empty-state-icon">
+                <div class="icon-wrapper">
+                  <mat-icon class="main-icon">trending_up</mat-icon>
+                  <div class="icon-pulse-ring"></div>
+                </div>
+              </div>
 
-          <!-- Title and Description -->
-          <div class="empty-state-text">
-            <h2 class="empty-title">Ready to Trade?</h2>
-            <p class="empty-description">
-              No live trades at the moment. Once you open a trade, your real-time Risk-Reward ratio and gains will appear here in real-time.
-            </p>
-          </div>
-
-          <!-- Quick Stats Preview -->
-          <div class="preview-stats">
-            <div class="stat-badge">
-              <mat-icon>show_chart</mat-icon>
-              <span>Real-time RR Tracking</span>
+              <!-- Title -->
+              <div class="empty-state-text">
+                <h2 class="empty-title">Ready to Trade?</h2>
+              </div>
             </div>
-            <div class="stat-badge">
-              <mat-icon>trending_up</mat-icon>
-              <span>Live P&L Updates</span>
-            </div>
-            <div class="stat-badge">
-              <mat-icon>speed</mat-icon>
-              <span>Instant Updates</span>
-            </div>
-          </div>
 
-          <!-- Motivational Message -->
-          <div class="motivational-message">
-            <p class="quote">
-              <mat-icon class="quote-icon">lightbulb</mat-icon>
-              Focus on quality trades with positive expectancy
-            </p>
-          </div>
+            <!-- Right Column: Description and Features -->
+            <div class="column right-column">
+              <!-- Description -->
+              <p class="empty-description">
+                No live trades at the moment. Once you open a trade, your real-time Risk-Reward ratio and gains will appear here.
+              </p>
 
-          <!-- Connection Status -->
-          <div class="connection-indicator">
-            <span class="status-dot"></span>
-            <span class="status-text">Waiting for live trades...</span>
+              <!-- Quick Stats Preview -->
+              <div class="preview-stats">
+                <div class="stat-badge">
+                  <mat-icon>show_chart</mat-icon>
+                  <span>Real-time RR</span>
+                </div>
+                <div class="stat-badge">
+                  <mat-icon>trending_up</mat-icon>
+                  <span>Live P&L</span>
+                </div>
+                <div class="stat-badge">
+                  <mat-icon>speed</mat-icon>
+                  <span>Instant</span>
+                </div>
+              </div>
+
+              <!-- Connection Status -->
+              <div class="connection-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Waiting for trades...</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
