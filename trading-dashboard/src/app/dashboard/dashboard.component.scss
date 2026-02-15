@@ -9205,7 +9205,15 @@ table.simple-table {
   }
 }
 
-// Live RR Tracker Section
+// Live RR Tracker Widget - Compact Mode (Below Account Calculator)
+.live-rr-widget-compact {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--tf-border-primary);
+  width: 100%;
+}
+
+// Original full-width section styles (if needed elsewhere)
 .live-rr-section {
   padding: 1.5rem;
   margin-bottom: 1.5rem;

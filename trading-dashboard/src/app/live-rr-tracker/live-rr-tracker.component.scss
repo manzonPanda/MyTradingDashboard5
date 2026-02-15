@@ -87,6 +87,10 @@
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: center;
+
+  @media (max-width: 1024px) {
+    margin-bottom: 1rem;
+  }
 }
 
 .icon-wrapper {
@@ -96,6 +100,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 1024px) {
+    width: 70px;
+    height: 70px;
+  }
 }
 
 .main-icon {
@@ -104,6 +113,12 @@
   height: 56px;
   color: var(--tf-positive);
   animation: icon-float 3s ease-in-out infinite;
+
+  @media (max-width: 1024px) {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
 }
 
 @keyframes icon-float {
@@ -127,6 +142,11 @@
   opacity: 0;
   animation: pulse-ring 2s ease-out infinite;
 
+  @media (max-width: 1024px) {
+    width: 70px;
+    height: 70px;
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -139,6 +159,11 @@
     border: 1px solid var(--tf-positive);
     opacity: 0;
     animation: pulse-ring-inner 2s ease-out infinite;
+
+    @media (max-width: 1024px) {
+      width: 55px;
+      height: 55px;
+    }
   }
 }
 
@@ -155,6 +180,19 @@
   }
 }
 
+@keyframes pulse-ring-small {
+  0% {
+    width: 70px;
+    height: 70px;
+    opacity: 1;
+  }
+  100% {
+    width: 110px;
+    height: 110px;
+    opacity: 0;
+  }
+}
+
 @keyframes pulse-ring-inner {
   0% {
     width: 80px;
@@ -164,6 +202,19 @@
   100% {
     width: 130px;
     height: 130px;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-ring-inner-small {
+  0% {
+    width: 55px;
+    height: 55px;
+    opacity: 0.5;
+  }
+  100% {
+    width: 95px;
+    height: 95px;
     opacity: 0;
   }
 }
