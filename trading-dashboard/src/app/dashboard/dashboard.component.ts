@@ -5129,7 +5129,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
-      this.mt5LiveTrades.push(newTrade)
+      // Create new array reference for OnPush change detection
+      this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
@@ -5181,7 +5182,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
 
-      this.mt5LiveTrades[liveIndex] = closedTrade;
+      // Create new array reference for OnPush change detection
+      this.mt5LiveTrades = [
+        ...this.mt5LiveTrades.slice(0, liveIndex),
+        closedTrade,
+        ...this.mt5LiveTrades.slice(liveIndex + 1)
+      ];
 
       //call Notion api to update an existing entry for closed trade
       this.updateExistingEntry(closedTrade);  
@@ -5203,7 +5209,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
 
     if (tradeIndex !== -1) {
-      const trade = this.mt5LiveTrades[tradeIndex];
+      const trade = { ...this.mt5LiveTrades[tradeIndex] };
       const currentProfit = priceData.profit ? parseFloat(priceData.profit.toString()) : 0;
 
       // Update current profit values
@@ -5218,6 +5224,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         // Initialize MFE to 0 if not set
         trade.mfe = '0';
       }
+
+      // Create new array reference for OnPush change detection
+      this.mt5LiveTrades = [
+        ...this.mt5LiveTrades.slice(0, tradeIndex),
+        trade,
+        ...this.mt5LiveTrades.slice(tradeIndex + 1)
+      ];
 
       this.updateTableDataOnly();
 
