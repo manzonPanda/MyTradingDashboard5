@@ -1268,7 +1268,18 @@ async ngOnInit() {
     });
 
     socket.on('price_update', (data: any) => {
-      console.log("Live price update:", data);
+      console.log("📊 Live price update received:", data);
+
+      // Check if this trade already exists in mt5LiveTrades
+      const existingTrade = this.mt5LiveTrades.find(t => t.position === data.ticket);
+
+      if (!existingTrade) {
+        console.log("🆕 New trade detected! Creating trade object from price_update data:", data);
+        // Create a new trade from the price_update data
+        this.createTradeFromPriceUpdate(data);
+      }
+
+      // Update the price for existing trade
       this.updateMT5TradePrice(data);
     });
 
@@ -5377,6 +5388,43 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       console.log('✅ MT5 trade closed');
     }
+  }
+
+  createTradeFromPriceUpdate(data: any): void {
+    console.log('🏗️ Creating new trade from price_update:', data);
+
+    // Build a new trade object from price_update socket data
+    const newTrade: Table = {
+      openDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      closeDate: '-', // Open trade, no close date
+      tradeNotion: [],
+      status: '',
+      position: data.ticket || data.position_id || '',
+      symbol: data.symbol || data.asset || 'UNKNOWN',
+      type: data.trade_type === 0 ? 'Buy' : 'Sell',
+      volume: data.volume ? data.volume.toString() : '0',
+      entry: data.entry_price ? data.entry_price.toString() : '0',
+      sL: data.sl ? data.sl.toString() : '0',
+      tP: data.tp ? data.tp.toString() : '0',
+      exit: '0',
+      commission: data.commission ? data.commission.toString() : '0',
+      swap: data.swap ? data.swap.toString() : '0',
+      profit: data.profit ? data.profit.toString() : '0',
+      netProfit: data.profit ? data.profit.toString() : '0',
+      riskPerTrade: data.risk_usd ? data.risk_usd.toString() : '50', // Default risk
+      rrr: data.live_rr ? data.live_rr.toFixed(2) : '0.00',
+      mt5status: 'OPEN',
+      mfe: data.profit ? data.profit.toString() : '0'
+    };
+
+    console.log('✅ Trade object created:', newTrade);
+
+    // Add to mt5LiveTrades
+    this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
+    console.log('✅ Trade added to mt5LiveTrades. Total open trades:', this.mt5LiveTrades.length);
+
+    // Update table and trigger change detection
+    this.updateTableDataOnly();
   }
 
   updateMT5TradePrice(priceData: any): void {
