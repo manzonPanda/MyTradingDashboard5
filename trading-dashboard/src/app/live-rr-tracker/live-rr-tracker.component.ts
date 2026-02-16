@@ -71,7 +71,7 @@ interface Table {
                 </div>
                 <div class="stat-badge">
                   <mat-icon>trending_up</mat-icon>
-                  <span>Live P&L</span>
+                  <span>Use P&L</span>
                 </div>
                 <div class="stat-badge">
                   <mat-icon>speed</mat-icon>
