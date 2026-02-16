@@ -132,10 +132,10 @@ interface Table {
             </div>
             <div class="metric-subtext">
               <span *ngIf="percentageOfAccount >= 0" class="positive-indicator">
-                Potential Gain
+                At Risk
               </span>
               <span *ngIf="percentageOfAccount < 0" class="negative-indicator">
-                Potential Loss
+                At Risk
               </span>
             </div>
           </div>
