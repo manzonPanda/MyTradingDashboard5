@@ -4914,12 +4914,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
     const mt5Trades = (response || []).map((trade: any) => {
       // Calculate RRR if not provided
+      const tradeType = trade.trade_type === 0 ? 'Buy' : 'Sell';
       let rrrValue = trade.reward_risk_ratio || 0;
       if (!rrrValue || rrrValue === 0) {
         const entry = parseFloat(trade.entry_price || 0);
         const sl = parseFloat(trade.sl || 0);
         const tp = parseFloat(trade.tp || 0);
-        rrrValue = this.calculateRRR(entry, sl, tp);
+        rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
       }
 
       return {
@@ -4929,7 +4930,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         status: "",
         position: trade.position_id,
         symbol: trade.symbol || '',
-        type: trade.trade_type === 0 ? 'Buy' : 'Sell',
+        type: tradeType,
         volume: trade.volume ? trade.volume.toString() : '0',
         entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
         sL: trade.sl ? trade.sl.toString() : '0',
@@ -5078,26 +5079,46 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   
 
   // Calculate Risk-Reward Ratio from entry, SL, and TP
-  calculateRRR(entry: number, sl: number, tp: number): number {
-    if (!entry || !sl || !tp) return 0;
-    const risk = Math.abs(entry - sl);
-    const reward = Math.abs(tp - entry);
-    if (risk === 0) return 0;
+  calculateRRR(entry: number, sl: number, tp: number, tradeType: string = 'Buy'): number {
+    if (!entry || !sl || !tp || entry === 0 || sl === 0 || tp === 0) return 0;
+
+    let risk = 0;
+    let reward = 0;
+
+    if (tradeType === 'Buy') {
+      // For BUY: risk is entry - sl, reward is tp - entry
+      risk = Math.abs(entry - sl);
+      reward = Math.abs(tp - entry);
+    } else {
+      // For SELL: risk is sl - entry, reward is entry - tp
+      risk = Math.abs(sl - entry);
+      reward = Math.abs(entry - tp);
+    }
+
+    console.log(`📊 RRR Calc: Type=${tradeType}, Entry=${entry}, SL=${sl}, TP=${tp}, Risk=${risk}, Reward=${reward}`);
+
+    if (risk === 0 || reward === 0) return 0;
     return reward / risk;
   }
 
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
+    console.log("🔵 New trade data from MT5:", trade);
     console.log("Open date from MT5:",trade.time_open)
 
     // Calculate RRR if not provided by the server
     let rrrValue = trade.reward_risk_ratio || 0;
+    const tradeType = trade.type === 0 ? 'Buy' : 'Sell';
     if (!rrrValue || rrrValue === 0) {
       const entry = parseFloat(trade.price_open || 0);
       const sl = parseFloat(trade.sl || 0);
       const tp = parseFloat(trade.tp || 0);
-      rrrValue = this.calculateRRR(entry, sl, tp);
+      console.log(`📝 Calculating RRR from SL/TP: type=${tradeType}, entry=${entry}, sl=${sl}, tp=${tp}`);
+      rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
+      console.log(`✅ Calculated RRR: ${rrrValue}`);
+    } else {
+      console.log(`📥 Using server RRR: ${rrrValue}`);
     }
 
     const newTrade: Table = {
