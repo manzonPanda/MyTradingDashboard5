@@ -4912,61 +4912,37 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
-    const mt5Trades = (response || []).map((trade: any) => {
-      // Calculate RRR if not provided
-      const tradeType = trade.trade_type === 0 ? 'Buy' : 'Sell';
-      let rrrValue = trade.reward_risk_ratio || 0;
-      if (!rrrValue || rrrValue === 0) {
-        const entry = parseFloat(trade.entry_price || 0);
-        const sl = parseFloat(trade.sl || 0);
-        const tp = parseFloat(trade.tp || 0);
-        rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
-      }
-
-      return {
-        openDate: this.convertAndFormatMT5Date(trade.time_open),
-        closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
-        tradeNotion: [],
-        status: "",
-        position: trade.position_id,
-        symbol: trade.symbol || '',
-        type: tradeType,
-        volume: trade.volume ? trade.volume.toString() : '0',
-        entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
-        sL: trade.sl ? trade.sl.toString() : '0',
-        tP: trade.tp ? trade.tp.toString() : '0',
-        exit: trade.exit_price ? trade.exit_price.toString() : '0',
-        commission: trade.commission ? trade.commission.toString() : '0',
-        swap: trade.swap ? trade.swap.toString() : '0',
-        profit: trade.profit ? trade.profit.toString() : '0',
-        netProfit: (trade.profit + trade.commission).toString(),
-        riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-        rrr: rrrValue.toFixed(2),
-        mt5status: trade.status || '',
-        mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
-      } as Table;
-    });
+    const mt5Trades = (response || []).map((trade: any) => ({
+      openDate: this.convertAndFormatMT5Date(trade.time_open),
+      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
+      tradeNotion: [],
+      status: "",
+      position: trade.position_id,
+      symbol: trade.symbol || '',
+      type: trade.trade_type === 0 ? 'Buy' : 'Sell',
+      volume: trade.volume ? trade.volume.toString() : '0',
+      entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
+      sL: trade.sl ? trade.sl.toString() : '0',
+      tP: trade.tp ? trade.tp.toString() : '0',
+      exit: trade.exit_price ? trade.exit_price.toString() : '0',
+      commission: trade.commission ? trade.commission.toString() : '0',
+      swap: trade.swap ? trade.swap.toString() : '0',
+      profit: trade.profit ? trade.profit.toString() : '0',
+      netProfit: (trade.profit + trade.commission).toString(),
+      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
+      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
+      mt5status: trade.status || '',
+      mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
+    } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
-
-    // Separate open trades from closed trades
-    const openTrades = mt5Trades.filter(trade => trade.closeDate === '-');
-    const closedTrades = mt5Trades.filter(trade => trade.closeDate !== '-');
-
-    this.mt5LiveTrades = openTrades;
-    console.log("✅ mt5LiveTrades (open only):", this.mt5LiveTrades.length, 'trades');
-    console.log("📊 Closed trades:", closedTrades.length, 'trades');
+    this.mt5LiveTrades = mt5Trades;
+    console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
-    // Manually trigger change detection since we're using OnPush
-    this.cdr.markForCheck();
+    this.updateTableData();
 
-    // Update table with both open and closed trades
-    this.tableData = [...openTrades, ...closedTrades];
-
-    // Update daily limit metrics
-    this.updateDailyLimitMetrics();
 
 
     // Generate stunning chart with loaded data
@@ -5075,64 +5051,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
 
-  // Calculate Risk-Reward Ratio from entry, SL, and TP
-  calculateRRR(entry: number, sl: number, tp: number, tradeType: string = 'Buy'): number {
-    if (!entry || !sl || !tp || entry === 0 || sl === 0 || tp === 0) return 0;
-
-    let risk = 0;
-    let reward = 0;
-
-    if (tradeType === 'Buy') {
-      // For BUY: risk is entry - sl, reward is tp - entry
-      risk = Math.abs(entry - sl);
-      reward = Math.abs(tp - entry);
-    } else {
-      // For SELL: risk is sl - entry, reward is entry - tp
-      risk = Math.abs(sl - entry);
-      reward = Math.abs(entry - tp);
-    }
-
-    console.log(`📊 RRR Calc: Type=${tradeType}, Entry=${entry}, SL=${sl}, TP=${tp}, Risk=${risk}, Reward=${reward}`);
-
-    if (risk === 0 || reward === 0) return 0;
-    return reward / risk;
-  }
-
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
-    console.log("🔵 New trade data from MT5:", trade);
     console.log("Open date from MT5:",trade.time_open)
-
-    // Calculate RRR - only use server value if it looks reasonable
-    let rrrValue = 0;
-    const tradeType = trade.type === 0 ? 'Buy' : 'Sell';
-    const entry = parseFloat(trade.price_open || 0);
-    // Try multiple field names for SL/TP in case server uses different names
-    const sl = parseFloat(trade.sl || trade.stop_loss || trade.stopLoss || trade.SL || 0);
-    const tp = parseFloat(trade.tp || trade.take_profit || trade.takeProfit || trade.TP || 0);
-    const profit = parseFloat(trade.profit || 0);
-
-    console.log(`📝 Trade data: type=${tradeType}, entry=${entry}, sl=${sl}, tp=${tp}, profit=${profit}`);
-
-    // Check if we have valid SL/TP for calculation
-    const hasValidSLTP = entry > 0 && sl > 0 && tp > 0;
-
-    if (hasValidSLTP) {
-      rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
-      console.log(`✅ Calculated RRR from SL/TP: ${rrrValue}`);
-    } else {
-      console.warn(`⚠️ Invalid SL/TP detected (entry=${entry}, sl=${sl}, tp=${tp}), attempting server value`);
-      const serverRRR = trade.reward_risk_ratio;
-      if (serverRRR) {
-        rrrValue = typeof serverRRR === 'string' ? parseFloat(serverRRR) : serverRRR;
-        console.log(`📥 Using server RRR: ${rrrValue}`);
-      } else {
-        console.warn(`❌ No valid RRR available, defaulting to 0`);
-        rrrValue = 0;
-      }
-    }
-
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: "-",
@@ -5151,7 +5073,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       profit: trade.profit ? trade.profit.toString() : '0',
       netProfit: trade.profit ? trade.profit.toString() : '0',
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
-      rrr: rrrValue.toFixed(2),
+      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
       mt5status: trade.status || '',
       mfe: '0', // Initialize MFE to 0 for new live trades
     };
@@ -5162,8 +5084,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
-      // Create new array reference for OnPush change detection
-      this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
+      this.mt5LiveTrades.push(newTrade)
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
@@ -5215,12 +5136,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
 
-      // Create new array reference for OnPush change detection
-      this.mt5LiveTrades = [
-        ...this.mt5LiveTrades.slice(0, liveIndex),
-        closedTrade,
-        ...this.mt5LiveTrades.slice(liveIndex + 1)
-      ];
+      this.mt5LiveTrades[liveIndex] = closedTrade;
 
       //call Notion api to update an existing entry for closed trade
       this.updateExistingEntry(closedTrade);  
@@ -5242,7 +5158,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
 
     if (tradeIndex !== -1) {
-      const trade = { ...this.mt5LiveTrades[tradeIndex] };
+      const trade = this.mt5LiveTrades[tradeIndex];
       const currentProfit = priceData.profit ? parseFloat(priceData.profit.toString()) : 0;
 
       // Update current profit values
@@ -5257,13 +5173,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         // Initialize MFE to 0 if not set
         trade.mfe = '0';
       }
-
-      // Create new array reference for OnPush change detection
-      this.mt5LiveTrades = [
-        ...this.mt5LiveTrades.slice(0, tradeIndex),
-        trade,
-        ...this.mt5LiveTrades.slice(tradeIndex + 1)
-      ];
 
       this.updateTableDataOnly();
 
@@ -5285,9 +5194,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Check for profit target achievement on live updates
     this.checkForProfitTargetCelebration();
-
-    // Trigger change detection for OnPush strategy to update Live P&L display
-    this.cdr.markForCheck();
   }
 
   updateTableData(): void {

@@ -205,9 +205,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   }
 
   calculateLiveMetrics(): void {
-    // Filter only open trades (either mt5status is OPEN or closeDate not set/is placeholder)
+    // Filter only open trades
     const openTrades = this.mt5LiveTrades.filter(
-      trade => trade.mt5status === 'OPEN' || ((trade.closeDate === '-' || !trade.closeDate) && trade.status !== 'closed')
+      trade => trade.mt5status === 'OPEN' || (!trade.closeDate && trade.status !== 'closed')
     );
 
     this.hasLiveTrades = openTrades.length > 0;
