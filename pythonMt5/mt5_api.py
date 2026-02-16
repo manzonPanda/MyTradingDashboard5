@@ -54,7 +54,6 @@ def watch_trades():
                     pos.price_open,
                     pos.sl
                 )
-
             if pos.tp and pos.tp != 0:
                 tp_value = mt5.order_calc_profit(
                     pos.type,
@@ -63,6 +62,10 @@ def watch_trades():
                     pos.price_open,
                     pos.tp
                 )
+            risk_1R = abs(sl_value) if sl_value else None
+            current_R = None
+            if risk_1R and risk_1R != 0:
+                current_R = round(pos.profit / risk_1R, 2)
 
             socketio.emit('price_update', {
                 "ticket": pos.ticket,
@@ -77,6 +80,7 @@ def watch_trades():
                 "tp": pos.tp if pos.tp != 0 else None,
                 "sl_value": sl_value,
                 "tp_value": tp_value,
+                "live_rr": current_R
             })
 
         # Detect new open positions
