@@ -5107,18 +5107,33 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log("🔵 New trade data from MT5:", trade);
     console.log("Open date from MT5:",trade.time_open)
 
-    // Calculate RRR if not provided by the server
-    let rrrValue = trade.reward_risk_ratio || 0;
+    // Calculate RRR - only use server value if it looks reasonable
+    let rrrValue = 0;
     const tradeType = trade.type === 0 ? 'Buy' : 'Sell';
-    if (!rrrValue || rrrValue === 0) {
-      const entry = parseFloat(trade.price_open || 0);
-      const sl = parseFloat(trade.sl || 0);
-      const tp = parseFloat(trade.tp || 0);
-      console.log(`📝 Calculating RRR from SL/TP: type=${tradeType}, entry=${entry}, sl=${sl}, tp=${tp}`);
+    const entry = parseFloat(trade.price_open || 0);
+    // Try multiple field names for SL/TP in case server uses different names
+    const sl = parseFloat(trade.sl || trade.stop_loss || trade.stopLoss || trade.SL || 0);
+    const tp = parseFloat(trade.tp || trade.take_profit || trade.takeProfit || trade.TP || 0);
+    const profit = parseFloat(trade.profit || 0);
+
+    console.log(`📝 Trade data: type=${tradeType}, entry=${entry}, sl=${sl}, tp=${tp}, profit=${profit}`);
+
+    // Check if we have valid SL/TP for calculation
+    const hasValidSLTP = entry > 0 && sl > 0 && tp > 0;
+
+    if (hasValidSLTP) {
       rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
-      console.log(`✅ Calculated RRR: ${rrrValue}`);
+      console.log(`✅ Calculated RRR from SL/TP: ${rrrValue}`);
     } else {
-      console.log(`📥 Using server RRR: ${rrrValue}`);
+      console.warn(`⚠️ Invalid SL/TP detected (entry=${entry}, sl=${sl}, tp=${tp}), attempting server value`);
+      const serverRRR = trade.reward_risk_ratio;
+      if (serverRRR) {
+        rrrValue = typeof serverRRR === 'string' ? parseFloat(serverRRR) : serverRRR;
+        console.log(`📥 Using server RRR: ${rrrValue}`);
+      } else {
+        console.warn(`❌ No valid RRR available, defaulting to 0`);
+        rrrValue = 0;
+      }
     }
 
     const newTrade: Table = {
