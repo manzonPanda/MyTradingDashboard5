@@ -233,21 +233,31 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     let totalR = 0;
     let totalUnrealizedPnL = 0;
 
-    openTrades.forEach(trade => {
-      // Extract RR value
+    console.log('🧮 Calculating metrics for', openTrades.length, 'open trades:');
+    openTrades.forEach((trade, idx) => {
+      // Extract RR value from trade.rrr (which is now real-time live RR)
       const rValue = parseFloat(trade.rrr?.replace('R', '')?.replace(/^\+/, '') || '0');
       totalR += rValue;
 
       // Calculate unrealized P&L
       const profit = parseFloat(trade.profit || '0');
       totalUnrealizedPnL += profit;
+
+      console.log(`   Trade ${idx + 1} (${trade.symbol}): RR=${rValue.toFixed(2)}R, Profit=$${profit.toFixed(2)}`);
     });
+
+    console.log('📊 Total metrics: TotalR=' + totalR.toFixed(2) + 'R, TotalP&L=$' + totalUnrealizedPnL.toFixed(2));
 
     this.totalRRValue = totalR;
     this.totalRRGained = totalR >= 0 ? `+${totalR.toFixed(2)}R` : `${totalR.toFixed(2)}R`;
     this.percentageOfAccount = parseFloat(((totalR / this.PROP_FIRM_ACCOUNT_VALUE) * 100).toFixed(2));
     this.totalUnrealizedValue = totalUnrealizedPnL;
     this.totalUnrealizedPnL = this.formatCurrency(totalUnrealizedPnL);
+
+    console.log('✅ LIVE METRICS UPDATED:');
+    console.log('   - Total RR Gained:', this.totalRRGained);
+    console.log('   - Account Risk %:', this.percentageOfAccount + '%');
+    console.log('   - Unrealized P&L:', this.totalUnrealizedPnL);
   }
 
   resetMetrics(): void {

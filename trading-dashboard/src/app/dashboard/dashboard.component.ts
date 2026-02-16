@@ -5365,6 +5365,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
 
+      // Calculate Live RR (Real-time Risk-Reward Ratio)
+      // Live RR = Current Profit / Risk per Trade
+      const riskPerTrade = parseFloat(trade.riskPerTrade || '0');
+      if (riskPerTrade > 0) {
+        const liveRRValue = currentProfit / riskPerTrade;
+        trade.rrr = liveRRValue.toFixed(2);
+        console.log(`📊 Live RR Update - ${trade.symbol}: Profit=$${currentProfit.toFixed(2)}, Risk=$${riskPerTrade.toFixed(2)}, Live RR=${trade.rrr}R`);
+      }
+
       // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
       const currentMfe = parseFloat(trade.mfe || '0');
       if (currentProfit > 0 && currentProfit > currentMfe) {
