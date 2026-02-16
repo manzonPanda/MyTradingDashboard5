@@ -1164,6 +1164,8 @@ mt5AccountInfo: AccountSettings = {
   }
 
 async ngOnInit() {
+    console.log('🚀 DashboardComponent ngOnInit started');
+
     // Set up click outside listener for dropdown
     this.setupClickOutsideListener();
 
@@ -1174,6 +1176,8 @@ async ngOnInit() {
     try {
       await this.loadMT5Data();
       console.log('✅ ngOnInit: MT5 data loaded successfully');
+      console.log('📊 mt5LiveTrades after loadMT5Data:', this.mt5LiveTrades.length, 'trades');
+      console.log('📊 tableData after loadMT5Data:', this.tableData?.length || 0, 'trades');
       // If no data loaded, set test data
       if (!this.tableData || this.tableData.length === 0) {
         console.log('📌 ngOnInit: tableData is empty, setting test data');
@@ -1365,9 +1369,68 @@ async ngOnInit() {
     this.generateTradingChartData();
     this.updateDailyLimitMetrics();
 
+    console.log('🔍 Final state before timeout:');
+    console.log('   - mt5LiveTrades:', this.mt5LiveTrades.length, 'trades', this.mt5LiveTrades);
+    console.log('   - tableData:', this.tableData?.length || 0, 'trades');
+
+    // DEBUG: If mt5LiveTrades is still empty, manually set test data to verify component works
+    if (!this.mt5LiveTrades || this.mt5LiveTrades.length === 0) {
+      console.warn('⚠️ mt5LiveTrades is empty! Manually setting test data to verify component...');
+      this.mt5LiveTrades = [
+        {
+          openDate: '02.16.2025 09:30',
+          closeDate: '-',
+          tradeNotion: [],
+          status: '',
+          position: '101',
+          symbol: 'GBPUSD',
+          type: 'Buy',
+          volume: '1.0',
+          entry: '1.2450',
+          sL: '1.2350',
+          tP: '1.2650',
+          exit: '0',
+          commission: '-2',
+          swap: '0',
+          profit: '125.50',
+          netProfit: '123.50',
+          riskPerTrade: '50.00',
+          rrr: '1.8',
+          mt5status: 'OPEN',
+          mfe: '0'
+        },
+        {
+          openDate: '02.16.2025 10:15',
+          closeDate: '-',
+          tradeNotion: [],
+          status: '',
+          position: '102',
+          symbol: 'AUDUSD',
+          type: 'Buy',
+          volume: '2.0',
+          entry: '0.8750',
+          sL: '0.8650',
+          tP: '0.8950',
+          exit: '0',
+          commission: '-2',
+          swap: '0',
+          profit: '250.75',
+          netProfit: '248.75',
+          riskPerTrade: '100.00',
+          rrr: '2.5',
+          mt5status: 'OPEN',
+          mfe: '0'
+        }
+      ];
+      console.log('✅ Test data set manually. mt5LiveTrades now:', this.mt5LiveTrades.length, 'trades');
+      this.cdr.markForCheck();
+    }
+
     // Set loading to false after a short delay to show metrics even without data
     // This is a fallback in case socket connection fails
     setTimeout(() => {
+      console.log('⏱️ 1.5s timeout callback - Checking loading state');
+      console.log('   - mt5LiveTrades:', this.mt5LiveTrades.length, 'trades');
       if (this.isLoadingMetrics) {
         console.warn('⚠️ Metrics still loading after 1.5s, forcing completion');
         this.isLoadingMetrics = false;
@@ -4952,14 +5015,27 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
-    console.log('📊 Trade closeDate values:', mt5Trades.map((t, i) => ({ index: i, symbol: t.symbol, closeDate: t.closeDate, status: t.mt5status })));
+    console.log('📊 All trade data:');
+    mt5Trades.forEach((t, i) => {
+      console.log(`   Trade ${i}: symbol=${t.symbol}, closeDate="${t.closeDate}", mt5status="${t.mt5status}", isOpen=${t.closeDate === '-'}`);
+    });
 
     // Separate open trades from closed trades
-    const openTrades = mt5Trades.filter(trade => trade.closeDate === '-');
+    const openTrades = mt5Trades.filter(trade => {
+      const isOpen = trade.closeDate === '-';
+      console.log(`   Filtering: ${trade.symbol} closeDate="${trade.closeDate}" -> isOpen=${isOpen}`);
+      return isOpen;
+    });
     const closedTrades = mt5Trades.filter(trade => trade.closeDate !== '-');
 
+    console.log('📊 Filter results:');
+    console.log('   - openTrades:', openTrades.length);
+    console.log('   - closedTrades:', closedTrades.length);
+    console.log('   - openTrades data:', openTrades);
+
     this.mt5LiveTrades = openTrades;
-    console.log("✅ mt5LiveTrades (open only):", this.mt5LiveTrades.length, 'trades', this.mt5LiveTrades);
+    console.log("✅ this.mt5LiveTrades assigned:", this.mt5LiveTrades.length, 'trades');
+    console.log('   Data:', this.mt5LiveTrades);
     console.log("📊 Closed trades:", closedTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
