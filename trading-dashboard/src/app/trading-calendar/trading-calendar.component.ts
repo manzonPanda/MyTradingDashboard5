@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -50,6 +50,7 @@ interface WeekSummary {
   selector: 'app-trading-calendar',
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.Default,
   template: `
     <div class="trading-calendar-container">
       <!-- Calendar Header -->

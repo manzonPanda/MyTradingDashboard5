@@ -71,7 +71,7 @@ interface Table {
                 </div>
                 <div class="stat-badge">
                   <mat-icon>trending_up</mat-icon>
-                  <span>Live P&L</span>
+                  <span>Use P&L</span>
                 </div>
                 <div class="stat-badge">
                   <mat-icon>speed</mat-icon>
@@ -111,14 +111,6 @@ interface Table {
             <div class="metric-value" [ngClass]="getRRClass()">
               {{ totalRRGained }}
             </div>
-            <div class="metric-subtext">
-              <span *ngIf="totalRRValue >= 0" class="positive-indicator">
-                +{{ (totalRRValue * 100).toFixed(1) }}% Risk
-              </span>
-              <span *ngIf="totalRRValue < 0" class="negative-indicator">
-                {{ (totalRRValue * 100).toFixed(1) }}% Risk
-              </span>
-            </div>
           </div>
 
           <!-- Account Percentage -->
@@ -132,10 +124,10 @@ interface Table {
             </div>
             <div class="metric-subtext">
               <span *ngIf="percentageOfAccount >= 0" class="positive-indicator">
-                Potential Gain
+                At Risk
               </span>
               <span *ngIf="percentageOfAccount < 0" class="negative-indicator">
-                Potential Loss
+                At Risk
               </span>
             </div>
           </div>
@@ -195,48 +187,90 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500;
 
   ngOnInit() {
+    console.log('🚀 LiveRRTrackerComponent initialized');
     this.calculateLiveMetrics();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['mt5LiveTrades']) {
+      console.log('📊 mt5LiveTrades changed:', {
+        newLength: changes['mt5LiveTrades'].currentValue?.length || 0,
+        trades: changes['mt5LiveTrades'].currentValue || []
+      });
+      this.calculateLiveMetrics();
+    }
+
+    // Also recalculate if tableData changes (in case trades are updated there)
+    if (changes['tableData']) {
+      console.log('📊 tableData changed, checking for open trades');
       this.calculateLiveMetrics();
     }
   }
 
   calculateLiveMetrics(): void {
-    // Filter only open trades
-    const openTrades = this.mt5LiveTrades.filter(
-      trade => trade.mt5status === 'OPEN' || (!trade.closeDate && trade.status !== 'closed')
-    );
+    console.log('📈 Starting calculateLiveMetrics with', this.mt5LiveTrades.length, 'trades');
+    console.log('📋 Trades data:', this.mt5LiveTrades);
+
+    // Filter only open trades (either mt5status is OPEN or closeDate not set/is placeholder)
+    const openTrades = this.mt5LiveTrades.filter(trade => {
+      const isOpen = trade.mt5status === 'OPEN' || (trade.closeDate === '-' || !trade.closeDate);
+      console.log(`🔍 Trade ${trade.symbol}: closeDate="${trade.closeDate}", mt5status="${trade.mt5status}", isOpen=${isOpen}`);
+      return isOpen;
+    });
 
     this.hasLiveTrades = openTrades.length > 0;
     this.openTradeCount = openTrades.length;
+    console.log('✅ Open trades found:', openTrades.length, 'Has live trades:', this.hasLiveTrades);
 
     if (!this.hasLiveTrades) {
       this.resetMetrics();
       return;
     }
 
-    // Calculate total RR
+    // Calculate total RR and total stop loss risk
     let totalR = 0;
     let totalUnrealizedPnL = 0;
+    let totalSlRisk = 0; // Total risk from stop loss
 
-    openTrades.forEach(trade => {
-      // Extract RR value
-      const rValue = parseFloat(trade.rrr?.replace('R', '')?.replace(/^\+/, '') || '0');
+    console.log('🧮 Calculating metrics for', openTrades.length, 'open trades:');
+    openTrades.forEach((trade, idx) => {
+      // Extract RR value from trade.rrr (which is now real-time live RR from socket)
+      // Handles both formats: "0.73" (live_rr) and "1.5R" (formatted)
+      let rValue = 0;
+      if (typeof trade.rrr === 'string') {
+        rValue = parseFloat(trade.rrr.replace('R', '').replace(/^\+/, '')) || 0;
+      } else if (typeof trade.rrr === 'number') {
+        rValue = trade.rrr;
+      }
       totalR += rValue;
 
       // Calculate unrealized P&L
       const profit = parseFloat(trade.profit || '0');
       totalUnrealizedPnL += profit;
+
+      // Calculate stop loss risk (riskPerTrade field)
+      const slRisk = parseFloat(trade.riskPerTrade || '0');
+      totalSlRisk += slRisk;
+
+      console.log(`   Trade ${idx + 1} (${trade.symbol}): RR=${rValue.toFixed(2)}R, Profit=$${profit.toFixed(2)}, SL Risk=$${slRisk.toFixed(2)}`);
     });
+
+    console.log('📊 Total metrics: TotalR=' + totalR.toFixed(2) + 'R, TotalP&L=$' + totalUnrealizedPnL.toFixed(2) + ', TotalSLRisk=$' + totalSlRisk.toFixed(2));
 
     this.totalRRValue = totalR;
     this.totalRRGained = totalR >= 0 ? `+${totalR.toFixed(2)}R` : `${totalR.toFixed(2)}R`;
-    this.percentageOfAccount = parseFloat(((totalR / this.PROP_FIRM_ACCOUNT_VALUE) * 100).toFixed(2));
+
+    // Account Risk % is now calculated using stop loss risk value
+    this.percentageOfAccount = parseFloat(((totalSlRisk / this.PROP_FIRM_ACCOUNT_VALUE) * 100).toFixed(2));
+
     this.totalUnrealizedValue = totalUnrealizedPnL;
     this.totalUnrealizedPnL = this.formatCurrency(totalUnrealizedPnL);
+
+    console.log('✅ LIVE METRICS UPDATED:');
+    console.log('   - Total RR Gained:', this.totalRRGained);
+    console.log('   - Account Risk % (from SL):', this.percentageOfAccount + '%');
+    console.log('   - Total SL Risk:', this.formatCurrency(totalSlRisk));
+    console.log('   - Unrealized P&L:', this.totalUnrealizedPnL);
   }
 
   resetMetrics(): void {
@@ -253,7 +287,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     if (absAmount >= 1000) {
       return `${sign}$${(absAmount / 1000).toFixed(1)}K`;
     }
-    return `${sign}$${absAmount.toFixed(0)}`;
+    return `${sign}$${absAmount.toFixed(2)}`;
   }
 
   getRRClass(): string {
