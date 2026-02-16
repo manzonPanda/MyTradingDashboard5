@@ -1264,15 +1264,21 @@ async ngOnInit() {
     });
 
     socket.on('price_update', (data: any) => {
-      console.log("📊 Live price update received:", data);
+      console.log("📊 Live price update received:", {
+        symbol: data.symbol,
+        ticket: data.ticket,
+        profit: data.profit,
+        live_rr: data.live_rr,
+        price_current: data.price_current
+      });
 
-      // Update the price for existing trade
+      // Update the price for existing trade (includes live_rr)
       this.updateMT5TradePrice(data);
 
       // Trigger change detection to display live trading session
       this.cdr.markForCheck();
 
-      console.log('✅ Live trading session should now be visible. Open trades:', this.mt5LiveTrades.length);
+      console.log('✅ Live trading session metrics updated. Open trades:', this.mt5LiveTrades.length);
     });
 
     // Start daily limit tracking
@@ -5171,6 +5177,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Update current profit values
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+
+      // Update live RR from socket data (real-time risk-reward ratio)
+      if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
+        trade.rrr = priceData.live_rr.toFixed(2);
+        console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
+      }
 
       // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
       const currentMfe = parseFloat(trade.mfe || '0');

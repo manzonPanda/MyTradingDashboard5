@@ -241,8 +241,14 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
 
     console.log('🧮 Calculating metrics for', openTrades.length, 'open trades:');
     openTrades.forEach((trade, idx) => {
-      // Extract RR value from trade.rrr (which is now real-time live RR)
-      const rValue = parseFloat(trade.rrr?.replace('R', '')?.replace(/^\+/, '') || '0');
+      // Extract RR value from trade.rrr (which is now real-time live RR from socket)
+      // Handles both formats: "0.73" (live_rr) and "1.5R" (formatted)
+      let rValue = 0;
+      if (typeof trade.rrr === 'string') {
+        rValue = parseFloat(trade.rrr.replace('R', '').replace(/^\+/, '')) || 0;
+      } else if (typeof trade.rrr === 'number') {
+        rValue = trade.rrr;
+      }
       totalR += rValue;
 
       // Calculate unrealized P&L
