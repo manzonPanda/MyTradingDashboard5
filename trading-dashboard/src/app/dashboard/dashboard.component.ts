@@ -4912,38 +4912,62 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
-    const mt5Trades = (response || []).map((trade: any) => ({
-      openDate: this.convertAndFormatMT5Date(trade.time_open),
-      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
-      tradeNotion: [],
-      status: "",
-      position: trade.position_id,
-      symbol: trade.symbol || '',
-      type: trade.trade_type === 0 ? 'Buy' : 'Sell',
-      volume: trade.volume ? trade.volume.toString() : '0',
-      entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
-      sL: trade.sl ? trade.sl.toString() : '0',
-      tP: trade.tp ? trade.tp.toString() : '0',
-      exit: trade.exit_price ? trade.exit_price.toString() : '0',
-      commission: trade.commission ? trade.commission.toString() : '0',
-      swap: trade.swap ? trade.swap.toString() : '0',
-      profit: trade.profit ? trade.profit.toString() : '0',
-      netProfit: (trade.profit + trade.commission).toString(),
-      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
-      mt5status: trade.status || '',
-      mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
-    } as Table));
+    const mt5Trades = (response || []).map((trade: any) => {
+      // Calculate RRR if not provided
+      let rrrValue = trade.reward_risk_ratio || 0;
+      if (!rrrValue || rrrValue === 0) {
+        const entry = parseFloat(trade.entry_price || 0);
+        const sl = parseFloat(trade.sl || 0);
+        const tp = parseFloat(trade.tp || 0);
+        rrrValue = this.calculateRRR(entry, sl, tp);
+      }
+
+      return {
+        openDate: this.convertAndFormatMT5Date(trade.time_open),
+        closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
+        tradeNotion: [],
+        status: "",
+        position: trade.position_id,
+        symbol: trade.symbol || '',
+        type: trade.trade_type === 0 ? 'Buy' : 'Sell',
+        volume: trade.volume ? trade.volume.toString() : '0',
+        entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
+        sL: trade.sl ? trade.sl.toString() : '0',
+        tP: trade.tp ? trade.tp.toString() : '0',
+        exit: trade.exit_price ? trade.exit_price.toString() : '0',
+        commission: trade.commission ? trade.commission.toString() : '0',
+        swap: trade.swap ? trade.swap.toString() : '0',
+        profit: trade.profit ? trade.profit.toString() : '0',
+        netProfit: (trade.profit + trade.commission).toString(),
+        riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
+        rrr: rrrValue.toFixed(2),
+        mt5status: trade.status || '',
+        mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
+      } as Table;
+    });
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
-    this.mt5LiveTrades = mt5Trades;
-    console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
+
+    // Separate open trades from closed trades
+    const openTrades = mt5Trades.filter(trade => trade.closeDate === '-');
+    const closedTrades = mt5Trades.filter(trade => trade.closeDate !== '-');
+
+    this.mt5LiveTrades = openTrades;
+    console.log("✅ mt5LiveTrades (open only):", this.mt5LiveTrades.length, 'trades');
+    console.log("📊 Closed trades:", closedTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
-    this.updateTableData();
+    // Manually trigger change detection since we're using OnPush
+    this.cdr.markForCheck();
 
-    console.log('✅ After updateTableData - tableData length:', this.tableData.length);
+    // Update table with both open and closed trades
+    this.tableData = [...openTrades, ...closedTrades];
+
+    // Update daily limit metrics
+    this.updateDailyLimitMetrics();
+
+    console.log('✅ tableData updated - length:', this.tableData.length);
     console.log('📊 Sample from tableData:', this.tableData[0]);
     console.log('🧮 calculateProfitFactor():', this.calculateProfitFactor());
 
