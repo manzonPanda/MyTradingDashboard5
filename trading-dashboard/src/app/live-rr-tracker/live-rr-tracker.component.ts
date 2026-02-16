@@ -286,7 +286,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     if (absAmount >= 1000) {
       return `${sign}$${(absAmount / 1000).toFixed(1)}K`;
     }
-    return `${sign}$${absAmount.toFixed(0)}`;
+    return `${sign}$${absAmount.toFixed(2)}`;
   }
 
   getRRClass(): string {
