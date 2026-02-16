@@ -1164,8 +1164,6 @@ mt5AccountInfo: AccountSettings = {
   }
 
 async ngOnInit() {
-    console.log('🚀 DashboardComponent ngOnInit started');
-
     // Set up click outside listener for dropdown
     this.setupClickOutsideListener();
 
@@ -1176,8 +1174,6 @@ async ngOnInit() {
     try {
       await this.loadMT5Data();
       console.log('✅ ngOnInit: MT5 data loaded successfully');
-      console.log('📊 mt5LiveTrades after loadMT5Data:', this.mt5LiveTrades.length, 'trades');
-      console.log('📊 tableData after loadMT5Data:', this.tableData?.length || 0, 'trades');
       // If no data loaded, set test data
       if (!this.tableData || this.tableData.length === 0) {
         console.log('📌 ngOnInit: tableData is empty, setting test data');
@@ -1268,18 +1264,7 @@ async ngOnInit() {
     });
 
     socket.on('price_update', (data: any) => {
-      console.log("📊 Live price update received:", data);
-
-      // Check if this trade already exists in mt5LiveTrades
-      const existingTrade = this.mt5LiveTrades.find(t => t.position === data.ticket);
-
-      if (!existingTrade) {
-        console.log("🆕 New trade detected! Creating trade object from price_update data:", data);
-        // Create a new trade from the price_update data
-        this.createTradeFromPriceUpdate(data);
-      }
-
-      // Update the price for existing trade
+      console.log("Live price update:", data);
       this.updateMT5TradePrice(data);
     });
 
@@ -1380,68 +1365,9 @@ async ngOnInit() {
     this.generateTradingChartData();
     this.updateDailyLimitMetrics();
 
-    console.log('🔍 Final state before timeout:');
-    console.log('   - mt5LiveTrades:', this.mt5LiveTrades.length, 'trades', this.mt5LiveTrades);
-    console.log('   - tableData:', this.tableData?.length || 0, 'trades');
-
-    // DEBUG: If mt5LiveTrades is still empty, manually set test data to verify component works
-    if (!this.mt5LiveTrades || this.mt5LiveTrades.length === 0) {
-      console.warn('⚠️ mt5LiveTrades is empty! Manually setting test data to verify component...');
-      this.mt5LiveTrades = [
-        {
-          openDate: '02.16.2025 09:30',
-          closeDate: '-',
-          tradeNotion: [],
-          status: '',
-          position: '101',
-          symbol: 'GBPUSD',
-          type: 'Buy',
-          volume: '1.0',
-          entry: '1.2450',
-          sL: '1.2350',
-          tP: '1.2650',
-          exit: '0',
-          commission: '-2',
-          swap: '0',
-          profit: '125.50',
-          netProfit: '123.50',
-          riskPerTrade: '50.00',
-          rrr: '1.8',
-          mt5status: 'OPEN',
-          mfe: '0'
-        },
-        {
-          openDate: '02.16.2025 10:15',
-          closeDate: '-',
-          tradeNotion: [],
-          status: '',
-          position: '102',
-          symbol: 'AUDUSD',
-          type: 'Buy',
-          volume: '2.0',
-          entry: '0.8750',
-          sL: '0.8650',
-          tP: '0.8950',
-          exit: '0',
-          commission: '-2',
-          swap: '0',
-          profit: '250.75',
-          netProfit: '248.75',
-          riskPerTrade: '100.00',
-          rrr: '2.5',
-          mt5status: 'OPEN',
-          mfe: '0'
-        }
-      ];
-      console.log('✅ Test data set manually. mt5LiveTrades now:', this.mt5LiveTrades.length, 'trades');
-      this.cdr.markForCheck();
-    }
-
     // Set loading to false after a short delay to show metrics even without data
     // This is a fallback in case socket connection fails
     setTimeout(() => {
-      console.log('⏱️ 1.5s timeout callback - Checking loading state');
-      console.log('   - mt5LiveTrades:', this.mt5LiveTrades.length, 'trades');
       if (this.isLoadingMetrics) {
         console.warn('⚠️ Metrics still loading after 1.5s, forcing completion');
         this.isLoadingMetrics = false;
@@ -2453,23 +2379,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   async getMt5API(){
-    try {
-      console.log('🔗 Calling MT5 API endpoint:', `${this.BACKEND_URL_MT5}/api/history`);
-      const res: any = await firstValueFrom(
-        this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
-      );
-      console.log('✅ MT5 API Response received:');
-      console.log('   - Status: Success');
-      console.log('   - Trades count:', res?.length ?? 0);
-      console.log('   - Full response:', res);
-      return res;
-    } catch (error) {
-      console.error('❌ MT5 API Error:', {
-        message: error instanceof Error ? error.message : String(error),
-        error: error
-      });
-      throw error;
-    }
+    const res: any = await firstValueFrom(
+      this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
+    );
+    return res;
   }
 
   async sendNotif(token: string, title: string, body: string): Promise<void> {
@@ -4971,29 +4884,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 loadMT5Data started');
     let response: any[] = [];
 
-    let dataSource = 'unknown';
     try {
       // Try live API
       console.log('📡 Attempting to fetch from MT5 API:', this.BACKEND_URL_MT5);
       try {
         response = await this.getMt5API();
-        if (response && response.length > 0) {
-          dataSource = 'MT5 API';
-          console.log('✅ SUCCESS: Loaded from MT5 API -', response.length, 'trades');
-        } else {
-          console.warn('⚠️ MT5 API returned empty data');
-        }
+        console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
       } catch (apiError) {
         console.error('❌ Error fetching MT5 API:', apiError);
       }
 
       // If API returned no data or failed, use fallback
       if (!response || response.length === 0) {
-        console.warn('⚠️ API failed or empty. Using fallback data source...');
+        console.warn('⚠️ Using fallback data source...');
         try {
           response = await this.getLocalTrades();
-          dataSource = 'Fallback Test Data';
-          console.log('📁 SUCCESS: Fallback data loaded -', response?.length ?? 0, 'trades');
+          console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
         } catch (localError) {
           console.error('❌ Failed to load fallback data:', localError);
           response = []; // Ensure response is always an array
@@ -5001,7 +4907,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
     } finally {
       this.isLoadingMT5Data = false;
-      console.log(`\n📌 DATA SOURCE: ${dataSource}`);
       this.cdr.markForCheck();
     }
 
@@ -5017,9 +4922,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         const tp = parseFloat(trade.tp || 0);
         rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
       }
-
-      // Use live_rr from API if available, otherwise use calculated RRR
-      const liveRRValue = trade.live_rr || rrrValue;
 
       return {
         openDate: this.convertAndFormatMT5Date(trade.time_open),
@@ -5039,41 +4941,21 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         profit: trade.profit ? trade.profit.toString() : '0',
         netProfit: (trade.profit + trade.commission).toString(),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-        rrr: liveRRValue.toFixed(2),
+        rrr: rrrValue.toFixed(2),
         mt5status: trade.status || '',
         mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
       } as Table;
     });
 
-    console.log('\n🔍 TRADE MAPPING RESULTS:');
     console.log('✅ Mapped trades:', mt5Trades.length);
-    if (mt5Trades.length > 0) {
-      console.log('📊 First trade sample:', mt5Trades[0]);
-    }
-    console.log('📊 All trade data:');
-    mt5Trades.forEach((t, i) => {
-      console.log(`   Trade ${i}: ${t.symbol} | Entry: ${t.entry} | Profit: $${t.profit} | Status: ${t.mt5status} | Open: ${t.closeDate === '-'}`);
-    });
+    console.log('📊 First trade sample:', mt5Trades[0]);
 
     // Separate open trades from closed trades
-    const openTrades = mt5Trades.filter(trade => {
-      const isOpen = trade.closeDate === '-';
-      return isOpen;
-    });
+    const openTrades = mt5Trades.filter(trade => trade.closeDate === '-');
     const closedTrades = mt5Trades.filter(trade => trade.closeDate !== '-');
 
-    console.log('\n📊 FILTER RESULTS:');
-    console.log('   - OPEN trades:', openTrades.length);
-    console.log('   - CLOSED trades:', closedTrades.length);
-    if (openTrades.length > 0) {
-      console.log('   - Open trades details:', openTrades.map(t => ({ symbol: t.symbol, profit: t.profit, rrr: t.rrr })));
-    }
-
     this.mt5LiveTrades = openTrades;
-    console.log("\n✅ FINAL: mt5LiveTrades assigned:", this.mt5LiveTrades.length, 'trades');
-    if (this.mt5LiveTrades.length > 0) {
-      console.log('   Details:', this.mt5LiveTrades);
-    }
+    console.log("✅ mt5LiveTrades (open only):", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Closed trades:", closedTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -5113,46 +4995,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Fallback test data in case file loading fails
       return [
         {
-          commission: -2,
-          entry_price: 1.2450,
-          exit_price: null,
-          position_id: 101,
-          profit: 125.50,
-          reward_risk_ratio: "1.8",
-          live_rr: 1.8,
-          risk_usd: 50.00,
-          sl: 1.2350,
-          status: "OPEN",
-          symbol: "GBPUSD",
-          time_open: "2025-02-16 09:30:22",
-          time_close: null,
-          tp: 1.2650,
-          trade_type: 0,
-          volume: "1.0"
-        },
-        {
-          commission: -2,
-          entry_price: 0.8750,
-          exit_price: null,
-          position_id: 102,
-          profit: 250.75,
-          reward_risk_ratio: "2.5",
-          live_rr: 2.5,
-          risk_usd: 100.00,
-          sl: 0.8650,
-          status: "OPEN",
-          symbol: "AUDUSD",
-          time_open: "2025-02-16 10:15:45",
-          time_close: null,
-          tp: 0.8950,
-          trade_type: 0,
-          volume: "2.0"
-        },
-        {
           commission: -4,
           entry_price: 215.19,
           exit_price: 946,
-          position_id: 103,
+          position_id: 100,
           profit: 1945.6,
           reward_risk_ratio: "2.5",
           risk_usd: 23.97,
@@ -5169,7 +5015,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           commission: -4,
           entry_price: 681.32,
           exit_price: 791,
-          position_id: 104,
+          position_id: 102,
           profit: -580.8,
           reward_risk_ratio: "1.2",
           risk_usd: 23.97,
@@ -5390,43 +5236,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  createTradeFromPriceUpdate(data: any): void {
-    console.log('🏗️ Creating new trade from price_update:', data);
-
-    // Build a new trade object from price_update socket data
-    const newTrade: Table = {
-      openDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
-      closeDate: '-', // Open trade, no close date
-      tradeNotion: [],
-      status: '',
-      position: data.ticket || data.position_id || '',
-      symbol: data.symbol || data.asset || 'UNKNOWN',
-      type: data.trade_type === 0 ? 'Buy' : 'Sell',
-      volume: data.volume ? data.volume.toString() : '0',
-      entry: data.entry_price ? data.entry_price.toString() : '0',
-      sL: data.sl ? data.sl.toString() : '0',
-      tP: data.tp ? data.tp.toString() : '0',
-      exit: '0',
-      commission: data.commission ? data.commission.toString() : '0',
-      swap: data.swap ? data.swap.toString() : '0',
-      profit: data.profit ? data.profit.toString() : '0',
-      netProfit: data.profit ? data.profit.toString() : '0',
-      riskPerTrade: data.risk_usd ? data.risk_usd.toString() : '50', // Default risk
-      rrr: data.live_rr ? data.live_rr.toFixed(2) : '0.00',
-      mt5status: 'OPEN',
-      mfe: data.profit ? data.profit.toString() : '0'
-    };
-
-    console.log('✅ Trade object created:', newTrade);
-
-    // Add to mt5LiveTrades
-    this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
-    console.log('✅ Trade added to mt5LiveTrades. Total open trades:', this.mt5LiveTrades.length);
-
-    // Update table and trigger change detection
-    this.updateTableDataOnly();
-  }
-
   updateMT5TradePrice(priceData: any): void {
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
       trade.position === priceData.ticket
@@ -5439,15 +5248,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Update current profit values
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
-
-      // Calculate Live RR (Real-time Risk-Reward Ratio)
-      // Live RR = Current Profit / Risk per Trade
-      const riskPerTrade = parseFloat(trade.riskPerTrade || '0');
-      if (riskPerTrade > 0) {
-        const liveRRValue = currentProfit / riskPerTrade;
-        trade.rrr = liveRRValue.toFixed(2);
-        console.log(`📊 Live RR Update - ${trade.symbol}: Profit=$${currentProfit.toFixed(2)}, Risk=$${riskPerTrade.toFixed(2)}, Live RR=${trade.rrr}R`);
-      }
 
       // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
       const currentMfe = parseFloat(trade.mfe || '0');
