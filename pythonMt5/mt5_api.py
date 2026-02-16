@@ -52,7 +52,9 @@ def watch_trades():
                 "price_open": pos.price_open,
                 "price_current": pos.price_current,
                 "profit": pos.profit,
-                "time": pos.time
+                "time": pos.time,
+                "sl": pos.sl if pos.sl != 0 else None,
+                "tp": pos.tp if pos.tp != 0 else None,  
             })
 
         # Detect new open positions
