@@ -3551,7 +3551,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   calculateProfitFactor(): number {
     if (!this.tableData || this.tableData.length === 0) {
       if (this.tableData && this.tableData.length === 0) {
-        console.warn('⚠️ calculateProfitFactor: tableData is empty array');
+       
       }
       return 0;
     }
@@ -3565,12 +3565,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
 
     if (grossLoss === 0) {
-      console.log('⚠️ calculateProfitFactor: grossLoss is 0, returning', grossProfit > 0 ? 999 : 0);
+  
       return grossProfit > 0 ? 999 : 0;
     }
 
     const result = parseFloat((grossProfit / grossLoss).toFixed(2));
-    console.log('✅ calculateProfitFactor:', result, '(profit:', grossProfit, ', loss:', grossLoss, ')');
+   
     return result;
   }
 
@@ -4968,9 +4968,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Update daily limit metrics
     this.updateDailyLimitMetrics();
 
-    console.log('✅ tableData updated - length:', this.tableData.length);
-    console.log('📊 Sample from tableData:', this.tableData[0]);
-    console.log('🧮 calculateProfitFactor():', this.calculateProfitFactor());
 
     // Generate stunning chart with loaded data
     // setTimeout(() => {
