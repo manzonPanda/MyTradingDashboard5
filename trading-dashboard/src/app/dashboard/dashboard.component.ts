@@ -5196,6 +5196,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Check for profit target achievement on live updates
     this.checkForProfitTargetCelebration();
+
+    // Trigger change detection for OnPush strategy to update Live P&L display
+    this.cdr.markForCheck();
   }
 
   updateTableData(): void {
