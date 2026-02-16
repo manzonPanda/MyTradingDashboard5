@@ -235,9 +235,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Calculate total RR
+    // Calculate total RR and total stop loss risk
     let totalR = 0;
     let totalUnrealizedPnL = 0;
+    let totalSlRisk = 0; // Total risk from stop loss
 
     console.log('🧮 Calculating metrics for', openTrades.length, 'open trades:');
     openTrades.forEach((trade, idx) => {
@@ -255,20 +256,28 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
       const profit = parseFloat(trade.profit || '0');
       totalUnrealizedPnL += profit;
 
-      console.log(`   Trade ${idx + 1} (${trade.symbol}): RR=${rValue.toFixed(2)}R, Profit=$${profit.toFixed(2)}`);
+      // Calculate stop loss risk (riskPerTrade field)
+      const slRisk = parseFloat(trade.riskPerTrade || '0');
+      totalSlRisk += slRisk;
+
+      console.log(`   Trade ${idx + 1} (${trade.symbol}): RR=${rValue.toFixed(2)}R, Profit=$${profit.toFixed(2)}, SL Risk=$${slRisk.toFixed(2)}`);
     });
 
-    console.log('📊 Total metrics: TotalR=' + totalR.toFixed(2) + 'R, TotalP&L=$' + totalUnrealizedPnL.toFixed(2));
+    console.log('📊 Total metrics: TotalR=' + totalR.toFixed(2) + 'R, TotalP&L=$' + totalUnrealizedPnL.toFixed(2) + ', TotalSLRisk=$' + totalSlRisk.toFixed(2));
 
     this.totalRRValue = totalR;
     this.totalRRGained = totalR >= 0 ? `+${totalR.toFixed(2)}R` : `${totalR.toFixed(2)}R`;
-    this.percentageOfAccount = parseFloat(((totalR / this.PROP_FIRM_ACCOUNT_VALUE) * 100).toFixed(2));
+
+    // Account Risk % is now calculated using stop loss risk value
+    this.percentageOfAccount = parseFloat(((totalSlRisk / this.PROP_FIRM_ACCOUNT_VALUE) * 100).toFixed(2));
+
     this.totalUnrealizedValue = totalUnrealizedPnL;
     this.totalUnrealizedPnL = this.formatCurrency(totalUnrealizedPnL);
 
     console.log('✅ LIVE METRICS UPDATED:');
     console.log('   - Total RR Gained:', this.totalRRGained);
-    console.log('   - Account Risk %:', this.percentageOfAccount + '%');
+    console.log('   - Account Risk % (from SL):', this.percentageOfAccount + '%');
+    console.log('   - Total SL Risk:', this.formatCurrency(totalSlRisk));
     console.log('   - Unrealized P&L:', this.totalUnrealizedPnL);
   }
 
