@@ -2442,10 +2442,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   async getMt5API(){
-    const res: any = await firstValueFrom(
-      this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
-    );
-    return res;
+    try {
+      console.log('🔗 Calling MT5 API endpoint:', `${this.BACKEND_URL_MT5}/api/history`);
+      const res: any = await firstValueFrom(
+        this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
+      );
+      console.log('✅ MT5 API Response received:');
+      console.log('   - Status: Success');
+      console.log('   - Trades count:', res?.length ?? 0);
+      console.log('   - Full response:', res);
+      return res;
+    } catch (error) {
+      console.error('❌ MT5 API Error:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      });
+      throw error;
+    }
   }
 
   async sendNotif(token: string, title: string, body: string): Promise<void> {
@@ -4947,22 +4960,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 loadMT5Data started');
     let response: any[] = [];
 
+    let dataSource = 'unknown';
     try {
       // Try live API
       console.log('📡 Attempting to fetch from MT5 API:', this.BACKEND_URL_MT5);
       try {
         response = await this.getMt5API();
-        console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
+        if (response && response.length > 0) {
+          dataSource = 'MT5 API';
+          console.log('✅ SUCCESS: Loaded from MT5 API -', response.length, 'trades');
+        } else {
+          console.warn('⚠️ MT5 API returned empty data');
+        }
       } catch (apiError) {
         console.error('❌ Error fetching MT5 API:', apiError);
       }
 
       // If API returned no data or failed, use fallback
       if (!response || response.length === 0) {
-        console.warn('⚠️ Using fallback data source...');
+        console.warn('⚠️ API failed or empty. Using fallback data source...');
         try {
           response = await this.getLocalTrades();
-          console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
+          dataSource = 'Fallback Test Data';
+          console.log('📁 SUCCESS: Fallback data loaded -', response?.length ?? 0, 'trades');
         } catch (localError) {
           console.error('❌ Failed to load fallback data:', localError);
           response = []; // Ensure response is always an array
@@ -4970,6 +4990,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
     } finally {
       this.isLoadingMT5Data = false;
+      console.log(`\n📌 DATA SOURCE: ${dataSource}`);
       this.cdr.markForCheck();
     }
 
@@ -5013,29 +5034,35 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       } as Table;
     });
 
+    console.log('\n🔍 TRADE MAPPING RESULTS:');
     console.log('✅ Mapped trades:', mt5Trades.length);
-    console.log('📊 First trade sample:', mt5Trades[0]);
+    if (mt5Trades.length > 0) {
+      console.log('📊 First trade sample:', mt5Trades[0]);
+    }
     console.log('📊 All trade data:');
     mt5Trades.forEach((t, i) => {
-      console.log(`   Trade ${i}: symbol=${t.symbol}, closeDate="${t.closeDate}", mt5status="${t.mt5status}", isOpen=${t.closeDate === '-'}`);
+      console.log(`   Trade ${i}: ${t.symbol} | Entry: ${t.entry} | Profit: $${t.profit} | Status: ${t.mt5status} | Open: ${t.closeDate === '-'}`);
     });
 
     // Separate open trades from closed trades
     const openTrades = mt5Trades.filter(trade => {
       const isOpen = trade.closeDate === '-';
-      console.log(`   Filtering: ${trade.symbol} closeDate="${trade.closeDate}" -> isOpen=${isOpen}`);
       return isOpen;
     });
     const closedTrades = mt5Trades.filter(trade => trade.closeDate !== '-');
 
-    console.log('📊 Filter results:');
-    console.log('   - openTrades:', openTrades.length);
-    console.log('   - closedTrades:', closedTrades.length);
-    console.log('   - openTrades data:', openTrades);
+    console.log('\n📊 FILTER RESULTS:');
+    console.log('   - OPEN trades:', openTrades.length);
+    console.log('   - CLOSED trades:', closedTrades.length);
+    if (openTrades.length > 0) {
+      console.log('   - Open trades details:', openTrades.map(t => ({ symbol: t.symbol, profit: t.profit, rrr: t.rrr })));
+    }
 
     this.mt5LiveTrades = openTrades;
-    console.log("✅ this.mt5LiveTrades assigned:", this.mt5LiveTrades.length, 'trades');
-    console.log('   Data:', this.mt5LiveTrades);
+    console.log("\n✅ FINAL: mt5LiveTrades assigned:", this.mt5LiveTrades.length, 'trades');
+    if (this.mt5LiveTrades.length > 0) {
+      console.log('   Details:', this.mt5LiveTrades);
+    }
     console.log("📊 Closed trades:", closedTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
