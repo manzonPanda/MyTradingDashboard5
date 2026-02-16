@@ -4923,6 +4923,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         rrrValue = this.calculateRRR(entry, sl, tp, tradeType);
       }
 
+      // Use live_rr from API if available, otherwise use calculated RRR
+      const liveRRValue = trade.live_rr || rrrValue;
+
       return {
         openDate: this.convertAndFormatMT5Date(trade.time_open),
         closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
@@ -4941,7 +4944,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         profit: trade.profit ? trade.profit.toString() : '0',
         netProfit: (trade.profit + trade.commission).toString(),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-        rrr: rrrValue.toFixed(2),
+        rrr: liveRRValue.toFixed(2),
         mt5status: trade.status || '',
         mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
       } as Table;
@@ -4949,13 +4952,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
+    console.log('📊 Trade closeDate values:', mt5Trades.map((t, i) => ({ index: i, symbol: t.symbol, closeDate: t.closeDate, status: t.mt5status })));
 
     // Separate open trades from closed trades
     const openTrades = mt5Trades.filter(trade => trade.closeDate === '-');
     const closedTrades = mt5Trades.filter(trade => trade.closeDate !== '-');
 
     this.mt5LiveTrades = openTrades;
-    console.log("✅ mt5LiveTrades (open only):", this.mt5LiveTrades.length, 'trades');
+    console.log("✅ mt5LiveTrades (open only):", this.mt5LiveTrades.length, 'trades', this.mt5LiveTrades);
     console.log("📊 Closed trades:", closedTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -4995,10 +4999,46 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Fallback test data in case file loading fails
       return [
         {
+          commission: -2,
+          entry_price: 1.2450,
+          exit_price: null,
+          position_id: 101,
+          profit: 125.50,
+          reward_risk_ratio: "1.8",
+          live_rr: 1.8,
+          risk_usd: 50.00,
+          sl: 1.2350,
+          status: "OPEN",
+          symbol: "GBPUSD",
+          time_open: "2025-02-16 09:30:22",
+          time_close: null,
+          tp: 1.2650,
+          trade_type: 0,
+          volume: "1.0"
+        },
+        {
+          commission: -2,
+          entry_price: 0.8750,
+          exit_price: null,
+          position_id: 102,
+          profit: 250.75,
+          reward_risk_ratio: "2.5",
+          live_rr: 2.5,
+          risk_usd: 100.00,
+          sl: 0.8650,
+          status: "OPEN",
+          symbol: "AUDUSD",
+          time_open: "2025-02-16 10:15:45",
+          time_close: null,
+          tp: 0.8950,
+          trade_type: 0,
+          volume: "2.0"
+        },
+        {
           commission: -4,
           entry_price: 215.19,
           exit_price: 946,
-          position_id: 100,
+          position_id: 103,
           profit: 1945.6,
           reward_risk_ratio: "2.5",
           risk_usd: 23.97,
@@ -5015,7 +5055,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           commission: -4,
           entry_price: 681.32,
           exit_price: 791,
-          position_id: 102,
+          position_id: 104,
           profit: -580.8,
           reward_risk_ratio: "1.2",
           risk_usd: 23.97,

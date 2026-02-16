@@ -195,23 +195,34 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500;
 
   ngOnInit() {
+    console.log('🚀 LiveRRTrackerComponent initialized');
     this.calculateLiveMetrics();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['mt5LiveTrades']) {
+      console.log('📊 mt5LiveTrades changed:', {
+        newLength: changes['mt5LiveTrades'].currentValue?.length || 0,
+        trades: changes['mt5LiveTrades'].currentValue || []
+      });
       this.calculateLiveMetrics();
     }
   }
 
   calculateLiveMetrics(): void {
+    console.log('📈 Starting calculateLiveMetrics with', this.mt5LiveTrades.length, 'trades');
+    console.log('📋 Trades data:', this.mt5LiveTrades);
+
     // Filter only open trades (either mt5status is OPEN or closeDate not set/is placeholder)
-    const openTrades = this.mt5LiveTrades.filter(
-      trade => trade.mt5status === 'OPEN' || ((trade.closeDate === '-' || !trade.closeDate) && trade.status !== 'closed')
-    );
+    const openTrades = this.mt5LiveTrades.filter(trade => {
+      const isOpen = trade.mt5status === 'OPEN' || (trade.closeDate === '-' || !trade.closeDate);
+      console.log(`🔍 Trade ${trade.symbol}: closeDate="${trade.closeDate}", mt5status="${trade.mt5status}", isOpen=${isOpen}`);
+      return isOpen;
+    });
 
     this.hasLiveTrades = openTrades.length > 0;
     this.openTradeCount = openTrades.length;
+    console.log('✅ Open trades found:', openTrades.length, 'Has live trades:', this.hasLiveTrades);
 
     if (!this.hasLiveTrades) {
       this.resetMetrics();
