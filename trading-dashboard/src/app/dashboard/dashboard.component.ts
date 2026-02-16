@@ -5053,10 +5053,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
 
+  // Calculate Risk-Reward Ratio from entry, SL, and TP
+  calculateRRR(entry: number, sl: number, tp: number): number {
+    if (!entry || !sl || !tp) return 0;
+    const risk = Math.abs(entry - sl);
+    const reward = Math.abs(tp - entry);
+    if (risk === 0) return 0;
+    return reward / risk;
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
     console.log("Open date from MT5:",trade.time_open)
+
+    // Calculate RRR if not provided by the server
+    let rrrValue = trade.reward_risk_ratio || 0;
+    if (!rrrValue || rrrValue === 0) {
+      const entry = parseFloat(trade.price_open || 0);
+      const sl = parseFloat(trade.sl || 0);
+      const tp = parseFloat(trade.tp || 0);
+      rrrValue = this.calculateRRR(entry, sl, tp);
+    }
+
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: "-",
@@ -5075,7 +5094,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       profit: trade.profit ? trade.profit.toString() : '0',
       netProfit: trade.profit ? trade.profit.toString() : '0',
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
-      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
+      rrr: rrrValue.toFixed(2),
       mt5status: trade.status || '',
       mfe: '0', // Initialize MFE to 0 for new live trades
     };
