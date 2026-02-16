@@ -1264,8 +1264,15 @@ async ngOnInit() {
     });
 
     socket.on('price_update', (data: any) => {
-      console.log("Live price update:", data);
+      console.log("📊 Live price update received:", data);
+
+      // Update the price for existing trade
       this.updateMT5TradePrice(data);
+
+      // Trigger change detection to display live trading session
+      this.cdr.markForCheck();
+
+      console.log('✅ Live trading session should now be visible. Open trades:', this.mt5LiveTrades.length);
     });
 
     // Start daily limit tracking
@@ -5194,6 +5201,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Check for profit target achievement on live updates
     this.checkForProfitTargetCelebration();
+
+    // Trigger change detection so LiveRRTrackerComponent updates
+    this.cdr.markForCheck();
   }
 
   updateTableData(): void {
