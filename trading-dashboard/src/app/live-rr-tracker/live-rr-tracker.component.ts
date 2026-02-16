@@ -111,14 +111,6 @@ interface Table {
             <div class="metric-value" [ngClass]="getRRClass()">
               {{ totalRRGained }}
             </div>
-            <div class="metric-subtext">
-              <span *ngIf="totalRRValue >= 0" class="positive-indicator">
-                +{{ (totalRRValue * 100).toFixed(1) }}% Risk
-              </span>
-              <span *ngIf="totalRRValue < 0" class="negative-indicator">
-                {{ (totalRRValue * 100).toFixed(1) }}% Risk
-              </span>
-            </div>
           </div>
 
           <!-- Account Percentage -->
