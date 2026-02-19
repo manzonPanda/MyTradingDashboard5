@@ -25,7 +25,9 @@ local_tz = ZoneInfo("Asia/Manila")
 last_disconnect_time = None
 reconnect_delay = 30  # seconds
 
-if not mt5.initialize():
+MASTER = r"C:\Program Files\MetaTrader 5\terminal64.exe"
+
+if not mt5.initialize(path=MASTER):
     raise Exception(f"❌MT5 Initialization failed: {mt5.last_error()}")
          
 # Store previously seen trade tickets to detect new ones
@@ -121,7 +123,7 @@ def watch_trades():
         closed_tickets = set(last_positions.keys()) - set(current_positions.keys())
         for ticket in closed_tickets:
             closed_pos = last_positions[ticket]
-            print(f"🔴 CLOSED trade: {closed_pos.symbol} @ {closed_pos.price_open}")
+            # print(f"🔴 CLOSED trade: {closed_pos.symbol} @ {closed_pos.price_open}")
 
             # Default fallback: current time
             close_time_str = ""
@@ -129,7 +131,7 @@ def watch_trades():
             # Try to get accurate close time from MT5 history using pos time window
             start_time = datetime.fromtimestamp(closed_pos.time) - timedelta(minutes=30)
             end_time = datetime.fromtimestamp(closed_pos.time) + timedelta(hours=12)
-            print(f"🔍 Searching deals from {start_time} to {end_time}")
+            # print(f"🔍 Searching deals from {start_time} to {end_time}")
 
             deals = mt5.history_deals_get(start_time, end_time)
             if deals:
@@ -138,8 +140,8 @@ def watch_trades():
                         print("found", d)
                         close_time_str = datetime.fromtimestamp(d.time, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
                         break
-            else:
-                print("⚠️ No deals returned from history_deals_get")
+            # else:
+                # print("⚠️ No deals returned from history_deals_get")
 
             # ✅ Calculate reward:risk ratio (R)
             sl = closed_pos.sl
@@ -177,14 +179,11 @@ def watch_trades():
             })
 
 
-
-
-
-
         # Update the last seen positions
         last_positions = current_positions.copy()
 
-        time.sleep(1)
+        # time.sleep(1)
+        time.sleep(0.1)   # 100ms polling
 
 
 # Start background thread
@@ -365,11 +364,11 @@ def health_check():
 
 
 def reconnect_mt5():
-    print("⏳ Attempting MT5 reconnect...")
+    # print("⏳ Attempting MT5 reconnect...")
     mt5.shutdown()
     time.sleep(1)
     mt5.initialize()
-    print("✅ Reconnect Attempt Done")
+    # print("✅ Reconnect Attempt Done")
 
 @app.route("/api/start-reconnect", methods=["POST"])
 def start_reconnect():

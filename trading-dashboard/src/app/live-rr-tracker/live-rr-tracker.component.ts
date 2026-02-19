@@ -187,40 +187,29 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500;
 
   ngOnInit() {
-    console.log('🚀 LiveRRTrackerComponent initialized');
     this.calculateLiveMetrics();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['mt5LiveTrades']) {
-      console.log('📊 mt5LiveTrades changed:', {
-        newLength: changes['mt5LiveTrades'].currentValue?.length || 0,
-        trades: changes['mt5LiveTrades'].currentValue || []
-      });
       this.calculateLiveMetrics();
     }
 
     // Also recalculate if tableData changes (in case trades are updated there)
     if (changes['tableData']) {
-      console.log('📊 tableData changed, checking for open trades');
       this.calculateLiveMetrics();
     }
   }
 
   calculateLiveMetrics(): void {
-    console.log('📈 Starting calculateLiveMetrics with', this.mt5LiveTrades.length, 'trades');
-    console.log('📋 Trades data:', this.mt5LiveTrades);
-
     // Filter only open trades (either mt5status is OPEN or closeDate not set/is placeholder)
     const openTrades = this.mt5LiveTrades.filter(trade => {
       const isOpen = trade.mt5status === 'OPEN' || (trade.closeDate === '-' || !trade.closeDate);
-      console.log(`🔍 Trade ${trade.symbol}: closeDate="${trade.closeDate}", mt5status="${trade.mt5status}", isOpen=${isOpen}`);
       return isOpen;
     });
 
     this.hasLiveTrades = openTrades.length > 0;
     this.openTradeCount = openTrades.length;
-    console.log('✅ Open trades found:', openTrades.length, 'Has live trades:', this.hasLiveTrades);
 
     if (!this.hasLiveTrades) {
       this.resetMetrics();
@@ -232,7 +221,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     let totalUnrealizedPnL = 0;
     let totalSlRisk = 0; // Total risk from stop loss
 
-    console.log('🧮 Calculating metrics for', openTrades.length, 'open trades:');
     openTrades.forEach((trade, idx) => {
       // Extract RR value from trade.rrr (which is now real-time live RR from socket)
       // Handles both formats: "0.73" (live_rr) and "1.5R" (formatted)
@@ -252,10 +240,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
       const slRisk = parseFloat(trade.riskPerTrade || '0');
       totalSlRisk += slRisk;
 
-      console.log(`   Trade ${idx + 1} (${trade.symbol}): RR=${rValue.toFixed(2)}R, Profit=$${profit.toFixed(2)}, SL Risk=$${slRisk.toFixed(2)}`);
     });
-
-    console.log('📊 Total metrics: TotalR=' + totalR.toFixed(2) + 'R, TotalP&L=$' + totalUnrealizedPnL.toFixed(2) + ', TotalSLRisk=$' + totalSlRisk.toFixed(2));
 
     this.totalRRValue = totalR;
     this.totalRRGained = totalR >= 0 ? `+${totalR.toFixed(2)}R` : `${totalR.toFixed(2)}R`;
@@ -266,11 +251,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     this.totalUnrealizedValue = totalUnrealizedPnL;
     this.totalUnrealizedPnL = this.formatCurrency(totalUnrealizedPnL);
 
-    console.log('✅ LIVE METRICS UPDATED:');
-    console.log('   - Total RR Gained:', this.totalRRGained);
-    console.log('   - Account Risk % (from SL):', this.percentageOfAccount + '%');
-    console.log('   - Total SL Risk:', this.formatCurrency(totalSlRisk));
-    console.log('   - Unrealized P&L:', this.totalUnrealizedPnL);
   }
 
   resetMetrics(): void {
