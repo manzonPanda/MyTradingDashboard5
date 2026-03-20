@@ -4,7 +4,7 @@
     {
       "label": "Frontend-Angular",
       "type": "shell",
-      "command": "ng serve",
+      "command": "ng serve --host 0.0.0.0",
       "options": {
         "cwd": "${workspaceFolder}/trading-dashboard",
         "shell": {

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
 import MetaTrader5 as mt5
@@ -32,15 +32,18 @@ if not mt5.initialize(path=MASTER):
          
 # Store previously seen trade tickets to detect new ones
 seen_tickets = set()
+seen_orders = set()
 
 # Keep track of currently open position tickets
 last_positions = {}
  
 def watch_trades():
-    global seen_tickets, last_positions
+    global seen_tickets, last_positions, seen_orders, pendingOrders
     print("✅ Trade watcher thread started...")
 
     while True:
+        pendingOrders = mt5.orders_get()
+        current_orders = {order.ticket: order for order in mt5.orders_get() or []}
         # Get current open positions
         current_positions = {p.ticket: p for p in mt5.positions_get() or []}
 
@@ -178,6 +181,39 @@ def watch_trades():
                 "object": closed_pos
             })
 
+        # Detect NEW pending orders
+        for ticket, order in current_orders.items():
+            if ticket not in seen_orders:
+                seen_orders.add(ticket)
+
+                print(f"🟡 New pending order: {order.symbol}")
+
+                order_time = datetime.fromtimestamp(
+                    order.time_setup, tz=timezone.utc
+                ).strftime('%Y-%m-%d %H:%M:%S')
+
+                socketio.emit("pending_order", {
+                    "ticket": order.ticket,
+                    "symbol": order.symbol,
+                    "volume": order.volume_current,
+                    "type": order.type,
+                    "price_open": order.price_open,
+                    "sl": order.sl,
+                    "tp": order.tp,
+                    "time_setup": order_time,
+                    "magic": order.magic,
+                    "comment": order.comment
+                })
+
+        # Detect DELETED pending orders
+        for ticket in list(seen_orders):
+            if ticket not in current_orders:
+                seen_orders.remove(ticket)
+                print(f"❌ Pending order DELETED: {ticket}")
+
+                socketio.emit('pending_deleted', {
+                    "ticket": ticket
+                })
 
         # Update the last seen positions
         last_positions = current_positions.copy()
@@ -375,6 +411,56 @@ def start_reconnect():
     # Start the reconnect timer only when this endpoint is hit
     Timer(10, reconnect_mt5).start()
     return jsonify({"message": "Reconnect countdown started"})
+
+@app.route('/api/close_trade', methods=['POST'])
+def close_trade():
+    data = request.json
+    ticket = data.get("ticket")
+    
+    if not ticket:
+        return jsonify({"error": "Ticket is required"}), 400
+
+    positions = mt5.positions_get(ticket)
+    if not positions:
+        return {"error": "Position not found"}
+
+    pos = positions[0]
+    symbol = pos.symbol
+    volume = pos.volume
+
+    tick = mt5.symbol_info_tick(symbol)
+
+    if pos.type == mt5.ORDER_TYPE_BUY:
+        order_type = mt5.ORDER_TYPE_SELL
+        price = tick.bid
+    else:
+        order_type = mt5.ORDER_TYPE_BUY
+        price = tick.ask
+
+    request_data = {
+        "action": mt5.TRADE_ACTION_DEAL,
+        "symbol": symbol,
+        "volume": volume,
+        "type": order_type,
+        "position": ticket,
+        "price": price,
+        "deviation": 20,
+        "magic": 100,
+        "comment": "",
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC,
+    }
+
+    result = mt5.order_send(request_data)
+
+    if result.retcode != mt5.TRADE_RETCODE_DONE:
+        return {
+            "error": "Close failed",
+            "retcode": result.retcode,
+            "comment": result.comment
+        }
+
+    return {"success": True, "ticket": ticket}
 
 @socketio.on('connect')
 def on_connect():

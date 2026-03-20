@@ -36,6 +36,7 @@ import { ViewChild, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
+import { TradeService } from '../services/trade.service';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -718,7 +719,10 @@ mt5AccountInfo: AccountSettings = {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar) {
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, 
+    private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
+    private tradeService: TradeService) {
+
     // Register Chart.js components
     Chart.register(...registerables);
   }
@@ -1278,7 +1282,18 @@ async ngOnInit() {
       // Trigger change detection to display live trading session
       this.cdr.markForCheck();
 
-      console.log('✅ Live trading session metrics updated. Open trades:', this.mt5LiveTrades.length);
+      if (Number(data.live_rr) >= 3.3){//close trade if reached 3R
+        this.tradeService.closeTrade(data.ticket).subscribe({
+          next: (res) => {
+            console.log('Trade closed:', data.ticket, res);
+          },
+          error: (err) => {
+            console.error('Close failed:', err);
+          }
+        });
+      }
+
+      // console.log('✅ Live trading session metrics updated. Open trades:', this.mt5LiveTrades.length);
     });
 
     // Start daily limit tracking
