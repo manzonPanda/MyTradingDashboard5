@@ -3223,14 +3223,19 @@ table.simple-table {
     }
 
     @media (min-width: 1201px) {
+      .live-rr-widget-compact {
+        grid-column: 1 / -1;
+        grid-row: 3;
+      }
+
       .profitability-winrate-card {
         grid-column: 1;
-        grid-row: 3;
+        grid-row: 4;
       }
 
       .best-profit-loss-combined {
         grid-column: 2;
-        grid-row: 3;
+        grid-row: 4;
       }
     }
 

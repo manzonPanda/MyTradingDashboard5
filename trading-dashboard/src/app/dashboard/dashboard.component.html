@@ -610,6 +610,12 @@
           </div>
         </div>
 
+        <div class="live-rr-widget-compact">
+          <app-live-rr-tracker
+            [mt5LiveTrades]="mt5LiveTrades"
+            [tableData]="tableData">
+          </app-live-rr-tracker>
+        </div>
 
         <div class="metric-card profitability-winrate-card">
           <div class="metric-header combined-metric-header">
@@ -776,12 +782,6 @@
           </div>
         </div>
 
-        <div class="live-rr-widget-compact">
-          <app-live-rr-tracker
-            [mt5LiveTrades]="mt5LiveTrades"
-            [tableData]="tableData">
-          </app-live-rr-tracker>
-        </div>
       </div>
     </div>
   </section>
