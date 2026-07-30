@@ -999,6 +999,19 @@ table.simple-table {
   --tf-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+:host-context(body.dark-theme) {
+  --tf-bg-primary: #0f172a;
+  --tf-bg-secondary: #111827;
+  --tf-bg-tertiary: #1e293b;
+  --tf-bg-card: #172033;
+  --tf-bg-hover: #243047;
+  --tf-text-primary: #e2e8f0;
+  --tf-text-secondary: #b8c4d6;
+  --tf-text-muted: #94a3b8;
+  --tf-border-primary: #334155;
+  --tf-border-secondary: #475569;
+}
+
 .tradezella-dashboard {
   min-height: 100vh;
   background: var(--tf-bg-primary);
@@ -1007,6 +1020,18 @@ table.simple-table {
 
   * {
     box-sizing: border-box;
+  }
+}
+
+:host-context(body.dark-theme) {
+  .chart-stats .stat-item {
+    background: linear-gradient(135deg, #172033 0%, #1e293b 100%);
+    border-color: #334155;
+  }
+
+  .chart-stats .stat-item .stat-label,
+  .chart-stats .stat-item .percentage-gain {
+    color: #b8c4d6;
   }
 }
 
@@ -2314,7 +2339,8 @@ table.simple-table {
     align-items: stretch;
     justify-content: flex-start;
 
-    .account-size-calculator {
+    .account-size-calculator,
+    .account-risk-modal {
       width: 100%;
       padding: 1rem 1.25rem;
       display: flex;
@@ -2806,6 +2832,12 @@ table.simple-table {
       }
 
       .chart-title-section {
+        .chart-title-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
         .chart-title {
           display: flex;
           align-items: center;
@@ -2828,6 +2860,35 @@ table.simple-table {
             background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
+          }
+        }
+
+        .theme-toggle-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.35rem 0.6rem;
+          border: 1px solid var(--tf-border-primary);
+          border-radius: 999px;
+          background: var(--tf-bg-tertiary);
+          color: var(--tf-text-secondary);
+          font: inherit;
+          font-size: 0.75rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+          mat-icon {
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+          }
+
+          &:hover {
+            background: var(--tf-bg-hover);
+            border-color: var(--tf-accent-info);
+            color: var(--tf-text-primary);
+            transform: translateY(-1px);
           }
         }
 
@@ -8891,6 +8952,153 @@ table.simple-table {
       align-items: center;
     }
   }
+}
+
+.risk-calculator-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 42px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fffbeb, #fed7aa);
+  color: #92400e;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2);
+  }
+}
+
+.risk-calculator-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(4px);
+}
+
+.account-risk-modal {
+  max-width: 760px;
+  max-height: min(90vh, 700px);
+  padding: 1.25rem;
+  overflow-y: auto;
+  background: var(--tf-bg-card);
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.35);
+
+  .calculator-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+  }
+
+  .calculator-title {
+    margin: 0;
+    color: var(--tf-text-primary);
+    font-size: 1.1rem;
+  }
+
+  .input-and-buttons-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    min-width: 190px;
+    flex: 1;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 8px;
+    background: var(--tf-bg-secondary);
+  }
+
+  .input-prefix {
+    padding-left: 0.75rem;
+    color: var(--tf-text-muted);
+    font-weight: 700;
+  }
+
+  .calculator-input {
+    width: 100%;
+    padding: 0.65rem;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--tf-text-primary);
+    font: inherit;
+  }
+
+  .quick-percentage-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .results-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .calculator-header {
+    justify-content: space-between;
+  }
+
+  .calculator-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .calculator-close-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 50%;
+    background: var(--tf-bg-tertiary);
+    color: var(--tf-text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--tf-text-primary);
+      background: var(--tf-bg-hover);
+    }
+  }
+}
+
+:host-context(body.dark-theme) .risk-calculator-trigger {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #a16207;
+  color: #fde68a;
 }
 
 // News Reminder Status Styles

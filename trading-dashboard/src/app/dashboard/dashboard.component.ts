@@ -1,11 +1,11 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { CommonModule } from "@angular/common";
+import { CommonModule, DOCUMENT } from "@angular/common";
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
@@ -159,6 +159,7 @@ export class DashboardComponent implements AfterViewInit {
   selectedAccountSize: number | null = null; // For account card selection
   dropdownSelectedSize: number = 2500; // Default dropdown to 2.5K (independent)
   showAccountSizeDropdown: boolean = false;
+  showAccountRiskCalculator: boolean = false;
   selectedPercentage: number | null = null; // Track selected percentage button
   accountSizes = [
     { size: 5000, label: '5K' },
@@ -205,6 +206,15 @@ export class DashboardComponent implements AfterViewInit {
   closeAccountSizeDropdown(): void {
     this.showAccountSizeDropdown = false;
     this.cdr.markForCheck();
+  }
+
+  openAccountRiskCalculator(): void {
+    this.showAccountRiskCalculator = true;
+  }
+
+  closeAccountRiskCalculator(): void {
+    this.showAccountRiskCalculator = false;
+    this.showAccountSizeDropdown = false;
   }
 
   private setupClickOutsideListener(): void {
@@ -719,12 +729,26 @@ mt5AccountInfo: AccountSettings = {
 
 
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef, 
+  isDarkTheme = false;
+
+  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService) {
+    private tradeService: TradeService, @Inject(DOCUMENT) private document: Document) {
+    this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
+    this.applyTheme();
 
     // Register Chart.js components
     Chart.register(...registerables);
+  }
+
+  toggleTheme(): void {
+    this.isDarkTheme = !this.isDarkTheme;
+    this.applyTheme();
+    this.document.defaultView?.localStorage.setItem('dashboard-theme', this.isDarkTheme ? 'dark' : 'light');
+  }
+
+  private applyTheme(): void {
+    this.renderer[this.isDarkTheme ? 'addClass' : 'removeClass'](this.document.body, 'dark-theme');
   }
 
   startReconnect() {
