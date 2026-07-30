@@ -549,7 +549,7 @@ mt5AccountInfo: AccountSettings = {
         data: [],
         borderColor: 'rgb(16, 185, 129)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        borderWidth: 2,
+        borderWidth: 4,
         fill: true,
         tension: 0.4,
         pointBackgroundColor: 'rgb(16, 185, 129)',
@@ -2677,7 +2677,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             data: [startingBalance],
             borderColor: 'rgb(16, 185, 129)',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 2,
+            borderWidth: 4,
             fill: true,
             tension: 0.3,
             pointBackgroundColor: 'rgb(16, 185, 129)', // Green starting point
@@ -2782,7 +2782,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
             return gradient;
           },
-          borderWidth: 2,
+          borderWidth: 4,
           fill: true,
           tension: 0.3,
           pointBackgroundColor: balanceData.map((val, i, arr) => {
