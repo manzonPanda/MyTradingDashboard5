@@ -549,7 +549,7 @@ mt5AccountInfo: AccountSettings = {
         data: [],
         borderColor: 'rgb(16, 185, 129)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        borderWidth: 3,
+        borderWidth: 4,
         fill: true,
         tension: 0.4,
         pointBackgroundColor: 'rgb(16, 185, 129)',
