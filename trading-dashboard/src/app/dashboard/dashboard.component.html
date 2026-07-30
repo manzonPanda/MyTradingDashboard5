@@ -308,70 +308,6 @@
   <section class="metrics-section">
     <div class="metrics-container">
       <div class="left-feature-square">
-        <div class="account-size-calculator">
-          <div class="calculator-header">
-            <mat-icon class="calculator-icon">calculate</mat-icon>
-            <h4 class="calculator-title">Account Risk Calculator</h4>
-          </div>
-
-          <div class="input-and-buttons-row">
-            <div class="input-wrapper">
-              <span class="input-prefix">$</span>
-              <input
-                type="number"
-                [(ngModel)]="accountSizeInput"
-                placeholder="Enter P&L value..."
-                class="calculator-input"
-                min="0"
-                step="10">
-            </div>
-
-            <div class="quick-percentage-buttons">
-              <button class="pct-btn" [class.active]="selectedPercentage === 0.30" (click)="setAccountSizeByPercentage(0.30)" title="Calculate 0.30% of starting balance">0.30%</button>
-              <button class="pct-btn" [class.active]="selectedPercentage === 0.5" (click)="setAccountSizeByPercentage(0.5)" title="Calculate 0.5% of starting balance">0.5%</button>
-              <button class="pct-btn" [class.active]="selectedPercentage === 1" (click)="setAccountSizeByPercentage(1)" title="Calculate 1% of starting balance">1%</button>
-              <button class="pct-btn" [class.active]="selectedPercentage === 1.5" (click)="setAccountSizeByPercentage(1.5)" title="Calculate 1.5% of starting balance">1.5%</button>
-              <button class="pct-btn" [class.active]="selectedPercentage === 2" (click)="setAccountSizeByPercentage(2)" title="Calculate 2% of starting balance">2%</button>
-
-              <div #accountSizeDropdownWrapper class="account-size-dropdown-wrapper" (click)="$event.stopPropagation()">
-                <button class="size-dropdown-btn" [class.has-selection]="dropdownSelectedSize" (click)="toggleAccountSizeDropdown()" title="Select account size">
-                  <span class="selected-value-text">{{ getSelectedAccountSizeLabel() }}</span>
-                  <mat-icon class="dropdown-icon" [class.rotated]="showAccountSizeDropdown">expand_more</mat-icon>
-                </button>
-                <div class="account-size-dropdown" *ngIf="showAccountSizeDropdown" (click)="$event.stopPropagation()">
-                  <button
-                    *ngFor="let size of accountSizesSecondary"
-                    class="dropdown-option"
-                    (click)="selectAccountSizeFromDropdown(size.size)"
-                    [class.active]="dropdownSelectedSize === size.size">
-                    <span class="size-label">{{ size.label }}</span>
-                    <span class="checkmark-icon" *ngIf="dropdownSelectedSize === size.size">✓</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="results-container">
-            <div *ngFor="let result of calculateAccountSizesSecondary()"
-                 class="percentage-card"
-                 [class.active]="accountSizeInput > 0"
-                 [class.matched-account]="result.size === mt5AccountInfo.startingBalance"
-                 [class.selected]="selectedAccountSize === result.size"
-                 (click)="selectAccountSize(result.size)">
-              <div class="card-header" [class.matched-header]="result.size === mt5AccountInfo.startingBalance">
-                <div class="account-label">{{ result.label }}</div>
-              </div>
-              <div class="card-content">
-                <div class="value-display">
-                  <div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div>
-                  <div class="value-divider"></div>
-                  <div class="percentage-text">{{ result.percentage | number:'1.2-2' }}%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Live RR Tracker Widget (Compact) -->
         <div class="live-rr-widget-compact">
@@ -384,10 +320,21 @@
       <div class="trading-chart-container">
         <div class="chart-header">
           <div class="chart-title-section">
-            <h3 class="chart-title">
-              <mat-icon class="chart-icon">trending_up</mat-icon>
-              <span class="chart-title-gradient">Jake's Performance</span>
-            </h3>
+            <div class="chart-title-row">
+              <h3 class="chart-title">
+                <mat-icon class="chart-icon">trending_up</mat-icon>
+                <span class="chart-title-gradient">Jake's Performance</span>
+              </h3>
+              <button
+                class="theme-toggle-button"
+                type="button"
+                [attr.aria-label]="isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'"
+                [attr.aria-pressed]="isDarkTheme"
+                (click)="toggleTheme()">
+                <mat-icon>{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
+                <span>{{ isDarkTheme ? 'Light' : 'Dark' }}</span>
+              </button>
+            </div>
             <!-- <button (click)="startReconnect()">Reconnect MT5</button> -->
           </div>
           <div class="chart-stats">
@@ -478,6 +425,10 @@
                       </div>
                     </div>
                   </div>
+                  <button class="risk-calculator-trigger" type="button" (click)="openAccountRiskCalculator()">
+                    <mat-icon>calculate</mat-icon>
+                    <span>Risk Calculator</span>
+                  </button>
                 </div>
               </div>
               <!-- <button class="confetti-test-btn" (click)="testConfettiCelebration()" title="Test Persistent Confetti Celebration 🎉" style="margin-left: 8px; background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4); border: none; border-radius: 12px; padding: 10px 16px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); transition: all 0.3s ease; font-size: 0.9rem;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 20px rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.4)'">
@@ -1682,5 +1633,50 @@
       </div>
     </div>
   </section>
+
+  <div *ngIf="showAccountRiskCalculator" class="risk-calculator-backdrop" (click)="closeAccountRiskCalculator()">
+    <section class="account-risk-modal" role="dialog" aria-modal="true" aria-labelledby="risk-calculator-title" (click)="$event.stopPropagation()">
+      <div class="calculator-header">
+        <div class="calculator-heading">
+          <mat-icon class="calculator-icon">calculate</mat-icon>
+          <h2 id="risk-calculator-title" class="calculator-title">Account Risk Calculator</h2>
+        </div>
+        <button class="calculator-close-button" type="button" aria-label="Close account risk calculator" (click)="closeAccountRiskCalculator()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="input-and-buttons-row">
+        <div class="input-wrapper">
+          <span class="input-prefix">$</span>
+          <input type="number" [(ngModel)]="accountSizeInput" placeholder="Enter P&amp;L value..." class="calculator-input" min="0" step="10">
+        </div>
+        <div class="quick-percentage-buttons">
+          <button class="pct-btn" [class.active]="selectedPercentage === 0.30" (click)="setAccountSizeByPercentage(0.30)">0.30%</button>
+          <button class="pct-btn" [class.active]="selectedPercentage === 0.5" (click)="setAccountSizeByPercentage(0.5)">0.5%</button>
+          <button class="pct-btn" [class.active]="selectedPercentage === 1" (click)="setAccountSizeByPercentage(1)">1%</button>
+          <button class="pct-btn" [class.active]="selectedPercentage === 1.5" (click)="setAccountSizeByPercentage(1.5)">1.5%</button>
+          <button class="pct-btn" [class.active]="selectedPercentage === 2" (click)="setAccountSizeByPercentage(2)">2%</button>
+          <div #accountSizeDropdownWrapper class="account-size-dropdown-wrapper" (click)="$event.stopPropagation()">
+            <button class="size-dropdown-btn" [class.has-selection]="dropdownSelectedSize" (click)="toggleAccountSizeDropdown()" title="Select account size">
+              <span class="selected-value-text">{{ getSelectedAccountSizeLabel() }}</span>
+              <mat-icon class="dropdown-icon" [class.rotated]="showAccountSizeDropdown">expand_more</mat-icon>
+            </button>
+            <div class="account-size-dropdown" *ngIf="showAccountSizeDropdown">
+              <button *ngFor="let size of accountSizesSecondary" class="dropdown-option" (click)="selectAccountSizeFromDropdown(size.size)" [class.active]="dropdownSelectedSize === size.size">
+                <span class="size-label">{{ size.label }}</span>
+                <span class="checkmark-icon" *ngIf="dropdownSelectedSize === size.size">✓</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="results-container">
+        <div *ngFor="let result of calculateAccountSizesSecondary()" class="percentage-card" [class.active]="accountSizeInput > 0" [class.matched-account]="result.size === mt5AccountInfo.startingBalance" [class.selected]="selectedAccountSize === result.size" (click)="selectAccountSize(result.size)">
+          <div class="card-header" [class.matched-header]="result.size === mt5AccountInfo.startingBalance"><div class="account-label">{{ result.label }}</div></div>
+          <div class="card-content"><div class="value-display"><div class="percentage-value" [class.positive]="result.percentage >= 0">{{ result.displayValue }}</div><div class="value-divider"></div><div class="percentage-text">{{ result.percentage | number:'1.2-2' }}%</div></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
 
 </div>
