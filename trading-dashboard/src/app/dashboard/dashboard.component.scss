@@ -9107,6 +9107,213 @@ table.simple-table {
   }
 }
 
+.account-risk-modal {
+  width: min(100%, 760px);
+  box-sizing: border-box;
+
+  .calculator-header {
+    justify-content: space-between;
+  }
+
+  .calculator-heading {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 0.75rem;
+  }
+
+  .calculator-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+    color: var(--tf-text-secondary);
+    font-size: 1.25rem;
+  }
+
+  .calculator-close-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 50%;
+    background: var(--tf-bg-tertiary);
+    color: var(--tf-text-secondary);
+    cursor: pointer;
+
+    mat-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+    }
+
+    &:hover {
+      color: var(--tf-text-primary);
+      background: var(--tf-bg-hover);
+    }
+  }
+
+  .quick-percentage-buttons {
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .pct-btn,
+  .size-dropdown-btn {
+    min-height: 32px;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 6px;
+    background: var(--tf-bg-secondary);
+    color: var(--tf-text-secondary);
+    font: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+  }
+
+  .pct-btn:hover,
+  .size-dropdown-btn:hover,
+  .pct-btn.active,
+  .size-dropdown-btn.has-selection {
+    border-color: var(--tf-accent-primary);
+    background: var(--tf-bg-hover);
+    color: var(--tf-text-primary);
+  }
+
+  .account-size-dropdown-wrapper {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .size-dropdown-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    white-space: nowrap;
+  }
+
+  .dropdown-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  .account-size-dropdown {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    z-index: 10;
+    display: flex;
+    min-width: 150px;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 8px;
+    background: var(--tf-bg-card);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+  }
+
+  .dropdown-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.6rem;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--tf-text-secondary);
+    cursor: pointer;
+
+    &:hover,
+    &.active {
+      background: var(--tf-bg-hover);
+      color: var(--tf-text-primary);
+    }
+  }
+
+  .results-container {
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  }
+
+  .percentage-card {
+    display: flex;
+    min-height: 72px;
+    flex-direction: column;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+
+    &:hover,
+    &.active,
+    &.matched-account,
+    &.selected {
+      border-color: var(--tf-border-primary);
+      background: var(--tf-bg-secondary);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 28px;
+      padding: 0.25rem 0.5rem 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .account-label {
+      color: var(--tf-text-secondary);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .card-content {
+      display: flex;
+      flex: 1;
+      align-items: flex-start;
+      padding: 0.2rem 0.5rem 0.5rem;
+    }
+
+    .value-display {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.1rem;
+    }
+
+    .percentage-value,
+    .percentage-text {
+      color: var(--tf-text-muted);
+      font-size: 0.72rem;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .percentage-value {
+      color: var(--tf-positive);
+    }
+
+    .value-divider {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .input-and-buttons-row,
+    .quick-percentage-buttons {
+      flex-wrap: wrap;
+    }
+
+    .quick-percentage-buttons {
+      width: 100%;
+    }
+  }
+}
+
 :host-context(body.dark-theme) .risk-calculator-trigger {
   background: linear-gradient(135deg, #422006, #78350f);
   border-color: #a16207;
