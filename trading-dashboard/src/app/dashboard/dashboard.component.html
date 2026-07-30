@@ -307,16 +307,6 @@
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
-      <div class="left-feature-square">
-
-        <!-- Live RR Tracker Widget (Compact) -->
-        <div class="live-rr-widget-compact">
-          <app-live-rr-tracker
-            [mt5LiveTrades]="mt5LiveTrades"
-            [tableData]="tableData">
-          </app-live-rr-tracker>
-        </div>
-      </div>
       <div class="trading-chart-container">
         <div class="chart-header">
           <div class="chart-title-section">
@@ -786,7 +776,12 @@
           </div>
         </div>
 
-
+        <div class="live-rr-widget-compact">
+          <app-live-rr-tracker
+            [mt5LiveTrades]="mt5LiveTrades"
+            [tableData]="tableData">
+          </app-live-rr-tracker>
+        </div>
       </div>
     </div>
   </section>

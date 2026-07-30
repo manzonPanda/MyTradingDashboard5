@@ -3222,6 +3222,18 @@ table.simple-table {
       min-width: 0;
     }
 
+    @media (min-width: 1201px) {
+      .profitability-winrate-card {
+        grid-column: 1;
+        grid-row: 3;
+      }
+
+      .best-profit-loss-combined {
+        grid-column: 2;
+        grid-row: 3;
+      }
+    }
+
     // When we have more than 10 cards, adjust the grid
     &:has(.metric-card:nth-child(11)) {
       grid-template-rows: repeat(6, auto);
@@ -9412,11 +9424,9 @@ table.simple-table {
   }
 }
 
-// Live RR Tracker Widget - Compact Mode (Below Account Calculator)
+// Live RR Tracker Widget
 .live-rr-widget-compact {
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--tf-border-primary);
+  grid-column: 1 / -1;
   width: 100%;
 }
 
