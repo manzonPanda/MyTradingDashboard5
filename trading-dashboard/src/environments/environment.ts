@@ -3,7 +3,7 @@ export const environment = {
   // backendUrlNotion: 'http://localhost:3000',
   backendUrlNotion: 'https://notionproxyapi.onrender.com',
   backendUrlMt5: 'https://mt5-api.jakemt5.host',
-  propfirmAccountName: '5ers🔟2.5k [#26032524]',
+  propfirmAccountName: '5ers1️⃣7️⃣2.5k [#26542161]',
   firebaseConfig: {
     apiKey: "AIzaSyB5-Z3aLRr-HyopLGF6kXDPR1DdOKoEI_Q",
     authDomain: "tradingdashboard-fce7d.firebaseapp.com",

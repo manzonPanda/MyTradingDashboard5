@@ -1282,7 +1282,7 @@ async ngOnInit() {
       // Trigger change detection to display live trading session
       this.cdr.markForCheck();
 
-      if (Number(data.live_rr) >= 3.3){//close trade if reached 3R
+      if (Number(data.live_rr) >= 5){//close trade if reached 5R
         this.tradeService.closeTrade(data.ticket).subscribe({
           next: (res) => {
             console.log('Trade closed:', data.ticket, res);
