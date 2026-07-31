@@ -42,17 +42,13 @@
         <mat-icon>sync</mat-icon>
         <span><strong>Notion Update</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Portfolio" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
+      <button class="navigation-link" type="button" title="Trading journey" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
         <mat-icon>history</mat-icon>
-        <span><strong>Portfolio</strong></span>
+        <span><strong>Trading journey</strong></span>
       </button>
       <button class="navigation-link" type="button" title="ROI" [class.is-active]="currentWorkspace === 'roi'" (click)="navigateToWorkspace('roi')">
         <mat-icon>insights</mat-icon>
         <span><strong>ROI</strong></span>
-      </button>
-      <button class="navigation-link" type="button" title="Payouts" [class.is-active]="currentWorkspace === 'payouts'" (click)="navigateToWorkspace('payouts')">
-        <mat-icon>payments</mat-icon>
-        <span><strong>Payouts</strong></span>
       </button>
       <button class="navigation-link" type="button" title="Certificates" [class.is-active]="currentWorkspace === 'certificates'" (click)="navigateToWorkspace('certificates')">
         <mat-icon>workspace_premium</mat-icon>
@@ -68,7 +64,7 @@
       <div class="navigation-timeline-card">
         <div class="navigation-card-label">
           <mat-icon>auto_awesome</mat-icon>
-          <span>Trading journey</span>
+          <span>Experience</span>
         </div>
         <app-dream-timeline></app-dream-timeline>
       </div>
