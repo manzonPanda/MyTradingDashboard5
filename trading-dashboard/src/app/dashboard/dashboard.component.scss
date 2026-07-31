@@ -645,7 +645,7 @@
 
 // Daily Limit Card Styles
 .metric-card.daily-limit-card {
-  grid-column: 1 / -1;
+  grid-column: auto;
   .metric-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.5rem; }
   .metric-header .metric-icon { color: var(--tf-accent-warning); }
   .pnl-chip-header-grid { justify-self: center; display: grid; grid-template-rows: repeat(2, auto); gap: 0.2rem; }
@@ -697,7 +697,7 @@
   .donut-tooltip.tooltip-positive { border: 1px solid #10b981; }
   .donut-tooltip.tooltip-danger { border: 1px solid #ef4444; }
 
-  @media (min-width: 769px) {
+  @media (max-width: 768px) {
     grid-column: 1 / -1;
   }
 }
