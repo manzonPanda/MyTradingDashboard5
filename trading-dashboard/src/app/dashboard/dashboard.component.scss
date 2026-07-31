@@ -9727,6 +9727,9 @@ table.simple-table {
   top: 0;
   bottom: 0;
   left: 0;
+  height: 100dvh;
+  min-height: 100vh;
+  box-sizing: border-box;
   display: flex;
   width: min(22rem, calc(100vw - 2rem));
   flex-direction: column;
