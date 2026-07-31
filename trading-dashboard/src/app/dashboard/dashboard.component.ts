@@ -1417,8 +1417,6 @@ async ngOnInit() {
       ]
     };
 
-    localStorage.clear();
-
     // await this.loadTrades(); // Load trades from Firestore
     // await this.loadMT5Data(); // Load MT5 trades
     // this.addTradesToCalendar(); // Add trades to calendar events
