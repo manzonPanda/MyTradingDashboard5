@@ -9673,6 +9673,85 @@ table.simple-table {
   }
 }
 
+// Compact desktop dashboard proportions
+@media (min-width: 769px) {
+  .dashboard-header {
+    height: 14vh;
+
+    .header-content,
+    .trading-week-container,
+    .trading-week-container .trading-days-grid {
+      height: 132px;
+    }
+
+    .trading-week-container .trading-days-grid .day-column {
+      min-width: 96px;
+
+      &:has(.no-news) {
+        min-width: 64px;
+      }
+
+      &:nth-child(4) {
+        min-width: 330px !important;
+        max-width: 460px;
+      }
+    }
+  }
+
+  .metrics-section {
+    padding: 0.45rem;
+
+    .metrics-container {
+      gap: 0.4rem;
+    }
+
+    .trading-chart-container {
+      border-radius: 12px;
+
+      .chart-header {
+        padding: 0.1rem 0.35rem;
+
+        .chart-title-section .chart-title {
+          gap: 0.5rem;
+          font-size: 1.15rem;
+          margin-bottom: 0.25rem;
+
+          .chart-icon {
+            font-size: 1.35rem;
+          }
+        }
+      }
+
+      .chart-canvas-wrapper {
+        height: 560px;
+      }
+    }
+
+    .metrics-grid {
+      gap: 0.5rem;
+    }
+  }
+
+  .metric-card {
+    padding: 0.6rem;
+    min-height: 64px;
+
+    .metric-header {
+      margin-bottom: 0.35rem;
+    }
+  }
+
+  .upload-section,
+  .calendar-section,
+  .table-section {
+    padding: 0 1rem 1rem;
+  }
+
+  .section-title {
+    font-size: 1.05rem;
+  }
+}
+
 // Adjust main content to account for fixed footer
 .tradezella-dashboard {
   padding-bottom: 60px;
