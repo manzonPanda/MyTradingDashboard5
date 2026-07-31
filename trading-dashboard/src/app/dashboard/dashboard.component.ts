@@ -154,6 +154,20 @@ export class DashboardComponent implements AfterViewInit {
   // Math object for template calculations
   Math = Math;
   environment = environment;
+  isDashboardNavigationOpen = false;
+
+  toggleDashboardNavigation(): void {
+    this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
+  }
+
+  closeDashboardNavigation(): void {
+    this.isDashboardNavigationOpen = false;
+  }
+
+  navigateToDashboardSection(sectionId: string): void {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.closeDashboardNavigation();
+  }
   // Account Size Calculator
   accountSizeInput: number = 0;
   selectedAccountSize: number | null = null; // For account card selection
