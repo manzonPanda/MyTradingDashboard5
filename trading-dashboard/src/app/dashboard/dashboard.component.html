@@ -30,6 +30,14 @@
     </div>
 
     <nav class="navigation-links">
+      <button class="navigation-link" type="button" [class.is-active]="isMainDashboard" (click)="navigateToWorkspace('dashboard')">
+        <mat-icon>dashboard</mat-icon>
+        <span>
+          <strong>Main Dashboard</strong>
+          <small>Overview and performance</small>
+        </span>
+        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+      </button>
       <button class="navigation-link" type="button" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
         <span>
