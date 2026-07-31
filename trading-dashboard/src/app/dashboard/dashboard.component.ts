@@ -1162,9 +1162,9 @@ mt5AccountInfo: AccountSettings = {
         const maxTotalDrawdown = info.match(/MaxTotalDrawdown:\s*([\d.]+%)/i)?.[1] || null;
         const dailyLossLimit = info.match(/DailyLossLimit:\s*([\d.]+%)/i)?.[1] || null;
         this.mt5AccountInfo.startingBalance = parseInt(startingBalance)
-        this.mt5AccountInfo.profitTarget = parseInt(profitTarget.replace('%', ''))
-        this.mt5AccountInfo.maxTotalDrawdown = parseInt(maxTotalDrawdown.replace('%', ''))
-        this.mt5AccountInfo.dailyLossLimit = parseInt(dailyLossLimit.replace('%', ''))
+        this.mt5AccountInfo.profitTarget = parseFloat(profitTarget.replace('%', ''))
+        this.mt5AccountInfo.maxTotalDrawdown = parseFloat(maxTotalDrawdown.replace('%', ''))
+        this.mt5AccountInfo.dailyLossLimit = parseFloat(dailyLossLimit.replace('%', ''))
         console.log('✅ Loaded MT5 Account settings from Notion:', this.mt5AccountInfo);
         // Refresh chart with updated MT5 account info
         setTimeout(() => {
@@ -1257,10 +1257,12 @@ async ngOnInit() {
     });
 
     socket.on("account_info", (data) => {
-      if (this.mt5AccountInfo) {
-        this.mt5AccountInfo.balance = 5500;
+      const balance = Number(data?.balance ?? data?.account_balance ?? data?.equity);
+      if (Number.isFinite(balance) && balance > 0) {
+        this.mt5AccountInfo.balance = balance;
+        this.cdr.markForCheck();
       }
-      console.warn("���� Account Info Received:", data);
+      console.warn("Account Info Received:", data);
     });
 
     socket.on("connect_error", (err: any) => {
@@ -5123,7 +5125,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
-      this.mt5LiveTrades.push(newTrade)
+      this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
@@ -5176,6 +5178,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
+      this.mt5LiveTrades = [...this.mt5LiveTrades];
 
       //call Notion api to update an existing entry for closed trade
       this.updateExistingEntry(closedTrade);  
@@ -5224,6 +5227,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         trade.mfe = '0';
       }
 
+      this.mt5LiveTrades = [...this.mt5LiveTrades];
       this.updateTableDataOnly();
 
       // Add subtle chart pulse on price updates (every 10th update to avoid spam)

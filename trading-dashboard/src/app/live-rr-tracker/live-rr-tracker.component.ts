@@ -188,6 +188,7 @@ interface Table {
 export class LiveRRTrackerComponent implements OnInit, OnChanges {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
+  @Input() accountSize = 0;
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
@@ -197,8 +198,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   percentageOfAccount: number = 0;
   totalUnrealizedPnL: string = '$0.00';
   totalUnrealizedValue: number = 0;
-
-  readonly PROP_FIRM_ACCOUNT_VALUE = 2500;
 
   ngOnInit() {
     this.calculateLiveMetrics();
@@ -210,7 +209,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     }
 
     // Also recalculate if tableData changes (in case trades are updated there)
-    if (changes['tableData']) {
+    if (changes['tableData'] || changes['accountSize']) {
       this.calculateLiveMetrics();
     }
   }
@@ -236,32 +235,21 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     let totalUnrealizedPnL = 0;
     let totalSlRisk = 0; // Total risk from stop loss
 
-    openTrades.forEach((trade, idx) => {
-      // Extract RR value from trade.rrr (which is now real-time live RR from socket)
-      // Handles both formats: "0.73" (live_rr) and "1.5R" (formatted)
-      let rValue = 0;
-      if (typeof trade.rrr === 'string') {
-        rValue = parseFloat(trade.rrr.replace('R', '').replace(/^\+/, '')) || 0;
-      } else if (typeof trade.rrr === 'number') {
-        rValue = trade.rrr;
-      }
-      totalR += rValue;
-
-      // Calculate unrealized P&L
-      const profit = parseFloat(trade.profit || '0');
+    openTrades.forEach((trade) => {
+      const profit = parseFloat(trade.profit || '0') || 0;
+      const slRisk = parseFloat(trade.riskPerTrade || '0') || 0;
+      totalR += slRisk > 0 ? profit / slRisk : 0;
       totalUnrealizedPnL += profit;
-
-      // Calculate stop loss risk (riskPerTrade field)
-      const slRisk = parseFloat(trade.riskPerTrade || '0');
       totalSlRisk += slRisk;
-
     });
 
     this.totalRRValue = totalR;
     this.totalRRGained = totalR >= 0 ? `+${totalR.toFixed(2)}R` : `${totalR.toFixed(2)}R`;
 
-    // Account Risk % is now calculated using stop loss risk value
-    this.percentageOfAccount = parseFloat(((totalSlRisk / this.PROP_FIRM_ACCOUNT_VALUE) * 100).toFixed(2));
+    const accountSize = this.accountSize > 0 ? this.accountSize : 0;
+    this.percentageOfAccount = accountSize > 0
+      ? parseFloat(((totalSlRisk / accountSize) * 100).toFixed(2))
+      : 0;
 
     this.totalUnrealizedValue = totalUnrealizedPnL;
     this.totalUnrealizedPnL = this.formatCurrency(totalUnrealizedPnL);
@@ -282,7 +270,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   }
 
   getTradePercent(trade: Table): number {
-    return (this.getTradeProfit(trade) / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+    return this.accountSize > 0
+      ? (this.getTradeProfit(trade) / this.accountSize) * 100
+      : 0;
   }
 
   getTradeGaugeDash(trade: Table): string {
