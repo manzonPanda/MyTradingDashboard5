@@ -1,6 +1,7 @@
 <div class="tradezella-dashboard" [class.dashboard-navigation-open]="isDashboardNavigationOpen" [class.workspace-view]="!isMainDashboard">
   <button
     class="dashboard-navigation-toggle"
+    [class.is-expanded]="isDashboardNavigationOpen"
     type="button"
     (click)="toggleDashboardNavigation()"
     [attr.aria-expanded]="isDashboardNavigationOpen"
@@ -24,70 +25,40 @@
         <mat-icon>candlestick_chart</mat-icon>
       </div>
       <div class="navigation-brand-copy">
-        <span class="navigation-eyebrow">Trading workspace</span>
-        <strong>Command center</strong>
+        <strong>Tradeflow</strong>
+        <span>Trading workspace</span>
       </div>
     </div>
 
-    <nav class="navigation-links">
+    <nav class="navigation-links" aria-label="Main menu">
+      <span class="navigation-section-label">Main menu</span>
       <button class="navigation-link" type="button" title="Main Dashboard" [class.is-active]="isMainDashboard" (click)="navigateToWorkspace('dashboard')">
         <mat-icon>dashboard</mat-icon>
-        <span>
-          <strong>Main Dashboard</strong>
-          <small>Overview and performance</small>
-        </span>
-        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+        <span><strong>Dashboard</strong></span>
       </button>
       <button class="navigation-link" type="button" title="Active Account" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
-        <span>
-          <strong>Active Account</strong>
-          <small>{{ tableData.length }} tracked trades</small>
-        </span>
-        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+        <span><strong>Active Account</strong></span>
       </button>
       <button class="navigation-link" type="button" title="Notion Update" [class.is-active]="currentWorkspace === 'notion-update'" (click)="navigateToWorkspace('notion-update')">
         <mat-icon>sync</mat-icon>
-        <span>
-          <strong>Notion Update</strong>
-          <small>Import and sync data</small>
-        </span>
-        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+        <span><strong>Notion Update</strong></span>
       </button>
       <button class="navigation-link" type="button" title="Trading History" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
         <mat-icon>history</mat-icon>
-        <span>
-          <strong>Trading History</strong>
-          <small>Review overall performance</small>
-        </span>
-        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+        <span><strong>Trading History</strong></span>
       </button>
     </nav>
 
-    <section class="navigation-live-panel" aria-label="Workspace pulse">
-      <div class="navigation-panel-heading">
-        <span>Workspace pulse</span>
-        <span class="navigation-live-badge"><i></i> Live</span>
-      </div>
-      <div class="navigation-timeline-card">
-        <div class="navigation-card-label">
-          <mat-icon>auto_awesome</mat-icon>
-          <span>Trading journey</span>
-        </div>
-        <app-dream-timeline></app-dream-timeline>
-      </div>
-      <div class="navigation-connections-card">
-        <div class="navigation-card-label">
-          <mat-icon>hub</mat-icon>
-          <span>Connected services</span>
-        </div>
-        <app-connection-status></app-connection-status>
-      </div>
-    </section>
-
     <div class="navigation-footer">
-      <mat-icon>keyboard_double_arrow_left</mat-icon>
-      <span>Use the menu to jump between workspaces.</span>
+      <button class="navigation-link navigation-utility-link" type="button" title="Support">
+        <mat-icon>headset_mic</mat-icon>
+        <span><strong>Support</strong></span>
+      </button>
+      <button class="navigation-link navigation-utility-link" type="button" title="Settings">
+        <mat-icon>settings</mat-icon>
+        <span><strong>Settings</strong></span>
+      </button>
     </div>
   </aside>
 

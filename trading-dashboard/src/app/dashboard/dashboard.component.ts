@@ -155,7 +155,7 @@ export class DashboardComponent implements AfterViewInit {
   // Math object for template calculations
   Math = Math;
   environment = environment;
-  isDashboardNavigationOpen = false;
+  isDashboardNavigationOpen = true;
 
   toggleDashboardNavigation(): void {
     this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
