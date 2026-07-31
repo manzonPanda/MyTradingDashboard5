@@ -9816,6 +9816,11 @@ table.simple-table {
     white-space: nowrap;
   }
 
+  &.is-active {
+    border-color: rgba(129, 140, 248, 0.4);
+    background: rgba(99, 102, 241, 0.16);
+  }
+
   &:hover {
     border-color: rgba(129, 140, 248, 0.28);
     background: rgba(99, 102, 241, 0.1);

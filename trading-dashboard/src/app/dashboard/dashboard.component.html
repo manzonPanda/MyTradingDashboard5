@@ -30,7 +30,7 @@
     </div>
 
     <nav class="navigation-links">
-      <button class="navigation-link" type="button" (click)="navigateToDashboardSection('active-account')">
+      <button class="navigation-link" type="button" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
         <span>
           <strong>Active Account</strong>
@@ -38,7 +38,7 @@
         </span>
         <mat-icon class="navigation-arrow">chevron_right</mat-icon>
       </button>
-      <button class="navigation-link" type="button" (click)="navigateToDashboardSection('notion-update')">
+      <button class="navigation-link" type="button" [class.is-active]="currentWorkspace === 'notion-update'" (click)="navigateToWorkspace('notion-update')">
         <mat-icon>sync</mat-icon>
         <span>
           <strong>Notion Update</strong>
@@ -46,7 +46,7 @@
         </span>
         <mat-icon class="navigation-arrow">chevron_right</mat-icon>
       </button>
-      <button class="navigation-link" type="button" (click)="navigateToDashboardSection('trading-history')">
+      <button class="navigation-link" type="button" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
         <mat-icon>history</mat-icon>
         <span>
           <strong>Trading History</strong>
@@ -932,7 +932,7 @@
   </section>
 
     <!-- Active Account Section -->
-  <section id="active-account" class="table-section">
+  <section id="active-account" class="table-section" *ngIf="currentWorkspace === 'active-account'">
     <div class="table-card">
       <div class="table-header">
         <h2 class="section-title">Active Account: {{ environment.propfirmAccountName }}
@@ -1296,7 +1296,7 @@
   
 
   <!-- Manual Data Update to Notion Section -->
-  <section id="notion-update" class="upload-section">
+  <section id="notion-update" class="upload-section" *ngIf="currentWorkspace === 'notion-update'">
     <div class="upload-card">
       <div class="upload-header">
         <h2 class="section-title">Manual Data Update to Notion</h2>
@@ -1434,7 +1434,7 @@
 
 
     <!--  Overall Trading History Section -->
-  <section id="trading-history" class="table-section notion-performance-section">
+  <section id="trading-history" class="table-section notion-performance-section" *ngIf="currentWorkspace === 'trading-history'">
     <div class="section-container">
       <div class="table-header">
         <h2 class="section-title">
