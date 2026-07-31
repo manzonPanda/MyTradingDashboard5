@@ -5199,8 +5199,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateMT5TradePrice(priceData: any): void {
+    const livePositionId = priceData.ticket ?? priceData.position_id ?? priceData.position;
     const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      String(trade.position) === String(priceData.ticket)
+      String(trade.position) === String(livePositionId)
     );
 
     if (tradeIndex !== -1) {
