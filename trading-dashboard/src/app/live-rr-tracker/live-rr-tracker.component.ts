@@ -165,20 +165,6 @@ interface Table {
         </div>
         </div>
 
-        <!-- Status Bar -->
-        <div class="status-bar">
-          <div class="status-item">
-            <span class="status-label">Status</span>
-            <span class="status-badge active">
-              <mat-icon class="pulse-dot">fiber_manual_record</mat-icon>
-              Live Trading
-            </span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Last Update</span>
-            <span class="status-time">Real-time</span>
-          </div>
-        </div>
       </div>
     </div>
   `,

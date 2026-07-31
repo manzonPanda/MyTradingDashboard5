@@ -55,6 +55,18 @@
       &::before {
         background: linear-gradient(90deg, #f59e0b, #fbbf24);
       }
+
+      &:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow:
+          0 12px 40px rgba(245, 158, 11, 0.2),
+          0 6px 16px rgba(245, 158, 11, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+      }
     }
 
     .target-icon {
