@@ -945,13 +945,7 @@ mt5AccountInfo: AccountSettings = {
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getLossRingOffset(): number {
-    const c = this.getWinRingCircumference();
-    const wins = Math.max(0, this.dailyWinsAmount);
-    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
-    const total = wins + losses;
-    if (total <= 0) return 0;
-    const winArc = (wins / total) * c;
-    return -winArc;
+    return 0;
   }
 
   // Tooltip state for left donut
