@@ -174,7 +174,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history'): void {
-    this.router.navigateByUrl(`/${workspace}`);
+    this.router.navigateByUrl(workspace === 'dashboard' ? '/' : `/${workspace}`);
     this.closeDashboardNavigation();
   }
   // Account Size Calculator
