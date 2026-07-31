@@ -174,7 +174,7 @@ export class DashboardComponent implements AfterViewInit {
     return this.currentWorkspace === 'dashboard';
   }
 
-  navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history'): void {
+  navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
     this.activeWorkspace = workspace;
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
 
