@@ -150,7 +150,6 @@ interface Table {
               </span>
             </div>
           </div>
-        </div>
 
         <div class="live-trade-gauges">
           <article *ngFor="let trade of openTrades" class="trade-gauge-card">
@@ -178,6 +177,7 @@ interface Table {
               </div>
             </div>
           </article>
+        </div>
         </div>
 
         <!-- Status Bar -->
