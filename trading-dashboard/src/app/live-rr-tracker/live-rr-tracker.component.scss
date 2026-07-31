@@ -619,30 +619,16 @@
   font-weight: 800;
 }
 
-.trade-gauge-amount {
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.trade-gauge-percent.positive,
-.trade-gauge-amount.positive {
+.trade-gauge-percent.positive {
   color: var(--tf-positive);
 }
 
-.trade-gauge-percent.negative,
-.trade-gauge-amount.negative {
+.trade-gauge-percent.negative {
   color: var(--tf-negative);
 }
 
-.trade-gauge-percent.neutral,
-.trade-gauge-amount.neutral {
+.trade-gauge-percent.neutral {
   color: var(--tf-text-primary);
-}
-
-.trade-gauge-label {
-  color: var(--tf-text-muted);
-  font-size: 0.65rem;
-  text-align: center;
 }
 
 .trade-gauge-details {

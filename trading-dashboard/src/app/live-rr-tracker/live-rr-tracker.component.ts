@@ -141,14 +141,6 @@ interface Table {
             <div class="metric-value" [ngClass]="getPnLClass()">
               {{ totalUnrealizedPnL }}
             </div>
-            <div class="metric-subtext">
-              <span *ngIf="totalUnrealizedValue >= 0" class="positive-indicator">
-                {{ ((totalUnrealizedValue / 2500) * 100).toFixed(2) }}% of Account
-              </span>
-              <span *ngIf="totalUnrealizedValue < 0" class="negative-indicator">
-                {{ ((totalUnrealizedValue / 2500) * 100).toFixed(2) }}% of Account
-              </span>
-            </div>
           </div>
 
         <div class="live-trade-gauges">
@@ -166,8 +158,6 @@ interface Table {
                 </svg>
                 <div class="trade-gauge-center">
                   <div class="trade-gauge-percent" [ngClass]="getTradePnLClass(trade)">{{ getTradePercent(trade) | number:'1.2-2' }}%</div>
-                  <div class="trade-gauge-amount" [ngClass]="getTradePnLClass(trade)">{{ formatCurrency(getTradeProfit(trade)) }}</div>
-                  <div class="trade-gauge-label">Unrealized P&L</div>
                 </div>
               </div>
             </div>
