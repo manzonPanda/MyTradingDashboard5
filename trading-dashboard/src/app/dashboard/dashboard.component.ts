@@ -155,7 +155,7 @@ export class DashboardComponent implements AfterViewInit {
   // Math object for template calculations
   Math = Math;
   environment = environment;
-  isDashboardNavigationOpen = false;
+  isDashboardNavigationOpen = true;
 
   toggleDashboardNavigation(): void {
     this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
@@ -175,7 +175,10 @@ export class DashboardComponent implements AfterViewInit {
 
   navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history'): void {
     this.router.navigateByUrl(workspace === 'dashboard' ? '/' : `/${workspace}`);
-    this.closeDashboardNavigation();
+
+    if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
+      this.closeDashboardNavigation();
+    }
   }
   // Account Size Calculator
   accountSizeInput: number = 0;
@@ -1413,8 +1416,6 @@ async ngOnInit() {
         { targets: [2, 5, 6, 7, 8, 9, 10], type: 'num' } // Specify numeric sorting
       ]
     };
-
-    localStorage.clear();
 
     // await this.loadTrades(); // Load trades from Firestore
     // await this.loadMT5Data(); // Load MT5 trades

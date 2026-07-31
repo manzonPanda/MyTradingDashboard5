@@ -9756,7 +9756,14 @@ table.simple-table {
 .tradezella-dashboard {
   padding-bottom: 60px;
   position: relative;
-  width: 100%;
+  width: calc(100% - 4.75rem);
+  margin-left: 4.75rem;
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.dashboard-navigation-open {
+    width: calc(100% - 14rem);
+    margin-left: 14rem;
+  }
 
   &.workspace-view {
     .dashboard-header,
@@ -9778,17 +9785,18 @@ table.simple-table {
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
-  border: 1px solid rgba(129, 140, 248, 0.35);
+  border: 0;
   border-radius: 0.85rem;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: #2563eb;
   color: #fff;
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.26);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 32px rgba(79, 70, 229, 0.4);
+    background: #1d4ed8;
+    box-shadow: 0 12px 22px rgba(37, 99, 235, 0.32);
+    transform: translateY(-1px);
   }
 }
 
@@ -9810,18 +9818,21 @@ table.simple-table {
   min-height: 100vh;
   box-sizing: border-box;
   display: flex;
-  width: min(22rem, calc(100vw - 2rem));
+  width: 4.75rem;
   flex-direction: column;
-  padding: 5.5rem 1rem 1rem;
-  overflow-y: auto;
+  padding: 5.5rem 0.7rem 1rem;
+  overflow: hidden;
   border-right: 1px solid var(--tf-border-primary);
-  background: linear-gradient(160deg, var(--tf-bg-secondary) 0%, var(--tf-bg-tertiary) 100%);
-  box-shadow: 20px 0 48px rgba(15, 23, 42, 0.2);
-  transform: translateX(-105%);
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--tf-bg-secondary);
+  box-shadow: 8px 0 24px rgba(15, 23, 42, 0.08);
+  transform: translateX(0);
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
 
-  &.is-open {
-    transform: translateX(0);
+  &.is-expanded {
+    width: 14rem;
+    padding: 1rem 0.8rem;
+    overflow-y: auto;
+    box-shadow: 10px 0 24px rgba(15, 23, 42, 0.08);
   }
 }
 
@@ -10096,17 +10107,231 @@ table.simple-table {
 }
 
 @media (max-width: 768px) {
+  .tradezella-dashboard,
+  .tradezella-dashboard.dashboard-navigation-open {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .dashboard-navigation-toggle {
     top: 0.65rem;
     left: 0.65rem;
   }
 
   .dashboard-navigation {
-    width: min(21rem, calc(100vw - 1.25rem));
+    width: 4.75rem;
     padding-top: 4.75rem;
+
+    &.is-expanded {
+      width: min(21rem, calc(100vw - 1.25rem));
+    }
   }
 
   .navigation-live-panel {
     padding-inline: 0.2rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .dashboard-navigation-backdrop {
+    display: none;
+  }
+
+  .dashboard-navigation:not(.is-expanded) {
+    .navigation-brand {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .navigation-brand-copy,
+    .navigation-live-panel,
+    .navigation-footer {
+      display: none;
+    }
+
+    .navigation-links {
+      gap: 0.6rem;
+      padding-top: 1.5rem;
+    }
+
+    .navigation-link {
+      display: flex;
+      justify-content: center;
+      padding: 0.75rem;
+
+      > mat-icon:first-child {
+        width: 1.4rem;
+        height: 1.4rem;
+        font-size: 1.4rem;
+      }
+
+      span,
+      .navigation-arrow {
+        display: none;
+      }
+
+      &.is-active {
+        background: #2563eb;
+
+        > mat-icon:first-child {
+          color: #fff;
+        }
+      }
+
+      &:hover {
+        background: rgba(37, 99, 235, 0.12);
+        transform: none;
+
+        &.is-active {
+          background: #2563eb;
+        }
+      }
+    }
+  }
+}
+
+.dashboard-navigation.is-expanded {
+  .navigation-brand {
+    padding-inline: 0.6rem;
+  }
+
+  .navigation-links {
+    padding-top: 1.25rem;
+  }
+
+  .navigation-link {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    justify-content: initial;
+    padding: 0.65rem 0.55rem;
+
+    span {
+      display: flex;
+    }
+
+    .navigation-arrow {
+      display: none;
+    }
+
+    &.is-active {
+      border-color: #d6d9e3;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(31, 41, 55, 0.04);
+
+      > mat-icon:first-child {
+        color: #fff;
+        background: #4f46e5;
+      }
+    }
+  }
+}
+
+.navigation-brand-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  background: #4f46e5;
+  box-shadow: none;
+
+  mat-icon {
+    font-size: 1.15rem;
+  }
+}
+
+.navigation-brand-copy {
+  strong {
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+  }
+
+  span {
+    color: var(--tf-text-muted);
+    font-size: 0.62rem;
+  }
+}
+
+.navigation-links {
+  gap: 0.15rem;
+  padding: 1rem 0 0;
+}
+
+.navigation-section-label {
+  padding: 0 0.55rem 0.25rem;
+  color: #8b8f9b;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.navigation-link {
+  min-height: 2rem;
+  border-radius: 0.55rem;
+  color: #616575;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+
+  > mat-icon:first-child {
+    width: 1.35rem;
+    height: 1.35rem;
+    color: #747987;
+    font-size: 1.05rem;
+  }
+
+  strong {
+    color: inherit;
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  &:hover {
+    border-color: transparent;
+    background: #f3f4f8;
+    color: #313541;
+    transform: none;
+  }
+}
+
+.navigation-footer {
+  gap: 0.15rem;
+  padding: 0.7rem 0 0;
+  border-top: 0;
+
+  .navigation-utility-link {
+    width: 100%;
+  }
+}
+
+.dashboard-navigation-toggle {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: #a1a5b0;
+  box-shadow: none;
+
+  &.is-expanded {
+    left: 12.2rem;
+    background: transparent;
+    color: #a1a5b0;
+  }
+
+  &:hover,
+  &.is-expanded:hover {
+    background: #f0f1f5;
+    color: #525866;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-navigation {
+    &.is-expanded {
+      width: min(14rem, calc(100vw - 1.25rem));
+    }
+  }
+
+  .dashboard-navigation-toggle.is-expanded {
+    left: min(12.2rem, calc(100vw - 3rem));
   }
 }
