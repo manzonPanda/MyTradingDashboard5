@@ -3234,7 +3234,7 @@ table.simple-table {
     @media (min-width: 1201px) {
       .live-rr-widget-compact {
         grid-column: 1 / -1;
-        grid-row: 3;
+        grid-row: 2;
       }
 
       .profitability-winrate-card {
@@ -3243,6 +3243,11 @@ table.simple-table {
       }
 
       .best-profit-loss-combined {
+        grid-column: 2;
+        grid-row: 3;
+      }
+
+      .win-rate-card {
         grid-column: 2;
         grid-row: 4;
       }
@@ -9642,6 +9647,33 @@ table.simple-table {
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+// Dedicated Win Rate Card
+.win-rate-card {
+  .win-rate-chart {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .simple-gauge-container {
+    padding: 0.2rem 0.15rem;
+    gap: 0.35rem;
+
+    .win-rate-heading {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--tf-text-muted);
+    }
+
+    .simple-gauge {
+      width: 140px;
+      height: 86px;
+    }
   }
 }
 
