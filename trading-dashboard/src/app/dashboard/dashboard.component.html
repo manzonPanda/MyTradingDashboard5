@@ -64,6 +64,27 @@
       </button>
     </nav>
 
+    <section class="navigation-live-panel" aria-label="Workspace pulse">
+      <div class="navigation-panel-heading">
+        <span>Workspace pulse</span>
+        <span class="navigation-live-badge"><i></i> Live</span>
+      </div>
+      <div class="navigation-timeline-card">
+        <div class="navigation-card-label">
+          <mat-icon>auto_awesome</mat-icon>
+          <span>Trading journey</span>
+        </div>
+        <app-dream-timeline></app-dream-timeline>
+      </div>
+      <div class="navigation-connections-card">
+        <div class="navigation-card-label">
+          <mat-icon>hub</mat-icon>
+          <span>Connected services</span>
+        </div>
+        <app-connection-status></app-connection-status>
+      </div>
+    </section>
+
     <div class="navigation-footer">
       <mat-icon>keyboard_double_arrow_left</mat-icon>
       <span>Use the menu to jump between workspaces.</span>
@@ -361,16 +382,8 @@
         </div>
       </div>
 
-      <!-- Dream Timeline Header Widget -->
-      <div class="header-right-section">
-        <div class="dream-timeline-header-widget">
-          <app-dream-timeline></app-dream-timeline>
-        </div>
-
-        <app-connection-status></app-connection-status>
-        <div class="header-actions">
-          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;" />
-        </div>
+      <div class="header-actions">
+        <input class="dashboard-file-input" type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" />
       </div>
     </div>
   </header>

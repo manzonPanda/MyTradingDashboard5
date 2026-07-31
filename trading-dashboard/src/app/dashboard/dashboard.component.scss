@@ -9842,6 +9842,152 @@ table.simple-table {
   color: var(--tf-text-muted);
 }
 
+.navigation-live-panel {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  padding: 1rem 0.6rem;
+  border-top: 1px solid var(--tf-border-primary);
+}
+
+.navigation-panel-heading,
+.navigation-card-label,
+.navigation-live-badge {
+  display: flex;
+  align-items: center;
+}
+
+.navigation-panel-heading {
+  justify-content: space-between;
+  color: var(--tf-text-muted);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.navigation-live-badge {
+  gap: 0.35rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+
+  i {
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.12);
+  }
+}
+
+.navigation-timeline-card,
+.navigation-connections-card {
+  overflow: hidden;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--tf-bg-primary) 72%, transparent);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.navigation-card-label {
+  gap: 0.45rem;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--tf-border-primary);
+  color: var(--tf-text-secondary);
+  font-size: 0.71rem;
+  font-weight: 750;
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #818cf8;
+    font-size: 1rem;
+  }
+}
+
+.navigation-timeline-card {
+  ::ng-deep app-dream-timeline {
+    display: block;
+
+    .dream-time-minimal {
+      padding: 0.65rem;
+
+      .time-units {
+        gap: 0.3rem;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .start-date-horizontal {
+        margin-bottom: 0.15rem;
+        padding: 0.35rem 0.45rem;
+        font-size: 0.68rem;
+      }
+
+      .time-unit {
+        padding: 0.25rem 0.45rem;
+
+        .value {
+          font-size: 1.1rem;
+        }
+
+        .label {
+          font-size: 0.59rem;
+        }
+      }
+    }
+  }
+}
+
+.navigation-connections-card {
+  ::ng-deep app-connection-status {
+    display: block;
+
+    .connection-status-container {
+      min-height: 0;
+      padding: 0.6rem;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+
+    .servers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .server-status-item {
+      min-width: 0;
+      padding: 0.2rem;
+    }
+
+    .server-label {
+      font-size: 0.56rem;
+      letter-spacing: 0.03em;
+    }
+  }
+}
+
+.dashboard-file-input {
+  display: none;
+}
+
 .navigation-footer {
   display: flex;
   align-items: flex-start;
@@ -9876,5 +10022,9 @@ table.simple-table {
   .dashboard-navigation {
     width: min(21rem, calc(100vw - 1.25rem));
     padding-top: 4.75rem;
+  }
+
+  .navigation-live-panel {
+    padding-inline: 0.2rem;
   }
 }
