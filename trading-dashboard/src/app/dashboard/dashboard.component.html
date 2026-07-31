@@ -1,4 +1,67 @@
-<div class="tradezella-dashboard">
+<div class="tradezella-dashboard" [class.dashboard-navigation-open]="isDashboardNavigationOpen">
+  <button
+    class="dashboard-navigation-toggle"
+    type="button"
+    (click)="toggleDashboardNavigation()"
+    [attr.aria-expanded]="isDashboardNavigationOpen"
+    aria-controls="dashboard-navigation-panel"
+    aria-label="Toggle dashboard navigation">
+    <mat-icon>{{ isDashboardNavigationOpen ? 'close' : 'menu' }}</mat-icon>
+  </button>
+
+  <div
+    *ngIf="isDashboardNavigationOpen"
+    class="dashboard-navigation-backdrop"
+    (click)="closeDashboardNavigation()"></div>
+
+  <aside
+    id="dashboard-navigation-panel"
+    class="dashboard-navigation"
+    [class.is-open]="isDashboardNavigationOpen"
+    aria-label="Dashboard sections">
+    <div class="navigation-brand">
+      <div class="navigation-brand-icon">
+        <mat-icon>candlestick_chart</mat-icon>
+      </div>
+      <div class="navigation-brand-copy">
+        <span class="navigation-eyebrow">Trading workspace</span>
+        <strong>Command center</strong>
+      </div>
+    </div>
+
+    <nav class="navigation-links">
+      <button class="navigation-link" type="button" (click)="navigateToDashboardSection('active-account')">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span>
+          <strong>Active Account</strong>
+          <small>{{ tableData.length }} tracked trades</small>
+        </span>
+        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+      </button>
+      <button class="navigation-link" type="button" (click)="navigateToDashboardSection('notion-update')">
+        <mat-icon>sync</mat-icon>
+        <span>
+          <strong>Notion Update</strong>
+          <small>Import and sync data</small>
+        </span>
+        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+      </button>
+      <button class="navigation-link" type="button" (click)="navigateToDashboardSection('trading-history')">
+        <mat-icon>history</mat-icon>
+        <span>
+          <strong>Trading History</strong>
+          <small>Review overall performance</small>
+        </span>
+        <mat-icon class="navigation-arrow">chevron_right</mat-icon>
+      </button>
+    </nav>
+
+    <div class="navigation-footer">
+      <mat-icon>keyboard_double_arrow_left</mat-icon>
+      <span>Use the menu to jump between workspaces.</span>
+    </div>
+  </aside>
+
   <!-- Header Section -->
   <header class="dashboard-header">
     <div class="header-content">
@@ -869,7 +932,7 @@
   </section>
 
     <!-- Active Account Section -->
-  <section class="table-section">
+  <section id="active-account" class="table-section">
     <div class="table-card">
       <div class="table-header">
         <h2 class="section-title">Active Account: {{ environment.propfirmAccountName }}
@@ -1233,7 +1296,7 @@
   
 
   <!-- Manual Data Update to Notion Section -->
-  <section class="upload-section">
+  <section id="notion-update" class="upload-section">
     <div class="upload-card">
       <div class="upload-header">
         <h2 class="section-title">Manual Data Update to Notion</h2>
@@ -1371,7 +1434,7 @@
 
 
     <!--  Overall Trading History Section -->
-  <section class="table-section notion-performance-section">
+  <section id="trading-history" class="table-section notion-performance-section">
     <div class="section-container">
       <div class="table-header">
         <h2 class="section-title">
