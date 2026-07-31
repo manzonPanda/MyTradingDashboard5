@@ -79,11 +79,6 @@ interface Table {
                 </div>
               </div>
 
-              <!-- Connection Status -->
-              <div class="connection-indicator">
-                <span class="status-dot"></span>
-                <span class="status-text">Waiting for trades...</span>
-              </div>
             </div>
           </div>
         </div>
