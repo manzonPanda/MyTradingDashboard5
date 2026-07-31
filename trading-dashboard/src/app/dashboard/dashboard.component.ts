@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule, DOCUMENT } from "@angular/common";
+import { Router } from '@angular/router';
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
@@ -164,8 +165,16 @@ export class DashboardComponent implements AfterViewInit {
     this.isDashboardNavigationOpen = false;
   }
 
-  navigateToDashboardSection(sectionId: string): void {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  get currentWorkspace(): string {
+    return this.router.url.split('?')[0].replace('/', '') || 'dashboard';
+  }
+
+  get isMainDashboard(): boolean {
+    return this.currentWorkspace === 'dashboard';
+  }
+
+  navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history'): void {
+    this.router.navigateByUrl(workspace === 'dashboard' ? '/' : `/${workspace}`);
     this.closeDashboardNavigation();
   }
   // Account Size Calculator
@@ -747,7 +756,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, @Inject(DOCUMENT) private document: Document) {
+    private tradeService: TradeService, private router: Router, @Inject(DOCUMENT) private document: Document) {
     this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
     this.applyTheme();
 

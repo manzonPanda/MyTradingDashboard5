@@ -9678,6 +9678,16 @@ table.simple-table {
   padding-bottom: 60px;
   position: relative;
   width: 100%;
+
+  &.workspace-view {
+    .dashboard-header,
+    .metrics-section,
+    .compact-emotion-section,
+    .calendar-section,
+    .risk-calculator-backdrop {
+      display: none;
+    }
+  }
 }
 
 .dashboard-navigation-toggle {
@@ -9814,6 +9824,11 @@ table.simple-table {
     font-size: 0.72rem;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &.is-active {
+    border-color: rgba(129, 140, 248, 0.4);
+    background: rgba(99, 102, 241, 0.16);
   }
 
   &:hover {
