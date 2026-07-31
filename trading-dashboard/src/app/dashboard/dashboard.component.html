@@ -46,16 +46,6 @@
         <mat-icon>history</mat-icon>
         <span><strong>Trading History</strong></span>
       </button>
-      <button
-        class="navigation-link navigation-theme-toggle"
-        type="button"
-        [attr.aria-label]="isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'"
-        [attr.aria-pressed]="isDarkTheme"
-        [title]="isDarkTheme ? 'Light theme' : 'Dark theme'"
-        (click)="toggleTheme()">
-        <mat-icon>{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
-        <span><strong>{{ isDarkTheme ? 'Light' : 'Dark' }}</strong></span>
-      </button>
     </nav>
 
     <section class="navigation-live-panel" aria-label="Workspace pulse">
@@ -80,9 +70,15 @@
     </section>
 
     <div class="navigation-footer">
-      <button class="navigation-link navigation-utility-link" type="button" title="Support">
-        <mat-icon>headset_mic</mat-icon>
-        <span><strong>Support</strong></span>
+      <button
+        class="navigation-link navigation-utility-link navigation-theme-toggle"
+        type="button"
+        [attr.aria-label]="isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'"
+        [attr.aria-pressed]="isDarkTheme"
+        [title]="isDarkTheme ? 'Light theme' : 'Dark theme'"
+        (click)="toggleTheme()">
+        <mat-icon>{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        <span><strong>{{ isDarkTheme ? 'Light' : 'Dark' }}</strong></span>
       </button>
       <button class="navigation-link navigation-utility-link" type="button" title="Settings">
         <mat-icon>settings</mat-icon>
