@@ -34,17 +34,17 @@
         <mat-icon>dashboard</mat-icon>
         <span><strong>Dashboard</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Active Account" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
+      <button class="navigation-link" type="button" title="Trades" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
-        <span><strong>Active Account</strong></span>
+        <span><strong>Trades</strong></span>
       </button>
       <button class="navigation-link" type="button" title="Notion Update" [class.is-active]="currentWorkspace === 'notion-update'" (click)="navigateToWorkspace('notion-update')">
         <mat-icon>sync</mat-icon>
         <span><strong>Notion Update</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Trading History" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
+      <button class="navigation-link" type="button" title="Portfolio" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
         <mat-icon>history</mat-icon>
-        <span><strong>Trading History</strong></span>
+        <span><strong>Portfolio</strong></span>
       </button>
     </nav>
 
