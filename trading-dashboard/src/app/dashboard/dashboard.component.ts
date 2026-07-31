@@ -859,7 +859,10 @@ mt5AccountInfo: AccountSettings = {
     let lossSum = 0; // keep negative
     for (const t of this.tableData) {
       const od = this.parseOpenDate(t.openDate || '');
-      if (od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime()) {
+      const status = String(t.mt5status || '').toLowerCase();
+      const isOpenPosition = status === 'open' || status === 'live' || status === 'position' || t.closeDate === '-';
+      const isInSession = od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime();
+      if (isOpenPosition || isInSession) {
         const p = this.getSafeNumber(t.netProfit);
         pnl += p;
         if (p > 0) winSum += p;
@@ -924,11 +927,11 @@ mt5AccountInfo: AccountSettings = {
   getWinRingCircumference(): number { return 2 * Math.PI * 44; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
-    const wins = Math.max(0, this.dailyWinsAmount);
-    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
-    const total = wins + losses;
-    if (total <= 0) return `${0} ${c}`;
-    const arc = (wins / total) * c;
+    const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5;
+    const fraction = this.dailyPnL > 0
+      ? Math.min(1, this.dailyPnLPercent / limitPct)
+      : 0;
+    const arc = fraction * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getWinRingOffset(): number {
@@ -937,21 +940,15 @@ mt5AccountInfo: AccountSettings = {
 
   getLossRingDash(): string {
     const c = this.getWinRingCircumference();
-    const wins = Math.max(0, this.dailyWinsAmount);
-    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
-    const total = wins + losses;
-    if (total <= 0) return `${0} ${c}`;
-    const arc = (losses / total) * c;
+    const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5;
+    const fraction = this.dailyPnL < 0
+      ? Math.min(1, Math.abs(this.dailyPnLPercent) / limitPct)
+      : 0;
+    const arc = fraction * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getLossRingOffset(): number {
-    const c = this.getWinRingCircumference();
-    const wins = Math.max(0, this.dailyWinsAmount);
-    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
-    const total = wins + losses;
-    if (total <= 0) return 0;
-    const winArc = (wins / total) * c;
-    return -winArc;
+    return 0;
   }
 
   // Tooltip state for left donut
@@ -5205,9 +5202,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateMT5TradePrice(priceData: any): void {
-    const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      trade.position === priceData.ticket
-    );
+    const livePositionId = priceData.ticket ?? priceData.position_id ?? priceData.position;
+    const livePositionNumber = Number(livePositionId);
+    const tradeIndex = this.mt5LiveTrades.findIndex(trade => {
+      const tradePositionNumber = Number(trade.position);
+      return Number.isFinite(livePositionNumber) && Number.isFinite(tradePositionNumber)
+        ? tradePositionNumber === livePositionNumber
+        : String(trade.position) === String(livePositionId);
+    });
 
     if (tradeIndex !== -1) {
       const trade = this.mt5LiveTrades[tradeIndex];
