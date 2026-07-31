@@ -633,6 +633,14 @@
           </div>
         </div>
 
+        <div class="live-rr-widget-compact">
+          <app-live-rr-tracker
+            [mt5LiveTrades]="mt5LiveTrades"
+            [tableData]="tableData"
+            [accountSize]="mt5AccountInfo.startingBalance">
+          </app-live-rr-tracker>
+        </div>
+
         <div class="metric-card daily-limit-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Day Trades</h3>
@@ -680,14 +688,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="live-rr-widget-compact">
-          <app-live-rr-tracker
-            [mt5LiveTrades]="mt5LiveTrades"
-            [tableData]="tableData"
-            [accountSize]="mt5AccountInfo.startingBalance">
-          </app-live-rr-tracker>
         </div>
 
         <div class="metric-card profitability-winrate-card">
