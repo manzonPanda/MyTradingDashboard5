@@ -859,7 +859,10 @@ mt5AccountInfo: AccountSettings = {
     let lossSum = 0; // keep negative
     for (const t of this.tableData) {
       const od = this.parseOpenDate(t.openDate || '');
-      if (od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime()) {
+      const status = String(t.mt5status || '').toLowerCase();
+      const isOpenPosition = status === 'open' || status === 'live' || status === 'position' || t.closeDate === '-';
+      const isInSession = od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime();
+      if (isOpenPosition || isInSession) {
         const p = this.getSafeNumber(t.netProfit);
         pnl += p;
         if (p > 0) winSum += p;
@@ -5200,9 +5203,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   updateMT5TradePrice(priceData: any): void {
     const livePositionId = priceData.ticket ?? priceData.position_id ?? priceData.position;
-    const tradeIndex = this.mt5LiveTrades.findIndex(trade =>
-      String(trade.position) === String(livePositionId)
-    );
+    const livePositionNumber = Number(livePositionId);
+    const tradeIndex = this.mt5LiveTrades.findIndex(trade => {
+      const tradePositionNumber = Number(trade.position);
+      return Number.isFinite(livePositionNumber) && Number.isFinite(tradePositionNumber)
+        ? tradePositionNumber === livePositionNumber
+        : String(trade.position) === String(livePositionId);
+    });
 
     if (tradeIndex !== -1) {
       const trade = this.mt5LiveTrades[tradeIndex];
