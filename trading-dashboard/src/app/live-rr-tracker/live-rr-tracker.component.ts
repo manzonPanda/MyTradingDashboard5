@@ -152,6 +152,34 @@ interface Table {
           </div>
         </div>
 
+        <div class="live-trade-gauges">
+          <article *ngFor="let trade of openTrades" class="trade-gauge-card">
+            <div class="trade-gauge-heading">
+              <span class="trade-gauge-symbol">{{ trade.symbol }}</span>
+              <span class="trade-gauge-position">#{{ trade.position }}</span>
+            </div>
+            <div class="trade-gauge-content">
+              <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
+                <svg viewBox="0 0 100 100" class="trade-gauge-svg">
+                  <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                  <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
+                          [attr.stroke-dasharray]="getTradeGaugeDash(trade)" transform="rotate(-90 50 50)"/>
+                  <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
+                </svg>
+                <div class="trade-gauge-center">
+                  <div class="trade-gauge-percent" [ngClass]="getTradePnLClass(trade)">{{ getTradePercent(trade) | number:'1.2-2' }}%</div>
+                  <div class="trade-gauge-amount" [ngClass]="getTradePnLClass(trade)">{{ formatCurrency(getTradeProfit(trade)) }}</div>
+                  <div class="trade-gauge-label">Unrealized P&L</div>
+                </div>
+              </div>
+              <div class="trade-gauge-details">
+                <span>{{ trade.type }}</span>
+                <span>{{ trade.volume }} lots</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
         <!-- Status Bar -->
         <div class="status-bar">
           <div class="status-item">
@@ -178,6 +206,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
+  openTrades: Table[] = [];
   totalRRGained: string = '+0.00R';
   totalRRValue: number = 0;
   percentageOfAccount: number = 0;
@@ -210,6 +239,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
 
     this.hasLiveTrades = openTrades.length > 0;
     this.openTradeCount = openTrades.length;
+    this.openTrades = openTrades;
 
     if (!this.hasLiveTrades) {
       this.resetMetrics();
@@ -259,6 +289,32 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     this.percentageOfAccount = 0;
     this.totalUnrealizedPnL = '$0.00';
     this.totalUnrealizedValue = 0;
+    this.openTrades = [];
+  }
+
+  getTradeProfit(trade: Table): number {
+    return parseFloat(trade.profit || '0') || 0;
+  }
+
+  getTradePercent(trade: Table): number {
+    return (this.getTradeProfit(trade) / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+  }
+
+  getTradeGaugeDash(trade: Table): string {
+    const circumference = 2 * Math.PI * 44;
+    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 4);
+    const arc = fraction * circumference;
+    return `${arc} ${Math.max(0, circumference - arc)}`;
+  }
+
+  getTradeGaugeColor(trade: Table): string {
+    return this.getTradeProfit(trade) < 0 ? '#ef4444' : '#10b981';
+  }
+
+  getTradePnLClass(trade: Table): string {
+    if (this.getTradeProfit(trade) > 0) return 'positive';
+    if (this.getTradeProfit(trade) < 0) return 'negative';
+    return 'neutral';
   }
 
   formatCurrency(amount: number): string {
