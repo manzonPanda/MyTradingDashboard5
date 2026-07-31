@@ -155,7 +155,6 @@ interface Table {
           <article *ngFor="let trade of openTrades" class="trade-gauge-card">
             <div class="trade-gauge-heading">
               <span class="trade-gauge-symbol">{{ trade.symbol }}</span>
-              <span class="trade-gauge-position">#{{ trade.position }}</span>
             </div>
             <div class="trade-gauge-content">
               <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
@@ -170,10 +169,6 @@ interface Table {
                   <div class="trade-gauge-amount" [ngClass]="getTradePnLClass(trade)">{{ formatCurrency(getTradeProfit(trade)) }}</div>
                   <div class="trade-gauge-label">Unrealized P&L</div>
                 </div>
-              </div>
-              <div class="trade-gauge-details">
-                <span>{{ trade.type }}</span>
-                <span>{{ trade.volume }} lots</span>
               </div>
             </div>
           </article>
