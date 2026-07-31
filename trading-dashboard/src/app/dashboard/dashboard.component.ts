@@ -924,11 +924,11 @@ mt5AccountInfo: AccountSettings = {
   getWinRingCircumference(): number { return 2 * Math.PI * 44; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
-    const wins = Math.max(0, this.dailyWinsAmount);
-    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
-    const total = wins + losses;
-    if (total <= 0) return `${0} ${c}`;
-    const arc = (wins / total) * c;
+    const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5;
+    const fraction = this.dailyPnL > 0
+      ? Math.min(1, this.dailyPnLPercent / limitPct)
+      : 0;
+    const arc = fraction * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getWinRingOffset(): number {
@@ -937,11 +937,11 @@ mt5AccountInfo: AccountSettings = {
 
   getLossRingDash(): string {
     const c = this.getWinRingCircumference();
-    const wins = Math.max(0, this.dailyWinsAmount);
-    const losses = Math.abs(Math.min(0, this.dailyLossesAmount));
-    const total = wins + losses;
-    if (total <= 0) return `${0} ${c}`;
-    const arc = (losses / total) * c;
+    const limitPct = this.mt5AccountInfo?.dailyLossLimit || 3.5;
+    const fraction = this.dailyPnL < 0
+      ? Math.min(1, Math.abs(this.dailyPnLPercent) / limitPct)
+      : 0;
+    const arc = fraction * c;
     return `${arc} ${Math.max(0, c - arc)}`;
   }
   getLossRingOffset(): number {
