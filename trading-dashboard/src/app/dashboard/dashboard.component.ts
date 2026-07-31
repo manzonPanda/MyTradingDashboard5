@@ -321,8 +321,8 @@ export class DashboardComponent implements AfterViewInit {
   // Daily Limit tracking
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
-  dailyWinsAmount: number = 0;
   dailyWinsPercent: number = 0;
+  dailyWinsAmount: number = 0;
   dailyLossesAmount: number = 0; // negative value for losses
   dailyLossesPercent: number = 0; // negative percent for losses
   dailyLimitUsed: number = 0;
@@ -994,16 +994,6 @@ mt5AccountInfo: AccountSettings = {
   // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
   getDailyLimitRingCircumference(): number { return 2 * Math.PI * 44; }
 
-  // Right circle (Max 4%) – map 0–4% to full circle
-  getRightWinRingCircumference(): number { return 2 * Math.PI * 44; }
-  getRightWinRingDash(): string {
-    const c = this.getRightWinRingCircumference();
-    const cap = 4; // 0–4% mapped to full circle
-    const fraction = Math.max(0, Math.min(1, Math.abs(this.dailyWinsPercent) / cap));
-    const arc = fraction * c;
-    return `${arc} ${Math.max(0, c - arc)}`;
-  }
-  getRightWinRingOffset(): number { return 0; }
   private getDailyLimitUsedPct(): number {
     const startBal = this.mt5AccountInfo?.startingBalance || 0;
     const capPct = this.mt5AccountInfo?.dailyLossLimit || 8; // capacity percent (default 8%)

@@ -449,7 +449,7 @@
 // Live Metrics
 .live-metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   padding: 1.5rem;
 
@@ -556,6 +556,85 @@
 
 .negative-indicator {
   color: var(--tf-negative);
+}
+
+.live-trade-gauges {
+  display: contents;
+}
+
+.trade-gauge-card {
+  background: var(--tf-bg-card);
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.trade-gauge-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.trade-gauge-symbol {
+  color: var(--tf-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.trade-gauge-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.trade-gauge {
+  flex: 0 0 110px;
+  height: 110px;
+  position: relative;
+}
+
+.trade-gauge-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.trade-gauge-marker {
+  fill: var(--tf-positive);
+}
+
+.trade-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+.trade-gauge-percent {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.trade-gauge-percent.positive {
+  color: var(--tf-positive);
+}
+
+.trade-gauge-percent.negative {
+  color: var(--tf-negative);
+}
+
+.trade-gauge-percent.neutral {
+  color: var(--tf-text-primary);
+}
+
+.trade-gauge-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 // Status Bar
