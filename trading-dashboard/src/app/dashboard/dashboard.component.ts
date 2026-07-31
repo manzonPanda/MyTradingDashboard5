@@ -5,7 +5,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { CommonModule, DOCUMENT } from "@angular/common";
+import { CommonModule, DOCUMENT, Location } from "@angular/common";
 import { Router } from '@angular/router';
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
@@ -156,6 +156,7 @@ export class DashboardComponent implements AfterViewInit {
   Math = Math;
   environment = environment;
   isDashboardNavigationOpen = true;
+  private activeWorkspace = 'dashboard';
 
   toggleDashboardNavigation(): void {
     this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
@@ -166,15 +167,16 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   get currentWorkspace(): string {
-    return this.router.url.split('?')[0].replace('/', '') || 'dashboard';
+    return this.activeWorkspace;
   }
 
   get isMainDashboard(): boolean {
     return this.currentWorkspace === 'dashboard';
   }
 
-  navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history'): void {
-    this.router.navigateByUrl(workspace === 'dashboard' ? '/' : `/${workspace}`);
+  navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
+    this.activeWorkspace = workspace;
+    this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
 
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
       this.closeDashboardNavigation();
@@ -759,7 +761,8 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private router: Router, @Inject(DOCUMENT) private document: Document) {
+    private tradeService: TradeService, private router: Router, private location: Location, @Inject(DOCUMENT) private document: Document) {
+    this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
     this.applyTheme();
 
