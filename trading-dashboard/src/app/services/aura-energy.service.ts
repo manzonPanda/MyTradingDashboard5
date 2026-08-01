@@ -80,12 +80,11 @@ export class AuraEnergyService {
             <stop offset="100%" stop-color="#7C3AED" stop-opacity="0" />
           </linearGradient>
           <filter id="aura-energy-bloom" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="1.4" result="blur" />
+            <feGaussianBlur stdDeviation="1.8" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        <rect class="aura-energy-trail" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" />
-        <rect class="aura-energy-core" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" />
+        <rect class="aura-energy-line" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" />
       </svg>`;
     return overlay;
   }

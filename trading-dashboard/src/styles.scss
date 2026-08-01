@@ -96,7 +96,7 @@ app-root {
   z-index: 60;
   pointer-events: none;
   opacity: 0;
-  filter: drop-shadow(0 0 4px rgba(124, 58, 237, 0.38)) drop-shadow(0 0 10px rgba(99, 102, 241, 0.2));
+  filter: drop-shadow(0 0 6px rgba(124, 58, 237, 0.7)) drop-shadow(0 0 16px rgba(99, 102, 241, 0.45));
   animation: aura-energy-visibility 2s ease-in-out forwards;
 }
 
@@ -107,37 +107,22 @@ app-root {
   overflow: visible;
 }
 
-.aura-energy-trail,
-.aura-energy-core {
+.aura-energy-line {
   fill: none;
   vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.aura-energy-trail {
   stroke: url(#aura-energy-gradient);
-  stroke-width: 3.2;
-  stroke-dasharray: 20 80;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 14 86;
   stroke-dashoffset: 100;
   filter: url(#aura-energy-bloom);
-  opacity: 0.42;
-  animation: aura-energy-travel 1.55s cubic-bezier(0.42, 0, 0.24, 1) 2;
-}
-
-.aura-energy-core {
-  stroke: #F5F3FF;
-  stroke-width: 1.1;
-  stroke-dasharray: 5 95;
-  stroke-dashoffset: 100;
-  filter: url(#aura-energy-bloom);
-  animation: aura-energy-travel 1.55s cubic-bezier(0.42, 0, 0.24, 1) 2;
+  opacity: 0.98;
+  animation: aura-energy-travel 2s cubic-bezier(0.42, 0, 0.24, 1) 1;
 }
 
 @keyframes aura-energy-visibility {
   0%, 8% { opacity: 0; }
-  18%, 78% { opacity: 0.9; }
+  18%, 78% { opacity: 1; }
   100% { opacity: 0; }
 }
 
