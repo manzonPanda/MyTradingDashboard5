@@ -79,9 +79,10 @@ export class AuraEnergyService {
       <svg class="aura-energy-svg" focusable="false" preserveAspectRatio="none">
         <defs>
           <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.2" />
-            <stop offset="55%" stop-color="#6366F1" stop-opacity="0.58" />
-            <stop offset="86%" stop-color="#A78BFA" stop-opacity="0.9" />
+            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0" />
+            <stop offset="42%" stop-color="#6366F1" stop-opacity="0.15" />
+            <stop offset="72%" stop-color="#A78BFA" stop-opacity="0.5" />
+            <stop offset="90%" stop-color="#F5F3FF" stop-opacity="0.85" />
             <stop offset="100%" stop-color="#F5F3FF" />
           </linearGradient>
           <filter id="aura-energy-bloom" x="-80%" y="-80%" width="260%" height="260%">
@@ -90,7 +91,7 @@ export class AuraEnergyService {
           </filter>
         </defs>
         <path id="aura-route" class="aura-energy-line" pathLength="1000" />
-        <circle class="aura-energy-head" r="4">
+        <circle class="aura-energy-head" r="5.5">
           <animateMotion dur="5s" rotate="auto" fill="freeze">
             <mpath href="#aura-route" />
           </animateMotion>
