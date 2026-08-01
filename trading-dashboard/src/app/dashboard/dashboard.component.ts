@@ -5031,7 +5031,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
   private async getSupabaseTrades(): Promise<any[]> {
-    const trades = await this.supabaseService.getAllTrades();
+    const trades = await this.supabaseService.getAllTrades(environment.propfirmAccountName);
 
     return trades
       .filter((trade): trade is Trade & { date_start: string } => Boolean(trade.date_start))
