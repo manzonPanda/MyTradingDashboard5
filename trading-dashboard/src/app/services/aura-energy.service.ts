@@ -11,6 +11,7 @@ export class AuraEnergyService {
   private frameId?: number;
   private resizeObserver?: ResizeObserver;
   private activeOverlay?: HTMLDivElement;
+  private auraContainer?: HTMLElement;
   private activeTargets: HTMLElement[] = [];
   private isDestroyed = false;
 
@@ -39,8 +40,9 @@ export class AuraEnergyService {
     this.cleanupId = undefined;
     this.removeActivePulse();
 
+    this.auraContainer = this.document.querySelector<HTMLElement>('.tradezella-dashboard') || undefined;
     this.activeTargets = Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
-      .filter((target) => this.isVisible(target))
+      .filter((target) => this.isEligibleTarget(target))
       .sort((first, second) => {
         const firstBounds = first.getBoundingClientRect();
         const secondBounds = second.getBoundingClientRect();
@@ -51,11 +53,16 @@ export class AuraEnergyService {
       return;
     }
 
+    if (!this.auraContainer) {
+      return;
+    }
+
     this.activeOverlay = this.createOverlay();
     this.activeOverlay.classList.add('aura-energy-pathway-preview');
-    this.document.body.append(this.activeOverlay);
+    this.auraContainer.append(this.activeOverlay);
     this.updateRoute();
     this.resizeObserver = new ResizeObserver(() => this.requestRouteUpdate());
+    this.resizeObserver.observe(this.auraContainer);
     this.activeTargets.forEach((target) => this.resizeObserver?.observe(target));
     window.addEventListener('scroll', this.requestRouteUpdate, true);
     window.addEventListener('resize', this.requestRouteUpdate);
@@ -85,9 +92,10 @@ export class AuraEnergyService {
       return;
     }
 
+    this.auraContainer = this.document.querySelector<HTMLElement>('.tradezella-dashboard') || undefined;
     this.activeTargets = this.shuffle(
       Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
-        .filter((target) => this.isVisible(target))
+        .filter((target) => this.isEligibleTarget(target))
     ).slice(0, 4);
 
     if (!this.activeTargets.length) {
@@ -95,11 +103,16 @@ export class AuraEnergyService {
       return;
     }
 
+    if (!this.auraContainer) {
+      return;
+    }
+
     this.activeOverlay = this.createOverlay();
-    this.document.body.append(this.activeOverlay);
+    this.auraContainer.append(this.activeOverlay);
     this.updateRoute();
 
     this.resizeObserver = new ResizeObserver(() => this.requestRouteUpdate());
+    this.resizeObserver.observe(this.auraContainer);
     this.activeTargets.forEach((target) => this.resizeObserver?.observe(target));
     window.addEventListener('scroll', this.requestRouteUpdate, true);
     window.addEventListener('resize', this.requestRouteUpdate);
@@ -159,21 +172,31 @@ export class AuraEnergyService {
       return;
     }
 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    if (!this.auraContainer) {
+      return;
+    }
+
+    const containerRect = this.auraContainer.getBoundingClientRect();
+    const width = this.auraContainer.clientWidth;
+    const height = this.auraContainer.clientHeight;
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     svg.setAttribute('width', `${width}`);
     svg.setAttribute('height', `${height}`);
 
     const boxes = this.activeTargets
-      .map((target) => target.getBoundingClientRect())
-      .filter((bounds) => bounds.width > 0 && bounds.height > 0);
-    const routeData = boxes.map((bounds) => ({
-      left: bounds.left - 3,
-      top: bounds.top - 3,
-      right: bounds.right + 3,
-      bottom: bounds.bottom + 3
-    }));
+      .map((target) => ({ target, bounds: target.getBoundingClientRect() }))
+      .filter(({ bounds }) => bounds.width > 0 && bounds.height > 0);
+    const routeData = boxes.map(({ target, bounds }) => {
+      const targetStyle = window.getComputedStyle(target);
+      const radius = Math.min(this.parseRadius(targetStyle.borderTopLeftRadius), bounds.width / 2, bounds.height / 2);
+      return {
+        left: bounds.left - containerRect.left - 1.5,
+        top: bounds.top - containerRect.top - 1.5,
+        right: bounds.right - containerRect.left + 1.5,
+        bottom: bounds.bottom - containerRect.top + 1.5,
+        radius
+      };
+    });
 
     if (!routeData.length) {
       return;
@@ -182,11 +205,26 @@ export class AuraEnergyService {
     const routeX = Math.min(...routeData.map((box) => box.left)) - 8;
     const routeY = Math.min(...routeData.map((box) => box.top)) - 8;
     const first = routeData[0];
-    let path = `M ${first.left} ${first.top} H ${first.right} V ${first.bottom} H ${first.left} V ${first.top} Z`;
+    let path = this.roundedRectPath(first);
     for (const box of routeData.slice(1)) {
-      path += ` H ${routeX} V ${routeY} H ${box.left} V ${box.top} H ${box.right} V ${box.bottom} H ${box.left} V ${box.top} Z`;
+      path += ` H ${routeX} V ${routeY} H ${box.left + box.radius} ${this.roundedRectPath(box, true)}`;
     }
     route.setAttribute('d', path);
+  }
+
+  private roundedRectPath(box: { left: number; top: number; right: number; bottom: number; radius: number }, continuation = false): string {
+    const { left, top, right, bottom, radius } = box;
+    const start = continuation ? '' : `M ${left + radius} ${top}`;
+    return `${start} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius} Q ${left} ${top} ${left + radius} ${top} Z`;
+  }
+
+  private parseRadius(value: string): number {
+    const radius = Number.parseFloat(value);
+    return Number.isFinite(radius) ? radius : 0;
+  }
+
+  private isEligibleTarget(target: HTMLElement): boolean {
+    return !target.closest('.dashboard-navigation') && this.isVisible(target);
   }
 
   private removeActivePulse(): void {
