@@ -38,7 +38,7 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { TradeService } from '../services/trade.service';
-import { Account, SupabaseService, Trade } from '../services/supabase.service';
+import { Account, RoiTransaction, SupabaseService, Trade } from '../services/supabase.service';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -160,6 +160,21 @@ export class DashboardComponent implements AfterViewInit {
   isNavigationDisplayMenuOpen = false;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
+  roiTransactions: RoiTransaction[] = [];
+  isLoadingRoi = false;
+  isSavingRoi = false;
+  isRoiEntryModalOpen = false;
+  roiFilter: 'all' | 'expense' | 'payout' = 'all';
+  roiPage = 1;
+  readonly roiPageSize = 5;
+  roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
+    transaction_type: 'expense',
+    transaction_date: new Date().toISOString().slice(0, 10),
+    amount: null,
+    note: '',
+    account_id: '',
+    image_url: ''
+  };
 
   toggleDashboardNavigation(): void {
     this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
@@ -211,6 +226,9 @@ export class DashboardComponent implements AfterViewInit {
   navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
     this.activeWorkspace = workspace;
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
+    if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
+      void this.loadRoiTransactions();
+    }
 
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
       this.closeDashboardNavigation();
@@ -1309,6 +1327,112 @@ mt5AccountInfo: AccountSettings = {
     return circumference * progress;
   }
 
+  openRoiEntryModal(): void {
+    this.isRoiEntryModalOpen = true;
+  }
+
+  closeRoiEntryModal(): void {
+    if (!this.isSavingRoi) this.isRoiEntryModalOpen = false;
+  }
+
+  get filteredRoiTransactions(): RoiTransaction[] {
+    return this.roiFilter === 'all'
+      ? this.roiTransactions
+      : this.roiTransactions.filter(transaction => transaction.transaction_type === this.roiFilter);
+  }
+
+  get pagedRoiTransactions(): RoiTransaction[] {
+    const start = (this.roiPage - 1) * this.roiPageSize;
+    return this.filteredRoiTransactions.slice(start, start + this.roiPageSize);
+  }
+
+  get roiTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredRoiTransactions.length / this.roiPageSize));
+  }
+
+  get roiPageNumbers(): number[] {
+    return Array.from({ length: this.roiTotalPages }, (_, index) => index + 1);
+  }
+
+  setRoiFilter(filter: 'all' | 'expense' | 'payout'): void {
+    this.roiFilter = filter;
+    this.roiPage = 1;
+  }
+
+  setRoiPage(page: number): void {
+    this.roiPage = Math.min(Math.max(page, 1), this.roiTotalPages);
+  }
+
+  get roiExpenses(): number {
+    return this.roiTransactions
+      .filter(transaction => transaction.transaction_type === 'expense')
+      .reduce((total, transaction) => total + Number(transaction.amount), 0);
+  }
+
+  get roiPayouts(): number {
+    return this.roiTransactions
+      .filter(transaction => transaction.transaction_type === 'payout')
+      .reduce((total, transaction) => total + Number(transaction.amount), 0);
+  }
+
+  get roiNetReturn(): number {
+    return this.roiPayouts - this.roiExpenses;
+  }
+
+  get roiReturnPercentage(): number {
+    return this.roiExpenses ? (this.roiNetReturn / this.roiExpenses) * 100 : 0;
+  }
+
+  private async loadRoiTransactions(): Promise<void> {
+    this.isLoadingRoi = true;
+    try {
+      this.roiTransactions = await this.supabaseService.getRoiTransactions();
+    } catch (error) {
+      console.error('Unable to load ROI transactions:', error);
+      this.snackBar.open('Unable to load ROI transactions from Supabase.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isLoadingRoi = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async saveRoiTransaction(): Promise<void> {
+    if (!this.roiForm.amount || this.roiForm.amount <= 0) return;
+    this.isSavingRoi = true;
+    try {
+      const savedTransaction = await this.supabaseService.createRoiTransaction({
+        transaction_type: this.roiForm.transaction_type,
+        transaction_date: this.roiForm.transaction_date,
+        amount: this.roiForm.amount,
+        note: this.roiForm.note.trim() || null,
+        image_url: this.roiForm.image_url.trim() || null,
+        account_id: this.roiForm.account_id || null
+      });
+      this.roiTransactions = [savedTransaction, ...this.roiTransactions];
+      this.roiPage = 1;
+      this.roiForm = {
+        transaction_type: 'expense',
+        transaction_date: new Date().toISOString().slice(0, 10),
+        amount: null,
+        note: '',
+        account_id: '',
+        image_url: ''
+      };
+      this.isRoiEntryModalOpen = false;
+      this.snackBar.open('ROI transaction saved.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to save ROI transaction:', error);
+      this.snackBar.open('Unable to save ROI transaction.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isSavingRoi = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  formatRoiDate(date: string): string {
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${date}T00:00:00`));
+  }
+
   private async loadAccounts(): Promise<void> {
     this.isLoadingAccounts = true;
     try {
@@ -1361,6 +1485,7 @@ mt5AccountInfo: AccountSettings = {
     // Set up click outside listener for dropdown
     this.setupClickOutsideListener();
     await this.loadAccounts();
+    if (this.currentWorkspace === 'roi') await this.loadRoiTransactions();
 
     // Load MT5 data immediately
     try {

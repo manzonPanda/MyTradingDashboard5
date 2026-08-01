@@ -17,6 +17,19 @@ export interface Account {
   updated_at?: string;
 }
 
+export interface RoiTransaction {
+  id: string;
+  transaction_date: string;
+  transaction_type: 'expense' | 'payout';
+  amount: number;
+  note?: string | null;
+  image_url?: string | null;
+  account_id?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  accounts?: { name: string } | null;
+}
+
 export interface Trade {
   id?: string;
   account_id?: string;
@@ -80,6 +93,25 @@ export class SupabaseService {
       .single();
     if (error) throw new Error(`Account update failed: ${error.message}`);
     return data as Account;
+  }
+
+  async getRoiTransactions(): Promise<RoiTransaction[]> {
+    const { data, error } = await this.supabase
+      .from('roi_transactions')
+      .select('*, accounts(name)')
+      .order('transaction_date', { ascending: false });
+    if (error) throw new Error(`ROI transaction loading failed: ${error.message}`);
+    return (data as RoiTransaction[]) || [];
+  }
+
+  async createRoiTransaction(transaction: Omit<RoiTransaction, 'id' | 'created_at' | 'updated_at' | 'accounts'>): Promise<RoiTransaction> {
+    const { data, error } = await this.supabase
+      .from('roi_transactions')
+      .insert(transaction)
+      .select('*, accounts(name)')
+      .single();
+    if (error) throw new Error(`ROI transaction creation failed: ${error.message}`);
+    return data as RoiTransaction;
   }
 
   async getAllTrades(accountId?: string): Promise<Trade[]> {
