@@ -1035,13 +1035,13 @@
                 @for (account of pagedAccounts; track account.id) {
                   <tr [class.is-selected]="selectedAccount?.id === account.id">
                     <td data-label="Account">
-                      <button type="button" class="account-row-select" (click)="selectAccount(account)">
+                      <div class="account-row-select">
                         <span class="account-row-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
                         <span class="account-row-details">
                           <strong>{{ account.name }}</strong>
                           <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</small>
                         </span>
-                      </button>
+                      </div>
                     </td>
                     <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
                     <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
@@ -1054,6 +1054,10 @@
                       </div>
                     </td>
                     <td data-label="Actions" class="accounts-table-actions">
+                      <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
+                        <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
+                        <span>{{ selectedAccount?.id === account.id ? 'Dashboard active' : 'Set active' }}</span>
+                      </button>
                       <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
                     </td>
                   </tr>
