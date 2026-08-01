@@ -10128,6 +10128,52 @@ table.simple-table {
         }
       }
     }
+
+    ::ng-deep app-dream-timeline {
+      .dream-time-minimal {
+        .start-date-horizontal {
+          color: #64748B;
+          background: #FAF9FF;
+          border-color: #E9E5F5;
+        }
+
+        .time-units {
+          background: #FAF9FF;
+          border-color: #E9E5F5;
+          box-shadow: none;
+
+          .time-unit,
+          .time-unit:nth-child(1),
+          .time-unit:nth-child(2),
+          .time-unit:nth-child(3),
+          .time-unit:nth-child(4),
+          .time-unit:nth-child(5),
+          .time-unit:nth-child(6) {
+            border-left-color: #DDD6FE;
+
+            .value {
+              background: none;
+              color: #7C3AED;
+              -webkit-text-fill-color: #7C3AED;
+              text-shadow: none;
+            }
+
+            .label,
+            &:nth-child(1) .label,
+            &:nth-child(2) .label,
+            &:nth-child(3) .label,
+            &:nth-child(4) .label,
+            &:nth-child(5) .label,
+            &:nth-child(6) .label {
+              border-color: transparent;
+              background: transparent;
+              color: #64748B;
+              text-shadow: none;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
