@@ -113,11 +113,9 @@ app-root {
   stroke: url(#aura-energy-gradient);
   stroke-width: 2.6;
   stroke-linecap: round;
-  stroke-dasharray: 14 86;
-  stroke-dashoffset: 100;
   filter: url(#aura-energy-bloom);
   opacity: 0.98;
-  animation: aura-energy-travel 2s cubic-bezier(0.42, 0, 0.24, 1) 1;
+  animation: aura-energy-brighten 2s ease-in-out 1;
 }
 
 @keyframes aura-energy-visibility {
@@ -126,8 +124,10 @@ app-root {
   100% { opacity: 0; }
 }
 
-@keyframes aura-energy-travel {
-  to { stroke-dashoffset: 0; }
+@keyframes aura-energy-brighten {
+  0%, 100% { opacity: 0.2; }
+  25%, 75% { opacity: 1; }
+  50% { opacity: 0.95; }
 }
 
 @media (prefers-reduced-motion: reduce) {
