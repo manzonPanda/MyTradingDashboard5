@@ -1063,7 +1063,7 @@
                         <span class="account-row-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
                         <span class="account-row-details">
                           <strong>{{ account.name }}</strong>
-                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</small>
+                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : '' }}</small>
                         </span>
                       </div>
                     </td>
