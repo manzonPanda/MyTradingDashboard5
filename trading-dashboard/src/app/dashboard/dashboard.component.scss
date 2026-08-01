@@ -10198,9 +10198,9 @@ table.simple-table {
 }
 
 .accounts-section {
-  max-width: 1200px;
+  max-width: 1540px;
   margin: 0 auto;
-  padding: 3.5rem 2rem 4rem;
+  padding: 3.5rem clamp(1rem, 3vw, 3rem) 4rem;
 }
 
 .accounts-hero {
@@ -10261,12 +10261,15 @@ table.simple-table {
   }
 }
 
-.account-firm-list {
+.accounts-browser {
   display: grid;
-  gap: 2rem;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem;
 }
 
-.account-firm-group {
+.firm-selector,
+.selected-firm-accounts {
   padding: 1.25rem;
   border: 1px solid var(--tf-border-primary);
   border-radius: 1.35rem;
@@ -10274,7 +10277,8 @@ table.simple-table {
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
 }
 
-.account-firm-heading {
+.firm-selector-heading,
+.selected-firm-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -10284,30 +10288,8 @@ table.simple-table {
   border-bottom: 1px solid var(--tf-border-primary);
 }
 
-.account-firm-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.account-firm-mark {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 0.85rem;
-  background: linear-gradient(135deg, #eef2ff, #ddd6fe);
-  color: #4f46e5;
-
-  mat-icon {
-    width: 1.35rem;
-    height: 1.35rem;
-    font-size: 1.35rem;
-  }
-}
-
-.account-firm-kicker {
+.firm-selector-kicker,
+.selected-firm-kicker {
   margin: 0 0 0.15rem;
   color: var(--tf-text-muted);
   font-size: 0.65rem;
@@ -10316,11 +10298,116 @@ table.simple-table {
   text-transform: uppercase;
 }
 
-.account-firm-heading h2 {
+.firm-selector-heading h2,
+.selected-firm-heading h2 {
   margin: 0;
   color: var(--tf-text-primary);
   font-size: 1.25rem;
   letter-spacing: -0.025em;
+}
+
+.firm-selector-summary {
+  color: var(--tf-text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.firm-selector-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.firm-selector-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 1rem;
+  background: var(--tf-bg-secondary);
+  color: var(--tf-text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover,
+  &.is-active {
+    border-color: #6366f1;
+    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.14);
+    transform: translateY(-2px);
+  }
+
+  &.is-active {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), var(--tf-bg-secondary));
+  }
+}
+
+.firm-selector-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+
+  mat-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 1.25rem;
+  }
+}
+
+.firm-selector-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    font-size: 0.95rem;
+  }
+
+  small {
+    color: var(--tf-text-muted);
+    font-size: 0.78rem;
+  }
+}
+
+.firm-selector-arrow {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-left: auto;
+  color: #6366f1;
+  font-size: 1.1rem;
+}
+
+.selected-firm-accounts {
+  min-width: 0;
+}
+
+.firm-selection-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 220px;
+  padding: 1.5rem;
+  border: 1px dashed var(--tf-border-primary);
+  border-radius: 1.1rem;
+  color: var(--tf-text-secondary);
+  text-align: center;
+
+  mat-icon {
+    color: #818cf8;
+  }
 }
 
 .account-firm-count {
@@ -10466,6 +10553,10 @@ table.simple-table {
 }
 
 @media (max-width: 768px) {
+  .accounts-browser {
+    grid-template-columns: 1fr;
+  }
+
   .tradezella-dashboard,
   .tradezella-dashboard.dashboard-navigation-open {
     width: 100%;

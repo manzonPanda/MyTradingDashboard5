@@ -380,17 +380,27 @@ export class DashboardComponent implements AfterViewInit {
   tableData: Table[] = []; // Initialize as empty array
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
+  selectedFirm: string | null = null;
   isLoadingAccounts = true;
 
-  get accountGroups(): { firm: string; accounts: Account[] }[] {
-    const groups = new Map<string, Account[]>();
+  get firms(): { name: string; accountCount: number }[] {
+    const accountCounts = new Map<string, number>();
     for (const account of this.accounts) {
       const firm = account.firm?.trim() || 'Independent accounts';
-      const group = groups.get(firm) ?? [];
-      group.push(account);
-      groups.set(firm, group);
+      accountCounts.set(firm, (accountCounts.get(firm) ?? 0) + 1);
     }
-    return Array.from(groups, ([firm, accounts]) => ({ firm, accounts }));
+    return Array.from(accountCounts, ([name, accountCount]) => ({ name, accountCount }));
+  }
+
+  get filteredAccounts(): Account[] {
+    return this.selectedFirm
+      ? this.accounts.filter(account => (account.firm?.trim() || 'Independent accounts') === this.selectedFirm)
+      : [];
+  }
+
+  selectFirm(firm: string): void {
+    this.selectedFirm = firm;
+    this.cdr.markForCheck();
   }
 
   isMostRecentAccount(account: Account): boolean {
