@@ -163,6 +163,7 @@ export class DashboardComponent implements AfterViewInit {
   roiTransactions: RoiTransaction[] = [];
   isLoadingRoi = false;
   isSavingRoi = false;
+  isRoiEntryModalOpen = false;
   roiFilter: 'all' | 'expense' | 'payout' = 'all';
   roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
     transaction_type: 'expense',
@@ -1324,6 +1325,14 @@ mt5AccountInfo: AccountSettings = {
     return circumference * progress;
   }
 
+  openRoiEntryModal(): void {
+    this.isRoiEntryModalOpen = true;
+  }
+
+  closeRoiEntryModal(): void {
+    if (!this.isSavingRoi) this.isRoiEntryModalOpen = false;
+  }
+
   get filteredRoiTransactions(): RoiTransaction[] {
     return this.roiFilter === 'all'
       ? this.roiTransactions
@@ -1384,6 +1393,7 @@ mt5AccountInfo: AccountSettings = {
         account_id: '',
         image_url: ''
       };
+      this.isRoiEntryModalOpen = false;
       this.snackBar.open('ROI transaction saved.', 'Dismiss', { duration: 3000 });
     } catch (error) {
       console.error('Unable to save ROI transaction:', error);

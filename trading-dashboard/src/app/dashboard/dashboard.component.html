@@ -999,10 +999,13 @@
           <h1 id="roi-page-title">Your return, clearly tracked.</h1>
           <p>Every challenge purchase and prop-firm payout in one focused view.</p>
         </div>
-        <div class="roi-net-orb" [class.is-positive]="roiNetReturn >= 0" [class.is-negative]="roiNetReturn < 0">
-          <span>Net return</span>
-          <strong>{{ roiNetReturn | currency:'PHP':'symbol':'1.0-0' }}</strong>
-          <small>{{ roiReturnPercentage | number:'1.0-1' }}% on spend</small>
+        <div class="roi-hero-actions">
+          <button class="roi-add-entry-button" type="button" (click)="openRoiEntryModal()"><mat-icon>add</mat-icon><span>Add entry</span></button>
+          <div class="roi-net-orb" [class.is-positive]="roiNetReturn >= 0" [class.is-negative]="roiNetReturn < 0">
+            <span>Net return</span>
+            <strong>{{ roiNetReturn | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <small>{{ roiReturnPercentage | number:'1.0-1' }}% on spend</small>
+          </div>
         </div>
       </header>
 
@@ -1053,20 +1056,27 @@
           }
         </section>
 
-        <aside class="roi-entry-card">
-          <div class="roi-card-heading"><div><p class="roi-eyebrow">New entry</p><h2>Log a movement</h2></div><mat-icon>add_chart</mat-icon></div>
-          <form class="roi-entry-form" (ngSubmit)="saveRoiTransaction()">
-            <div class="roi-type-picker">
-              <button type="button" [class.is-active]="roiForm.transaction_type === 'expense'" (click)="roiForm.transaction_type = 'expense'"><mat-icon>remove_circle_outline</mat-icon>Expense</button>
-              <button type="button" [class.is-active]="roiForm.transaction_type === 'payout'" (click)="roiForm.transaction_type = 'payout'"><mat-icon>add_circle_outline</mat-icon>Payout</button>
-            </div>
-            <label class="roi-field"><span>Amount</span><div class="roi-amount-input"><span>₱</span><input type="number" name="roi-amount" min="0.01" step="0.01" required [(ngModel)]="roiForm.amount" placeholder="0.00"></div></label>
-            <div class="roi-form-row"><label class="roi-field"><span>Date</span><input type="date" name="roi-date" required [(ngModel)]="roiForm.transaction_date"></label><label class="roi-field"><span>Account</span><select name="roi-account" [(ngModel)]="roiForm.account_id"><option value="">No account</option>@for (account of accounts; track account.id) { <option [value]="account.id">{{ account.name }}</option> }</select></label></div>
-            <label class="roi-field"><span>Note</span><input type="text" name="roi-note" [(ngModel)]="roiForm.note" placeholder="e.g. 100K challenge fee"></label>
-            <label class="roi-field"><span>Receipt image URL <em>optional</em></span><input type="url" name="roi-image-url" [(ngModel)]="roiForm.image_url" placeholder="https://"></label>
-            <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : 'Add to tracker' }}</button>
-          </form>
-        </aside>
+        @if (isRoiEntryModalOpen) {
+          <div class="roi-modal-backdrop" role="presentation" (click)="closeRoiEntryModal()">
+            <section class="roi-entry-modal" role="dialog" aria-modal="true" aria-labelledby="roi-entry-title" (click)="$event.stopPropagation()">
+              <div class="roi-card-heading">
+                <div><p class="roi-eyebrow">New entry</p><h2 id="roi-entry-title">Log a movement</h2><p class="roi-modal-subtitle">Capture an expense or payout as it happens.</p></div>
+                <button class="roi-modal-close" type="button" aria-label="Close new entry dialog" (click)="closeRoiEntryModal()"><mat-icon>close</mat-icon></button>
+              </div>
+              <form class="roi-entry-form" (ngSubmit)="saveRoiTransaction()">
+                <div class="roi-type-picker">
+                  <button type="button" [class.is-active]="roiForm.transaction_type === 'expense'" (click)="roiForm.transaction_type = 'expense'"><mat-icon>remove_circle_outline</mat-icon>Expense</button>
+                  <button type="button" [class.is-active]="roiForm.transaction_type === 'payout'" (click)="roiForm.transaction_type = 'payout'"><mat-icon>add_circle_outline</mat-icon>Payout</button>
+                </div>
+                <label class="roi-field"><span>Amount</span><div class="roi-amount-input"><span>₱</span><input type="number" name="roi-amount" min="0.01" step="0.01" required [(ngModel)]="roiForm.amount" placeholder="0.00"></div></label>
+                <div class="roi-form-row"><label class="roi-field"><span>Date</span><input type="date" name="roi-date" required [(ngModel)]="roiForm.transaction_date"></label><label class="roi-field"><span>Account</span><select name="roi-account" [(ngModel)]="roiForm.account_id"><option value="">No account</option>@for (account of accounts; track account.id) { <option [value]="account.id">{{ account.name }}</option> }</select></label></div>
+                <label class="roi-field"><span>Note</span><input type="text" name="roi-note" [(ngModel)]="roiForm.note" placeholder="e.g. 100K challenge fee"></label>
+                <label class="roi-field"><span>Receipt image URL <em>optional</em></span><input type="url" name="roi-image-url" [(ngModel)]="roiForm.image_url" placeholder="https://"></label>
+                <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : 'Add to tracker' }}</button>
+              </form>
+            </section>
+          </div>
+        }
       </div>
     </section>
   }
