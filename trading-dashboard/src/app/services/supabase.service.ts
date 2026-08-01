@@ -2,6 +2,21 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
+export interface Account {
+  id: string;
+  name: string;
+  firm?: string | null;
+  account_number?: string | null;
+  initial_balance?: number | null;
+  profit_target_percent?: number | null;
+  max_total_drawdown_percent?: number | null;
+  daily_loss_limit_percent?: number | null;
+  start_date?: string | null;
+  status?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Trade {
   id?: string;
   account_id?: string;
@@ -47,12 +62,21 @@ export class SupabaseService {
     return this.supabase;
   }
 
-  async getAllTrades(accountName?: string): Promise<Trade[]> {
+  async getAccounts(): Promise<Account[]> {
+    const { data, error } = await this.supabase
+      .from('accounts')
+      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at')
+      .order('created_at', { ascending: false, nullsFirst: false });
+    if (error) throw new Error(`Account loading failed: ${error.message}`);
+    return (data as Account[]) || [];
+  }
+
+  async getAllTrades(accountId?: string): Promise<Trade[]> {
     let query = this.supabase
       .from('trades')
-      .select(accountName ? '*, accounts!inner(name)' : '*');
-    if (accountName) {
-      query = query.eq('accounts.name', accountName);
+      .select('*');
+    if (accountId) {
+      query = query.eq('account_id', accountId);
     }
     const { data, error } = await query.order('time_open', { ascending: false });
     if (error) { console.error('Error fetching trades:', error); return []; }
@@ -94,14 +118,14 @@ export class SupabaseService {
     return data.id;
   }
 
-  async getTradesByDateRange(startDate: string, endDate: string, accountName?: string): Promise<Trade[]> {
+  async getTradesByDateRange(startDate: string, endDate: string, accountId?: string): Promise<Trade[]> {
     let query = this.supabase
       .from('trades')
-      .select(accountName ? '*, accounts!inner(name)' : '*')
+      .select('*')
       .gte('time_open', startDate)
       .lte('time_open', endDate);
-    if (accountName) {
-      query = query.eq('accounts.name', accountName);
+    if (accountId) {
+      query = query.eq('account_id', accountId);
     }
     const { data, error } = await query.order('time_open', { ascending: true });
     if (error) { console.error('Error fetching trades by date range:', error); return []; }

@@ -10190,10 +10190,279 @@ table.simple-table {
   }
 }
 
+#accounts,
 #active-account,
 #notion-update,
 #trading-history {
   scroll-margin-top: 13rem;
+}
+
+.accounts-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 4rem;
+}
+
+.accounts-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 2.25rem;
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 1.5rem;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.28), transparent 40%), linear-gradient(135deg, #172554, #312e81 55%, #4c1d95);
+  box-shadow: 0 22px 55px rgba(49, 46, 129, 0.24);
+  color: #fff;
+
+  h1 {
+    margin: 0.3rem 0 0.7rem;
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    letter-spacing: -0.055em;
+  }
+}
+
+.accounts-kicker {
+  margin: 0;
+  color: #c7d2fe;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.accounts-description {
+  max-width: 39rem;
+  margin: 0;
+  color: #ddd6fe;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.accounts-hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f5f3ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  mat-icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    color: #a7f3d0;
+    font-size: 1.05rem;
+  }
+}
+
+.account-firm-list {
+  display: grid;
+  gap: 2rem;
+}
+
+.account-firm-group {
+  padding: 1.25rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 1.35rem;
+  background: color-mix(in srgb, var(--tf-bg-secondary) 88%, #6366f1 12%);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.account-firm-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+  padding: 0.2rem 0.25rem 1rem;
+  border-bottom: 1px solid var(--tf-border-primary);
+}
+
+.account-firm-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.account-firm-mark {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, #eef2ff, #ddd6fe);
+  color: #4f46e5;
+
+  mat-icon {
+    width: 1.35rem;
+    height: 1.35rem;
+    font-size: 1.35rem;
+  }
+}
+
+.account-firm-kicker {
+  margin: 0 0 0.15rem;
+  color: var(--tf-text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.account-firm-heading h2 {
+  margin: 0;
+  color: var(--tf-text-primary);
+  font-size: 1.25rem;
+  letter-spacing: -0.025em;
+}
+
+.account-firm-count {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 1rem;
+}
+
+.account-choice {
+  display: flex;
+  min-height: 205px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.3rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 1.1rem;
+  background: var(--tf-bg-secondary);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  color: var(--tf-text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.65);
+    box-shadow: 0 16px 30px rgba(79, 70, 229, 0.16);
+    transform: translateY(-4px);
+  }
+
+  &.is-selected {
+    border-color: #6366f1;
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), var(--tf-bg-secondary));
+    box-shadow: 0 16px 32px rgba(79, 70, 229, 0.2);
+  }
+
+  strong {
+    display: block;
+    width: 100%;
+    margin-top: 1.35rem;
+    overflow: hidden;
+    font-size: 1.08rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.account-choice-topline,
+.account-choice-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-choice-icon {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+
+  mat-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    font-size: 1.3rem;
+  }
+}
+
+.account-choice-state {
+  color: #818cf8;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.account-choice-number {
+  margin-top: 0.35rem;
+  color: var(--tf-text-muted);
+  font-size: 0.82rem;
+}
+
+.account-choice-action {
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 1.2rem;
+  color: #6366f1;
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.accounts-loading,
+.accounts-empty {
+  display: grid;
+  place-items: center;
+  gap: 0.85rem;
+  min-height: 220px;
+  padding: 2rem;
+  border: 1px dashed var(--tf-border-primary);
+  border-radius: 1.1rem;
+  color: var(--tf-text-secondary);
+  text-align: center;
+}
+
+.accounts-empty {
+  h2,
+  p {
+    margin: 0;
+  }
+
+  mat-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #818cf8;
+    font-size: 2.5rem;
+  }
+}
+
+.active-account-trade-count {
+  color: var(--tf-text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 @media (max-width: 768px) {

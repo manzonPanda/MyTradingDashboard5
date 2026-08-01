@@ -34,6 +34,10 @@
         <mat-icon>dashboard</mat-icon>
         <span><strong>Dashboard</strong></span>
       </button>
+      <button class="navigation-link" type="button" title="Accounts" [class.is-active]="currentWorkspace === 'accounts'" (click)="navigateToWorkspace('accounts')">
+        <mat-icon>account_balance</mat-icon>
+        <span><strong>Accounts</strong><small>{{ selectedAccount?.name || 'Choose an account' }}</small></span>
+      </button>
       <button class="navigation-link" type="button" title="Trades" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
         <span><strong>Trades</strong></span>
@@ -964,14 +968,69 @@
     </div>
   </section>
 
+  <section id="accounts" class="accounts-section" *ngIf="currentWorkspace === 'accounts'">
+    <div class="accounts-hero">
+      <div>
+        <p class="accounts-kicker">Your trading workspace</p>
+        <h1>Choose an account</h1>
+        <p class="accounts-description">Switch your dashboard context in one click. Your newest account is selected automatically when the app opens.</p>
+      </div>
+      <div class="accounts-hero-status">
+        <mat-icon>verified</mat-icon>
+        <span>Supabase connected</span>
+      </div>
+    </div>
+
+    @if (isLoadingAccounts) {
+      <div class="accounts-loading">
+        <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+        <span>Loading your accounts</span>
+      </div>
+    } @else if (accounts.length) {
+      <div class="account-firm-list">
+        @for (group of accountGroups; track group.firm) {
+          <section class="account-firm-group" [attr.aria-labelledby]="'firm-' + group.firm">
+            <div class="account-firm-heading">
+              <div class="account-firm-title">
+                <span class="account-firm-mark"><mat-icon>business</mat-icon></span>
+                <div>
+                  <p class="account-firm-kicker">Prop firm</p>
+                  <h2 [id]="'firm-' + group.firm">{{ group.firm }}</h2>
+                </div>
+              </div>
+              <span class="account-firm-count">{{ group.accounts.length }} {{ group.accounts.length === 1 ? 'account' : 'accounts' }}</span>
+            </div>
+            <div class="account-grid">
+              @for (account of group.accounts; track account.id) {
+                <button class="account-choice" type="button" [class.is-selected]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
+                  <span class="account-choice-topline">
+                    <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
+                    <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</span>
+                  </span>
+                  <strong>{{ account.name }}</strong>
+                  <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
+                  <span class="account-choice-action">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></span>
+                </button>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    } @else {
+      <div class="accounts-empty">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <h2>No accounts yet</h2>
+        <p>Add an account in Supabase, then return here to use it on the dashboard.</p>
+      </div>
+    }
+  </section>
+
     <!-- Active Account Section -->
   <section id="active-account" class="table-section" *ngIf="currentWorkspace === 'active-account'">
     <div class="table-card">
       <div class="table-header">
-        <h2 class="section-title">Active Account: {{ environment.propfirmAccountName }}
-          <small style="font-size: 0.8rem; color: #666; font-weight: normal;">
-            ({{ tableData.length }} trades)
-          </small>
+        <h2 class="section-title">Active Account: {{ selectedAccount?.name || 'No account selected' }}
+          <small class="active-account-trade-count">({{ tableData.length }} trades)</small>
         </h2>
 
       <!-- Action Buttons -->

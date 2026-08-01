@@ -38,7 +38,7 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { TradeService } from '../services/trade.service';
-import { SupabaseService, Trade } from '../services/supabase.service';
+import { Account, SupabaseService, Trade } from '../services/supabase.service';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -175,7 +175,7 @@ export class DashboardComponent implements AfterViewInit {
     return this.currentWorkspace === 'dashboard';
   }
 
-  navigateToWorkspace(workspace: 'dashboard' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
+  navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
     this.activeWorkspace = workspace;
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
 
@@ -378,6 +378,24 @@ export class DashboardComponent implements AfterViewInit {
   rawData: any[] = [];
   // Active Account Table
   tableData: Table[] = []; // Initialize as empty array
+  accounts: Account[] = [];
+  selectedAccount: Account | null = null;
+  isLoadingAccounts = true;
+
+  get accountGroups(): { firm: string; accounts: Account[] }[] {
+    const groups = new Map<string, Account[]>();
+    for (const account of this.accounts) {
+      const firm = account.firm?.trim() || 'Independent accounts';
+      const group = groups.get(firm) ?? [];
+      group.push(account);
+      groups.set(firm, group);
+    }
+    return Array.from(groups, ([firm, accounts]) => ({ firm, accounts }));
+  }
+
+  isMostRecentAccount(account: Account): boolean {
+    return this.accounts[0]?.id === account.id;
+  }
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
 
@@ -1164,57 +1182,58 @@ mt5AccountInfo: AccountSettings = {
     return circumference * progress;
   }
 
-  private async loadTradingSettings(): Promise<void> {
-    const body = {
-        "page_size": 1,
-        "filter": {
-          "property": "Account",
-          "multi_select": {
-            "contains": environment.propfirmAccountName
-          }
-        },
-        "sorts": [
-          {
-            "property": "Date",
-            "direction": "ascending"
-          }
-        ]
-      }
-    ;
+  private async loadAccounts(): Promise<void> {
+    this.isLoadingAccounts = true;
     try {
-      const accountSettings: any = await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL_NOTION}/api/getPropFirmAccountSettings`, body) //Patching
-      );
-      if (accountSettings.results[0]) {
-        const info = accountSettings.results[0].properties["Daily Reflection"]?.rich_text?.[0]?.plain_text || "";
-        console.warn('info:', info);
-        const startingBalance = info.match(/InitialBalance:\s*(\d+)/i)?.[1] || null;
-        const profitTarget = info.match(/ProfitTarget:\s*([\d.]+%)/i)?.[1] || null; 
-        const maxTotalDrawdown = info.match(/MaxTotalDrawdown:\s*([\d.]+%)/i)?.[1] || null;
-        const dailyLossLimit = info.match(/DailyLossLimit:\s*([\d.]+%)/i)?.[1] || null;
-        this.mt5AccountInfo.startingBalance = parseInt(startingBalance)
-        this.mt5AccountInfo.profitTarget = parseFloat(profitTarget.replace('%', ''))
-        this.mt5AccountInfo.maxTotalDrawdown = parseFloat(maxTotalDrawdown.replace('%', ''))
-        this.mt5AccountInfo.dailyLossLimit = parseFloat(dailyLossLimit.replace('%', ''))
-        console.log('✅ Loaded MT5 Account settings from Notion:', this.mt5AccountInfo);
-        // Refresh chart with updated MT5 account info
-        setTimeout(() => {
-           this.generateTradingChartData();
-        }, 3000);
-
-      }
-      console.warn('✅ Loaded PropFirm Account settings from Notion: ', this.mt5AccountInfo);
+      this.accounts = await this.supabaseService.getAccounts();
+      this.selectedAccount = this.accounts[0] ?? null;
+      this.applySelectedAccountSettings();
     } catch (error) {
-      console.warn('⚠️ Could not load MT5 account settings from backend',error);
+      console.error('Unable to load Supabase accounts:', error);
+      this.snackBar.open('Unable to load accounts from Supabase.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isLoadingAccounts = false;
+      this.cdr.markForCheck();
     }
   }
 
-async ngOnInit() {
+  private inferAccountSize(account: Account | null): number {
+    const sizeMatch = account?.name.match(/(\d+(?:\.\d+)?)\s*k\b/i);
+    return sizeMatch ? Number(sizeMatch[1]) * 1000 : 0;
+  }
+
+  private applySelectedAccountSettings(): void {
+    const account = this.selectedAccount;
+    this.mt5AccountInfo = {
+      ...this.mt5AccountInfo,
+      startingBalance: account?.initial_balance ?? this.inferAccountSize(account),
+      profitTarget: account?.profit_target_percent ?? 0,
+      maxTotalDrawdown: account?.max_total_drawdown_percent ?? 0,
+      dailyLossLimit: account?.daily_loss_limit_percent ?? 0
+    };
+    this.dropdownSelectedSize = this.mt5AccountInfo.startingBalance;
+  }
+
+  async selectAccount(account: Account): Promise<void> {
+    if (this.selectedAccount?.id === account.id) {
+      this.navigateToWorkspace('dashboard');
+      return;
+    }
+
+    this.selectedAccount = account;
+    this.applySelectedAccountSettings();
+    this.currentPage = 1;
+    await this.loadMT5Data();
+    this.generateTradingChartData();
+    this.cdr.markForCheck();
+    this.navigateToWorkspace('dashboard');
+    this.snackBar.open(`Showing ${account.name}.`, 'Dismiss', { duration: 3000 });
+  }
+
+	async ngOnInit() {
     // Set up click outside listener for dropdown
     this.setupClickOutsideListener();
-
-    // Load saved trading settings
-    await this.loadTradingSettings();
+    await this.loadAccounts();
 
     // Load MT5 data immediately
     try {
@@ -2055,7 +2074,7 @@ isRowAlreadySelected(row: any): boolean {
           },
           "Account": {  
             "multi_select": [
-              { "name": environment.propfirmAccountName }
+              { "name": this.selectedAccount?.name ?? '' }
             ]
           },
           "ticket":{
@@ -4903,7 +4922,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const trades = this.mt5LiveTrades
         .filter(trade => trade.position !== undefined && trade.position !== null && trade.position !== '')
         .map(trade => this.mapMt5TradeForSupabase(trade));
-      const { created, updated } = await this.supabaseService.syncMt5Trades(trades, environment.propfirmAccountName);
+      if (!this.selectedAccount) {
+        throw new Error('Select an account before syncing MT5 trades.');
+      }
+      const { created, updated } = await this.supabaseService.syncMt5Trades(trades, this.selectedAccount.name);
 
       this.snackBar.open(`MT5 sync complete: ${created} created, ${updated} updated.`, 'Dismiss', {
         duration: 4000
@@ -4959,20 +4981,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     let response: any[] = [];
 
     try {
-      // Try live API
-      console.log('📡 Attempting to fetch from MT5 API:', this.BACKEND_URL_MT5);
-      try {
-        response = await this.getMt5API();
-        console.log('📡 MT5 API response received:', response?.length ?? 0, 'trades');
-      } catch (apiError) {
-        console.error('❌ Error fetching MT5 API:', apiError);
-      }
-
-      if (!response || response.length === 0) {
-        console.warn('⚠️ MT5 API returned no trades; loading Supabase history.');
-        response = await this.getSupabaseTrades();
-        console.log('🗄️ Supabase history loaded:', response.length, 'trades');
-      }
+      response = await this.getSupabaseTrades();
+      console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
       this.isLoadingMT5Data = false;
       this.cdr.markForCheck();
@@ -5028,7 +5038,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
   private async getSupabaseTrades(): Promise<any[]> {
-    const trades = await this.supabaseService.getAllTrades(environment.propfirmAccountName);
+    if (!this.selectedAccount) return [];
+    const trades = await this.supabaseService.getAllTrades(this.selectedAccount.id);
 
     return trades
       .filter((trade): trade is Trade & { time_open: string } => Boolean(trade.time_open))
@@ -5289,6 +5300,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
+    this.generateTradingChartData();
     this.cdr.markForCheck();
 
     // Check for profit target achievement and celebrate! 🎉

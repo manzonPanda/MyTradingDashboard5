@@ -3,7 +3,6 @@ export const environment = {
   // backendUrlNotion: 'http://localhost:3000',
   backendUrlNotion: 'https://notionproxyapi.onrender.com',
   backendUrlMt5: 'https://mt5-api.jakemt5.host',
-  propfirmAccountName: '5ers1️⃣7️⃣2.5k [#26542161]',
   // === Supabase config (replaces Notion) ===
   // Get these from: Supabase Dashboard -> Settings -> API
   supabase: {
