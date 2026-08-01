@@ -60,16 +60,24 @@ export class SupabaseService {
   }
 
   async getAccountIdByName(accountName: string): Promise<string | null> {
-    const { data, error } = await this.supabase
+    const exactLookup = await this.supabase
       .from('accounts')
       .select('id')
       .eq('name', accountName)
       .maybeSingle();
-    if (error) {
-      console.error('Error finding Supabase account:', error);
-      return null;
-    }
-    return data?.id ?? null;
+    if (exactLookup.error) throw new Error(`Account lookup failed: ${exactLookup.error.message}`);
+    if (exactLookup.data?.id) return exactLookup.data.id;
+
+    const accountNumber = accountName.match(/#(\d+)/)?.[1];
+    if (!accountNumber) return null;
+
+    const numberLookup = await this.supabase
+      .from('accounts')
+      .select('id')
+      .eq('account_number', accountNumber)
+      .maybeSingle();
+    if (numberLookup.error) throw new Error(`Account-number lookup failed: ${numberLookup.error.message}`);
+    return numberLookup.data?.id ?? null;
   }
 
   async getTradesByDateRange(startDate: string, endDate: string, accountName?: string): Promise<Trade[]> {
@@ -92,7 +100,7 @@ export class SupabaseService {
       .select('*')
       .eq('ticket', ticket)
       .maybeSingle();
-    if (error) { console.error('Error fetching trade by ticket:', error); return null; }
+    if (error) throw new Error(`Trade lookup failed: ${error.message}`);
     return data as Trade | null;
   }
 
@@ -193,7 +201,7 @@ export class SupabaseService {
       .insert(trade)
       .select()
       .single();
-    if (error) { console.error('Error creating trade:', error); return null; }
+    if (error) throw new Error(`Trade insert failed: ${error.message}`);
     return data as Trade;
   }
 
@@ -230,7 +238,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    if (error) { console.error('Error updating trade:', error); return null; }
+    if (error) throw new Error(`Trade update failed: ${error.message}`);
     return data as Trade;
   }
 

@@ -4965,7 +4965,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       });
     } catch (error) {
       console.error('Failed to sync MT5 trades to Supabase:', error);
-      this.snackBar.open('MT5 sync failed. Please try again.', 'Dismiss', { duration: 4000 });
+      const message = error instanceof Error ? error.message : 'Unknown sync error';
+      this.snackBar.open(`MT5 sync failed: ${message}`, 'Dismiss', { duration: 8000 });
     } finally {
       this.isSyncingMT5Trades = false;
       this.cdr.markForCheck();
