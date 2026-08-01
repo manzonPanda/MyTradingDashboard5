@@ -1220,58 +1220,6 @@ async ngOnInit() {
     try {
       await this.loadMT5Data();
       console.log('✅ ngOnInit: MT5 data loaded successfully');
-      // If no data loaded, set test data
-      if (!this.tableData || this.tableData.length === 0) {
-        console.log('📌 ngOnInit: tableData is empty, setting test data');
-        this.tableData = [
-          {
-            openDate: '07.23.2025 13:26',
-            closeDate: '07.23.2025 13:46',
-            tradeNotion: [],
-            status: '',
-            position: '100',
-            symbol: 'GBPUSD',
-            type: 'Sell',
-            volume: '0.47',
-            entry: '215.19',
-            sL: '310',
-            tP: '1.31484',
-            exit: '946',
-            commission: '-4',
-            swap: '0',
-            profit: '1945.6',
-            netProfit: '1941.6',
-            riskPerTrade: '23.97',
-            rrr: '2.5',
-            mt5status: 'closed',
-            mfe: '0'
-          },
-          {
-            openDate: '07.24.2025 12:35',
-            closeDate: '07.24.2025 12:45',
-            tradeNotion: [],
-            status: '',
-            position: '102',
-            symbol: 'GBPUSD',
-            type: 'Sell',
-            volume: '0.47',
-            entry: '681.32',
-            sL: '639',
-            tP: '1.31484',
-            exit: '791',
-            commission: '-4',
-            swap: '0',
-            profit: '-580.8',
-            netProfit: '-584.8',
-            riskPerTrade: '23.97',
-            rrr: '1.2',
-            mt5status: 'closed',
-            mfe: '0'
-          }
-        ];
-        this.isLoadingMetrics = false;
-        this.cdr.markForCheck();
-      }
     } catch (error) {
       console.error('❌ ngOnInit: Error loading MT5 data:', error);
     }
@@ -1347,7 +1295,7 @@ async ngOnInit() {
 
     try {
       const news: any = await firstValueFrom(
-        this.http.get("http://localhost:3000/api/news")
+        this.http.get(`${environment.backendUrlNotion}/api/news`)
       );
       this.newsData = Array.isArray(news) ? news : [];
       console.log("📈 Forex Factory News Data:", this.newsData);
@@ -3735,19 +3683,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const dayNews = this.newsData.filter(news => {
       if (!news.date) return false;
 
-      // Parse the date string like "Tue Aug 5" or "Thu Aug 7"
-      const dayAbbr = news.date.split(' ')[0]; // Get "Tue", "Thu", etc.
-
-      // Map day abbreviations to day numbers (1=Monday, 2=Tuesday, etc.)
+      const dayName = news.date.trim().split(/[\s,]+/)[0].slice(0, 3).toLowerCase();
       const dayMap: { [key: string]: number } = {
-        'Mon': 1,
-        'Tue': 2,
-        'Wed': 3,
-        'Thu': 4,
-        'Fri': 5
+        mon: 1,
+        tue: 2,
+        wed: 3,
+        thu: 4,
+        fri: 5
       };
 
-      return dayMap[dayAbbr] === dayNumber;
+      return dayMap[dayName] === dayNumber;
     });
 
     return dayNews;
@@ -4978,8 +4923,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       ticket: trade.position,
       buy_sell: trade.type === 'Buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
-      date_start: this.formatMt5DateForSupabase(trade.openDate),
-      date_end: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
+      time_open: this.formatMt5DateForSupabase(trade.openDate),
+      time_close: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
       pnl: this.toNumber(trade.netProfit),
@@ -5023,17 +4968,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         console.error('❌ Error fetching MT5 API:', apiError);
       }
 
-      // If API returned no data or failed, use fallback
-      // if (!response || response.length === 0) {
-      //   console.warn('⚠️ Using fallback data source...');
-      //   try {
-      //     response = await this.getLocalTrades();
-      //     console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
-      //   } catch (localError) {
-      //     console.error('❌ Failed to load fallback data:', localError);
-      //     response = []; // Ensure response is always an array
-      //   }
-      // }
+      if (!response || response.length === 0) {
+        console.warn('⚠️ MT5 API returned no trades; loading Supabase history.');
+        response = await this.getSupabaseTrades();
+        console.log('🗄️ Supabase history loaded:', response.length, 'trades');
+      }
     } finally {
       this.isLoadingMT5Data = false;
       this.cdr.markForCheck();
@@ -5042,8 +4981,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
     const mt5Trades = (response || []).map((trade: any) => ({
-      openDate: this.convertAndFormatMT5Date(trade.time_open),
-      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
+      openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
+      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
       tradeNotion: [],
       status: "",
       position: trade.position_id,
@@ -5088,63 +5027,46 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   
-  async getLocalTrades(): Promise<any[]> {
-    try {
-      console.log('📥 Attempting to load test data from assets/testDataTrades.json');
-      const data = await firstValueFrom(this.http.get<any[]>('assets/testDataTrades.json'));
-      console.log('✅ Test data loaded successfully:', data?.length ?? 0, 'trades');
-      return data || [];
-    } catch (error) {
-      console.error('❌ Failed to load test data from file:', error);
-      console.log('🔨 Creating fallback test data...');
-      // Fallback test data in case file loading fails
-      return [
-        {
-          commission: -4,
-          entry_price: 215.19,
-          exit_price: 946,
-          position_id: 100,
-          profit: 1945.6,
-          reward_risk_ratio: "2.5",
-          risk_usd: 23.97,
-          sl: 310,
-          status: "closed",
-          symbol: "GBPUSD",
-          time_open: "2025-07-23 13:26:37",
-          time_close: "2025-07-23 13:46:37",
-          tp: 1.31484,
-          trade_type: 1,
-          volume: "0.47"
-        },
-        {
-          commission: -4,
-          entry_price: 681.32,
-          exit_price: 791,
-          position_id: 102,
-          profit: -580.8,
-          reward_risk_ratio: "1.2",
-          risk_usd: 23.97,
-          sl: 639,
-          status: "closed",
-          symbol: "GBPUSD",
-          time_open: "2025-07-24 12:35:06",
-          time_close: "2025-07-24 12:45:28",
-          tp: 1.31484,
-          trade_type: 1,
-          volume: "0.47"
-        }
-      ];
-    }
+  private async getSupabaseTrades(): Promise<any[]> {
+    const trades = await this.supabaseService.getAllTrades(environment.propfirmAccountName);
+
+    return trades
+      .filter((trade): trade is Trade & { time_open: string } => Boolean(trade.time_open))
+      .map(trade => ({
+        commission: trade.commission ?? 0,
+        entry_price: trade.price_open ?? 0,
+        exit_price: trade.price_close ?? 0,
+        position_id: trade.ticket ?? '',
+        profit: trade.pnl ?? 0,
+        reward_risk_ratio: trade.rrr ?? '',
+        risk_usd: trade.risk_per_trade ?? 0,
+        sl: trade.sl ?? 0,
+        status: trade.time_close ? 'closed' : 'open',
+        symbol: trade.instrument ?? '',
+        time_open: this.formatSupabaseDateForMt5(trade.time_open),
+        time_close: trade.time_close ? this.formatSupabaseDateForMt5(trade.time_close) : '',
+        tp: trade.tp ?? 0,
+        trade_type: trade.buy_sell === 'Buy' ? 0 : 1,
+        volume: trade.lots ?? 0,
+        swap: trade.swap ?? 0,
+        fromSupabase: true
+      }));
+  }
+
+  private formatSupabaseDateForMt5(date: string): string {
+    return date.replace('T', ' ').replace(/\.\d+(Z)?$/, '').replace(/Z$/, '');
   }
 
 
-  convertAndFormatMT5Date(rawDateStr: string): string { //MT5 api date format->  time_close: "2025-07-24 09:56:01"
+  convertAndFormatMT5Date(rawDateStr: string, adjustTimezone = true): string { // MT5 API date format -> time_close: "2025-07-24 09:56:01"
     const [datePart, timePart] = rawDateStr.split(' ');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hour, minute, second] = timePart.split(':').map(Number);
 
     const dateObj = new Date(year, month - 1, day, hour, minute, second);
-    dateObj.setHours(dateObj.getHours() + 5); // Adjust timezone if needed
+    if (adjustTimezone) {
+      dateObj.setHours(dateObj.getHours() + 5);
+    }
 
     return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
   }
