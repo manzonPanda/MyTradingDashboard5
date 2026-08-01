@@ -1276,6 +1276,10 @@ table.simple-table {
             background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
           }
 
+          &.empty-news-list {
+            overflow: hidden;
+          }
+
           &::-webkit-scrollbar {
             display: none;
           }

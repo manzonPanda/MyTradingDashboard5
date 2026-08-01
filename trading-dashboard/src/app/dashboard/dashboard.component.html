@@ -154,7 +154,11 @@
               </div>
 
               <!-- Enhanced News List -->
-              <div class="enhanced-news-list" [ngClass]="{'current-day-news': day.day === getCurrentDay()}">
+              <div class="enhanced-news-list"
+                   [ngClass]="{
+                     'current-day-news': day.day === getCurrentDay(),
+                     'empty-news-list': !isLoadingNews() && getNewsForDay(day.day).length === 0
+                   }">
                 <!-- Loading State -->
                 <div *ngIf="isLoadingNews()" class="news-loading-container">
                   <div class="loading-spinner-wrapper">
