@@ -39,10 +39,13 @@ export class AuraEnergyService {
     this.cleanupId = undefined;
     this.removeActivePulse();
 
-    this.activeTargets = this.shuffle(
-      Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
-        .filter((target) => this.isVisible(target))
-    ).slice(0, 4);
+    this.activeTargets = Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
+      .filter((target) => this.isVisible(target))
+      .sort((first, second) => {
+        const firstBounds = first.getBoundingClientRect();
+        const secondBounds = second.getBoundingClientRect();
+        return firstBounds.top - secondBounds.top || firstBounds.left - secondBounds.left;
+      });
 
     if (!this.activeTargets.length) {
       return;
