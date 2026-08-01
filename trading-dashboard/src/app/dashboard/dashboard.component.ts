@@ -1295,7 +1295,7 @@ async ngOnInit() {
 
     try {
       const news: any = await firstValueFrom(
-        this.http.get("http://localhost:3000/api/news")
+        this.http.get(`${environment.backendUrlNotion}/api/news`)
       );
       this.newsData = Array.isArray(news) ? news : [];
       console.log("📈 Forex Factory News Data:", this.newsData);
@@ -3683,19 +3683,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const dayNews = this.newsData.filter(news => {
       if (!news.date) return false;
 
-      // Parse the date string like "Tue Aug 5" or "Thu Aug 7"
-      const dayAbbr = news.date.split(' ')[0]; // Get "Tue", "Thu", etc.
-
-      // Map day abbreviations to day numbers (1=Monday, 2=Tuesday, etc.)
+      const dayName = news.date.trim().split(/[\s,]+/)[0].slice(0, 3).toLowerCase();
       const dayMap: { [key: string]: number } = {
-        'Mon': 1,
-        'Tue': 2,
-        'Wed': 3,
-        'Thu': 4,
-        'Fri': 5
+        mon: 1,
+        tue: 2,
+        wed: 3,
+        thu: 4,
+        fri: 5
       };
 
-      return dayMap[dayAbbr] === dayNumber;
+      return dayMap[dayName] === dayNumber;
     });
 
     return dayNews;
