@@ -85,6 +85,10 @@
         <mat-icon>{{ isSyncingMT5Trades ? 'sync' : 'sync_alt' }}</mat-icon>
         <span><strong>{{ isSyncingMT5Trades ? 'Syncing MT5 trades…' : 'Sync MT5 trades' }}</strong></span>
       </button>
+      <button class="navigation-link aura-pathway-toggle" type="button" [class.is-active]="isAuraPathwayVisible" [attr.aria-pressed]="isAuraPathwayVisible" title="Show AURA pathway" (click)="toggleAuraPathway()">
+        <mat-icon>{{ isAuraPathwayVisible ? 'visibility_off' : 'route' }}</mat-icon>
+        <span><strong>{{ isAuraPathwayVisible ? 'Hide AURA pathway' : 'Show AURA pathway' }}</strong></span>
+      </button>
     </section>
 
     <div class="navigation-footer">

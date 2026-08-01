@@ -129,6 +129,22 @@ app-root {
   opacity: 0.98;
 }
 
+.aura-energy-pathway-preview {
+  opacity: 0.7 !important;
+  animation: none !important;
+}
+
+.aura-energy-pathway-preview .aura-energy-line {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  opacity: 0.5;
+  animation: none;
+}
+
+.aura-energy-pathway-preview .aura-energy-head {
+  display: none;
+}
+
 @keyframes aura-energy-visibility {
   0% { opacity: 0; }
   10% { opacity: 0.98; }

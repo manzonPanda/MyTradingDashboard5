@@ -22,6 +22,42 @@ export class AuraEnergyService {
     this.zone.runOutsideAngular(() => this.scheduleNextPulse(700));
   }
 
+  setPathwayPreview(enabled: boolean): void {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    if (!enabled) {
+      this.removeActivePulse();
+      this.scheduleNextPulse(this.randomDelay());
+      return;
+    }
+
+    this.timerId && window.clearTimeout(this.timerId);
+    this.timerId = undefined;
+    this.cleanupId && window.clearTimeout(this.cleanupId);
+    this.cleanupId = undefined;
+    this.removeActivePulse();
+
+    this.activeTargets = this.shuffle(
+      Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
+        .filter((target) => this.isVisible(target))
+    ).slice(0, 4);
+
+    if (!this.activeTargets.length) {
+      return;
+    }
+
+    this.activeOverlay = this.createOverlay();
+    this.activeOverlay.classList.add('aura-energy-pathway-preview');
+    this.document.body.append(this.activeOverlay);
+    this.updateRoute();
+    this.resizeObserver = new ResizeObserver(() => this.requestRouteUpdate());
+    this.activeTargets.forEach((target) => this.resizeObserver?.observe(target));
+    window.addEventListener('scroll', this.requestRouteUpdate, true);
+    window.addEventListener('resize', this.requestRouteUpdate);
+  }
+
   destroy(): void {
     this.isDestroyed = true;
     this.timerId && window.clearTimeout(this.timerId);

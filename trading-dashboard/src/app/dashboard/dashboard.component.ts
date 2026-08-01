@@ -159,6 +159,7 @@ export class DashboardComponent implements AfterViewInit {
   environment = environment;
   isDashboardNavigationOpen = true;
   isNavigationDisplayMenuOpen = false;
+  isAuraPathwayVisible = false;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
   roiTransactions: RoiTransaction[] = [];
@@ -934,6 +935,11 @@ mt5AccountInfo: AccountSettings = {
 
     // Register Chart.js components
     Chart.register(...registerables);
+  }
+
+  toggleAuraPathway(): void {
+    this.isAuraPathwayVisible = !this.isAuraPathwayVisible;
+    this.auraEnergy.setPathwayPreview(this.isAuraPathwayVisible);
   }
 
   toggleTheme(): void {
