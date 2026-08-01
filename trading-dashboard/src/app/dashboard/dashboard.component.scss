@@ -9964,6 +9964,63 @@ table.simple-table {
   }
 }
 
+.mt5-sync-link,
+.dashboard-navigation.is-expanded .mt5-sync-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  margin-top: 0.1rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.22);
+  transform: none;
+
+  mat-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: #fff;
+    font-size: 1.1rem;
+  }
+
+  span {
+    display: block;
+  }
+
+  strong {
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+
+  &:hover {
+    border-color: rgba(165, 180, 252, 0.8);
+    background: linear-gradient(135deg, #4338ca, #6d28d9);
+    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.32);
+    transform: translateY(-1px);
+  }
+
+  &[disabled] {
+    cursor: wait;
+    opacity: 0.7;
+    transform: none;
+  }
+
+  &[disabled] mat-icon {
+    animation: mt5-sync-rotation 1s linear infinite;
+  }
+}
+
+@keyframes mt5-sync-rotation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .navigation-arrow {
   color: var(--tf-text-muted);
 }

@@ -75,6 +75,10 @@
         </div>
         <app-connection-status></app-connection-status>
       </div>
+      <button class="navigation-link mt5-sync-link" type="button" title="Sync MT5 trades" [disabled]="isSyncingMT5Trades" (click)="syncMT5Trades()">
+        <mat-icon>{{ isSyncingMT5Trades ? 'sync' : 'sync_alt' }}</mat-icon>
+        <span><strong>{{ isSyncingMT5Trades ? 'Syncing MT5 trades…' : 'Sync MT5 trades' }}</strong></span>
+      </button>
     </section>
 
     <div class="navigation-footer">

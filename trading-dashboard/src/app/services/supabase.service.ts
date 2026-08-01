@@ -1,10 +1,10 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
 export interface Trade {
   id?: string;
-  account?: string;
+  account_id?: string;
   buy_sell?: 'Buy' | 'Sell';
   commission?: number;
   daily_reflection?: string;
@@ -50,23 +50,58 @@ export class SupabaseService {
   async getAllTrades(accountName?: string): Promise<Trade[]> {
     let query = this.supabase
       .from('trades')
-      .select('*');
+      .select(accountName ? '*, accounts!inner(name)' : '*');
     if (accountName) {
-      query = query.eq('account', accountName);
+      query = query.eq('accounts.name', accountName);
     }
     const { data, error } = await query.order('date_start', { ascending: false });
     if (error) { console.error('Error fetching trades:', error); return []; }
     return (data as Trade[]) || [];
   }
 
+  async getAccountIdByName(accountName: string): Promise<string | null> {
+    const exactLookup = await this.supabase
+      .from('accounts')
+      .select('id')
+      .eq('name', accountName)
+      .maybeSingle();
+    if (exactLookup.error) throw new Error(`Account lookup failed: ${exactLookup.error.message}`);
+    if (exactLookup.data?.id) return exactLookup.data.id;
+
+    const accountNumber = accountName.match(/#(\d+)/)?.[1];
+    if (!accountNumber) return null;
+
+    const numberLookup = await this.supabase
+      .from('accounts')
+      .select('id')
+      .eq('account_number', accountNumber)
+      .maybeSingle();
+    if (numberLookup.error) throw new Error(`Account-number lookup failed: ${numberLookup.error.message}`);
+    return numberLookup.data?.id ?? null;
+  }
+
+  async getOrCreateAccountId(accountName: string): Promise<string> {
+    const existingId = await this.getAccountIdByName(accountName);
+    if (existingId) return existingId;
+
+    const accountNumber = accountName.match(/#(\d+)/)?.[1] ?? null;
+    const { data, error } = await this.supabase
+      .from('accounts')
+      .insert({ name: accountName, account_number: accountNumber })
+      .select('id')
+      .single();
+    if (error) throw new Error(`Account creation failed: ${error.message}`);
+    return data.id;
+  }
+
   async getTradesByDateRange(startDate: string, endDate: string, accountName?: string): Promise<Trade[]> {
     let query = this.supabase
       .from('trades')
-      .select('*')
+      .select(accountName ? '*, accounts!inner(name)' : '*')
       .gte('date_start', startDate)
       .lte('date_start', endDate);
     if (accountName) {
-      query = query.eq('account', accountName);
+      query = query.eq('accounts.name', accountName);
     }
     const { data, error } = await query.order('date_start', { ascending: true });
     if (error) { console.error('Error fetching trades by date range:', error); return []; }
@@ -79,7 +114,7 @@ export class SupabaseService {
       .select('*')
       .eq('ticket', ticket)
       .maybeSingle();
-    if (error) { console.error('Error fetching trade by ticket:', error); return null; }
+    if (error) throw new Error(`Trade lookup failed: ${error.message}`);
     return data as Trade | null;
   }
 
@@ -94,7 +129,7 @@ export class SupabaseService {
   async getTradeHistory(): Promise<any[]> {
     const { data, error } = await this.supabase
       .from('trades')
-      .select('*')
+      .select('*, accounts(name)')
       .order('date_start', { ascending: false, nullsFirst: false });
     if (error) {
       console.error('Error fetching trade history from Supabase:', error);
@@ -109,8 +144,8 @@ export class SupabaseService {
    * are defaulted so the dashboard table doesn't break.
    */
   private mapTradeToNotionPerf(row: any): any {
-    // account is stored as text in Supabase (CSV single value) — wrap to array
-    const accountArr = row.account ? [row.account] : [];
+    const accountName = row.accounts?.name || '';
+    const accountArr = accountName ? [accountName] : [];
 
     // rules_violated is stored as text — wrap to array for multi_select display
     const rulesViolatedArr = row.rules_violated ? [row.rules_violated] : [];
@@ -180,8 +215,31 @@ export class SupabaseService {
       .insert(trade)
       .select()
       .single();
-    if (error) { console.error('Error creating trade:', error); return null; }
+    if (error) throw new Error(`Trade insert failed: ${error.message}`);
     return data as Trade;
+  }
+
+  async syncMt5Trades(trades: Partial<Trade>[], accountName: string): Promise<{ created: number; updated: number }> {
+    const accountId = await this.getOrCreateAccountId(accountName);
+
+    let created = 0;
+    let updated = 0;
+
+    for (const trade of trades) {
+      trade.account_id = accountId;
+      if (trade.ticket === undefined || trade.ticket === null) continue;
+
+      const existing = await this.getTradeByTicket(trade.ticket);
+      if (existing?.id) {
+        const saved = await this.updateTrade(existing.id, trade);
+        if (saved) updated++;
+      } else {
+        const saved = await this.createTrade(trade);
+        if (saved) created++;
+      }
+    }
+
+    return { created, updated };
   }
 
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {
@@ -191,7 +249,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    if (error) { console.error('Error updating trade:', error); return null; }
+    if (error) throw new Error(`Trade update failed: ${error.message}`);
     return data as Trade;
   }
 
