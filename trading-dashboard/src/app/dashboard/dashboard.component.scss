@@ -10129,18 +10129,17 @@ table.simple-table {
       }
     }
 
-    ::ng-deep app-dream-timeline {
       .dream-time-minimal {
         .start-date-horizontal {
-          color: #64748B;
-          background: #FAF9FF;
-          border-color: #E9E5F5;
+          color: #64748B !important;
+          background: #FAF9FF !important;
+          border-color: #E9E5F5 !important;
         }
 
         .time-units {
-          background: #FAF9FF;
-          border-color: #E9E5F5;
-          box-shadow: none;
+          background: #FAF9FF !important;
+          border-color: #E9E5F5 !important;
+          box-shadow: none !important;
 
           .time-unit,
           .time-unit:nth-child(1),
@@ -10149,13 +10148,13 @@ table.simple-table {
           .time-unit:nth-child(4),
           .time-unit:nth-child(5),
           .time-unit:nth-child(6) {
-            border-left-color: #DDD6FE;
+            border-left-color: #DDD6FE !important;
 
             .value {
               background: none;
-              color: #7C3AED;
-              -webkit-text-fill-color: #7C3AED;
-              text-shadow: none;
+              color: #7C3AED !important;
+              -webkit-text-fill-color: #7C3AED !important;
+              text-shadow: none !important;
             }
 
             .label,
@@ -10166,14 +10165,13 @@ table.simple-table {
             &:nth-child(5) .label,
             &:nth-child(6) .label {
               border-color: transparent;
-              background: transparent;
-              color: #64748B;
-              text-shadow: none;
+              background: transparent !important;
+              color: #64748B !important;
+              text-shadow: none !important;
             }
           }
         }
       }
-    }
   }
 }
 
