@@ -4981,8 +4981,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
     const mt5Trades = (response || []).map((trade: any) => ({
-      openDate: this.convertAndFormatMT5Date(trade.time_open),
-      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : "-",
+      openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
+      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
       tradeNotion: [],
       status: "",
       position: trade.position_id,
@@ -5048,7 +5048,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         tp: trade.tp ?? 0,
         trade_type: trade.buy_sell === 'Buy' ? 0 : 1,
         volume: trade.lots ?? 0,
-        swap: trade.swap ?? 0
+        swap: trade.swap ?? 0,
+        fromSupabase: true
       }));
   }
 
@@ -5057,13 +5058,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
 
-  convertAndFormatMT5Date(rawDateStr: string): string { //MT5 api date format->  time_close: "2025-07-24 09:56:01"
+  convertAndFormatMT5Date(rawDateStr: string, adjustTimezone = true): string { // MT5 API date format -> time_close: "2025-07-24 09:56:01"
     const [datePart, timePart] = rawDateStr.split(' ');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hour, minute, second] = timePart.split(':').map(Number);
 
     const dateObj = new Date(year, month - 1, day, hour, minute, second);
-    dateObj.setHours(dateObj.getHours() + 5); // Adjust timezone if needed
+    if (adjustTimezone) {
+      dateObj.setHours(dateObj.getHours() + 5);
+    }
 
     return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
   }

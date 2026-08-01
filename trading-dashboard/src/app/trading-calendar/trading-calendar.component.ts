@@ -263,17 +263,9 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const tradeDate = this.parseTradeDate(trade.openDate);
       if (!tradeDate) return false;
 
-      let tradeDateForComparison = new Date(tradeDate);
-
-      // If trade was opened between 00:00 and 03:00 AM,
-      // attribute it to the previous day
-      if (tradeDate.getHours() < 3) {
-        tradeDateForComparison.setDate(tradeDateForComparison.getDate() - 1);
-      }
-
-      return tradeDateForComparison.getFullYear() === date.getFullYear() &&
-             tradeDateForComparison.getMonth() === date.getMonth() &&
-             tradeDateForComparison.getDate() === date.getDate();
+      return tradeDate.getFullYear() === date.getFullYear() &&
+             tradeDate.getMonth() === date.getMonth() &&
+             tradeDate.getDate() === date.getDate();
     });
   }
 
