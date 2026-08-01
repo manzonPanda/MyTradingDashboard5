@@ -954,8 +954,8 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private updateChartTheme(): void {
-    const textColor = this.isDarkTheme ? '#b8c4d6' : '#64748b';
-    const gridColor = this.isDarkTheme ? 'rgba(148, 163, 184, 0.14)' : 'rgba(0, 0, 0, 0.08)';
+    const textColor = this.isDarkTheme ? '#C4B5FD' : '#64748b';
+    const gridColor = this.isDarkTheme ? 'rgba(167, 139, 250, 0.18)' : 'rgba(0, 0, 0, 0.08)';
     const chartOptions = this.chartOptions as any;
 
     this.chartOptions = {

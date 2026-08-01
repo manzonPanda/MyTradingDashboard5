@@ -1041,7 +1041,15 @@ table.simple-table {
 
   .chart-stats .stat-item .stat-label,
   .chart-stats .stat-item .percentage-gain {
-    color: #b8c4d6;
+    color: #C4B5FD;
+  }
+
+  .chart-stats .stat-item .percentage-gain {
+    text-shadow: 0 0 10px rgba(167, 139, 250, 0.28);
+  }
+
+  :host ::ng-deep .chart-mode-toggle .mdc-label {
+    color: #C4B5FD;
   }
 }
 
