@@ -1021,78 +1021,17 @@
           </div>
           <div class="account-grid">
             @for (account of filteredAccounts; track account.id) {
-              <article class="account-choice" [class.is-selected]="selectedAccount?.id === account.id" [class.is-editing]="editingAccountId === account.id">
-                @if (editingAccountId === account.id) {
-                  <div class="account-edit-panel">
-                    <div class="account-edit-heading">
-                      <div>
-                        <p class="account-edit-kicker">Account settings</p>
-                        <h3>Edit account</h3>
-                      </div>
-                      <mat-icon>tune</mat-icon>
-                    </div>
-                    <div class="account-edit-fields">
-                      <label class="account-edit-field account-edit-field-wide">
-                        <span>Account name</span>
-                        <input type="text" [(ngModel)]="accountEditForm.name" placeholder="e.g. 5ers 2.5K" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Firm</span>
-                        <input type="text" [(ngModel)]="accountEditForm.firm" placeholder="Prop firm" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Account number</span>
-                        <input type="text" [(ngModel)]="accountEditForm.account_number" placeholder="Optional" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Starting balance</span>
-                        <input type="number" min="0" [(ngModel)]="accountEditForm.initial_balance" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Start date</span>
-                        <input type="date" [(ngModel)]="accountEditForm.start_date" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Status</span>
-                        <select [(ngModel)]="accountEditForm.status">
-                          <option value="active">Active</option>
-                          <option value="paused">Paused</option>
-                          <option value="closed">Closed</option>
-                        </select>
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Profit target %</span>
-                        <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.profit_target_percent" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Max drawdown %</span>
-                        <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.max_total_drawdown_percent" />
-                      </label>
-                      <label class="account-edit-field">
-                        <span>Daily loss limit %</span>
-                        <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.daily_loss_limit_percent" />
-                      </label>
-                    </div>
-                    <div class="account-edit-actions">
-                      <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">Cancel</button>
-                      <button type="button" class="account-edit-save" [disabled]="isSavingAccount || !accountEditForm.name?.trim()" (click)="saveAccountEdit()">
-                        <mat-icon>{{ isSavingAccount ? 'sync' : 'save' }}</mat-icon>
-                        {{ isSavingAccount ? 'Saving…' : 'Save changes' }}
-                      </button>
-                    </div>
-                  </div>
-                } @else {
-                  <div class="account-choice-topline">
-                    <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
-                    <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</span>
-                  </div>
-                  <strong>{{ account.name }}</strong>
-                  <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
-                  <div class="account-choice-actions">
-                    <button type="button" class="account-select-action" (click)="selectAccount(account)">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></button>
-                    <button type="button" class="account-edit-trigger" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon></button>
-                  </div>
-                }
+              <article class="account-choice" [class.is-selected]="selectedAccount?.id === account.id">
+                <div class="account-choice-topline">
+                  <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
+                  <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</span>
+                </div>
+                <strong>{{ account.name }}</strong>
+                <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
+                <div class="account-choice-actions">
+                  <button type="button" class="account-select-action" (click)="selectAccount(account)">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></button>
+                  <button type="button" class="account-edit-trigger" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon></button>
+                </div>
               </article>
             }
           </div>
@@ -1104,6 +1043,70 @@
         </div>
       }
       </div>
+
+      @if (editingAccountId) {
+        <div class="account-modal-backdrop" role="presentation" (click)="cancelAccountEdit()">
+          <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title" (click)="$event.stopPropagation()">
+            <div class="account-edit-heading">
+              <div>
+                <p class="account-edit-kicker">Account settings</p>
+                <h3 id="account-edit-title">Edit account details</h3>
+                <p class="account-edit-subtitle">Keep your trading limits and account identity in sync.</p>
+              </div>
+              <button type="button" class="account-modal-close" aria-label="Close account editor" (click)="cancelAccountEdit()"><mat-icon>close</mat-icon></button>
+            </div>
+            <div class="account-edit-fields">
+              <label class="account-edit-field account-edit-field-wide">
+                <span>Account name</span>
+                <input type="text" [(ngModel)]="accountEditForm.name" placeholder="e.g. 5ers 2.5K" />
+              </label>
+              <label class="account-edit-field">
+                <span>Firm</span>
+                <input type="text" [(ngModel)]="accountEditForm.firm" placeholder="Prop firm" />
+              </label>
+              <label class="account-edit-field">
+                <span>Account number</span>
+                <input type="text" [(ngModel)]="accountEditForm.account_number" placeholder="Optional" />
+              </label>
+              <label class="account-edit-field">
+                <span>Starting balance</span>
+                <input type="number" min="0" [(ngModel)]="accountEditForm.initial_balance" />
+              </label>
+              <label class="account-edit-field">
+                <span>Start date</span>
+                <input type="date" [(ngModel)]="accountEditForm.start_date" />
+              </label>
+              <label class="account-edit-field">
+                <span>Status</span>
+                <select [(ngModel)]="accountEditForm.status">
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </label>
+              <label class="account-edit-field">
+                <span>Profit target %</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.profit_target_percent" />
+              </label>
+              <label class="account-edit-field">
+                <span>Max drawdown %</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.max_total_drawdown_percent" />
+              </label>
+              <label class="account-edit-field">
+                <span>Daily loss limit %</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.daily_loss_limit_percent" />
+              </label>
+            </div>
+            <div class="account-edit-actions">
+              <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">Cancel</button>
+              <button type="button" class="account-edit-save" [disabled]="isSavingAccount || !accountEditForm.name?.trim()" (click)="saveAccountEdit()">
+                <mat-icon>{{ isSavingAccount ? 'sync' : 'save' }}</mat-icon>
+                {{ isSavingAccount ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+          </section>
+        </div>
+      }
     } @else {
       <div class="accounts-empty">
         <mat-icon>account_balance_wallet</mat-icon>
