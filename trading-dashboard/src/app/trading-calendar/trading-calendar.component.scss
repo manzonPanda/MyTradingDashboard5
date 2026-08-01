@@ -413,7 +413,9 @@
           .win-amount, .loss-amount {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.15rem;
+            text-align: center;
             font-size: 0.95rem;
             font-weight: 700;
             padding: 0.2rem 0.3rem;
