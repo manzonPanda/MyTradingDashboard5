@@ -11235,14 +11235,19 @@ table.simple-table {
 }
 
 .navigation-brand-copy {
-  strong {
-    font-size: 1.02rem;
-    letter-spacing: -0.02em;
+  .navigation-brand-name {
+    color: var(--tf-text-primary);
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    font-size: 1.08rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    white-space: nowrap;
   }
 
-  span {
-    color: var(--tf-text-muted);
-    font-size: 0.62rem;
+  .navigation-brand-dot {
+    color: #7C3AED;
+    font-weight: 700;
   }
 }
 
