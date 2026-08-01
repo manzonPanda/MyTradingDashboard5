@@ -58,11 +58,6 @@ interface Table {
 
             <!-- Right Column: Description and Features -->
             <div class="column right-column">
-              <!-- Description -->
-              <p class="empty-description">
-                No live trades at the moment. Once you open a trade, your real-time Risk-Reward ratio and gains will appear here.
-              </p>
-
               <!-- Quick Stats Preview -->
               <div class="preview-stats">
                 <div class="stat-badge">
