@@ -157,14 +157,39 @@ export class DashboardComponent implements AfterViewInit {
   Math = Math;
   environment = environment;
   isDashboardNavigationOpen = true;
+  isNavigationDisplayMenuOpen = false;
+  navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
 
   toggleDashboardNavigation(): void {
     this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
+    this.navigationDisplayMode = this.isDashboardNavigationOpen ? 'expanded' : 'collapsed';
   }
 
   closeDashboardNavigation(): void {
     this.isDashboardNavigationOpen = false;
+  }
+
+  toggleNavigationDisplayMenu(): void {
+    this.isNavigationDisplayMenuOpen = !this.isNavigationDisplayMenuOpen;
+  }
+
+  setNavigationDisplayMode(mode: 'expanded' | 'collapsed' | 'hover'): void {
+    this.navigationDisplayMode = mode;
+    this.isDashboardNavigationOpen = mode === 'expanded';
+    this.isNavigationDisplayMenuOpen = false;
+  }
+
+  expandNavigationOnHover(): void {
+    if (this.navigationDisplayMode === 'hover') {
+      this.isDashboardNavigationOpen = true;
+    }
+  }
+
+  collapseNavigationOnLeave(): void {
+    if (this.navigationDisplayMode === 'hover') {
+      this.isDashboardNavigationOpen = false;
+    }
   }
 
   get currentWorkspace(): string {
