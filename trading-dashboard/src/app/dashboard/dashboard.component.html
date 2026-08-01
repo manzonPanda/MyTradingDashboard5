@@ -1004,7 +1004,6 @@
           <div class="roi-net-orb" [class.is-positive]="roiNetReturn >= 0" [class.is-negative]="roiNetReturn < 0">
             <span>Net return</span>
             <strong>{{ roiNetReturn | currency:'PHP':'symbol':'1.0-0' }}</strong>
-            <small>{{ roiReturnPercentage | number:'1.0-1' }}% on spend</small>
           </div>
         </div>
       </header>
