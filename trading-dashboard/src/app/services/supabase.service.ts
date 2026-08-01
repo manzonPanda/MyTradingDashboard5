@@ -80,6 +80,20 @@ export class SupabaseService {
     return numberLookup.data?.id ?? null;
   }
 
+  async getOrCreateAccountId(accountName: string): Promise<string> {
+    const existingId = await this.getAccountIdByName(accountName);
+    if (existingId) return existingId;
+
+    const accountNumber = accountName.match(/#(\d+)/)?.[1] ?? null;
+    const { data, error } = await this.supabase
+      .from('accounts')
+      .insert({ name: accountName, account_number: accountNumber })
+      .select('id')
+      .single();
+    if (error) throw new Error(`Account creation failed: ${error.message}`);
+    return data.id;
+  }
+
   async getTradesByDateRange(startDate: string, endDate: string, accountName?: string): Promise<Trade[]> {
     let query = this.supabase
       .from('trades')
@@ -206,10 +220,7 @@ export class SupabaseService {
   }
 
   async syncMt5Trades(trades: Partial<Trade>[], accountName: string): Promise<{ created: number; updated: number }> {
-    const accountId = await this.getAccountIdByName(accountName);
-    if (!accountId) {
-      throw new Error(`Supabase account not found: ${accountName}`);
-    }
+    const accountId = await this.getOrCreateAccountId(accountName);
 
     let created = 0;
     let updated = 0;
