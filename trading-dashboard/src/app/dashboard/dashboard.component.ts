@@ -5024,16 +5024,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
 
       // If API returned no data or failed, use fallback
-      if (!response || response.length === 0) {
-        console.warn('⚠️ Using fallback data source...');
-        try {
-          response = await this.getLocalTrades();
-          console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
-        } catch (localError) {
-          console.error('❌ Failed to load fallback data:', localError);
-          response = []; // Ensure response is always an array
-        }
-      }
+      // if (!response || response.length === 0) {
+      //   console.warn('⚠️ Using fallback data source...');
+      //   try {
+      //     response = await this.getLocalTrades();
+      //     console.log('📁 Fallback data loaded:', response?.length ?? 0, 'trades');
+      //   } catch (localError) {
+      //     console.error('❌ Failed to load fallback data:', localError);
+      //     response = []; // Ensure response is always an array
+      //   }
+      // }
     } finally {
       this.isLoadingMT5Data = false;
       this.cdr.markForCheck();
