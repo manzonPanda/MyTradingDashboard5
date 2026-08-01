@@ -3,6 +3,7 @@ import { DOCUMENT } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class AuraEnergyService {
+  private readonly pulseDurationMs = 4000;
   private readonly document = inject(DOCUMENT);
   private readonly zone = inject(NgZone);
   private timerId?: number;
@@ -67,7 +68,7 @@ export class AuraEnergyService {
     this.cleanupId = window.setTimeout(() => {
       this.removeActivePulse();
       this.scheduleNextPulse(this.randomDelay());
-    }, 4150);
+    }, this.pulseDurationMs);
   }
 
   private createOverlay(): HTMLDivElement {

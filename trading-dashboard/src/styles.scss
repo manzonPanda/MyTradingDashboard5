@@ -119,16 +119,17 @@ app-root {
 }
 
 @keyframes aura-energy-visibility {
-  0%, 8% { opacity: 0; }
-  18%, 78% { opacity: 1; }
+  0% { opacity: 0; }
+  10% { opacity: 0.98; }
+  90% { opacity: 0.98; }
   100% { opacity: 0; }
 }
 
 @keyframes aura-energy-travel {
-  0% { stroke-dashoffset: 100; opacity: 0.2; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.2; }
+  0% { stroke-dashoffset: 100; opacity: 0.4; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.4; }
 }
 
 @media (prefers-reduced-motion: reduce) {
