@@ -124,20 +124,16 @@ app-root {
 }
 
 .aura-energy-guide {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-  stroke: rgba(167, 139, 250, 0.58);
-  stroke-width: 1.2;
-  filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.9));
+  display: none;
 }
 
 .aura-energy-line {
   fill: none;
   vector-effect: non-scaling-stroke;
   stroke: url(#aura-energy-gradient);
-  stroke-width: 3.4;
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 120 880;
+  stroke-dasharray: 38 962;
   stroke-dashoffset: 1000;
   filter: url(#aura-energy-bloom);
   opacity: 1;
@@ -156,12 +152,11 @@ app-root {
 }
 
 .aura-energy-pathway-preview .aura-energy-guide {
-  stroke: rgba(196, 181, 253, 0.78);
-  stroke-width: 1.35;
+  display: none;
 }
 
 .aura-energy-pathway-preview .aura-energy-line {
-  stroke-dasharray: 120 880;
+  stroke-dasharray: 38 962;
   stroke-dashoffset: 1000;
   opacity: 1;
   animation: aura-energy-travel 5s linear infinite;

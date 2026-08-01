@@ -93,10 +93,14 @@ export class AuraEnergyService {
     }
 
     this.auraContainer = this.document.querySelector<HTMLElement>('.tradezella-dashboard') || undefined;
-    this.activeTargets = this.shuffle(
-      Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
-        .filter((target) => this.isEligibleTarget(target))
-    ).slice(0, 4);
+    this.activeTargets = Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
+      .filter((target) => this.isEligibleTarget(target))
+      .sort((first, second) => {
+        const firstBounds = first.getBoundingClientRect();
+        const secondBounds = second.getBoundingClientRect();
+        return firstBounds.top - secondBounds.top || firstBounds.left - secondBounds.left;
+      })
+      .slice(0, 4);
 
     if (!this.activeTargets.length) {
       this.scheduleNextPulse(this.randomDelay());
@@ -204,12 +208,14 @@ export class AuraEnergyService {
       return;
     }
 
-    const routeX = Math.min(...routeData.map((box) => box.left)) - 8;
-    const routeY = Math.min(...routeData.map((box) => box.top)) - 8;
-    const first = routeData[0];
-    let path = this.roundedRectPath(first);
+    let path = this.roundedRectPath(routeData[0]);
     for (const box of routeData.slice(1)) {
-      path += ` H ${routeX} V ${routeY} H ${box.left + box.radius} ${this.roundedRectPath(box, true)}`;
+      const previous = routeData[routeData.indexOf(box) - 1];
+      const connector = this.createOrthogonalConnector(previous, box);
+      if (!connector) {
+        break;
+      }
+      path += connector + this.roundedRectPath(box, true);
     }
     route.setAttribute('d', path);
     routeGuide.setAttribute('d', path);
@@ -219,6 +225,41 @@ export class AuraEnergyService {
     const { left, top, right, bottom, radius } = box;
     const start = continuation ? '' : `M ${left + radius} ${top}`;
     return `${start} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius} Q ${left} ${top} ${left + radius} ${top} Z`;
+  }
+
+  private createOrthogonalConnector(
+    previous: { left: number; top: number; right: number; bottom: number; radius: number },
+    next: { left: number; top: number; right: number; bottom: number; radius: number }
+  ): string | undefined {
+    const horizontalGap = next.left - previous.right;
+    if (horizontalGap > 0) {
+      const gutterX = previous.right + horizontalGap / 2;
+      const sharedY = Math.max(previous.top, Math.min(next.top, previous.bottom));
+      return ` M ${previous.right} ${sharedY} H ${gutterX} V ${next.top} H ${next.left + next.radius}`;
+    }
+
+    const reverseHorizontalGap = previous.left - next.right;
+    if (reverseHorizontalGap > 0) {
+      const gutterX = next.right + reverseHorizontalGap / 2;
+      const sharedY = Math.max(previous.top, Math.min(next.top, previous.bottom));
+      return ` M ${previous.left} ${sharedY} H ${gutterX} V ${next.top} H ${next.right - next.radius}`;
+    }
+
+    const verticalGap = next.top - previous.bottom;
+    if (verticalGap > 0) {
+      const gutterY = previous.bottom + verticalGap / 2;
+      const sharedX = Math.max(previous.left, Math.min(next.left, previous.right));
+      return ` M ${sharedX} ${previous.bottom} V ${gutterY} H ${next.left + next.radius} V ${next.top}`;
+    }
+
+    const reverseVerticalGap = previous.top - next.bottom;
+    if (reverseVerticalGap > 0) {
+      const gutterY = next.bottom + reverseVerticalGap / 2;
+      const sharedX = Math.max(previous.left, Math.min(next.left, previous.right));
+      return ` M ${sharedX} ${previous.top} V ${gutterY} H ${next.left + next.radius} V ${next.bottom}`;
+    }
+
+    return undefined;
   }
 
   private parseRadius(value: string): number {
@@ -244,10 +285,6 @@ export class AuraEnergyService {
     const bounds = target.getBoundingClientRect();
     const style = window.getComputedStyle(target);
     return style.display !== 'none' && style.visibility !== 'hidden' && bounds.width > 120 && bounds.height > 80 && bounds.bottom > 0 && bounds.right > 0 && bounds.top < window.innerHeight && bounds.left < window.innerWidth;
-  }
-
-  private shuffle<T>(items: T[]): T[] {
-    return items.sort(() => Math.random() - 0.5);
   }
 
   private randomDelay(): number {
