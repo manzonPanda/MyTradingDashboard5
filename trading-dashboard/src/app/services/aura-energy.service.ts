@@ -78,7 +78,7 @@ export class AuraEnergyService {
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        <rect class="aura-energy-line" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" />
+        <rect class="aura-energy-line" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" stroke-dasharray="18 82" stroke-dashoffset="100" />
       </svg>`;
     return overlay;
   }
