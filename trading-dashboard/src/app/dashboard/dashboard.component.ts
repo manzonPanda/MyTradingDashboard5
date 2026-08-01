@@ -4926,8 +4926,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       ticket: trade.position,
       buy_sell: trade.type === 'Buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
-      date_start: this.formatMt5DateForSupabase(trade.openDate),
-      date_end: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
+      time_start: this.formatMt5DateForSupabase(trade.openDate),
+      time_end: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
       pnl: this.toNumber(trade.netProfit),
@@ -5034,7 +5034,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const trades = await this.supabaseService.getAllTrades(environment.propfirmAccountName);
 
     return trades
-      .filter((trade): trade is Trade & { date_start: string } => Boolean(trade.date_start))
+      .filter((trade): trade is Trade & { time_start: string } => Boolean(trade.time_start))
       .map(trade => ({
         commission: trade.commission ?? 0,
         entry_price: trade.price_open ?? 0,
@@ -5044,10 +5044,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         reward_risk_ratio: trade.rrr ?? '',
         risk_usd: trade.risk_per_trade ?? 0,
         sl: trade.sl ?? 0,
-        status: trade.date_end ? 'closed' : 'open',
+        status: trade.time_end ? 'closed' : 'open',
         symbol: trade.instrument ?? '',
-        time_open: this.formatSupabaseDateForMt5(trade.date_start),
-        time_close: trade.date_end ? this.formatSupabaseDateForMt5(trade.date_end) : '',
+        time_open: this.formatSupabaseDateForMt5(trade.time_start),
+        time_close: trade.time_end ? this.formatSupabaseDateForMt5(trade.time_end) : '',
         tp: trade.tp ?? 0,
         trade_type: trade.buy_sell === 'Buy' ? 0 : 1,
         volume: trade.lots ?? 0,

@@ -8,8 +8,8 @@ export interface Trade {
   buy_sell?: 'Buy' | 'Sell';
   commission?: number;
   daily_reflection?: string;
-  date_start?: string;
-  date_end?: string;
+  time_start?: string;
+  time_end?: string;
   held?: string;
   instrument?: string;
   lots?: number;
@@ -54,7 +54,7 @@ export class SupabaseService {
     if (accountName) {
       query = query.eq('accounts.name', accountName);
     }
-    const { data, error } = await query.order('date_start', { ascending: false });
+    const { data, error } = await query.order('time_start', { ascending: false });
     if (error) { console.error('Error fetching trades:', error); return []; }
     return (data as Trade[]) || [];
   }
@@ -98,12 +98,12 @@ export class SupabaseService {
     let query = this.supabase
       .from('trades')
       .select(accountName ? '*, accounts!inner(name)' : '*')
-      .gte('date_start', startDate)
-      .lte('date_start', endDate);
+      .gte('time_start', startDate)
+      .lte('time_start', endDate);
     if (accountName) {
       query = query.eq('accounts.name', accountName);
     }
-    const { data, error } = await query.order('date_start', { ascending: true });
+    const { data, error } = await query.order('time_start', { ascending: true });
     if (error) { console.error('Error fetching trades by date range:', error); return []; }
     return (data as Trade[]) || [];
   }
@@ -119,7 +119,7 @@ export class SupabaseService {
   }
 
   /**
-   * Fetch all trades from Supabase, ordered by date_start descending,
+   * Fetch all trades from Supabase, ordered by time_start descending,
    * and map them to the NotionPerformanceData shape that the dashboard
    * expects (so the table/charts work without touching the template).
    *
@@ -130,7 +130,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('trades')
       .select('*, accounts(name)')
-      .order('date_start', { ascending: false, nullsFirst: false });
+      .order('time_start', { ascending: false, nullsFirst: false });
     if (error) {
       console.error('Error fetching trade history from Supabase:', error);
       return [];
@@ -157,7 +157,7 @@ export class SupabaseService {
     return {
       id: row.id || '',
       action: '',                    // Notion title — not in Supabase
-      date: row.date_start || '',    // start date
+      date: row.time_start || '',    // start date
       idealRRR: '',                  // not in Supabase
       buySell: row.buy_sell || '',
       modelCheck: [],                // not in Supabase
@@ -188,7 +188,7 @@ export class SupabaseService {
       swap: row.swap ?? 0,
       // Extra Supabase-specific fields (useful for the dashboard):
       ticket: row.ticket,
-      date_end: row.date_end,
+      time_end: row.time_end,
       mup: row.mup,
       price_close: row.price_close,
       price_open: row.price_open,
@@ -203,7 +203,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('trades')
       .select('*')
-      .eq('date_start', dateStart)
+      .eq('time_start', dateStart)
       .maybeSingle();
     if (error) { console.error('Error fetching trade by date:', error); return null; }
     return data as Trade | null;
