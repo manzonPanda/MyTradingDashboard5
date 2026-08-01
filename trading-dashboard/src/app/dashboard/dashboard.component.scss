@@ -10454,6 +10454,12 @@ table.simple-table {
     box-shadow: 0 16px 32px rgba(79, 70, 229, 0.2);
   }
 
+  &.is-editing {
+    grid-column: 1 / -1;
+    border-color: #818cf8;
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.1), var(--tf-bg-secondary));
+  }
+
   strong {
     display: block;
     width: 100%;
@@ -10467,11 +10473,60 @@ table.simple-table {
 }
 
 .account-choice-topline,
-.account-choice-action {
+.account-choice-actions {
   display: flex;
   width: 100%;
   align-items: center;
   justify-content: space-between;
+}
+
+.account-choice-actions {
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 1.2rem;
+}
+
+.account-select-action,
+.account-edit-trigger {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  cursor: pointer;
+}
+
+.account-select-action {
+  gap: 0.35rem;
+  padding: 0;
+  background: transparent;
+  color: #6366f1;
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.account-edit-trigger {
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+
+  &:hover {
+    background: #6366f1;
+    color: #fff;
+  }
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
 }
 
 .account-choice-icon {
@@ -10511,6 +10566,124 @@ table.simple-table {
   color: #6366f1;
   font-size: 0.82rem;
   font-weight: 800;
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.account-edit-panel {
+  width: 100%;
+}
+
+.account-edit-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  color: #6366f1;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: var(--tf-text-primary);
+    font-size: 1.15rem;
+  }
+
+  mat-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1.5rem;
+  }
+}
+
+.account-edit-kicker {
+  margin-bottom: 0.2rem !important;
+  color: #818cf8;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.account-edit-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.account-edit-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--tf-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  input,
+  select {
+    width: 100%;
+    min-height: 2.35rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 0.6rem;
+    outline: 0;
+    background: var(--tf-bg-secondary);
+    color: var(--tf-text-primary);
+    font: inherit;
+    font-size: 0.82rem;
+
+    &:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+    }
+  }
+}
+
+.account-edit-field-wide {
+  grid-column: span 2;
+}
+
+.account-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.15rem;
+}
+
+.account-edit-cancel,
+.account-edit-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.account-edit-cancel {
+  border: 1px solid var(--tf-border-primary);
+  background: transparent;
+  color: var(--tf-text-secondary);
+}
+
+.account-edit-save {
+  border: 1px solid #6366f1;
+  background: #6366f1;
+  color: #fff;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
 
   mat-icon {
     width: 1rem;
@@ -10783,5 +10956,13 @@ table.simple-table {
 
   .dashboard-navigation-toggle.is-expanded {
     left: min(12.2rem, calc(100vw - 3rem));
+  }
+
+  .account-edit-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .account-edit-field-wide {
+    grid-column: auto;
   }
 }
