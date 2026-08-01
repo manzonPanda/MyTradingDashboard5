@@ -9964,6 +9964,23 @@ table.simple-table {
   }
 }
 
+.mt5-sync-link {
+  &[disabled] {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  &[disabled] mat-icon {
+    animation: mt5-sync-rotation 1s linear infinite;
+  }
+}
+
+@keyframes mt5-sync-rotation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .navigation-arrow {
   color: var(--tf-text-muted);
 }

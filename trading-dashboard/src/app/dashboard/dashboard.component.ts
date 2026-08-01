@@ -38,6 +38,7 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { TradeService } from '../services/trade.service';
+import { SupabaseService, Trade } from '../services/supabase.service';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -390,6 +391,7 @@ mt5AccountInfo: AccountSettings = {
 };
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
+  isSyncingMT5Trades = false;
   isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
@@ -761,7 +763,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private router: Router, private location: Location, @Inject(DOCUMENT) private document: Document) {
+    private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
     this.applyTheme();
@@ -4946,6 +4948,64 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   //     });
   //   });
   // }
+
+  async syncMT5Trades(): Promise<void> {
+    if (this.isSyncingMT5Trades) return;
+
+    this.isSyncingMT5Trades = true;
+    try {
+      await this.loadMT5Data();
+      const trades = this.mt5LiveTrades
+        .filter(trade => trade.position !== undefined && trade.position !== null && trade.position !== '')
+        .map(trade => this.mapMt5TradeForSupabase(trade));
+      const { created, updated } = await this.supabaseService.syncMt5Trades(trades, environment.propfirmAccountName);
+
+      this.snackBar.open(`MT5 sync complete: ${created} created, ${updated} updated.`, 'Dismiss', {
+        duration: 4000
+      });
+    } catch (error) {
+      console.error('Failed to sync MT5 trades to Supabase:', error);
+      this.snackBar.open('MT5 sync failed. Please try again.', 'Dismiss', { duration: 4000 });
+    } finally {
+      this.isSyncingMT5Trades = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
+    return {
+      ticket: trade.position,
+      buy_sell: trade.type === 'Buy' ? 'Buy' : 'Sell',
+      commission: this.toNumber(trade.commission),
+      date_start: this.formatMt5DateForSupabase(trade.openDate),
+      date_end: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
+      instrument: trade.symbol,
+      lots: this.toNumber(trade.volume),
+      pnl: this.toNumber(trade.netProfit),
+      price_close: trade.exit === '-' ? undefined : this.toNumber(trade.exit),
+      price_open: this.toNumber(trade.entry),
+      risk_per_trade: this.toNumber(trade.riskPerTrade),
+      rrr: trade.rrr,
+      sl: this.toNumber(trade.sL),
+      swap: this.toNumber(trade.swap),
+      tp: this.toNumber(trade.tP)
+    };
+  }
+
+  private formatMt5DateForSupabase(date: string): string | undefined {
+    if (!date || date === '-') return undefined;
+
+    const match = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
+    if (!match) return undefined;
+
+    const [, month, day, year, hour, minute] = match;
+    return `${year}-${month}-${day}T${hour}:${minute}:00`;
+  }
+
+  private toNumber(value: string | number): number {
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) ? numberValue : 0;
+  }
 
   async loadMT5Data(): Promise<void> {
     this.isLoadingMT5Data = true;
