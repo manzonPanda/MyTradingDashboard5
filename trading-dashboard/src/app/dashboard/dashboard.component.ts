@@ -381,6 +381,21 @@ export class DashboardComponent implements AfterViewInit {
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
   isLoadingAccounts = true;
+
+  get accountGroups(): { firm: string; accounts: Account[] }[] {
+    const groups = new Map<string, Account[]>();
+    for (const account of this.accounts) {
+      const firm = account.firm?.trim() || 'Independent accounts';
+      const group = groups.get(firm) ?? [];
+      group.push(account);
+      groups.set(firm, group);
+    }
+    return Array.from(groups, ([firm, accounts]) => ({ firm, accounts }));
+  }
+
+  isMostRecentAccount(account: Account): boolean {
+    return this.accounts[0]?.id === account.id;
+  }
   dtOptions: any = {}; // Use 'any' or type the object more specifically later
   dtTrigger: Subject<any> = new Subject<any>();
 

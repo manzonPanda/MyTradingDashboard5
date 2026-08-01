@@ -987,17 +987,33 @@
         <span>Loading your accounts</span>
       </div>
     } @else if (accounts.length) {
-      <div class="account-grid">
-        @for (account of accounts; track account.id; let index = $index) {
-          <button class="account-choice" type="button" [class.is-selected]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
-            <span class="account-choice-topline">
-              <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
-              <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : index === 0 ? 'Most recent' : 'Available' }}</span>
-            </span>
-            <strong>{{ account.name }}</strong>
-            <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
-            <span class="account-choice-action">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></span>
-          </button>
+      <div class="account-firm-list">
+        @for (group of accountGroups; track group.firm) {
+          <section class="account-firm-group" [attr.aria-labelledby]="'firm-' + group.firm">
+            <div class="account-firm-heading">
+              <div class="account-firm-title">
+                <span class="account-firm-mark"><mat-icon>business</mat-icon></span>
+                <div>
+                  <p class="account-firm-kicker">Prop firm</p>
+                  <h2 [id]="'firm-' + group.firm">{{ group.firm }}</h2>
+                </div>
+              </div>
+              <span class="account-firm-count">{{ group.accounts.length }} {{ group.accounts.length === 1 ? 'account' : 'accounts' }}</span>
+            </div>
+            <div class="account-grid">
+              @for (account of group.accounts; track account.id) {
+                <button class="account-choice" type="button" [class.is-selected]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
+                  <span class="account-choice-topline">
+                    <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
+                    <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</span>
+                  </span>
+                  <strong>{{ account.name }}</strong>
+                  <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
+                  <span class="account-choice-action">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></span>
+                </button>
+              }
+            </div>
+          </section>
         }
       </div>
     } @else {
