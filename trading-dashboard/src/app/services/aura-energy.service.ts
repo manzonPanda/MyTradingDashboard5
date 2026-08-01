@@ -139,10 +139,12 @@ export class AuraEnergyService {
       return;
     }
 
+    const routeX = Math.min(...routeData.map((box) => box.left)) - 8;
+    const routeY = Math.min(...routeData.map((box) => box.top)) - 8;
     const first = routeData[0];
     let path = `M ${first.left} ${first.top} H ${first.right} V ${first.bottom} H ${first.left} V ${first.top} Z`;
     for (const box of routeData.slice(1)) {
-      path += ` L ${box.left} ${box.top} H ${box.right} V ${box.bottom} H ${box.left} V ${box.top} Z`;
+      path += ` H ${routeX} V ${routeY} H ${box.left} V ${box.top} H ${box.right} V ${box.bottom} H ${box.left} V ${box.top} Z`;
     }
     route.setAttribute('d', path);
   }
