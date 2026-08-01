@@ -66,11 +66,15 @@ interface Table {
                 </div>
                 <div class="stat-badge">
                   <mat-icon>trending_up</mat-icon>
-                  <span>Use P&L</span>
+                  <span>Live P&amp;L</span>
                 </div>
                 <div class="stat-badge">
                   <mat-icon>speed</mat-icon>
-                  <span>Instant</span>
+                  <span>Risk amount</span>
+                </div>
+                <div class="stat-badge">
+                  <mat-icon>schedule</mat-icon>
+                  <span>Holding time</span>
                 </div>
               </div>
 
