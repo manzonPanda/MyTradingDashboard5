@@ -1048,6 +1048,32 @@ table.simple-table {
     text-shadow: 0 0 10px rgba(167, 139, 250, 0.28);
   }
 
+  .mt5-account-info .target-card {
+    background: linear-gradient(135deg, #172033 0%, #1e293b 100%);
+    border-color: #334155;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.16);
+
+    .target-label,
+    .target-amount {
+      color: #C4B5FD;
+    }
+
+    &.profit-target .target-icon {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(6, 78, 59, 0.72));
+      border-color: rgba(52, 211, 153, 0.38);
+    }
+
+    &.max-loss .target-icon {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(127, 29, 29, 0.72));
+      border-color: rgba(248, 113, 113, 0.38);
+    }
+
+    &.daily-limit .target-icon {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(120, 53, 15, 0.72));
+      border-color: rgba(251, 191, 36, 0.38);
+    }
+  }
+
   :host ::ng-deep .chart-mode-toggle .mdc-label {
     color: #C4B5FD;
   }
