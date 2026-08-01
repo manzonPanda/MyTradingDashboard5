@@ -38,10 +38,6 @@
         <mat-icon>account_balance_wallet</mat-icon>
         <span><strong>Trades</strong></span>
       </button>
-      <button class="navigation-link mt5-sync-link" type="button" title="Sync MT5 trades" [disabled]="isSyncingMT5Trades" (click)="syncMT5Trades()">
-        <mat-icon>{{ isSyncingMT5Trades ? 'sync' : 'sync_alt' }}</mat-icon>
-        <span><strong>{{ isSyncingMT5Trades ? 'Syncing MT5 trades…' : 'Sync MT5 trades' }}</strong></span>
-      </button>
       <button class="navigation-link" type="button" title="Notion Update" [class.is-active]="currentWorkspace === 'notion-update'" (click)="navigateToWorkspace('notion-update')">
         <mat-icon>sync</mat-icon>
         <span><strong>Notion Update</strong></span>
@@ -79,6 +75,10 @@
         </div>
         <app-connection-status></app-connection-status>
       </div>
+      <button class="navigation-link mt5-sync-link" type="button" title="Sync MT5 trades" [disabled]="isSyncingMT5Trades" (click)="syncMT5Trades()">
+        <mat-icon>{{ isSyncingMT5Trades ? 'sync' : 'sync_alt' }}</mat-icon>
+        <span><strong>{{ isSyncingMT5Trades ? 'Syncing MT5 trades…' : 'Sync MT5 trades' }}</strong></span>
+      </button>
     </section>
 
     <div class="navigation-footer">
