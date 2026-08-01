@@ -1172,6 +1172,7 @@ mt5AccountInfo: AccountSettings = {
     try {
       this.accounts = await this.supabaseService.getAccounts();
       this.selectedAccount = this.accounts[0] ?? null;
+      this.applySelectedAccountSettings();
     } catch (error) {
       console.error('Unable to load Supabase accounts:', error);
       this.snackBar.open('Unable to load accounts from Supabase.', 'Dismiss', { duration: 6000 });
@@ -1181,6 +1182,23 @@ mt5AccountInfo: AccountSettings = {
     }
   }
 
+  private inferAccountSize(account: Account | null): number {
+    const sizeMatch = account?.name.match(/(\d+(?:\.\d+)?)\s*k\b/i);
+    return sizeMatch ? Number(sizeMatch[1]) * 1000 : 0;
+  }
+
+  private applySelectedAccountSettings(): void {
+    const account = this.selectedAccount;
+    this.mt5AccountInfo = {
+      ...this.mt5AccountInfo,
+      startingBalance: account?.initial_balance ?? this.inferAccountSize(account),
+      profitTarget: account?.profit_target_percent ?? 0,
+      maxTotalDrawdown: account?.max_total_drawdown_percent ?? 0,
+      dailyLossLimit: account?.daily_loss_limit_percent ?? 0
+    };
+    this.dropdownSelectedSize = this.mt5AccountInfo.startingBalance;
+  }
+
   async selectAccount(account: Account): Promise<void> {
     if (this.selectedAccount?.id === account.id) {
       this.navigateToWorkspace('dashboard');
@@ -1188,6 +1206,7 @@ mt5AccountInfo: AccountSettings = {
     }
 
     this.selectedAccount = account;
+    this.applySelectedAccountSettings();
     this.currentPage = 1;
     await this.loadMT5Data();
     this.generateTradingChartData();
