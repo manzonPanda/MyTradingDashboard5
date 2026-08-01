@@ -115,7 +115,7 @@ app-root {
   vector-effect: non-scaling-stroke;
   stroke: url(#aura-energy-gradient);
   stroke-width: 3.2;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   stroke-dasharray: 90 910;
   stroke-dashoffset: 1000;
   filter: url(#aura-energy-bloom);
