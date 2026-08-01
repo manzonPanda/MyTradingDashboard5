@@ -24,6 +24,15 @@ body.dark-theme app-root {
   background-color: #0f172a;
 }
 
+body.dark-theme .tradezella-dashboard .chart-canvas-wrapper {
+  background: #172033 !important;
+}
+
+body.dark-theme .tradezella-dashboard .chart-canvas-wrapper .trading-chart {
+  background: #172033 !important;
+  box-shadow: inset 0 1px 3px rgba(148, 163, 184, 0.12);
+}
+
 body.dark-theme .app-footer {
   background: #111827;
   border-top-color: #334155;
