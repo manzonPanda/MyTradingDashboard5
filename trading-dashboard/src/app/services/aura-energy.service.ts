@@ -132,18 +132,19 @@ export class AuraEnergyService {
         <defs>
           <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#7C3AED" stop-opacity="0" />
-            <stop offset="42%" stop-color="#6366F1" stop-opacity="0.15" />
-            <stop offset="72%" stop-color="#A78BFA" stop-opacity="0.5" />
-            <stop offset="90%" stop-color="#F5F3FF" stop-opacity="0.85" />
-            <stop offset="100%" stop-color="#F5F3FF" />
+            <stop offset="50%" stop-color="#A78BFA" stop-opacity="0.35" />
+            <stop offset="82%" stop-color="#E9D5FF" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#FFFFFF" />
           </linearGradient>
-          <filter id="aura-energy-bloom" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="1.2" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="aura-energy-bloom" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="2.4" result="wide-blur" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.7" result="soft-blur" />
+            <feMerge><feMergeNode in="wide-blur" /><feMergeNode in="soft-blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
+        <path id="aura-route-guide" class="aura-energy-guide" />
         <path id="aura-route" class="aura-energy-line" pathLength="1000" />
-        <circle class="aura-energy-head" r="5.5">
+        <circle class="aura-energy-head" r="6">
           <animateMotion dur="5s" rotate="auto" fill="freeze">
             <mpath href="#aura-route" />
           </animateMotion>
@@ -168,7 +169,8 @@ export class AuraEnergyService {
 
     const svg = this.activeOverlay.querySelector<SVGSVGElement>('.aura-energy-svg');
     const route = this.activeOverlay.querySelector<SVGPathElement>('#aura-route');
-    if (!svg || !route) {
+    const routeGuide = this.activeOverlay.querySelector<SVGPathElement>('#aura-route-guide');
+    if (!svg || !route || !routeGuide) {
       return;
     }
 
@@ -210,6 +212,7 @@ export class AuraEnergyService {
       path += ` H ${routeX} V ${routeY} H ${box.left + box.radius} ${this.roundedRectPath(box, true)}`;
     }
     route.setAttribute('d', path);
+    routeGuide.setAttribute('d', path);
   }
 
   private roundedRectPath(box: { left: number; top: number; right: number; bottom: number; radius: number }, continuation = false): string {

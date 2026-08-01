@@ -103,8 +103,8 @@ app-root {
   z-index: 1000;
   pointer-events: none;
   opacity: 0;
-  filter: drop-shadow(0 0 3px rgba(124, 58, 237, 0.35)) drop-shadow(0 0 8px rgba(99, 102, 241, 0.2));
-  animation: aura-energy-visibility 4s ease-in-out forwards;
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.65)) drop-shadow(0 0 14px rgba(167, 139, 250, 0.46));
+  animation: aura-energy-visibility 5s ease-in-out forwards;
 }
 
 .aura-energy-svg {
@@ -114,53 +114,64 @@ app-root {
   overflow: visible;
 }
 
+.aura-energy-guide {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke: rgba(167, 139, 250, 0.58);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.9));
+}
+
 .aura-energy-line {
   fill: none;
   vector-effect: non-scaling-stroke;
   stroke: url(#aura-energy-gradient);
-  stroke-width: 3.2;
-  stroke-linecap: butt;
-  stroke-dasharray: 90 910;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-dasharray: 120 880;
   stroke-dashoffset: 1000;
   filter: url(#aura-energy-bloom);
-  opacity: 0.98;
+  opacity: 1;
   animation: aura-energy-travel 5s linear 1;
 }
 
 .aura-energy-head {
-  fill: #F5F3FF;
+  fill: #fff;
   filter: url(#aura-energy-bloom);
-  opacity: 0.98;
+  opacity: 1;
 }
 
 .aura-energy-pathway-preview {
-  opacity: 0.7 !important;
+  opacity: 1 !important;
   animation: none !important;
 }
 
+.aura-energy-pathway-preview .aura-energy-guide {
+  stroke: rgba(196, 181, 253, 0.78);
+  stroke-width: 1.35;
+}
+
 .aura-energy-pathway-preview .aura-energy-line {
-  stroke-dasharray: none;
-  stroke-dashoffset: 0;
-  opacity: 0.5;
-  animation: none;
+  stroke-dasharray: 120 880;
+  stroke-dashoffset: 1000;
+  opacity: 1;
+  animation: aura-energy-travel 5s linear infinite;
 }
 
 .aura-energy-pathway-preview .aura-energy-head {
-  display: none;
+  display: block;
 }
 
 @keyframes aura-energy-visibility {
   0% { opacity: 0; }
-  10% { opacity: 0.98; }
-  90% { opacity: 0.98; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
   100% { opacity: 0; }
 }
 
 @keyframes aura-energy-travel {
-  0% { stroke-dashoffset: 1000; opacity: 0.4; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.4; }
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

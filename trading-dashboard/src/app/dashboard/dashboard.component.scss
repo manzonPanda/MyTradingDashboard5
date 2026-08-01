@@ -3033,6 +3033,10 @@ table.simple-table {
         rgba(248, 250, 252, 0.4)
       );
 
+      :host-context(body.dark-theme) & {
+        background: linear-gradient(180deg, #111827, #0f172a);
+      }
+
       .trading-chart {
         position: relative;
         z-index: 1;
@@ -3040,6 +3044,11 @@ table.simple-table {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      :host-context(body.dark-theme) .trading-chart {
+        background: rgba(15, 23, 42, 0.72);
+        box-shadow: inset 0 1px 3px rgba(148, 163, 184, 0.12);
       }
 
       .chart-overlay-info {
