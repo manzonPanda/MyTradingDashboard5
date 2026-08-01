@@ -496,7 +496,7 @@
                       <div class="target-label gradient-text">Profit Target</div>
                       <div class="target-value-group">
                         <div class="target-value profit">{{ mt5AccountInfo.profitTarget }}%</div>
-                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.profitTarget / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.profitTarget / 100) | currency:'PHP':'symbol':'1.0-0' }}</div>
                       </div>
                     </div>
                   </div>
@@ -509,7 +509,7 @@
                       <div class="target-label gradient-text">Max Drawdown</div>
                       <div class="target-value-group">
                         <div class="target-value loss">{{ mt5AccountInfo.maxTotalDrawdown }}%</div>
-                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.maxTotalDrawdown / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.maxTotalDrawdown / 100) | currency:'PHP':'symbol':'1.0-0' }}</div>
                       </div>
                     </div>
                   </div>
@@ -522,7 +522,7 @@
                       <div class="target-label gradient-text">Daily Limit</div>
                       <div class="target-value-group">
                         <div class="target-value warning">{{ mt5AccountInfo.dailyLossLimit}}%</div>
-                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.dailyLossLimit / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                        <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.dailyLossLimit / 100) | currency:'PHP':'symbol':'1.0-0' }}</div>
                       </div>
                     </div>
                   </div>
@@ -617,12 +617,12 @@
             <div class="win-loss-layout">
               <div class="win-section">
                 <div class="win-percentage">+{{ calculateAvgWinPercentage() | number:'1.2-2' }}%</div>
-                <div class="win-amount">{{ calculateAvgWin() | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="win-amount">{{ calculateAvgWin() | currency:'PHP':'symbol':'1.0-0' }}</div>
                 <div class="win-label">Win</div>
               </div>
               <div class="loss-section">
                 <div class="loss-percentage">-{{ calculateAvgLossPercentage() | number:'1.2-2' }}%</div>
-                <div class="loss-amount">{{ calculateAvgLoss() | currency:'USD':'symbol':'1.0-0' }}</div>
+                <div class="loss-amount">{{ calculateAvgLoss() | currency:'PHP':'symbol':'1.0-0' }}</div>
                 <div class="loss-label">Loss</div>
               </div>
             </div>
@@ -696,7 +696,7 @@
                 </div>
                 <div class="chart-center">
                   <div class="center-percent" [class.negative]="dailyPnL < 0" [class.positive]="dailyPnL >= 0">{{ dailyPnLPercent | number:'1.2-2' }}%</div>
-                  <div class="center-amount">{{ dailyPnL | currency:'USD':'symbol':'1.0-0' }}</div>
+                  <div class="center-amount">{{ dailyPnL | currency:'PHP':'symbol':'1.0-0' }}</div>
                   <div class="center-label">Total</div>
                 </div>
               </div>
@@ -737,7 +737,7 @@
                            [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
                         <span class="bar-label">
                           {{ (calculateBestProfitPercentage() >= 0 ? '+' : '') + (calculateBestProfitPercentage() | number:'1.0-1') + '%' }}<br>
-                          {{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}
+                          {{ calculateBestProfit() | currency:'PHP':'symbol':'1.0-0' }}
                         </span>
                       </div>
                       <div class="bar-title">Best Profit</div>
@@ -747,7 +747,7 @@
                            [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
                         <span class="bar-label">
                           {{ '-' + (calculateBestLossPercentage() | number:'1.0-1') + '%' }}<br>
-                          {{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}
+                          {{ calculateBestLoss() | currency:'PHP':'symbol':'1.0-0' }}
                         </span>
                       </div>
                       <div class="bar-title">Worst Loss</div>
@@ -929,7 +929,7 @@
             <span class="volume-compact">{{ trade.volume }}L</span>
           </div>
           <div class="profit-compact" [class.positive]="isPositiveValue(trade.netProfit)" [class.negative]="isNegativeValue(trade.netProfit)">
-            {{ getSafeNumber(trade.netProfit) | currency:'USD':'symbol':'1.0-0' }}
+            {{ getSafeNumber(trade.netProfit) | currency:'PHP':'symbol':'1.0-0' }}
           </div>
         </div>
 
@@ -990,6 +990,86 @@
       </div>
     </div>
   </section>
+
+  @if (currentWorkspace === 'roi') {
+    <section class="roi-workspace" aria-labelledby="roi-page-title">
+      <header class="roi-hero">
+        <div class="roi-hero-copy">
+          <p class="roi-eyebrow">Capital journey</p>
+          <h1 id="roi-page-title">Your return, clearly tracked.</h1>
+          <p>Every challenge purchase and prop-firm payout in one focused view.</p>
+        </div>
+        <div class="roi-net-orb" [class.is-positive]="roiNetReturn >= 0" [class.is-negative]="roiNetReturn < 0">
+          <span>Net return</span>
+          <strong>{{ roiNetReturn | currency:'PHP':'symbol':'1.0-0' }}</strong>
+          <small>{{ roiReturnPercentage | number:'1.0-1' }}% on spend</small>
+        </div>
+      </header>
+
+      <div class="roi-metrics">
+        <article class="roi-metric-card roi-metric-expense">
+          <div class="roi-metric-icon"><mat-icon>shopping_bag</mat-icon></div>
+          <div><span>Challenge spend</span><strong>{{ roiExpenses | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Prop firm accounts &amp; fees</small></div>
+        </article>
+        <article class="roi-metric-card roi-metric-payout">
+          <div class="roi-metric-icon"><mat-icon>account_balance</mat-icon></div>
+          <div><span>Payouts received</span><strong>{{ roiPayouts | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Your realized returns</small></div>
+        </article>
+        <article class="roi-metric-card roi-metric-count">
+          <div class="roi-metric-icon"><mat-icon>receipt_long</mat-icon></div>
+          <div><span>Recorded activity</span><strong>{{ roiTransactions.length }}</strong><small>Capital movements logged</small></div>
+        </article>
+      </div>
+
+      <div class="roi-content-grid">
+        <section class="roi-ledger-card">
+          <div class="roi-card-heading">
+            <div><p class="roi-eyebrow">Ledger</p><h2>Capital activity</h2></div>
+            <div class="roi-filter-tabs" aria-label="ROI transaction filter">
+              <button type="button" [class.is-active]="roiFilter === 'all'" (click)="roiFilter = 'all'">All</button>
+              <button type="button" [class.is-active]="roiFilter === 'expense'" (click)="roiFilter = 'expense'">Expenses</button>
+              <button type="button" [class.is-active]="roiFilter === 'payout'" (click)="roiFilter = 'payout'">Payouts</button>
+            </div>
+          </div>
+
+          @if (isLoadingRoi) {
+            <div class="roi-loading"><mat-icon>sync</mat-icon><span>Loading your capital story…</span></div>
+          } @else if (filteredRoiTransactions.length) {
+            <div class="roi-transaction-list">
+              @for (transaction of filteredRoiTransactions; track transaction.id) {
+                <article class="roi-transaction-row" [class.is-payout]="transaction.transaction_type === 'payout'">
+                  <div class="roi-transaction-icon"><mat-icon>{{ transaction.transaction_type === 'payout' ? 'south_west' : 'north_east' }}</mat-icon></div>
+                  <div class="roi-transaction-copy">
+                    <div class="roi-transaction-title"><strong>{{ transaction.transaction_type === 'payout' ? 'Payout received' : 'Challenge expense' }}</strong><span>{{ formatRoiDate(transaction.transaction_date) }}</span></div>
+                    <p>{{ transaction.note || (transaction.transaction_type === 'payout' ? 'Prop firm payout' : 'Prop firm challenge or account') }}</p>
+                    @if (transaction.accounts?.name) { <small>{{ transaction.accounts?.name }}</small> }
+                  </div>
+                  <strong class="roi-transaction-amount">{{ transaction.transaction_type === 'payout' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="roi-empty-state"><mat-icon>query_stats</mat-icon><h3>No activity yet</h3><p>Log your first purchase or payout to see your return build here.</p></div>
+          }
+        </section>
+
+        <aside class="roi-entry-card">
+          <div class="roi-card-heading"><div><p class="roi-eyebrow">New entry</p><h2>Log a movement</h2></div><mat-icon>add_chart</mat-icon></div>
+          <form class="roi-entry-form" (ngSubmit)="saveRoiTransaction()">
+            <div class="roi-type-picker">
+              <button type="button" [class.is-active]="roiForm.transaction_type === 'expense'" (click)="roiForm.transaction_type = 'expense'"><mat-icon>remove_circle_outline</mat-icon>Expense</button>
+              <button type="button" [class.is-active]="roiForm.transaction_type === 'payout'" (click)="roiForm.transaction_type = 'payout'"><mat-icon>add_circle_outline</mat-icon>Payout</button>
+            </div>
+            <label class="roi-field"><span>Amount</span><div class="roi-amount-input"><span>₱</span><input type="number" name="roi-amount" min="0.01" step="0.01" required [(ngModel)]="roiForm.amount" placeholder="0.00"></div></label>
+            <div class="roi-form-row"><label class="roi-field"><span>Date</span><input type="date" name="roi-date" required [(ngModel)]="roiForm.transaction_date"></label><label class="roi-field"><span>Account</span><select name="roi-account" [(ngModel)]="roiForm.account_id"><option value="">No account</option>@for (account of accounts; track account.id) { <option [value]="account.id">{{ account.name }}</option> }</select></label></div>
+            <label class="roi-field"><span>Note</span><input type="text" name="roi-note" [(ngModel)]="roiForm.note" placeholder="e.g. 100K challenge fee"></label>
+            <label class="roi-field"><span>Receipt image URL <em>optional</em></span><input type="url" name="roi-image-url" [(ngModel)]="roiForm.image_url" placeholder="https://"></label>
+            <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : 'Add to tracker' }}</button>
+          </form>
+        </aside>
+      </div>
+    </section>
+  }
 
   <section id="accounts" class="accounts-section" *ngIf="currentWorkspace === 'accounts'">
     <div class="accounts-hero">
@@ -1067,7 +1147,7 @@
                       </div>
                     </td>
                     <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
-                    <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
+                    <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'PHP':'symbol':'1.0-0' }}</span></td>
                     <td data-label="Status"><span class="account-status" [class]="'account-status status-' + (account.status || 'active').toLowerCase()">{{ account.status || 'Active' }}</span></td>
                     <td data-label="Risk limits">
                       <div class="account-risk-summary">
@@ -1410,7 +1490,7 @@
                       <mat-icon class="risk-icon">monetization_on</mat-icon>
                       <span>Risk</span>
                     </div>
-                    <div class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    <div class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'PHP':'symbol':'1.0-0' }}</div>
                     <div class="risk-percentage">{{ getRiskPercentage(row) }}%</div>
                   </div>
 
