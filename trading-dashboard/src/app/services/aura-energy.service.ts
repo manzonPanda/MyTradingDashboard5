@@ -67,7 +67,7 @@ export class AuraEnergyService {
     this.cleanupId = window.setTimeout(() => {
       this.removeActivePulse();
       this.scheduleNextPulse(this.randomDelay());
-    }, 2150);
+    }, 4150);
   }
 
   private createOverlay(): HTMLDivElement {
@@ -80,11 +80,12 @@ export class AuraEnergyService {
           <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#7C3AED" stop-opacity="0" />
             <stop offset="48%" stop-color="#6366F1" stop-opacity="0.42" />
-            <stop offset="82%" stop-color="#A78BFA" stop-opacity="0.86" />
-            <stop offset="100%" stop-color="#F5F3FF" />
+            <stop offset="76%" stop-color="#A78BFA" stop-opacity="0.78" />
+            <stop offset="90%" stop-color="#F5F3FF" stop-opacity="1" />
+            <stop offset="100%" stop-color="#FFFFFF" />
           </linearGradient>
           <filter id="aura-energy-bloom" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="1.8" result="blur" />
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>

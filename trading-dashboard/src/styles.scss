@@ -96,8 +96,8 @@ app-root {
   z-index: 60;
   pointer-events: none;
   opacity: 0;
-  filter: drop-shadow(0 0 6px rgba(124, 58, 237, 0.7)) drop-shadow(0 0 16px rgba(99, 102, 241, 0.45));
-  animation: aura-energy-visibility 2s ease-in-out forwards;
+  filter: drop-shadow(0 0 3px rgba(124, 58, 237, 0.35)) drop-shadow(0 0 8px rgba(99, 102, 241, 0.2));
+  animation: aura-energy-visibility 4s ease-in-out forwards;
 }
 
 .aura-energy-svg {
@@ -111,11 +111,11 @@ app-root {
   fill: none;
   vector-effect: non-scaling-stroke;
   stroke: url(#aura-energy-gradient);
-  stroke-width: 2.8;
+  stroke-width: 3.2;
   stroke-linecap: round;
   filter: url(#aura-energy-bloom);
   opacity: 0.98;
-  animation: aura-energy-travel 2s linear 1;
+  animation: aura-energy-travel 4s linear 1;
 }
 
 @keyframes aura-energy-visibility {
