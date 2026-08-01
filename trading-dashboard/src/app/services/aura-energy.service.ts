@@ -73,14 +73,6 @@ export class AuraEnergyService {
     overlay.innerHTML = `
       <svg class="aura-energy-svg" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
         <defs>
-          <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#7C3AED" />
-            <stop offset="45%" stop-color="#6366F1" />
-            <stop offset="52%" stop-color="#F5F3FF" />
-            <stop offset="60%" stop-color="#A78BFA" />
-            <stop offset="100%" stop-color="#7C3AED" />
-            <animateTransform attributeName="gradientTransform" type="rotate" from="0 0.5 0.5" to="360 0.5 0.5" dur="2s" repeatCount="1" />
-          </linearGradient>
           <filter id="aura-energy-bloom" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="1.8" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
