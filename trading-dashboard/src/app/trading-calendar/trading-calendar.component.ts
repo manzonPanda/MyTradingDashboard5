@@ -56,12 +56,12 @@ interface WeekSummary {
       <!-- Calendar Header -->
       <div class="calendar-header">
         <div class="calendar-nav">
-          <button mat-button class="nav-button" (click)="previousMonth()">
-            <mat-icon>chevron_left</mat-icon>
+          <button mat-button class="nav-button" type="button" aria-label="Previous month" title="Previous month" (click)="previousMonth()">
+            <mat-icon aria-hidden="true">arrow_back</mat-icon>
           </button>
           <h2 class="month-title">{{ currentDate | date: 'MMMM yyyy' }}</h2>
-          <button mat-button class="nav-button" (click)="nextMonth()">
-            <mat-icon>chevron_right</mat-icon>
+          <button mat-button class="nav-button" type="button" aria-label="Next month" title="Next month" (click)="nextMonth()">
+            <mat-icon aria-hidden="true">arrow_forward</mat-icon>
           </button>
         </div>
         <div class="monthly-stats">
@@ -118,11 +118,9 @@ interface WeekSummary {
                   <div class="day-win-loss-amounts">
                     <div class="amounts-row">
                       <div class="win-amount" [ngClass]="{'zero-amount': day.totalWinAmount === 0}">
-                        <span class="amount-icon">↗</span>
                         <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
                       </div>
                       <div class="loss-amount" [ngClass]="{'zero-amount': day.totalLossAmount === 0}">
-                        <span class="amount-icon">↘</span>
                         <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
                       </div>
                     </div>

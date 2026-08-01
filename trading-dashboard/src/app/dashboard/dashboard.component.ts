@@ -33,7 +33,7 @@ import { LiveRRTrackerComponent } from '../live-rr-tracker/live-rr-tracker.compo
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { ViewChild, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
+import { ViewChild, ElementRef, AfterViewInit, HostListener, Renderer2 } from '@angular/core';
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
@@ -157,14 +157,47 @@ export class DashboardComponent implements AfterViewInit {
   Math = Math;
   environment = environment;
   isDashboardNavigationOpen = true;
+  isNavigationDisplayMenuOpen = false;
+  navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
 
   toggleDashboardNavigation(): void {
     this.isDashboardNavigationOpen = !this.isDashboardNavigationOpen;
+    this.navigationDisplayMode = this.isDashboardNavigationOpen ? 'expanded' : 'collapsed';
   }
 
   closeDashboardNavigation(): void {
     this.isDashboardNavigationOpen = false;
+  }
+
+  toggleNavigationDisplayMenu(): void {
+    this.isNavigationDisplayMenuOpen = !this.isNavigationDisplayMenuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeNavigationDisplayMenuOnOutsideClick(event: MouseEvent): void {
+    const target = event.target as Element;
+    if (!target.closest('.navigation-display-control')) {
+      this.isNavigationDisplayMenuOpen = false;
+    }
+  }
+
+  setNavigationDisplayMode(mode: 'expanded' | 'collapsed' | 'hover'): void {
+    this.navigationDisplayMode = mode;
+    this.isDashboardNavigationOpen = mode === 'expanded';
+    this.isNavigationDisplayMenuOpen = false;
+  }
+
+  expandNavigationOnHover(): void {
+    if (this.navigationDisplayMode === 'hover') {
+      this.isDashboardNavigationOpen = true;
+    }
+  }
+
+  collapseNavigationOnLeave(): void {
+    if (this.navigationDisplayMode === 'hover') {
+      this.isDashboardNavigationOpen = false;
+    }
   }
 
   get currentWorkspace(): string {

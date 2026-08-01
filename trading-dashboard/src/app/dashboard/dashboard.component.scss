@@ -41,7 +41,7 @@
 
     &.profit-target {
       &::before {
-        background: linear-gradient(90deg, #10b981, #34d399);
+        background: linear-gradient(90deg, #16A34A, #34d399);
       }
     }
 
@@ -166,7 +166,7 @@
     // Total P&L target card styling
     &.total-pnl {
       &::before {
-        background: linear-gradient(90deg, #059669, #10b981);
+        background: linear-gradient(90deg, #059669, #16A34A);
       }
 
       &:hover {
@@ -278,15 +278,15 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      background: linear-gradient(90deg, #7C3AED, #8B5CF6);
       transition: all 0.3s ease;
     }
 
     &:hover {
       transform: translateY(-3px) scale(1.02);
       box-shadow:
-        0 12px 40px rgba(59, 130, 246, 0.2),
-        0 6px 16px rgba(59, 130, 246, 0.15);
+        0 12px 40px rgba(124, 58, 237, 0.2),
+        0 6px 16px rgba(124, 58, 237, 0.15);
     }
 
     // Remove the ::after circles that were causing the issue
@@ -305,7 +305,7 @@
     .stat-content {
       flex: 1;
       min-width: 0;
-      text-align: left;
+      text-align: center;
     }
 
     .stat-label {
@@ -341,6 +341,7 @@
     .stat-value-group {
       display: flex;
       align-items: baseline;
+      justify-content: center;
       gap: 0.3rem;
       flex-wrap: nowrap;
     }
@@ -423,7 +424,7 @@
   // Chart Mode card styling
   .stat-item.chart-mode-card {
     &::before {
-      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+      background: linear-gradient(90deg, #06b6d4, #7C3AED);
     }
 
     // Ensure all children are interactive
@@ -438,7 +439,7 @@
 
     .stat-icon {
       background: linear-gradient(135deg, #ecfeff, #dbeafe);
-      border: 2px solid rgba(59, 130, 246, 0.2);
+      border: 2px solid rgba(124, 58, 237, 0.2);
       color: #0ea5e9;
     }
 
@@ -480,8 +481,8 @@
       }
 
       .mat-button-toggle-checked {
-        background: rgba(59, 130, 246, 0.12);
-        color: #3b82f6;
+        background: rgba(124, 58, 237, 0.12);
+        color: #7C3AED;
       }
 
       .mat-button-toggle .mat-icon {
@@ -666,7 +667,7 @@
   .daily-limit-chart .chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
   .center-percent { font-weight: 800; font-size: 1.8rem; color: var(--tf-text-primary); }
   .center-percent.negative { color: #ef4444; }
-  .center-percent.positive { color: #10b981; }
+  .center-percent.positive { color: #16A34A; }
   .center-amount { font-size: 1.1rem; font-weight: 700; color: var(--tf-text-secondary); }
   .center-label { font-size: 0.95rem; color: var(--tf-text-muted); }
   .daily-limit-stats { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; align-items: center; justify-self: center; }
@@ -695,7 +696,7 @@
   /* Tooltip for left donut */
   .daily-limit-chart { position: relative; }
   .donut-tooltip { position: absolute; pointer-events: none; background: rgba(0,0,0,0.8); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 12px; line-height: 1.2; white-space: nowrap; transform: translate(-50%, -120%); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10; }
-  .donut-tooltip.tooltip-positive { border: 1px solid #10b981; }
+  .donut-tooltip.tooltip-positive { border: 1px solid #16A34A; }
   .donut-tooltip.tooltip-danger { border: 1px solid #ef4444; }
 
   @media (max-width: 768px) {
@@ -739,7 +740,7 @@
     }
 
     .win-count {
-      fill: #10b981;
+      fill: #16A34A;
     }
 
     .breakeven-count {
@@ -771,7 +772,7 @@
     }
 
     .count-green {
-      color: #10b981;
+      color: #16A34A;
       background: rgba(16, 185, 129, 0.1);
     }
 
@@ -836,7 +837,7 @@ table.simple-table {
 
     &.col-rrr {
       text-align: center !important;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.05)) !important;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(124, 58, 237, 0.05)) !important;
       color: #047857 !important;
       font-weight: 700 !important;
       position: relative;
@@ -849,8 +850,8 @@ table.simple-table {
 
     &.col-timeline {
       text-align: center !important;
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05)) !important;
-      color: #6366f1 !important;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(139, 92, 246, 0.05)) !important;
+      color: #7C3AED !important;
       font-weight: 700 !important;
       position: relative;
       min-width: 180px !important;
@@ -863,8 +864,8 @@ table.simple-table {
 
     &.col-trade-card {
       text-align: center !important;
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.08), rgba(59, 130, 246, 0.05)) !important;
-      color: #6366f1 !important;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.05)) !important;
+      color: #7C3AED !important;
       font-weight: 700 !important;
       position: relative;
       min-width: 280px !important;
@@ -916,7 +917,7 @@ table.simple-table {
     }
 
     &.positive-row {
-      border-left: 4px solid #10b981 !important;
+      border-left: 4px solid #16A34A !important;
       background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent 50%) !important;
     }
 
@@ -926,7 +927,7 @@ table.simple-table {
     }
 
     &.new-trade {
-      border-left: 4px solid #10b981 !important;
+      border-left: 4px solid #16A34A !important;
       background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.08) 50%, transparent 100%) !important;
 
       td:first-child {
@@ -955,7 +956,7 @@ table.simple-table {
     }
 
     &.positive {
-      color: #10b981 !important;
+      color: #16A34A !important;
       font-weight: 700 !important;
     }
 
@@ -976,31 +977,31 @@ table.simple-table {
 }
 
 :host {
-  --tf-bg-primary: #ffffff;
-  --tf-bg-secondary: #f8fafc;
-  --tf-bg-tertiary: #f1f5f9;
-  --tf-bg-card: #ffffff;
-  --tf-bg-hover: #f1f5f9;
+  --tf-bg-primary: #FAF9FF;
+  --tf-bg-secondary: #FFFFFF;
+  --tf-bg-tertiary: #EDE9FE;
+  --tf-bg-card: #FFFFFF;
+  --tf-bg-hover: #EDE9FE;
 
-  --tf-text-primary: #1e293b;
-  --tf-text-secondary: #64748b;
-  --tf-text-muted: #94a3b8;
+  --tf-text-primary: #334155;
+  --tf-text-secondary: #64748B;
+  --tf-text-muted: #94A3B8;
 
-  --tf-accent-primary: #6b46c1;
-  --tf-accent-secondary: #8b5cf6;
-  --tf-accent-success: #10b981;
-  --tf-accent-danger: #ef4444;
-  --tf-accent-warning: #f59e0b;
-  --tf-accent-info: #3b82f6;
-  --tf-accent-teal: #14b8a6;
-  --tf-accent-orange: #f97316;
+  --tf-accent-primary: #7C3AED;
+  --tf-accent-secondary: #8B5CF6;
+  --tf-accent-success: #16A34A;
+  --tf-accent-danger: #EF4444;
+  --tf-accent-warning: #F59E0B;
+  --tf-accent-info: #7C3AED;
+  --tf-accent-teal: #16A34A;
+  --tf-accent-orange: #F59E0B;
 
-  --tf-border-primary: #e2e8f0;
-  --tf-border-secondary: #cbd5e1;
+  --tf-border-primary: #E9E5F5;
+  --tf-border-secondary: #DDD6FE;
 
-  --tf-positive: #10b981;
-  --tf-negative: #ef4444;
-  --tf-neutral: #6b7280;
+  --tf-positive: #16A34A;
+  --tf-negative: #EF4444;
+  --tf-neutral: #64748B;
 
   --tf-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --tf-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -1097,23 +1098,23 @@ table.simple-table {
 
       // Better scrollbar for horizontal scrolling
       scrollbar-width: auto;
-      scrollbar-color: rgba(99, 102, 241, 0.6) rgba(99, 102, 241, 0.1);
+      scrollbar-color: rgba(124, 58, 237, 0.6) rgba(124, 58, 237, 0.1);
 
       &::-webkit-scrollbar {
         height: 8px;
       }
 
       &::-webkit-scrollbar-track {
-        background: rgba(99, 102, 241, 0.1);
+        background: rgba(124, 58, 237, 0.1);
         border-radius: 4px;
       }
 
       &::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.6);
+        background: rgba(124, 58, 237, 0.6);
         border-radius: 4px;
 
         &:hover {
-          background: rgba(99, 102, 241, 0.8);
+          background: rgba(124, 58, 237, 0.8);
         }
       }
 
@@ -1215,7 +1216,7 @@ table.simple-table {
             border-radius: 50%;
 
             &.status-active {
-              background: #10b981;
+              background: #16A34A;
               box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
               animation: pulse-dot 2s infinite;
             }
@@ -1229,7 +1230,7 @@ table.simple-table {
             }
 
             &.status-future {
-              background: #3b82f6;
+              background: #7C3AED;
             }
           }
 
@@ -1248,7 +1249,7 @@ table.simple-table {
             border-bottom-color: rgba(16, 185, 129, 0.4);
 
             .day-dot {
-              background: #10b981 !important;
+              background: #16A34A !important;
               box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
             }
           }
@@ -1270,7 +1271,7 @@ table.simple-table {
           overflow-y: auto;
           overflow-x: hidden;
           scrollbar-width: auto;
-          scrollbar-color: rgba(99, 102, 241, 0.6) rgba(99, 102, 241, 0.1);
+          scrollbar-color: rgba(124, 58, 237, 0.6) rgba(124, 58, 237, 0.1);
 
           &.current-day-news {
             background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
@@ -1281,16 +1282,16 @@ table.simple-table {
           }
 
           &::-webkit-scrollbar-track {
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(124, 58, 237, 0.1);
             border-radius: 3px;
           }
 
           &::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.6);
+            background: rgba(124, 58, 237, 0.6);
             border-radius: 3px;
 
             &:hover {
-              background: rgba(99, 102, 241, 0.8);
+              background: rgba(124, 58, 237, 0.8);
             }
           }
 
@@ -1359,8 +1360,8 @@ table.simple-table {
 
             // Currency-specific backgrounds
             &.currency-usd {
-              background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04));
-              border-left: 4px solid #3b82f6;
+              background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.04));
+              border-left: 4px solid #7C3AED;
             }
 
             &.currency-eur {
@@ -1445,7 +1446,7 @@ table.simple-table {
                     padding: 0.125rem 0.25rem;
                     border-radius: 3px;
 
-                    &.currency-usd { background: #3b82f6; }
+                    &.currency-usd { background: #7C3AED; }
                     &.currency-eur { background: #f97316; }
                     &.currency-gbp { background: #a855f7; }
                     &.currency-jpy { background: #ef4444; }
@@ -1873,8 +1874,8 @@ table.simple-table {
 
         // Apply currency-specific background to header
         &.currency-usd {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.08));
-          border-bottom-color: rgba(59, 130, 246, 0.2);
+          background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.08));
+          border-bottom-color: rgba(124, 58, 237, 0.2);
         }
 
         &.currency-eur {
@@ -1920,7 +1921,7 @@ table.simple-table {
               padding: 0.15rem 0.3rem;
               border-radius: 4px;
 
-              &.currency-usd { background: #3b82f6; }
+              &.currency-usd { background: #7C3AED; }
               &.currency-eur { background: #f97316; }
               &.currency-gbp { background: #a855f7; }
               &.currency-jpy { background: #ef4444; }
@@ -2623,7 +2624,7 @@ table.simple-table {
                 display: inline-block;
                 font-size: 0.9rem;
                 font-weight: 700;
-                color: #10b981;
+                color: #16A34A;
                 opacity: 0;
                 transform: scale(0);
                 transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2819,7 +2820,7 @@ table.simple-table {
       pointer-events: auto;
       background: linear-gradient(135deg,
         rgba(16, 185, 129, 0.05),
-        rgba(59, 130, 246, 0.03),
+        rgba(124, 58, 237, 0.03),
         transparent 70%
       );
       border-bottom: 1px solid var(--tf-border-primary);
@@ -2835,7 +2836,7 @@ table.simple-table {
         background: linear-gradient(90deg,
           transparent,
           rgba(16, 185, 129, 0.3),
-          rgba(59, 130, 246, 0.3),
+          rgba(124, 58, 237, 0.3),
           transparent
         );
       }
@@ -2929,8 +2930,8 @@ table.simple-table {
           }
 
           .mat-button-toggle-checked {
-            background: rgba(59, 130, 246, 0.12);
-            color: #3b82f6;
+            background: rgba(124, 58, 237, 0.12);
+            color: #7C3AED;
           }
 
           .mat-button-toggle .mat-icon {
@@ -3599,7 +3600,7 @@ table.simple-table {
     }
 
     .best-profit-bar {
-      background: linear-gradient(180deg, #10b981, #34d399);
+      background: linear-gradient(180deg, #16A34A, #34d399);
       border: 1px solid rgba(16, 185, 129, 0.3);
 
       &::before {
@@ -3746,10 +3747,10 @@ table.simple-table {
         min-width: 12px;
 
         &.wins {
-          color: #10b981;
+          color: #16A34A;
         }
         &.breakeven {
-          color: #3b82f6;
+          color: #7C3AED;
         }
         &.losses {
           color: #ef4444;
@@ -3875,7 +3876,7 @@ table.simple-table {
         }
 
         .progress-win {
-          background: linear-gradient(90deg, #10b981, #34d399);
+          background: linear-gradient(90deg, #16A34A, #34d399);
           border-right: 1px solid rgba(255, 255, 255, 0.2);
 
           &::before {
@@ -3942,7 +3943,7 @@ table.simple-table {
 
           &.win-indicator {
             .indicator-dot {
-              background: #10b981;
+              background: #16A34A;
               box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
             }
 
@@ -3952,7 +3953,7 @@ table.simple-table {
                 box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
               }
               .indicator-text {
-                color: #10b981;
+                color: #16A34A;
               }
             }
           }
@@ -4153,8 +4154,8 @@ table.simple-table {
     }
 
     .days-bar {
-      background: linear-gradient(180deg, #6366f1, #8b5cf6);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: linear-gradient(180deg, #7C3AED, #8b5cf6);
+      border: 1px solid rgba(124, 58, 237, 0.3);
 
       &::before {
         content: '';
@@ -4176,7 +4177,7 @@ table.simple-table {
     }
 
     .trades-bar {
-      background: linear-gradient(180deg, #10b981, #34d399);
+      background: linear-gradient(180deg, #16A34A, #34d399);
       border: 1px solid rgba(16, 185, 129, 0.3);
 
       &::before {
@@ -4222,8 +4223,8 @@ table.simple-table {
     }
 
     .duration-overall-bar {
-      background: linear-gradient(180deg, #6366f1, #8b5cf6);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: linear-gradient(180deg, #7C3AED, #8b5cf6);
+      border: 1px solid rgba(124, 58, 237, 0.3);
 
       &::before {
         content: '';
@@ -4517,7 +4518,7 @@ table.simple-table {
   color: white;
 
   &:hover {
-    background: #2563eb;
+    background: #7C3AED;
   }
 }
 
@@ -4743,7 +4744,7 @@ table.simple-table {
         }
 
         &.positive-row {
-          border-left: 4px solid #10b981 !important;
+          border-left: 4px solid #16A34A !important;
           background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), transparent 50%) !important;
 
           &:hover {
@@ -4774,7 +4775,7 @@ table.simple-table {
             rgba(52, 211, 153, 0.15) 50%,
             rgba(16, 185, 129, 0.05) 100%
           ) !important;
-          border-left: 6px solid #10b981 !important;
+          border-left: 6px solid #16A34A !important;
           position: relative;
           animation: live-trade-glow 2s ease-in-out infinite;
 
@@ -4783,7 +4784,7 @@ table.simple-table {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
-            background: #10b981;
+            background: #16A34A;
             color: white;
             padding: 0.25rem 0.5rem;
             border-radius: 12px;
@@ -4847,7 +4848,7 @@ table.simple-table {
           }
 
           &.positive {
-            color: #10b981 !important;
+            color: #16A34A !important;
             font-weight: 700;
           }
 
@@ -5445,7 +5446,7 @@ table.simple-table {
       top: 0;
       bottom: 0;
       width: 3px;
-      background: linear-gradient(180deg, #10b981, #22c55e);
+      background: linear-gradient(180deg, #16A34A, #22c55e);
       border-radius: 8px 0 0 8px;
     }
   }
@@ -5547,7 +5548,7 @@ table.simple-table {
   }
 
   &.positive-icon {
-    color: #10b981;
+    color: #16A34A;
   }
 
   &.negative-icon {
@@ -5604,7 +5605,7 @@ table.simple-table {
     color: #94a3b8;
 
     &.equals-icon {
-      color: #6366f1;
+      color: #7C3AED;
       font-weight: bold;
     }
   }
@@ -5637,7 +5638,7 @@ table.simple-table {
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(99, 102, 241, 0.3);
+    border-color: rgba(124, 58, 237, 0.3);
 
     &::before {
       opacity: 1;
@@ -5768,7 +5769,7 @@ table.simple-table {
     border: 1px solid rgba(16, 185, 129, 0.15);
 
     .rrr-value {
-      color: #10b981;
+      color: #16A34A;
       font-weight: 500;
     }
   }
@@ -5795,7 +5796,7 @@ table.simple-table {
   border: none;
 
   .mfe-value {
-    color: #10b981;
+    color: #16A34A;
     font-weight: 600;
   }
 }
@@ -6043,17 +6044,17 @@ table.simple-table {
   flex-direction: column;
   gap: 0.15rem;
   padding: 0.2rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(139, 92, 246, 0.02));
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.03), rgba(139, 92, 246, 0.02));
   border-radius: 6px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.1);
   position: relative;
   min-height: 38px;
 
   &:hover {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.04));
-    border-color: rgba(99, 102, 241, 0.2);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(139, 92, 246, 0.04));
+    border-color: rgba(124, 58, 237, 0.2);
     transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 3px 8px rgba(124, 58, 237, 0.15);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
@@ -6108,7 +6109,7 @@ table.simple-table {
 .timeline-line {
   flex: 1;
   height: 2px;
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.3), rgba(139, 92, 246, 0.2));
   border-radius: 1px;
   position: relative;
 
@@ -6120,7 +6121,7 @@ table.simple-table {
     transform: translateY(-50%);
     width: 4px;
     height: 4px;
-    background: #6366f1;
+    background: #7C3AED;
     border-radius: 50%;
   }
 
@@ -6141,22 +6142,22 @@ table.simple-table {
   display: flex;
   align-items: center;
   gap: 0.15rem;
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(124, 58, 237, 0.1);
   padding: 0.08rem 0.25rem;
   border-radius: 8px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.2);
 
   .duration-icon {
     font-size: 12px;
     width: 12px;
     height: 12px;
-    color: #6366f1;
+    color: #7C3AED;
   }
 
   .duration-text {
     font-size: 0.55rem;
     font-weight: 600;
-    color: #6366f1;
+    color: #7C3AED;
   }
 }
 
@@ -6169,7 +6170,7 @@ table.simple-table {
     font-size: 10px;
     width: 10px;
     height: 10px;
-    color: #10b981;
+    color: #16A34A;
     animation: pulse 1.5s infinite;
   }
 }
@@ -6716,7 +6717,7 @@ table.simple-table {
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+        background: linear-gradient(90deg, #ef4444, #f59e0b, #16A34A);
         border-radius: 12px 12px 0 0;
         animation: live-border-pulse 2s ease-in-out infinite;
       }
@@ -7626,7 +7627,7 @@ table.simple-table {
         }
 
         &.heatmap {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(96, 165, 250, 0.1));
+          background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(96, 165, 250, 0.1));
           color: var(--tf-accent-info);
         }
 
@@ -8545,16 +8546,16 @@ table.simple-table {
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(99, 102, 241, 0.3);
+    border-color: rgba(124, 58, 237, 0.3);
   }
 
   // Buy Card Styling
   &.buy-card {
-    border-left: 3px solid #10b981;
+    border-left: 3px solid #16A34A;
 
     .type-badge {
       background: rgba(16, 185, 129, 0.1);
-      color: #10b981;
+      color: #16A34A;
     }
   }
 
@@ -8578,14 +8579,14 @@ table.simple-table {
   .symbol-icon {
     width: 24px;
     height: 24px;
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(124, 58, 237, 0.1);
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
 
     .currency-icon {
-      color: #6366f1;
+      color: #7C3AED;
       font-size: 14px;
       width: 14px;
       height: 14px;
@@ -8757,7 +8758,7 @@ table.simple-table {
 
 .col-status {
   .status-icon {
-    color: #10b981;
+    color: #16A34A;
   }
 
   &:hover .status-icon {
@@ -8783,7 +8784,7 @@ table.simple-table {
   }
 
   .header-icon-secondary {
-    color: #10b981;
+    color: #16A34A;
   }
 
   &:hover .trading-icon {
@@ -9341,8 +9342,8 @@ table.simple-table {
 
 // News Reminder Status Styles
 .news-reminder-status {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.1);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.1);
   border-radius: 12px;
   padding: 16px;
   margin: 16px 0;
@@ -9355,7 +9356,7 @@ table.simple-table {
     margin-bottom: 12px;
 
     .reminder-icon {
-      color: #3b82f6;
+      color: #7C3AED;
       font-size: 20px;
     }
 
@@ -9369,7 +9370,7 @@ table.simple-table {
       color: #6b7280;
 
       &:hover {
-        color: #3b82f6;
+        color: #7C3AED;
       }
     }
   }
@@ -9389,7 +9390,7 @@ table.simple-table {
       font-weight: 500;
 
       &.active {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #16A34A, #059669);
         color: white;
 
         .badge-count {
@@ -9401,9 +9402,9 @@ table.simple-table {
       }
 
       &.intervals {
-        background: rgba(59, 130, 246, 0.1);
-        color: #3b82f6;
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(124, 58, 237, 0.1);
+        color: #7C3AED;
+        border: 1px solid rgba(124, 58, 237, 0.2);
 
         .badge-count {
           font-size: 10px;
@@ -9490,7 +9491,7 @@ table.simple-table {
   }
 
   &.reminder-active {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), 0 0 24px rgba(16, 185, 129, 0.3);
     border-color: rgba(16, 185, 129, 0.6);
 
@@ -9512,7 +9513,7 @@ table.simple-table {
       right: -2px;
       bottom: -2px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #10b981, #059669);
+      background: linear-gradient(135deg, #16A34A, #059669);
       opacity: 0.3;
       animation: pulse 2s infinite;
       z-index: -1;
@@ -9591,7 +9592,7 @@ table.simple-table {
   }
 
   &.reminder-active {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
     color: white;
     box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
     border-color: rgba(16, 185, 129, 0.6);
@@ -9820,15 +9821,15 @@ table.simple-table {
   place-items: center;
   border: 0;
   border-radius: 0.85rem;
-  background: #2563eb;
+  background: #7C3AED;
   color: #fff;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.26);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.26);
   cursor: pointer;
   transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: #1d4ed8;
-    box-shadow: 0 12px 22px rgba(37, 99, 235, 0.32);
+    background: #6D28D9;
+    box-shadow: 0 12px 22px rgba(124, 58, 237, 0.32);
     transform: translateY(-1px);
   }
 }
@@ -9883,9 +9884,9 @@ table.simple-table {
   height: 2.5rem;
   place-items: center;
   border-radius: 0.8rem;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #7C3AED, #8B5CF6);
   color: #fff;
-  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.3);
 }
 
 .navigation-brand-copy {
@@ -9929,7 +9930,7 @@ table.simple-table {
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   > mat-icon:first-child {
-    color: #818cf8;
+    color: #7C3AED;
   }
 
   span {
@@ -9954,12 +9955,12 @@ table.simple-table {
 
   &.is-active {
     border-color: rgba(129, 140, 248, 0.4);
-    background: rgba(99, 102, 241, 0.16);
+    background: rgba(124, 58, 237, 0.16);
   }
 
   &:hover {
     border-color: rgba(129, 140, 248, 0.28);
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(124, 58, 237, 0.1);
     transform: translateX(3px);
   }
 }
@@ -9975,9 +9976,9 @@ table.simple-table {
   padding: 0.7rem 0.9rem;
   border: 1px solid rgba(129, 140, 248, 0.4);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #7C3AED, #7c3aed);
   color: #fff;
-  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.22);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.22);
   transform: none;
 
   mat-icon {
@@ -10000,7 +10001,7 @@ table.simple-table {
   &:hover {
     border-color: rgba(165, 180, 252, 0.8);
     background: linear-gradient(135deg, #4338ca, #6d28d9);
-    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.32);
+    box-shadow: 0 10px 22px rgba(124, 58, 237, 0.32);
     transform: translateY(-1px);
   }
 
@@ -10055,7 +10056,7 @@ table.simple-table {
   border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 999px;
   background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  color: #16A34A;
   font-size: 0.6rem;
   letter-spacing: 0.06em;
 
@@ -10063,7 +10064,7 @@ table.simple-table {
     width: 0.35rem;
     height: 0.35rem;
     border-radius: 50%;
-    background: #10b981;
+    background: #16A34A;
     box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.12);
   }
 }
@@ -10088,7 +10089,7 @@ table.simple-table {
   mat-icon {
     width: 1rem;
     height: 1rem;
-    color: #818cf8;
+    color: #7C3AED;
     font-size: 1rem;
   }
 }
@@ -10128,6 +10129,50 @@ table.simple-table {
         }
       }
     }
+
+      .dream-time-minimal {
+        .start-date-horizontal {
+          color: #64748B !important;
+          background: #FAF9FF !important;
+          border-color: #E9E5F5 !important;
+        }
+
+        .time-units {
+          background: #FAF9FF !important;
+          border-color: #E9E5F5 !important;
+          box-shadow: none !important;
+
+          .time-unit,
+          .time-unit:nth-child(1),
+          .time-unit:nth-child(2),
+          .time-unit:nth-child(3),
+          .time-unit:nth-child(4),
+          .time-unit:nth-child(5),
+          .time-unit:nth-child(6) {
+            border-left-color: #DDD6FE !important;
+
+            .value {
+              background: none;
+              color: #7C3AED !important;
+              -webkit-text-fill-color: #7C3AED !important;
+              text-shadow: none !important;
+            }
+
+            .label,
+            &:nth-child(1) .label,
+            &:nth-child(2) .label,
+            &:nth-child(3) .label,
+            &:nth-child(4) .label,
+            &:nth-child(5) .label,
+            &:nth-child(6) .label {
+              border-color: transparent;
+              background: transparent !important;
+              color: #64748B !important;
+              text-shadow: none !important;
+            }
+          }
+        }
+      }
   }
 }
 
@@ -10186,7 +10231,7 @@ table.simple-table {
     width: 1rem;
     height: 1rem;
     font-size: 1rem;
-    color: #818cf8;
+    color: #7C3AED;
   }
 }
 
@@ -10212,7 +10257,7 @@ table.simple-table {
   padding: 2.25rem;
   border: 1px solid rgba(129, 140, 248, 0.3);
   border-radius: 1.5rem;
-  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.28), transparent 40%), linear-gradient(135deg, #172554, #312e81 55%, #4c1d95);
+  background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.28), transparent 40%), linear-gradient(135deg, #172554, #312e81 55%, #4c1d95);
   box-shadow: 0 22px 55px rgba(49, 46, 129, 0.24);
   color: #fff;
 
@@ -10273,7 +10318,7 @@ table.simple-table {
   padding: 1.25rem;
   border: 1px solid var(--tf-border-primary);
   border-radius: 1.35rem;
-  background: color-mix(in srgb, var(--tf-bg-secondary) 88%, #6366f1 12%);
+  background: color-mix(in srgb, var(--tf-bg-secondary) 88%, #7C3AED 12%);
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
 }
 
@@ -10332,13 +10377,13 @@ table.simple-table {
 
   &:hover,
   &.is-active {
-    border-color: #6366f1;
-    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.14);
+    border-color: #7C3AED;
+    box-shadow: 0 10px 22px rgba(124, 58, 237, 0.14);
     transform: translateY(-2px);
   }
 
   &.is-active {
-    background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), var(--tf-bg-secondary));
+    background: linear-gradient(145deg, rgba(124, 58, 237, 0.15), var(--tf-bg-secondary));
   }
 }
 
@@ -10349,7 +10394,7 @@ table.simple-table {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #7C3AED, #7c3aed);
   color: #fff;
 
   mat-icon {
@@ -10385,7 +10430,7 @@ table.simple-table {
   width: 1.1rem;
   height: 1.1rem;
   margin-left: auto;
-  color: #6366f1;
+  color: #7C3AED;
   font-size: 1.1rem;
 }
 
@@ -10406,16 +10451,16 @@ table.simple-table {
   text-align: center;
 
   mat-icon {
-    color: #818cf8;
+    color: #7C3AED;
   }
 }
 
 .account-firm-count {
   padding: 0.45rem 0.7rem;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.2);
   border-radius: 999px;
-  background: rgba(99, 102, 241, 0.08);
-  color: #6366f1;
+  background: rgba(124, 58, 237, 0.08);
+  color: #7C3AED;
   font-size: 0.75rem;
   font-weight: 800;
   white-space: nowrap;
@@ -10443,21 +10488,21 @@ table.simple-table {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    border-color: rgba(99, 102, 241, 0.65);
-    box-shadow: 0 16px 30px rgba(79, 70, 229, 0.16);
+    border-color: rgba(124, 58, 237, 0.65);
+    box-shadow: 0 16px 30px rgba(124, 58, 237, 0.16);
     transform: translateY(-4px);
   }
 
   &.is-selected {
-    border-color: #6366f1;
-    background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), var(--tf-bg-secondary));
-    box-shadow: 0 16px 32px rgba(79, 70, 229, 0.2);
+    border-color: #7C3AED;
+    background: linear-gradient(145deg, rgba(124, 58, 237, 0.15), var(--tf-bg-secondary));
+    box-shadow: 0 16px 32px rgba(124, 58, 237, 0.2);
   }
 
   &.is-editing {
     grid-column: 1 / -1;
     border-color: #818cf8;
-    background: linear-gradient(145deg, rgba(99, 102, 241, 0.1), var(--tf-bg-secondary));
+    background: linear-gradient(145deg, rgba(124, 58, 237, 0.1), var(--tf-bg-secondary));
   }
 
   strong {
@@ -10498,7 +10543,7 @@ table.simple-table {
   gap: 0.35rem;
   padding: 0;
   background: transparent;
-  color: #6366f1;
+  color: #7C3AED;
   font-size: 0.82rem;
   font-weight: 800;
 
@@ -10514,11 +10559,11 @@ table.simple-table {
   width: 2.1rem;
   height: 2.1rem;
   border-radius: 0.65rem;
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7C3AED;
 
   &:hover {
-    background: #6366f1;
+    background: #7C3AED;
     color: #fff;
   }
 
@@ -10535,7 +10580,7 @@ table.simple-table {
   height: 2.45rem;
   place-items: center;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #7C3AED, #7c3aed);
   color: #fff;
 
   mat-icon {
@@ -10563,7 +10608,7 @@ table.simple-table {
   gap: 0.35rem;
   margin-top: auto;
   padding-top: 1.2rem;
-  color: #6366f1;
+  color: #7C3AED;
   font-size: 0.82rem;
   font-weight: 800;
 
@@ -10590,7 +10635,7 @@ table.simple-table {
   th {
     padding: 0.85rem 1rem;
     border-bottom: 1px solid var(--tf-border-primary);
-    background: rgba(99, 102, 241, 0.06);
+    background: rgba(124, 58, 237, 0.06);
     color: var(--tf-text-muted);
     font-size: 0.65rem;
     font-weight: 800;
@@ -10615,11 +10660,11 @@ table.simple-table {
 
     &:hover,
     &.is-selected {
-      background: rgba(99, 102, 241, 0.07);
+      background: rgba(124, 58, 237, 0.07);
     }
 
     &.is-selected {
-      box-shadow: inset 3px 0 #6366f1;
+      box-shadow: inset 3px 0 #7C3AED;
     }
   }
 }
@@ -10642,7 +10687,7 @@ table.simple-table {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 0.65rem;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #7C3AED, #7c3aed);
   color: #fff;
 
   mat-icon {
@@ -10662,7 +10707,7 @@ table.simple-table {
   }
 
   small {
-    color: #818cf8;
+    color: #7C3AED;
     font-size: 0.65rem;
     font-weight: 800;
     letter-spacing: 0.04em;
@@ -10726,10 +10771,10 @@ table.simple-table {
   align-items: center;
   gap: 0.35rem;
   padding: 0.45rem 0.65rem;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.2);
   border-radius: 0.6rem;
-  background: rgba(99, 102, 241, 0.08);
-  color: #6366f1;
+  background: rgba(124, 58, 237, 0.08);
+  color: #7C3AED;
   cursor: pointer;
   font: inherit;
   font-size: 0.75rem;
@@ -10737,12 +10782,12 @@ table.simple-table {
 }
 
 .account-set-active {
-  border-color: rgba(37, 99, 235, 0.2);
-  background: rgba(37, 99, 235, 0.08);
-  color: #2563eb;
+  border-color: rgba(124, 58, 237, 0.2);
+  background: rgba(124, 58, 237, 0.08);
+  color: #7C3AED;
 
   &:hover:not(:disabled) {
-    background: #2563eb;
+    background: #7C3AED;
     color: #fff;
   }
 
@@ -10755,7 +10800,7 @@ table.simple-table {
 
 .account-table-edit {
   &:hover {
-    background: #6366f1;
+    background: #7C3AED;
     color: #fff;
   }
 
@@ -10769,8 +10814,8 @@ table.simple-table {
 .accounts-pagination {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: center;
+  gap: 0.75rem;
   margin-top: 1rem;
   padding: 0.35rem 0.15rem 0;
 }
@@ -10799,7 +10844,7 @@ table.simple-table {
 
   &:hover:not(:disabled) {
     border-color: #818cf8;
-    color: #6366f1;
+    color: #7C3AED;
   }
 
   &:disabled {
@@ -10812,10 +10857,10 @@ table.simple-table {
   width: 2.35rem;
 
   &.is-active {
-    border-color: #2563eb;
-    background: #2563eb;
+    border-color: #7C3AED;
+    background: #7C3AED;
     color: #fff;
-    box-shadow: 0 5px 12px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 5px 12px rgba(124, 58, 237, 0.25);
   }
 }
 
@@ -10865,7 +10910,7 @@ table.simple-table {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1rem;
-  color: #6366f1;
+  color: #7C3AED;
 
   h3,
   p {
@@ -10972,7 +11017,7 @@ table.simple-table {
 
   &:hover {
     border-color: #818cf8;
-    color: #6366f1;
+    color: #7C3AED;
   }
 
   mat-icon {
@@ -10989,8 +11034,8 @@ table.simple-table {
 }
 
 .account-edit-save {
-  border: 1px solid #6366f1;
-  background: #6366f1;
+  border: 1px solid #7C3AED;
+  background: #7C3AED;
   color: #fff;
 
   &:disabled {
@@ -11027,7 +11072,7 @@ table.simple-table {
   mat-icon {
     width: 2.5rem;
     height: 2.5rem;
-    color: #818cf8;
+    color: #7C3AED;
     font-size: 2.5rem;
   }
 }
@@ -11081,8 +11126,23 @@ table.simple-table {
 
     .navigation-brand-copy,
     .navigation-live-panel,
-    .navigation-footer {
+    .navigation-utility-link {
       display: none;
+    }
+
+    .navigation-footer {
+      display: flex;
+      justify-content: center;
+      padding-top: 0.75rem;
+    }
+
+    .navigation-display-trigger {
+      width: 2rem;
+      padding: 0.45rem;
+
+      span {
+        display: none;
+      }
     }
 
     .navigation-links {
@@ -11107,7 +11167,7 @@ table.simple-table {
       }
 
       &.is-active {
-        background: #2563eb;
+        background: #7C3AED;
 
         > mat-icon:first-child {
           color: #fff;
@@ -11115,11 +11175,11 @@ table.simple-table {
       }
 
       &:hover {
-        background: rgba(37, 99, 235, 0.12);
+        background: rgba(124, 58, 237, 0.12);
         transform: none;
 
         &.is-active {
-          background: #2563eb;
+          background: #7C3AED;
         }
       }
     }
@@ -11156,7 +11216,7 @@ table.simple-table {
 
       > mat-icon:first-child {
         color: #fff;
-        background: #4f46e5;
+        background: #7C3AED;
       }
     }
   }
@@ -11166,7 +11226,7 @@ table.simple-table {
   width: 2rem;
   height: 2rem;
   border-radius: 0.55rem;
-  background: #4f46e5;
+  background: #7C3AED;
   box-shadow: none;
 
   mat-icon {
@@ -11175,14 +11235,19 @@ table.simple-table {
 }
 
 .navigation-brand-copy {
-  strong {
-    font-size: 1.02rem;
-    letter-spacing: -0.02em;
+  .navigation-brand-name {
+    color: var(--tf-text-primary);
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    font-size: 1.08rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    white-space: nowrap;
   }
 
-  span {
-    color: var(--tf-text-muted);
-    font-size: 0.62rem;
+  .navigation-brand-dot {
+    color: #7C3AED;
+    font-weight: 700;
   }
 }
 
@@ -11203,7 +11268,7 @@ table.simple-table {
 .navigation-link {
   min-height: 2rem;
   border-radius: 0.55rem;
-  color: #616575;
+  color: #64748B;
   transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 
   > mat-icon:first-child {
@@ -11221,19 +11286,96 @@ table.simple-table {
 
   &:hover {
     border-color: transparent;
-    background: #f3f4f8;
+    background: #EDE9FE;
     color: #313541;
     transform: none;
   }
 }
 
 .navigation-footer {
+  position: relative;
   gap: 0.15rem;
   padding: 0.7rem 0 0;
   border-top: 0;
 
   .navigation-utility-link {
     width: 100%;
+  }
+}
+
+.navigation-display-control {
+  position: relative;
+  width: 100%;
+}
+
+.navigation-display-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #727785;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  text-align: left;
+
+  mat-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 1.15rem;
+  }
+
+  &:hover {
+    background: #f0f1f5;
+    color: #3f4653;
+  }
+}
+
+.navigation-display-menu {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  width: 10rem;
+  padding: 0.35rem 0;
+  border: 1px solid #dfe1e7;
+  border-radius: 0.35rem;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(31, 41, 55, 0.16);
+
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.38rem 0.7rem;
+    border: 0;
+    background: transparent;
+    color: #555b67;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.74rem;
+    text-align: left;
+
+    mat-icon {
+      width: 0.95rem;
+      height: 0.95rem;
+      color: #737985;
+      font-size: 0.95rem;
+    }
+
+    &:hover {
+      background: #f5f6f8;
+    }
+
+    &[aria-checked='true'] mat-icon {
+      color: #444b57;
+    }
   }
 }
 

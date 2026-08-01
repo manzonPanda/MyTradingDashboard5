@@ -19,13 +19,15 @@
     id="dashboard-navigation-panel"
     class="dashboard-navigation"
     [class.is-expanded]="isDashboardNavigationOpen"
+    (mouseenter)="expandNavigationOnHover()"
+    (mouseleave)="collapseNavigationOnLeave()"
     aria-label="Dashboard sections">
     <div class="navigation-brand">
       <div class="navigation-brand-icon">
         <mat-icon>candlestick_chart</mat-icon>
       </div>
       <div class="navigation-brand-copy">
-        <strong>A.U.R.A</strong>
+        <strong class="navigation-brand-name" aria-label="A.U.R.A">A<span class="navigation-brand-dot">.</span>U<span class="navigation-brand-dot">.</span>R<span class="navigation-brand-dot">.</span>A</strong>
       </div>
     </div>
 
@@ -60,11 +62,7 @@
       </button>
     </nav>
 
-    <section class="navigation-live-panel" aria-label="Workspace pulse">
-      <div class="navigation-panel-heading">
-        <span>Workspace pulse</span>
-        <span class="navigation-live-badge"><i></i> Live</span>
-      </div>
+    <section class="navigation-live-panel" aria-label="Experience and connections">
       <div class="navigation-timeline-card">
         <div class="navigation-card-label">
           <mat-icon>auto_awesome</mat-icon>
@@ -86,6 +84,36 @@
     </section>
 
     <div class="navigation-footer">
+      <div class="navigation-display-control">
+        <button
+          class="navigation-display-trigger"
+          type="button"
+          (click)="toggleNavigationDisplayMenu()"
+          [attr.aria-expanded]="isNavigationDisplayMenuOpen"
+          aria-controls="navigation-display-menu"
+          aria-label="Sidebar display options"
+          title="Sidebar display options">
+          <mat-icon>dock_to_left</mat-icon>
+        </button>
+        <div
+          *ngIf="isNavigationDisplayMenuOpen"
+          id="navigation-display-menu"
+          class="navigation-display-menu"
+          role="menu">
+          <button type="button" role="menuitemradio" [attr.aria-checked]="navigationDisplayMode === 'expanded'" (click)="setNavigationDisplayMode('expanded')">
+            <mat-icon>{{ navigationDisplayMode === 'expanded' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Expanded</span>
+          </button>
+          <button type="button" role="menuitemradio" [attr.aria-checked]="navigationDisplayMode === 'collapsed'" (click)="setNavigationDisplayMode('collapsed')">
+            <mat-icon>{{ navigationDisplayMode === 'collapsed' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Collapsed</span>
+          </button>
+          <button type="button" role="menuitemradio" [attr.aria-checked]="navigationDisplayMode === 'hover'" (click)="setNavigationDisplayMode('hover')">
+            <mat-icon>{{ navigationDisplayMode === 'hover' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+            <span>Expand on hover</span>
+          </button>
+        </div>
+      </div>
       <button
         class="navigation-link navigation-utility-link navigation-theme-toggle"
         type="button"
@@ -95,10 +123,6 @@
         (click)="toggleTheme()">
         <mat-icon>{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
         <span><strong>{{ isDarkTheme ? 'Light' : 'Dark' }}</strong></span>
-      </button>
-      <button class="navigation-link navigation-utility-link" type="button" title="Settings">
-        <mat-icon>settings</mat-icon>
-        <span><strong>Settings</strong></span>
       </button>
     </div>
   </aside>
@@ -838,7 +862,6 @@
           <div *ngIf="!isLoadingMetrics" class="metric-content">
             <div class="win-rate-chart" aria-label="Win Rate">
               <div class="simple-gauge-container">
-                <div class="win-rate-heading">Win rate</div>
                 <div class="simple-gauge">
                   <svg viewBox="0 0 160 100" class="gauge-svg">
                     <path d="M 20 80 A 60 60 0 0 1 140 80"
@@ -1039,7 +1062,7 @@
                         <span class="account-row-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
                         <span class="account-row-details">
                           <strong>{{ account.name }}</strong>
-                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</small>
+                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : '' }}</small>
                         </span>
                       </div>
                     </td>
