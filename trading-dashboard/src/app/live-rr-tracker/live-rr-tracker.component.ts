@@ -58,11 +58,6 @@ interface Table {
 
             <!-- Right Column: Description and Features -->
             <div class="column right-column">
-              <!-- Description -->
-              <p class="empty-description">
-                No live trades at the moment. Once you open a trade, your real-time Risk-Reward ratio and gains will appear here.
-              </p>
-
               <!-- Quick Stats Preview -->
               <div class="preview-stats">
                 <div class="stat-badge">
@@ -71,11 +66,15 @@ interface Table {
                 </div>
                 <div class="stat-badge">
                   <mat-icon>trending_up</mat-icon>
-                  <span>Use P&L</span>
+                  <span>Live P&amp;L</span>
                 </div>
                 <div class="stat-badge">
                   <mat-icon>speed</mat-icon>
-                  <span>Instant</span>
+                  <span>Risk amount</span>
+                </div>
+                <div class="stat-badge">
+                  <mat-icon>schedule</mat-icon>
+                  <span>Holding time</span>
                 </div>
               </div>
 

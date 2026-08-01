@@ -1050,9 +1050,6 @@ table.simple-table {
   background: var(--tf-bg-secondary);
   border-bottom: 1px solid var(--tf-border-primary);
   padding: 0.2rem 0.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
   height: 20vh;
   overflow: hidden;
 
@@ -1270,29 +1267,18 @@ table.simple-table {
           height: calc(180px - 35px);
           overflow-y: auto;
           overflow-x: hidden;
-          scrollbar-width: auto;
-          scrollbar-color: rgba(124, 58, 237, 0.6) rgba(124, 58, 237, 0.1);
+          scrollbar-width: none;
 
           &.current-day-news {
             background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
           }
 
+          &.empty-news-list {
+            overflow: hidden;
+          }
+
           &::-webkit-scrollbar {
-            width: 6px;
-          }
-
-          &::-webkit-scrollbar-track {
-            background: rgba(124, 58, 237, 0.1);
-            border-radius: 3px;
-          }
-
-          &::-webkit-scrollbar-thumb {
-            background: rgba(124, 58, 237, 0.6);
-            border-radius: 3px;
-
-            &:hover {
-              background: rgba(124, 58, 237, 0.8);
-            }
+            display: none;
           }
 
           .news-loading-container {
@@ -1659,7 +1645,8 @@ table.simple-table {
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 2rem 1rem;
+            height: 100%;
+            padding: 0.5rem 1rem;
             color: var(--tf-text-muted);
             text-align: center;
             position: relative;
@@ -8983,35 +8970,6 @@ table.simple-table {
       gap: 1rem;
       align-items: center;
     }
-  }
-}
-
-.risk-calculator-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  min-height: 42px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  border-radius: 12px;
-  background: linear-gradient(135deg, #fffbeb, #fed7aa);
-  color: #92400e;
-  font: inherit;
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2);
   }
 }
 
