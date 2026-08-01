@@ -110,7 +110,7 @@ app-root {
 .aura-energy-line {
   fill: none;
   vector-effect: non-scaling-stroke;
-  stroke: #A78BFA;
+  stroke: url(#aura-energy-gradient);
   stroke-width: 2.8;
   stroke-linecap: round;
   filter: url(#aura-energy-bloom);

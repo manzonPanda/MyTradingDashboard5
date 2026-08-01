@@ -42,6 +42,10 @@ export class AuraEnergyService {
   }
 
   private showPulse(): void {
+    if (this.activeOverlay) {
+      return;
+    }
+
     const targets = Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
       .filter((target) => this.isVisible(target));
 
@@ -73,12 +77,18 @@ export class AuraEnergyService {
     overlay.innerHTML = `
       <svg class="aura-energy-svg" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
         <defs>
+          <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0" />
+            <stop offset="48%" stop-color="#6366F1" stop-opacity="0.42" />
+            <stop offset="82%" stop-color="#A78BFA" stop-opacity="0.86" />
+            <stop offset="100%" stop-color="#F5F3FF" />
+          </linearGradient>
           <filter id="aura-energy-bloom" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="1.8" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        <rect class="aura-energy-line" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" stroke-dasharray="18 82" stroke-dashoffset="100" />
+        <rect class="aura-energy-line" x="1.5" y="1.5" width="97" height="97" rx="4" pathLength="100" stroke-dasharray="22 78" stroke-dashoffset="100" />
       </svg>`;
     return overlay;
   }
