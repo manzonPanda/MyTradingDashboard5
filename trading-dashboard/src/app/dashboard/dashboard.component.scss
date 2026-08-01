@@ -1270,29 +1270,14 @@ table.simple-table {
           height: calc(180px - 35px);
           overflow-y: auto;
           overflow-x: hidden;
-          scrollbar-width: auto;
-          scrollbar-color: rgba(124, 58, 237, 0.6) rgba(124, 58, 237, 0.1);
+          scrollbar-width: none;
 
           &.current-day-news {
             background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
           }
 
           &::-webkit-scrollbar {
-            width: 6px;
-          }
-
-          &::-webkit-scrollbar-track {
-            background: rgba(124, 58, 237, 0.1);
-            border-radius: 3px;
-          }
-
-          &::-webkit-scrollbar-thumb {
-            background: rgba(124, 58, 237, 0.6);
-            border-radius: 3px;
-
-            &:hover {
-              background: rgba(124, 58, 237, 0.8);
-            }
+            display: none;
           }
 
           .news-loading-container {
