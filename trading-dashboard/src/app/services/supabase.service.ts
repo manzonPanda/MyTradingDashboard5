@@ -65,10 +65,8 @@ export class SupabaseService {
   async getAccounts(): Promise<Account[]> {
     const { data, error } = await this.supabase
       .from('accounts')
-      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at, updated_at')
-      .order('updated_at', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false, nullsFirst: false })
-      .order('name', { ascending: false });
+      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at')
+      .order('created_at', { ascending: false, nullsFirst: false });
     if (error) throw new Error(`Account loading failed: ${error.message}`);
     return (data as Account[]) || [];
   }
