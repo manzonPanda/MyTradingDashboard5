@@ -987,35 +987,175 @@
         <span>Loading your accounts</span>
       </div>
     } @else if (accounts.length) {
-      <div class="account-firm-list">
-        @for (group of accountGroups; track group.firm) {
-          <section class="account-firm-group" [attr.aria-labelledby]="'firm-' + group.firm">
-            <div class="account-firm-heading">
-              <div class="account-firm-title">
-                <span class="account-firm-mark"><mat-icon>business</mat-icon></span>
-                <div>
-                  <p class="account-firm-kicker">Prop firm</p>
-                  <h2 [id]="'firm-' + group.firm">{{ group.firm }}</h2>
-                </div>
-              </div>
-              <span class="account-firm-count">{{ group.accounts.length }} {{ group.accounts.length === 1 ? 'account' : 'accounts' }}</span>
+      <div class="accounts-browser">
+        <section class="firm-selector" aria-labelledby="firm-selector-heading">
+        <div class="firm-selector-heading">
+          <div>
+            <p class="firm-selector-kicker">Your firms</p>
+            <h2 id="firm-selector-heading">Choose a firm</h2>
+          </div>
+          <span class="firm-selector-summary">{{ firms.length }} {{ firms.length === 1 ? 'firm' : 'firms' }}</span>
+        </div>
+        <div class="firm-selector-list" role="list">
+          @for (firm of firms; track firm.name) {
+            <button class="firm-selector-card" type="button" [class.is-active]="selectedFirm === firm.name" [attr.aria-pressed]="selectedFirm === firm.name" (click)="selectFirm(firm.name)">
+              <span class="firm-selector-icon"><mat-icon>business</mat-icon></span>
+              <span class="firm-selector-copy">
+                <strong>{{ firm.name }}</strong>
+                <small>{{ firm.accountCount }} {{ firm.accountCount === 1 ? 'account' : 'accounts' }}</small>
+              </span>
+              <mat-icon class="firm-selector-arrow">arrow_forward</mat-icon>
+            </button>
+          }
+        </div>
+      </section>
+
+      @if (selectedFirm) {
+        <section class="selected-firm-accounts" [attr.aria-labelledby]="'firm-' + selectedFirm">
+          <div class="selected-firm-heading">
+            <div>
+              <p class="selected-firm-kicker">Accounts at</p>
+              <h2 [id]="'firm-' + selectedFirm">{{ selectedFirm }}</h2>
             </div>
-            <div class="account-grid">
-              @for (account of group.accounts; track account.id) {
-                <button class="account-choice" type="button" [class.is-selected]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
-                  <span class="account-choice-topline">
-                    <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
-                    <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</span>
-                  </span>
-                  <strong>{{ account.name }}</strong>
-                  <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
-                  <span class="account-choice-action">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></span>
-                </button>
+            <span class="account-firm-count">{{ filteredAccounts.length }} {{ filteredAccounts.length === 1 ? 'account' : 'accounts' }}</span>
+          </div>
+          <div class="accounts-table-shell">
+            <table class="accounts-table">
+              <thead>
+                <tr>
+                  <th scope="col">Account</th>
+                  <th scope="col">Account number</th>
+                  <th scope="col">Balance</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Risk limits</th>
+                  <th scope="col" class="accounts-table-actions-heading">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (account of pagedAccounts; track account.id) {
+                  <tr [class.is-selected]="selectedAccount?.id === account.id">
+                    <td data-label="Account">
+                      <div class="account-row-select">
+                        <span class="account-row-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
+                        <span class="account-row-details">
+                          <strong>{{ account.name }}</strong>
+                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
+                    <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
+                    <td data-label="Status"><span class="account-status" [class]="'account-status status-' + (account.status || 'active').toLowerCase()">{{ account.status || 'Active' }}</span></td>
+                    <td data-label="Risk limits">
+                      <div class="account-risk-summary">
+                        <span>Target <strong>{{ account.profit_target_percent ?? 0 }}%</strong></span>
+                        <span>DD <strong>{{ account.max_total_drawdown_percent ?? 0 }}%</strong></span>
+                        <span>Daily <strong>{{ account.daily_loss_limit_percent ?? 0 }}%</strong></span>
+                      </div>
+                    </td>
+                    <td data-label="Actions" class="accounts-table-actions">
+                      <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
+                        <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
+                        <span>{{ selectedAccount?.id === account.id ? 'Dashboard active' : 'Set active' }}</span>
+                      </button>
+                      <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <nav class="accounts-pagination" aria-label="Account pages">
+            <button type="button" class="pagination-nav-button" [disabled]="accountPage === 1" (click)="setAccountPage(accountPage - 1)">
+              <mat-icon>arrow_back</mat-icon>
+              <span>Previous</span>
+            </button>
+            <div class="pagination-page-list">
+              @for (page of accountPageNumbers; track $index) {
+                @if (page === '…') {
+                  <span class="pagination-ellipsis">…</span>
+                } @else {
+                  <button type="button" class="pagination-page-button" [class.is-active]="accountPage === page" [attr.aria-current]="accountPage === page ? 'page' : null" (click)="setAccountPage(+page)">{{ page }}</button>
+                }
               }
             </div>
-          </section>
-        }
+            <button type="button" class="pagination-nav-button" [disabled]="accountPage === accountTotalPages" (click)="setAccountPage(accountPage + 1)">
+              <span>Next</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </nav>
+        </section>
+      } @else {
+        <div class="firm-selection-prompt">
+          <mat-icon>touch_app</mat-icon>
+          <span>Select a firm to see its accounts.</span>
+        </div>
+      }
       </div>
+
+      @if (editingAccountId) {
+        <div class="account-modal-backdrop" role="presentation" (click)="cancelAccountEdit()">
+          <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title" (click)="$event.stopPropagation()">
+            <div class="account-edit-heading">
+              <div>
+                <p class="account-edit-kicker">Account settings</p>
+                <h3 id="account-edit-title">Edit account details</h3>
+                <p class="account-edit-subtitle">Keep your trading limits and account identity in sync.</p>
+              </div>
+              <button type="button" class="account-modal-close" aria-label="Close account editor" (click)="cancelAccountEdit()"><mat-icon>close</mat-icon></button>
+            </div>
+            <div class="account-edit-fields">
+              <label class="account-edit-field account-edit-field-wide">
+                <span>Account name</span>
+                <input type="text" [(ngModel)]="accountEditForm.name" placeholder="e.g. 5ers 2.5K" />
+              </label>
+              <label class="account-edit-field">
+                <span>Firm</span>
+                <input type="text" [(ngModel)]="accountEditForm.firm" placeholder="Prop firm" />
+              </label>
+              <label class="account-edit-field">
+                <span>Account number</span>
+                <input type="text" [(ngModel)]="accountEditForm.account_number" placeholder="Optional" />
+              </label>
+              <label class="account-edit-field">
+                <span>Starting balance</span>
+                <input type="number" min="0" [(ngModel)]="accountEditForm.initial_balance" />
+              </label>
+              <label class="account-edit-field">
+                <span>Start date</span>
+                <input type="date" [(ngModel)]="accountEditForm.start_date" />
+              </label>
+              <label class="account-edit-field">
+                <span>Status</span>
+                <select [(ngModel)]="accountEditForm.status">
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </label>
+              <label class="account-edit-field">
+                <span>Profit target %</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.profit_target_percent" />
+              </label>
+              <label class="account-edit-field">
+                <span>Max drawdown %</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.max_total_drawdown_percent" />
+              </label>
+              <label class="account-edit-field">
+                <span>Daily loss limit %</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.daily_loss_limit_percent" />
+              </label>
+            </div>
+            <div class="account-edit-actions">
+              <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">Cancel</button>
+              <button type="button" class="account-edit-save" [disabled]="isSavingAccount || !accountEditForm.name?.trim()" (click)="saveAccountEdit()">
+                <mat-icon>{{ isSavingAccount ? 'sync' : 'save' }}</mat-icon>
+                {{ isSavingAccount ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+          </section>
+        </div>
+      }
     } @else {
       <div class="accounts-empty">
         <mat-icon>account_balance_wallet</mat-icon>

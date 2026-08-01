@@ -10198,9 +10198,9 @@ table.simple-table {
 }
 
 .accounts-section {
-  max-width: 1200px;
+  max-width: 1540px;
   margin: 0 auto;
-  padding: 3.5rem 2rem 4rem;
+  padding: 3.5rem clamp(1rem, 3vw, 3rem) 4rem;
 }
 
 .accounts-hero {
@@ -10261,12 +10261,15 @@ table.simple-table {
   }
 }
 
-.account-firm-list {
+.accounts-browser {
   display: grid;
-  gap: 2rem;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem;
 }
 
-.account-firm-group {
+.firm-selector,
+.selected-firm-accounts {
   padding: 1.25rem;
   border: 1px solid var(--tf-border-primary);
   border-radius: 1.35rem;
@@ -10274,7 +10277,8 @@ table.simple-table {
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
 }
 
-.account-firm-heading {
+.firm-selector-heading,
+.selected-firm-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -10284,30 +10288,8 @@ table.simple-table {
   border-bottom: 1px solid var(--tf-border-primary);
 }
 
-.account-firm-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.account-firm-mark {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 0.85rem;
-  background: linear-gradient(135deg, #eef2ff, #ddd6fe);
-  color: #4f46e5;
-
-  mat-icon {
-    width: 1.35rem;
-    height: 1.35rem;
-    font-size: 1.35rem;
-  }
-}
-
-.account-firm-kicker {
+.firm-selector-kicker,
+.selected-firm-kicker {
   margin: 0 0 0.15rem;
   color: var(--tf-text-muted);
   font-size: 0.65rem;
@@ -10316,11 +10298,116 @@ table.simple-table {
   text-transform: uppercase;
 }
 
-.account-firm-heading h2 {
+.firm-selector-heading h2,
+.selected-firm-heading h2 {
   margin: 0;
   color: var(--tf-text-primary);
   font-size: 1.25rem;
   letter-spacing: -0.025em;
+}
+
+.firm-selector-summary {
+  color: var(--tf-text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.firm-selector-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.firm-selector-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 1rem;
+  background: var(--tf-bg-secondary);
+  color: var(--tf-text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover,
+  &.is-active {
+    border-color: #6366f1;
+    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.14);
+    transform: translateY(-2px);
+  }
+
+  &.is-active {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), var(--tf-bg-secondary));
+  }
+}
+
+.firm-selector-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+
+  mat-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 1.25rem;
+  }
+}
+
+.firm-selector-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    font-size: 0.95rem;
+  }
+
+  small {
+    color: var(--tf-text-muted);
+    font-size: 0.78rem;
+  }
+}
+
+.firm-selector-arrow {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-left: auto;
+  color: #6366f1;
+  font-size: 1.1rem;
+}
+
+.selected-firm-accounts {
+  min-width: 0;
+}
+
+.firm-selection-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 220px;
+  padding: 1.5rem;
+  border: 1px dashed var(--tf-border-primary);
+  border-radius: 1.1rem;
+  color: var(--tf-text-secondary);
+  text-align: center;
+
+  mat-icon {
+    color: #818cf8;
+  }
 }
 
 .account-firm-count {
@@ -10367,6 +10454,12 @@ table.simple-table {
     box-shadow: 0 16px 32px rgba(79, 70, 229, 0.2);
   }
 
+  &.is-editing {
+    grid-column: 1 / -1;
+    border-color: #818cf8;
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.1), var(--tf-bg-secondary));
+  }
+
   strong {
     display: block;
     width: 100%;
@@ -10380,11 +10473,60 @@ table.simple-table {
 }
 
 .account-choice-topline,
-.account-choice-action {
+.account-choice-actions {
   display: flex;
   width: 100%;
   align-items: center;
   justify-content: space-between;
+}
+
+.account-choice-actions {
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 1.2rem;
+}
+
+.account-select-action,
+.account-edit-trigger {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  cursor: pointer;
+}
+
+.account-select-action {
+  gap: 0.35rem;
+  padding: 0;
+  background: transparent;
+  color: #6366f1;
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.account-edit-trigger {
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+
+  &:hover {
+    background: #6366f1;
+    color: #fff;
+  }
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
 }
 
 .account-choice-icon {
@@ -10432,6 +10574,437 @@ table.simple-table {
   }
 }
 
+.accounts-table-shell {
+  overflow-x: auto;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 1rem;
+  background: var(--tf-bg-secondary);
+}
+
+.accounts-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  color: var(--tf-text-primary);
+
+  th {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    background: rgba(99, 102, 241, 0.06);
+    color: var(--tf-text-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    vertical-align: middle;
+    font-size: 0.82rem;
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:last-child td {
+      border-bottom: 0;
+    }
+
+    &:hover,
+    &.is-selected {
+      background: rgba(99, 102, 241, 0.07);
+    }
+
+    &.is-selected {
+      box-shadow: inset 3px 0 #6366f1;
+    }
+  }
+}
+
+.account-row-select {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.account-row-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+
+  mat-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 1.15rem;
+  }
+}
+
+.account-row-details {
+  display: grid;
+  gap: 0.2rem;
+
+  strong {
+    font-size: 0.88rem;
+    white-space: nowrap;
+  }
+
+  small {
+    color: #818cf8;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+.account-table-value {
+  color: var(--tf-text-secondary);
+  font-weight: 700;
+}
+
+.account-balance {
+  color: var(--tf-text-primary);
+}
+
+.account-status {
+  display: inline-flex;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: capitalize;
+
+  &.status-active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+
+  &.status-paused {
+    background: rgba(245, 158, 11, 0.14);
+    color: #d97706;
+  }
+
+  &.status-closed {
+    background: rgba(100, 116, 139, 0.14);
+    color: #64748b;
+  }
+}
+
+.account-risk-summary {
+  display: flex;
+  gap: 0.7rem;
+  color: var(--tf-text-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+
+  strong {
+    color: var(--tf-text-secondary);
+  }
+}
+
+.accounts-table-actions-heading,
+.accounts-table-actions {
+  text-align: right;
+}
+
+.account-set-active,
+.account-table-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 0.6rem;
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.account-set-active {
+  border-color: rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+
+  &:hover:not(:disabled) {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  &.is-active,
+  &:disabled {
+    cursor: default;
+    opacity: 0.72;
+  }
+}
+
+.account-table-edit {
+  &:hover {
+    background: #6366f1;
+    color: #fff;
+  }
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.accounts-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.35rem 0.15rem 0;
+}
+
+.pagination-page-list {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pagination-page-button,
+.pagination-nav-button {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 0.55rem;
+  background: var(--tf-bg-secondary);
+  color: var(--tf-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #818cf8;
+    color: #6366f1;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.pagination-page-button {
+  width: 2.35rem;
+
+  &.is-active {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 5px 12px rgba(37, 99, 235, 0.25);
+  }
+}
+
+.pagination-nav-button {
+  gap: 0.4rem;
+  padding: 0 0.85rem;
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  width: 1.2rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--tf-text-muted);
+}
+
+.account-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.account-edit-modal {
+  width: min(760px, 100%);
+  max-height: min(720px, calc(100vh - 2.5rem));
+  overflow-y: auto;
+  padding: 1.6rem;
+  border: 1px solid rgba(165, 180, 252, 0.45);
+  border-radius: 1.35rem;
+  background: var(--tf-bg-secondary);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.35);
+}
+
+.account-edit-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  color: #6366f1;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: var(--tf-text-primary);
+    font-size: 1.15rem;
+  }
+
+  .account-edit-subtitle {
+    margin-top: 0.3rem;
+    color: var(--tf-text-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  mat-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1.5rem;
+  }
+}
+
+.account-edit-kicker {
+  margin-bottom: 0.2rem !important;
+  color: #818cf8;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.account-edit-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.account-edit-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--tf-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  input,
+  select {
+    width: 100%;
+    min-height: 2.35rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid var(--tf-border-primary);
+    border-radius: 0.6rem;
+    outline: 0;
+    background: var(--tf-bg-secondary);
+    color: var(--tf-text-primary);
+    font: inherit;
+    font-size: 0.82rem;
+
+    &:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+    }
+  }
+}
+
+.account-edit-field-wide {
+  grid-column: span 2;
+}
+
+.account-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.15rem;
+}
+
+.account-edit-cancel,
+.account-edit-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.account-modal-close {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--tf-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    border-color: #818cf8;
+    color: #6366f1;
+  }
+
+  mat-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 1.15rem;
+  }
+}
+
+.account-edit-cancel {
+  border: 1px solid var(--tf-border-primary);
+  background: transparent;
+  color: var(--tf-text-secondary);
+}
+
+.account-edit-save {
+  border: 1px solid #6366f1;
+  background: #6366f1;
+  color: #fff;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
 .accounts-loading,
 .accounts-empty {
   display: grid;
@@ -10466,6 +11039,10 @@ table.simple-table {
 }
 
 @media (max-width: 768px) {
+  .accounts-browser {
+    grid-template-columns: 1fr;
+  }
+
   .tradezella-dashboard,
   .tradezella-dashboard.dashboard-navigation-open {
     width: 100%;
@@ -10692,5 +11269,89 @@ table.simple-table {
 
   .dashboard-navigation-toggle.is-expanded {
     left: min(12.2rem, calc(100vw - 3rem));
+  }
+
+  .accounts-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pagination-nav-button {
+    padding-inline: 0.65rem;
+  }
+
+  .accounts-table {
+    min-width: 0;
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    tr {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--tf-border-primary);
+    }
+
+    tr:last-child {
+      border-bottom: 0;
+    }
+
+    td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.6rem 0.35rem;
+      border-bottom: 0;
+      text-align: right;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--tf-text-muted);
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+    }
+
+    td:first-child {
+      display: block;
+      padding-top: 0.25rem;
+      text-align: left;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    .accounts-table-actions {
+      justify-content: space-between;
+      text-align: right;
+    }
+  }
+
+  .account-risk-summary {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .account-edit-modal {
+    padding: 1.15rem;
+  }
+
+  .account-edit-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .account-edit-field-wide {
+    grid-column: auto;
   }
 }

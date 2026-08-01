@@ -380,17 +380,111 @@ export class DashboardComponent implements AfterViewInit {
   tableData: Table[] = []; // Initialize as empty array
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
+  selectedFirm: string | null = null;
+  editingAccountId: string | null = null;
+  accountPage = 1;
+  readonly accountPageSize = 5;
+  isSavingAccount = false;
+  accountEditForm: Partial<Account> = {};
   isLoadingAccounts = true;
 
-  get accountGroups(): { firm: string; accounts: Account[] }[] {
-    const groups = new Map<string, Account[]>();
+  get firms(): { name: string; accountCount: number }[] {
+    const accountCounts = new Map<string, number>();
     for (const account of this.accounts) {
       const firm = account.firm?.trim() || 'Independent accounts';
-      const group = groups.get(firm) ?? [];
-      group.push(account);
-      groups.set(firm, group);
+      accountCounts.set(firm, (accountCounts.get(firm) ?? 0) + 1);
     }
-    return Array.from(groups, ([firm, accounts]) => ({ firm, accounts }));
+    return Array.from(accountCounts, ([name, accountCount]) => ({ name, accountCount }));
+  }
+
+  get filteredAccounts(): Account[] {
+    return this.selectedFirm
+      ? this.accounts.filter(account => (account.firm?.trim() || 'Independent accounts') === this.selectedFirm)
+      : [];
+  }
+
+  get pagedAccounts(): Account[] {
+    const startIndex = (this.accountPage - 1) * this.accountPageSize;
+    return this.filteredAccounts.slice(startIndex, startIndex + this.accountPageSize);
+  }
+
+  get accountTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredAccounts.length / this.accountPageSize));
+  }
+
+  get accountPageNumbers(): (number | string)[] {
+    const totalPages = this.accountTotalPages;
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+    if (this.accountPage <= 3) return [1, 2, 3, '…', totalPages];
+    if (this.accountPage >= totalPages - 2) return [1, '…', totalPages - 2, totalPages - 1, totalPages];
+    return [1, '…', this.accountPage, '…', totalPages];
+  }
+
+  setAccountPage(page: number): void {
+    if (page >= 1 && page <= this.accountTotalPages) {
+      this.accountPage = page;
+      this.cdr.markForCheck();
+    }
+  }
+
+  selectFirm(firm: string): void {
+    this.selectedFirm = firm;
+    this.accountPage = 1;
+    this.cancelAccountEdit();
+    this.cdr.markForCheck();
+  }
+
+  editAccount(account: Account): void {
+    this.editingAccountId = account.id;
+    this.accountEditForm = {
+      name: account.name,
+      firm: account.firm ?? '',
+      account_number: account.account_number ?? '',
+      initial_balance: account.initial_balance ?? this.inferAccountSize(account),
+      profit_target_percent: account.profit_target_percent ?? 0,
+      max_total_drawdown_percent: account.max_total_drawdown_percent ?? 0,
+      daily_loss_limit_percent: account.daily_loss_limit_percent ?? 0,
+      start_date: account.start_date ?? '',
+      status: account.status ?? 'active'
+    };
+    this.cdr.markForCheck();
+  }
+
+  cancelAccountEdit(): void {
+    this.editingAccountId = null;
+    this.accountEditForm = {};
+    this.isSavingAccount = false;
+  }
+
+  async saveAccountEdit(): Promise<void> {
+    if (!this.editingAccountId || !this.accountEditForm.name?.trim()) return;
+
+    this.isSavingAccount = true;
+    try {
+      const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, {
+        name: this.accountEditForm.name.trim(),
+        firm: this.accountEditForm.firm?.trim() || null,
+        account_number: this.accountEditForm.account_number?.trim() || null,
+        initial_balance: Number(this.accountEditForm.initial_balance) || 0,
+        profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
+        max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
+        daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
+        start_date: this.accountEditForm.start_date || null,
+        status: this.accountEditForm.status || 'active'
+      });
+      this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
+      if (this.selectedAccount?.id === updatedAccount.id) {
+        this.selectedAccount = updatedAccount;
+        this.applySelectedAccountSettings();
+      }
+      this.cancelAccountEdit();
+      this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to update account:', error);
+      this.snackBar.open('Unable to save account details.', 'Dismiss', { duration: 5000 });
+      this.isSavingAccount = false;
+    }
+    this.cdr.markForCheck();
   }
 
   isMostRecentAccount(account: Account): boolean {
