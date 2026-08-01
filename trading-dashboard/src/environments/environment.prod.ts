@@ -3,6 +3,11 @@ export const environment = {
   backendUrlNotion: 'https://notionproxyapi.onrender.com',
   backendUrlMt5: 'https://mt5-api.jakemt5.host',
   propfirmAccountName: '5ers1️⃣7️⃣2.5k [#26542161]',
+  // === Supabase config (replaces Notion) ===
+  supabase: {
+    url: 'https://jpkvxlzyswookygwcsog.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwa3Z4bHp5c3dvb2t5Z3djc29nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MDM0MTQsImV4cCI6MjEwMTA3OTQxNH0.W55IbiS7hSwWq0eaIp7-eWJdQYesp8BdYEQYnMrvo0g'
+  },
   firebaseConfig: {
     apiKey: "AIzaSyB5-Z3aLRr-HyopLGF6kXDPR1DdOKoEI_Q",
     authDomain: "tradingdashboard-fce7d.firebaseapp.com",
