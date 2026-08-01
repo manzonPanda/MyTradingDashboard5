@@ -90,6 +90,83 @@ app-root {
   background-color: #FAF9FF;
 }
 
+// A.U.R.A. energy pulse
+.tradezella-dashboard {
+  position: relative;
+}
+
+.aura-energy-pulse {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(124, 58, 237, 0.35)) drop-shadow(0 0 8px rgba(99, 102, 241, 0.2));
+  animation: aura-energy-visibility 4s ease-in-out forwards;
+}
+
+.aura-energy-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.aura-energy-line {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke: url(#aura-energy-gradient);
+  stroke-width: 3.2;
+  stroke-linecap: butt;
+  stroke-dasharray: 90 910;
+  stroke-dashoffset: 1000;
+  filter: url(#aura-energy-bloom);
+  opacity: 0.98;
+  animation: aura-energy-travel 5s linear 1;
+}
+
+.aura-energy-head {
+  fill: #F5F3FF;
+  filter: url(#aura-energy-bloom);
+  opacity: 0.98;
+}
+
+.aura-energy-pathway-preview {
+  opacity: 0.7 !important;
+  animation: none !important;
+}
+
+.aura-energy-pathway-preview .aura-energy-line {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  opacity: 0.5;
+  animation: none;
+}
+
+.aura-energy-pathway-preview .aura-energy-head {
+  display: none;
+}
+
+@keyframes aura-energy-visibility {
+  0% { opacity: 0; }
+  10% { opacity: 0.98; }
+  90% { opacity: 0.98; }
+  100% { opacity: 0; }
+}
+
+@keyframes aura-energy-travel {
+  0% { stroke-dashoffset: 1000; opacity: 0.4; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-energy-pulse { display: none; }
+}
+
 // News notification snackbar styling
 .news-notification-snackbar {
   background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;

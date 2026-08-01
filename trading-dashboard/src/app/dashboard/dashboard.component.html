@@ -67,14 +67,14 @@
     </nav>
 
     <section class="navigation-live-panel" aria-label="Experience and connections">
-      <div class="navigation-timeline-card">
+      <div class="navigation-timeline-card" data-aura-target>
         <div class="navigation-card-label">
           <mat-icon>auto_awesome</mat-icon>
           <span>Experience</span>
         </div>
         <app-dream-timeline></app-dream-timeline>
       </div>
-      <div class="navigation-connections-card">
+      <div class="navigation-connections-card" data-aura-target>
         <div class="navigation-card-label">
           <mat-icon>hub</mat-icon>
           <span>Connected services</span>
@@ -84,6 +84,10 @@
       <button class="navigation-link mt5-sync-link" type="button" title="Sync MT5 trades" [disabled]="isSyncingMT5Trades" (click)="syncMT5Trades()">
         <mat-icon>{{ isSyncingMT5Trades ? 'sync' : 'sync_alt' }}</mat-icon>
         <span><strong>{{ isSyncingMT5Trades ? 'Syncing MT5 trades…' : 'Sync MT5 trades' }}</strong></span>
+      </button>
+      <button class="navigation-link aura-pathway-toggle" type="button" [class.is-active]="isAuraPathwayVisible" [attr.aria-pressed]="isAuraPathwayVisible" title="Show AURA pathway" (click)="toggleAuraPathway()">
+        <mat-icon>{{ isAuraPathwayVisible ? 'visibility_off' : 'route' }}</mat-icon>
+        <span><strong>{{ isAuraPathwayVisible ? 'Hide AURA pathway' : 'Show AURA pathway' }}</strong></span>
       </button>
     </section>
 
@@ -136,7 +140,7 @@
     <div class="header-content">
       <div class="header-left-section">
         <!-- Trading Week News Container -->
-        <div class="trading-week-container">
+        <div class="trading-week-container" data-aura-target>
           <!-- Days with Vertical News Layout -->
           <div class="trading-days-grid">
             <div class="day-column"
@@ -435,7 +439,7 @@
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
-      <div class="trading-chart-container">
+      <div class="trading-chart-container" data-aura-target>
         <div class="chart-header">
           <div class="chart-title-section">
             <div class="chart-title-row">
@@ -565,7 +569,7 @@
       </div>
 
       <div class="metrics-grid">
-        <div class="metric-card trading-activity-combined">
+        <div data-aura-target class="metric-card trading-activity-combined">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Trading Activity</h3>
             <mat-icon class="metric-icon">insights</mat-icon>
@@ -608,7 +612,7 @@
         </div>
 
 
-        <div class="metric-card avg-win-loss-combined">
+        <div data-aura-target class="metric-card avg-win-loss-combined">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Avg Win vs Loss</h3>
             <mat-icon class="metric-icon">balance</mat-icon>
@@ -665,7 +669,7 @@
           </div>
         </div>
 
-        <div class="live-rr-widget-compact">
+        <div class="live-rr-widget-compact" data-aura-target>
           <app-live-rr-tracker
             [mt5LiveTrades]="mt5LiveTrades"
             [tableData]="tableData"
@@ -673,7 +677,7 @@
           </app-live-rr-tracker>
         </div>
 
-        <div class="metric-card daily-limit-card">
+        <div data-aura-target class="metric-card daily-limit-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Day Trades</h3>
             <mat-icon class="metric-icon">calendar_today</mat-icon>
@@ -722,7 +726,7 @@
           </div>
         </div>
 
-        <div class="metric-card best-profit-loss-combined">
+        <div data-aura-target class="metric-card best-profit-loss-combined">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Best Performance</h3>
             <mat-icon class="metric-icon">trending_up</mat-icon>
@@ -763,7 +767,7 @@
           </div>
         </div>
 
-        <div class="metric-card profitability-winrate-card">
+        <div data-aura-target class="metric-card profitability-winrate-card">
           <div class="metric-header combined-metric-header">
             <div class="combined-heading">
               <h3 class="metric-title gradient-text">Profit Factor</h3>
@@ -854,7 +858,7 @@
           </div>
         </div>
 
-        <div class="metric-card win-rate-card">
+        <div data-aura-target class="metric-card win-rate-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Win Rate</h3>
             <mat-icon class="metric-icon">percent</mat-icon>
