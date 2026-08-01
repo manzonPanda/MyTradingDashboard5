@@ -10574,6 +10574,179 @@ table.simple-table {
   }
 }
 
+.accounts-table-shell {
+  overflow-x: auto;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 1rem;
+  background: var(--tf-bg-secondary);
+}
+
+.accounts-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  color: var(--tf-text-primary);
+
+  th {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    background: rgba(99, 102, 241, 0.06);
+    color: var(--tf-text-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    vertical-align: middle;
+    font-size: 0.82rem;
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:last-child td {
+      border-bottom: 0;
+    }
+
+    &:hover,
+    &.is-selected {
+      background: rgba(99, 102, 241, 0.07);
+    }
+
+    &.is-selected {
+      box-shadow: inset 3px 0 #6366f1;
+    }
+  }
+}
+
+.account-row-select {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.account-row-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+
+  mat-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 1.15rem;
+  }
+}
+
+.account-row-details {
+  display: grid;
+  gap: 0.2rem;
+
+  strong {
+    font-size: 0.88rem;
+    white-space: nowrap;
+  }
+
+  small {
+    color: #818cf8;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+.account-table-value {
+  color: var(--tf-text-secondary);
+  font-weight: 700;
+}
+
+.account-balance {
+  color: var(--tf-text-primary);
+}
+
+.account-status {
+  display: inline-flex;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: capitalize;
+
+  &.status-active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+
+  &.status-paused {
+    background: rgba(245, 158, 11, 0.14);
+    color: #d97706;
+  }
+
+  &.status-closed {
+    background: rgba(100, 116, 139, 0.14);
+    color: #64748b;
+  }
+}
+
+.account-risk-summary {
+  display: flex;
+  gap: 0.7rem;
+  color: var(--tf-text-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+
+  strong {
+    color: var(--tf-text-secondary);
+  }
+}
+
+.accounts-table-actions-heading,
+.accounts-table-actions {
+  text-align: right;
+}
+
+.account-table-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 0.6rem;
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+
+  &:hover {
+    background: #6366f1;
+    color: #fff;
+  }
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
 .account-modal-backdrop {
   position: fixed;
   z-index: 1000;
@@ -11005,6 +11178,69 @@ table.simple-table {
 
   .dashboard-navigation-toggle.is-expanded {
     left: min(12.2rem, calc(100vw - 3rem));
+  }
+
+  .accounts-table {
+    min-width: 0;
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    tr {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--tf-border-primary);
+    }
+
+    tr:last-child {
+      border-bottom: 0;
+    }
+
+    td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.6rem 0.35rem;
+      border-bottom: 0;
+      text-align: right;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--tf-text-muted);
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+    }
+
+    td:first-child {
+      display: block;
+      padding-top: 0.25rem;
+      text-align: left;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    .accounts-table-actions {
+      justify-content: space-between;
+      text-align: right;
+    }
+  }
+
+  .account-risk-summary {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    white-space: normal;
   }
 
   .account-edit-modal {

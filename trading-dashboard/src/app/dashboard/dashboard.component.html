@@ -1019,21 +1019,47 @@
             </div>
             <span class="account-firm-count">{{ filteredAccounts.length }} {{ filteredAccounts.length === 1 ? 'account' : 'accounts' }}</span>
           </div>
-          <div class="account-grid">
-            @for (account of filteredAccounts; track account.id) {
-              <article class="account-choice" [class.is-selected]="selectedAccount?.id === account.id">
-                <div class="account-choice-topline">
-                  <span class="account-choice-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
-                  <span class="account-choice-state">{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</span>
-                </div>
-                <strong>{{ account.name }}</strong>
-                <span class="account-choice-number">{{ account.account_number ? 'Account #' + account.account_number : 'Trading account' }}</span>
-                <div class="account-choice-actions">
-                  <button type="button" class="account-select-action" (click)="selectAccount(account)">{{ selectedAccount?.id === account.id ? 'Currently selected' : 'View dashboard' }} <mat-icon>arrow_forward</mat-icon></button>
-                  <button type="button" class="account-edit-trigger" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon></button>
-                </div>
-              </article>
-            }
+          <div class="accounts-table-shell">
+            <table class="accounts-table">
+              <thead>
+                <tr>
+                  <th scope="col">Account</th>
+                  <th scope="col">Account number</th>
+                  <th scope="col">Balance</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Risk limits</th>
+                  <th scope="col" class="accounts-table-actions-heading">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (account of filteredAccounts; track account.id) {
+                  <tr [class.is-selected]="selectedAccount?.id === account.id">
+                    <td data-label="Account">
+                      <button type="button" class="account-row-select" (click)="selectAccount(account)">
+                        <span class="account-row-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
+                        <span class="account-row-details">
+                          <strong>{{ account.name }}</strong>
+                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : 'Available' }}</small>
+                        </span>
+                      </button>
+                    </td>
+                    <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
+                    <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
+                    <td data-label="Status"><span class="account-status" [class]="'account-status status-' + (account.status || 'active').toLowerCase()">{{ account.status || 'Active' }}</span></td>
+                    <td data-label="Risk limits">
+                      <div class="account-risk-summary">
+                        <span>Target <strong>{{ account.profit_target_percent ?? 0 }}%</strong></span>
+                        <span>DD <strong>{{ account.max_total_drawdown_percent ?? 0 }}%</strong></span>
+                        <span>Daily <strong>{{ account.daily_loss_limit_percent ?? 0 }}%</strong></span>
+                      </div>
+                    </td>
+                    <td data-label="Actions" class="accounts-table-actions">
+                      <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </section>
       } @else {
