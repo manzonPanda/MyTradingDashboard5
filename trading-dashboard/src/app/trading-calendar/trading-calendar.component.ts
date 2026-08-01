@@ -118,11 +118,9 @@ interface WeekSummary {
                   <div class="day-win-loss-amounts">
                     <div class="amounts-row">
                       <div class="win-amount" [ngClass]="{'zero-amount': day.totalWinAmount === 0}">
-                        <span class="amount-icon">↗</span>
                         <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
                       </div>
                       <div class="loss-amount" [ngClass]="{'zero-amount': day.totalLossAmount === 0}">
-                        <span class="amount-icon">↘</span>
                         <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
                       </div>
                     </div>
