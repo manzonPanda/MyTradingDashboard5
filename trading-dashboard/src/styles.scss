@@ -93,7 +93,10 @@ app-root {
 // A.U.R.A. energy pulse
 .aura-energy-pulse {
   position: fixed;
-  z-index: 60;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
   pointer-events: none;
   opacity: 0;
   filter: drop-shadow(0 0 3px rgba(124, 58, 237, 0.35)) drop-shadow(0 0 8px rgba(99, 102, 241, 0.2));
@@ -113,9 +116,17 @@ app-root {
   stroke: url(#aura-energy-gradient);
   stroke-width: 3.2;
   stroke-linecap: round;
+  stroke-dasharray: 220 780;
+  stroke-dashoffset: 1000;
   filter: url(#aura-energy-bloom);
   opacity: 0.98;
-  animation: aura-energy-travel 4s linear 1;
+  animation: aura-energy-travel 5s linear 1;
+}
+
+.aura-energy-head {
+  fill: #F5F3FF;
+  filter: url(#aura-energy-bloom);
+  opacity: 0.98;
 }
 
 @keyframes aura-energy-visibility {
@@ -126,7 +137,7 @@ app-root {
 }
 
 @keyframes aura-energy-travel {
-  0% { stroke-dashoffset: 100; opacity: 0.4; }
+  0% { stroke-dashoffset: 1000; opacity: 0.4; }
   8% { opacity: 1; }
   92% { opacity: 1; }
   100% { stroke-dashoffset: 0; opacity: 0.4; }
