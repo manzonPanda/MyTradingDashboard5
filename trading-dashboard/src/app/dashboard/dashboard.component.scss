@@ -8986,35 +8986,6 @@ table.simple-table {
   }
 }
 
-.risk-calculator-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  min-height: 42px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  border-radius: 12px;
-  background: linear-gradient(135deg, #fffbeb, #fed7aa);
-  color: #92400e;
-  font: inherit;
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2);
-  }
-}
-
 .risk-calculator-backdrop {
   position: fixed;
   inset: 0;

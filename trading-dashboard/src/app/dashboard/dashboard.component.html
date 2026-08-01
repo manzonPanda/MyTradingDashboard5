@@ -40,6 +40,10 @@
         <mat-icon>account_balance</mat-icon>
         <span><strong>Accounts</strong><small>{{ selectedAccount?.name || 'Choose an account' }}</small></span>
       </button>
+      <button class="navigation-link" type="button" title="Risk Calculator" [class.is-active]="showAccountRiskCalculator" (click)="openAccountRiskCalculator()">
+        <mat-icon>calculate</mat-icon>
+        <span><strong>Risk Calculator</strong></span>
+      </button>
       <button class="navigation-link" type="button" title="Trades" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
         <span><strong>Trades</strong></span>
@@ -526,10 +530,6 @@
                       </div>
                     </div>
                   </div>
-                  <button class="risk-calculator-trigger" type="button" (click)="openAccountRiskCalculator()">
-                    <mat-icon>calculate</mat-icon>
-                    <span>Risk Calculator</span>
-                  </button>
                 </div>
               </div>
               <!-- <button class="confetti-test-btn" (click)="testConfettiCelebration()" title="Test Persistent Confetti Celebration 🎉" style="margin-left: 8px; background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4); border: none; border-radius: 12px; padding: 10px 16px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); transition: all 0.3s ease; font-size: 0.9rem;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 20px rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.4)'">
@@ -1165,7 +1165,7 @@
                       </div>
                     </td>
                     <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
-                    <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'PHP':'symbol':'1.0-0' }}</span></td>
+                    <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
                     <td data-label="Status"><span class="account-status" [class]="'account-status status-' + (account.status || 'active').toLowerCase()">{{ account.status || 'Active' }}</span></td>
                     <td data-label="Risk limits">
                       <div class="account-risk-summary">
