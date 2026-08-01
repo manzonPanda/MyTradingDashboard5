@@ -37,6 +37,7 @@ import { ViewChild, ElementRef, AfterViewInit, HostListener, Renderer2 } from '@
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
+import { AuraEnergyService } from '../services/aura-energy.service';
 import { TradeService } from '../services/trade.service';
 import { Account, RoiTransaction, SupabaseService, Trade } from '../services/supabase.service';
 import { environment } from '../../../src/environments/environment';
@@ -926,7 +927,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, @Inject(DOCUMENT) private document: Document) {
+    private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
     this.applyTheme();
@@ -1674,6 +1675,7 @@ mt5AccountInfo: AccountSettings = {
     setTimeout(() => {
       this.generateTradingChartData();
     }, 1000);
+    this.auraEnergy.start();
   }
 
   initializeDataTable(): void {
@@ -1716,6 +1718,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
   ngOnDestroy(): void {
+    this.auraEnergy.destroy();
     // Clean up click outside listener
     this.removeClickOutsideListener();
 
