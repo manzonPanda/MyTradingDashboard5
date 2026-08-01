@@ -165,6 +165,8 @@ export class DashboardComponent implements AfterViewInit {
   isSavingRoi = false;
   isRoiEntryModalOpen = false;
   roiFilter: 'all' | 'expense' | 'payout' = 'all';
+  roiPage = 1;
+  readonly roiPageSize = 5;
   roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
     transaction_type: 'expense',
     transaction_date: new Date().toISOString().slice(0, 10),
@@ -1339,6 +1341,28 @@ mt5AccountInfo: AccountSettings = {
       : this.roiTransactions.filter(transaction => transaction.transaction_type === this.roiFilter);
   }
 
+  get pagedRoiTransactions(): RoiTransaction[] {
+    const start = (this.roiPage - 1) * this.roiPageSize;
+    return this.filteredRoiTransactions.slice(start, start + this.roiPageSize);
+  }
+
+  get roiTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredRoiTransactions.length / this.roiPageSize));
+  }
+
+  get roiPageNumbers(): number[] {
+    return Array.from({ length: this.roiTotalPages }, (_, index) => index + 1);
+  }
+
+  setRoiFilter(filter: 'all' | 'expense' | 'payout'): void {
+    this.roiFilter = filter;
+    this.roiPage = 1;
+  }
+
+  setRoiPage(page: number): void {
+    this.roiPage = Math.min(Math.max(page, 1), this.roiTotalPages);
+  }
+
   get roiExpenses(): number {
     return this.roiTransactions
       .filter(transaction => transaction.transaction_type === 'expense')
@@ -1385,6 +1409,7 @@ mt5AccountInfo: AccountSettings = {
         account_id: this.roiForm.account_id || null
       });
       this.roiTransactions = [savedTransaction, ...this.roiTransactions];
+      this.roiPage = 1;
       this.roiForm = {
         transaction_type: 'expense',
         transaction_date: new Date().toISOString().slice(0, 10),

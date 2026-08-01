@@ -11564,24 +11564,30 @@ table.simple-table {
 .roi-metric-card strong { font-size: 1.35rem; line-height: 1.1; }
 
 .roi-content-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-.roi-ledger-card { border: 1px solid var(--tf-border-primary); border-radius: 1.1rem; background: var(--tf-bg-secondary); box-shadow: var(--tf-shadow-sm); }
-.roi-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.35rem 1.4rem; border-bottom: 1px solid var(--tf-border-primary); }
+.roi-ledger-card { width: min(100%, 58rem); justify-self: center; border: 1px solid var(--tf-border-primary); border-radius: 0.9rem; background: var(--tf-bg-secondary); box-shadow: var(--tf-shadow-sm); }
+.roi-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1rem 1.15rem; border-bottom: 1px solid var(--tf-border-primary); }
 .roi-card-heading h2 { margin: 0; font-size: 1.1rem; }
 .roi-filter-tabs, .roi-type-picker { display: flex; gap: 0.3rem; padding: 0.25rem; border-radius: 0.7rem; background: var(--tf-bg-tertiary); }
 .roi-filter-tabs button, .roi-type-picker button { border: 0; border-radius: 0.5rem; background: transparent; color: var(--tf-text-secondary); cursor: pointer; font: inherit; font-size: 0.75rem; font-weight: 700; }
 .roi-filter-tabs button { padding: 0.45rem 0.6rem; }
 .roi-filter-tabs button.is-active, .roi-type-picker button.is-active { background: var(--tf-bg-secondary); color: #6d28d9; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1); }
-.roi-transaction-list { padding: 0.45rem 1.4rem; }
-.roi-transaction-row { display: flex; align-items: center; gap: 0.85rem; padding: 1rem 0; border-bottom: 1px solid var(--tf-border-primary); }
+.roi-transaction-list { padding: 0.25rem 1.15rem; }
+.roi-transaction-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.72rem 0; border-bottom: 1px solid var(--tf-border-primary); }
 .roi-transaction-row:last-child { border-bottom: 0; }
-.roi-transaction-icon { display: grid; width: 2.45rem; height: 2.45rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #fff1f2; color: #e11d48; }
+.roi-transaction-icon { display: grid; width: 2.1rem; height: 2.1rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #fff1f2; color: #e11d48; }
+.roi-transaction-icon mat-icon { font-size: 1.1rem; }
 .roi-transaction-row.is-payout .roi-transaction-icon { background: #ecfdf5; color: #059669; }
 .roi-transaction-copy { min-width: 0; flex: 1; }
 .roi-transaction-title { display: flex; justify-content: space-between; gap: 1rem; }
-.roi-transaction-title span, .roi-transaction-copy p, .roi-transaction-copy small { color: var(--tf-text-muted); font-size: 0.75rem; }
-.roi-transaction-copy p { margin: 0.23rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roi-transaction-title span, .roi-transaction-copy p, .roi-transaction-copy small { color: var(--tf-text-muted); font-size: 0.7rem; }
+.roi-transaction-copy p { margin: 0.12rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roi-pagination { display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.8rem 1rem 1rem; }
+.roi-pagination button { display: grid; min-width: 1.9rem; height: 1.9rem; place-items: center; border: 1px solid transparent; border-radius: 0.45rem; background: transparent; color: var(--tf-text-secondary); cursor: pointer; font: inherit; font-size: 0.75rem; font-weight: 700; }
+.roi-pagination button:hover:not([disabled]), .roi-pagination button.is-active { border-color: rgba(139, 92, 246, 0.25); background: #ede9fe; color: #6d28d9; }
+.roi-pagination button[disabled] { cursor: not-allowed; opacity: 0.35; }
+.roi-pagination mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .roi-transaction-copy small { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 99px; background: var(--tf-bg-tertiary); }
-.roi-transaction-amount { color: #e11d48; white-space: nowrap; }
+.roi-transaction-amount { color: #e11d48; font-size: 0.85rem; white-space: nowrap; }
 .roi-transaction-row.is-payout .roi-transaction-amount { color: #059669; }
 .roi-loading, .roi-empty-state { display: grid; place-items: center; min-height: 17rem; padding: 2rem; color: var(--tf-text-muted); text-align: center; }
 .roi-loading { grid-auto-flow: column; gap: 0.6rem; }

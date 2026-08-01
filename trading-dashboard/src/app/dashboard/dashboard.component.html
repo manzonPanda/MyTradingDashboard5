@@ -1029,9 +1029,9 @@
           <div class="roi-card-heading">
             <div><p class="roi-eyebrow">Ledger</p><h2>Capital activity</h2></div>
             <div class="roi-filter-tabs" aria-label="ROI transaction filter">
-              <button type="button" [class.is-active]="roiFilter === 'all'" (click)="roiFilter = 'all'">All</button>
-              <button type="button" [class.is-active]="roiFilter === 'expense'" (click)="roiFilter = 'expense'">Expenses</button>
-              <button type="button" [class.is-active]="roiFilter === 'payout'" (click)="roiFilter = 'payout'">Payouts</button>
+              <button type="button" [class.is-active]="roiFilter === 'all'" (click)="setRoiFilter('all')">All</button>
+              <button type="button" [class.is-active]="roiFilter === 'expense'" (click)="setRoiFilter('expense')">Expenses</button>
+              <button type="button" [class.is-active]="roiFilter === 'payout'" (click)="setRoiFilter('payout')">Payouts</button>
             </div>
           </div>
 
@@ -1039,7 +1039,7 @@
             <div class="roi-loading"><mat-icon>sync</mat-icon><span>Loading your capital story…</span></div>
           } @else if (filteredRoiTransactions.length) {
             <div class="roi-transaction-list">
-              @for (transaction of filteredRoiTransactions; track transaction.id) {
+              @for (transaction of pagedRoiTransactions; track transaction.id) {
                 <article class="roi-transaction-row" [class.is-payout]="transaction.transaction_type === 'payout'">
                   <div class="roi-transaction-icon"><mat-icon>{{ transaction.transaction_type === 'payout' ? 'south_west' : 'north_east' }}</mat-icon></div>
                   <div class="roi-transaction-copy">
@@ -1051,6 +1051,15 @@
                 </article>
               }
             </div>
+            @if (roiTotalPages > 1) {
+              <nav class="roi-pagination" aria-label="ROI ledger pages">
+                <button type="button" aria-label="Previous page" [disabled]="roiPage === 1" (click)="setRoiPage(roiPage - 1)"><mat-icon>chevron_left</mat-icon></button>
+                @for (page of roiPageNumbers; track page) {
+                  <button type="button" [class.is-active]="roiPage === page" [attr.aria-current]="roiPage === page ? 'page' : null" (click)="setRoiPage(page)">{{ page }}</button>
+                }
+                <button type="button" aria-label="Next page" [disabled]="roiPage === roiTotalPages" (click)="setRoiPage(roiPage + 1)"><mat-icon>chevron_right</mat-icon></button>
+              </nav>
+            }
           } @else {
             <div class="roi-empty-state"><mat-icon>query_stats</mat-icon><h3>No activity yet</h3><p>Log your first purchase or payout to see your return build here.</p></div>
           }
