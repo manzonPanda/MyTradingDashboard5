@@ -1032,7 +1032,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (account of filteredAccounts; track account.id) {
+                @for (account of pagedAccounts; track account.id) {
                   <tr [class.is-selected]="selectedAccount?.id === account.id">
                     <td data-label="Account">
                       <button type="button" class="account-row-select" (click)="selectAccount(account)">
@@ -1061,6 +1061,25 @@
               </tbody>
             </table>
           </div>
+          <nav class="accounts-pagination" aria-label="Account pages">
+            <button type="button" class="pagination-nav-button" [disabled]="accountPage === 1" (click)="setAccountPage(accountPage - 1)">
+              <mat-icon>arrow_back</mat-icon>
+              <span>Previous</span>
+            </button>
+            <div class="pagination-page-list">
+              @for (page of accountPageNumbers; track $index) {
+                @if (page === '…') {
+                  <span class="pagination-ellipsis">…</span>
+                } @else {
+                  <button type="button" class="pagination-page-button" [class.is-active]="accountPage === page" [attr.aria-current]="accountPage === page ? 'page' : null" (click)="setAccountPage(+page)">{{ page }}</button>
+                }
+              }
+            </div>
+            <button type="button" class="pagination-nav-button" [disabled]="accountPage === accountTotalPages" (click)="setAccountPage(accountPage + 1)">
+              <span>Next</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </nav>
         </section>
       } @else {
         <div class="firm-selection-prompt">

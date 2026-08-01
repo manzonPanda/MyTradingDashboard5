@@ -382,6 +382,8 @@ export class DashboardComponent implements AfterViewInit {
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
   editingAccountId: string | null = null;
+  accountPage = 1;
+  readonly accountPageSize = 5;
   isSavingAccount = false;
   accountEditForm: Partial<Account> = {};
   isLoadingAccounts = true;
@@ -401,8 +403,33 @@ export class DashboardComponent implements AfterViewInit {
       : [];
   }
 
+  get pagedAccounts(): Account[] {
+    const startIndex = (this.accountPage - 1) * this.accountPageSize;
+    return this.filteredAccounts.slice(startIndex, startIndex + this.accountPageSize);
+  }
+
+  get accountTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredAccounts.length / this.accountPageSize));
+  }
+
+  get accountPageNumbers(): (number | string)[] {
+    const totalPages = this.accountTotalPages;
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+    if (this.accountPage <= 3) return [1, 2, 3, '…', totalPages];
+    if (this.accountPage >= totalPages - 2) return [1, '…', totalPages - 2, totalPages - 1, totalPages];
+    return [1, '…', this.accountPage, '…', totalPages];
+  }
+
+  setAccountPage(page: number): void {
+    if (page >= 1 && page <= this.accountTotalPages) {
+      this.accountPage = page;
+      this.cdr.markForCheck();
+    }
+  }
+
   selectFirm(firm: string): void {
     this.selectedFirm = firm;
+    this.accountPage = 1;
     this.cancelAccountEdit();
     this.cdr.markForCheck();
   }
