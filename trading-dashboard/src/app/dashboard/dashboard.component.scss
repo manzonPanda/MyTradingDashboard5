@@ -1050,9 +1050,6 @@ table.simple-table {
   background: var(--tf-bg-secondary);
   border-bottom: 1px solid var(--tf-border-primary);
   padding: 0.2rem 0.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
   height: 20vh;
   overflow: hidden;
 
