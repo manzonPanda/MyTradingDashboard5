@@ -520,6 +520,28 @@
   }
 }
 
+.rr-card,
+.pnl-card {
+  padding: 0.6rem;
+
+  .metric-label {
+    gap: 0.25rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.2px;
+    margin-bottom: 0.35rem;
+
+    mat-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  .metric-value {
+    font-size: 1.15rem;
+  }
+}
+
 .metric-value {
   font-size: 1.35rem;
   font-weight: 800;
