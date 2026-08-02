@@ -6456,17 +6456,26 @@ table.simple-table {
   }
 
   .mt5-sync-status {
-    flex: 1 1 360px;
-    width: min(100%, 520px);
+    flex: 0 1 420px;
+    width: min(100%, 420px);
     min-width: 280px;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     margin-left: auto;
-    padding: 0.45rem 0.65rem;
+    padding: 0.55rem 0.7rem;
     border: 1px solid rgba(45, 212, 191, 0.28);
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(14, 116, 144, 0.08));
+    border-left: 3px solid #14b8a6;
+    border-radius: 8px;
+    background: var(--tf-bg-card);
+    box-shadow: 0 4px 14px rgba(15, 118, 110, 0.08);
+
+    .mt5-sync-status-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
 
     .mt5-sync-status-header {
       display: flex;
@@ -6501,6 +6510,16 @@ table.simple-table {
       white-space: nowrap;
     }
 
+    .mt5-sync-progress-summary {
+      align-items: baseline;
+      justify-content: flex-end;
+
+      strong {
+        color: var(--tf-text-primary);
+        font-size: 0.78rem;
+      }
+    }
+
     .mt5-sync-counts {
       justify-content: flex-start;
       color: var(--tf-text-primary);
@@ -6516,12 +6535,16 @@ table.simple-table {
       border-color: rgba(16, 185, 129, 0.3);
       background: rgba(16, 185, 129, 0.08);
 
+      border-left-color: var(--tf-positive);
+
       .mt5-sync-status-header { color: var(--tf-positive); }
     }
 
     &.status-error {
       border-color: rgba(239, 68, 68, 0.3);
       background: rgba(239, 68, 68, 0.08);
+
+      border-left-color: var(--tf-negative);
 
       .mt5-sync-status-header { color: var(--tf-negative); }
     }

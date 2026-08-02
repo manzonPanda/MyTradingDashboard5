@@ -1679,13 +1679,15 @@
         {{ isSyncingMT5Trades ? 'Syncing...' : 'Sync to Supabase' }}
       </button>
       <div class="mt5-sync-status" *ngIf="mt5SyncStatus !== 'idle'" [ngClass]="'status-' + mt5SyncStatus" role="status" aria-live="polite">
-        <div class="mt5-sync-status-header">
-          <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
-          <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
-        </div>
-        <div class="mt5-sync-progress-summary" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success' || mt5SyncStatus === 'error'">
-          <span>{{ mt5SyncProgress }}% complete</span>
-          <span>{{ mt5SyncProcessed }} / {{ mt5SyncTotal }} trades</span>
+        <div class="mt5-sync-status-topline">
+          <div class="mt5-sync-status-header">
+            <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+            <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
+          </div>
+          <div class="mt5-sync-progress-summary" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success' || mt5SyncStatus === 'error'">
+            <strong>{{ mt5SyncProgress }}%</strong>
+            <span>{{ mt5SyncProcessed }} / {{ mt5SyncTotal }} trades</span>
+          </div>
         </div>
         <div class="mt5-sync-progress-track" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success'">
           <div class="mt5-sync-progress-bar" [style.width.%]="mt5SyncProgress"></div>
