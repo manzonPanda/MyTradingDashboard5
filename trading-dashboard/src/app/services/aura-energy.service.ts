@@ -379,13 +379,13 @@ export class AuraEnergyService {
     }
 
     const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
-    const trailStart = Math.max(0, this.routeLength - trailLength);
+    const initialTrailStart = Math.max(0, this.routeLength - trailLength);
     const headFadeProgress = Math.min(1, progress / 0.4);
     const trailRetractionProgress = Math.max(0, (progress - 0.4) / 0.6);
-    const trailEnd = this.routeLength - trailLength * trailRetractionProgress;
+    const trailStart = initialTrailStart + trailLength * trailRetractionProgress;
 
     head.style.opacity = `${1 - headFadeProgress}`;
-    this.renderTrail(route, trail, trailStart, Math.max(trailStart, trailEnd));
+    this.renderTrail(route, trail, Math.min(trailStart, this.routeLength), this.routeLength);
   }
 
   private renderTrail(route: SVGPathElement, trail: SVGPathElement, startDistance: number, endDistance: number): void {
