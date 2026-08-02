@@ -6455,6 +6455,65 @@ table.simple-table {
     }
   }
 
+  .mt5-sync-status {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(14, 116, 144, 0.08));
+
+    .mt5-sync-status-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: #0f766e;
+      font-size: 0.8rem;
+
+      mat-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+      }
+    }
+
+    .mt5-sync-status-message {
+      color: var(--tf-text-secondary);
+      font-size: 0.75rem;
+    }
+
+    &.status-success {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.08);
+
+      .mt5-sync-status-header { color: var(--tf-positive); }
+    }
+
+    &.status-error {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+
+      .mt5-sync-status-header { color: var(--tf-negative); }
+    }
+  }
+
+  .mt5-sync-progress-track {
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(13, 148, 136, 0.16);
+  }
+
+  .mt5-sync-progress-bar {
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #14b8a6, #06b6d4);
+    animation: mt5-sync-progress 1.4s ease-in-out infinite;
+  }
+
   .mt5-import-message,
   .mt5-import-error {
     flex-basis: 100%;
@@ -6468,6 +6527,12 @@ table.simple-table {
   .mt5-import-error {
     color: var(--tf-negative);
   }
+}
+
+@keyframes mt5-sync-progress {
+  0% { transform: translateX(-120%); }
+  50% { transform: translateX(170%); }
+  100% { transform: translateX(300%); }
 }
 
 .mt5-imported-table-container {

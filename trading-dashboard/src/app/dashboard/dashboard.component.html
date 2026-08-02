@@ -1678,6 +1678,16 @@
         <mat-icon [class.spinning]="isSyncingMT5Trades">sync</mat-icon>
         {{ isSyncingMT5Trades ? 'Syncing...' : 'Sync to Supabase' }}
       </button>
+      <div class="mt5-sync-status" *ngIf="mt5SyncStatus !== 'idle'" [ngClass]="'status-' + mt5SyncStatus" role="status" aria-live="polite">
+        <div class="mt5-sync-status-header">
+          <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+          <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
+        </div>
+        <div class="mt5-sync-progress-track" *ngIf="mt5SyncStatus === 'syncing'">
+          <div class="mt5-sync-progress-bar"></div>
+        </div>
+        <span class="mt5-sync-status-message">{{ mt5SyncStatusMessage }}</span>
+      </div>
       <span class="mt5-import-message" *ngIf="mt5ImportMessage">{{ mt5ImportMessage }}</span>
       <span class="mt5-import-error" *ngIf="mt5ImportError">{{ mt5ImportError }}</span>
     </div>

@@ -564,6 +564,8 @@ mt5AccountInfo: AccountSettings = {
   isSyncingMT5Trades = false;
   mt5ImportMessage = '';
   mt5ImportError = '';
+  mt5SyncStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
+  mt5SyncStatusMessage = '';
   isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
@@ -5429,18 +5431,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     const account = this.accounts.find(item => item.id === this.mt5SyncAccountId);
     if (!account) {
+      this.mt5SyncStatus = 'error';
+      this.mt5SyncStatusMessage = 'Choose a Supabase account before syncing.';
       this.snackBar.open('Choose a Supabase account before syncing.', 'Dismiss', { duration: 5000 });
       return;
     }
 
     this.isSyncingMT5Trades = true;
+    this.mt5SyncStatus = 'syncing';
+    this.mt5SyncStatusMessage = `Preparing ${this.mt5ImportedTrades.length} trades for ${account.name}...`;
+    this.cdr.markForCheck();
     try {
       const trades = this.mt5ImportedTrades.map(trade => this.mapMt5TradeForSupabase(trade));
+      this.mt5SyncStatusMessage = `Matching tickets and syncing to ${account.name}...`;
+      this.cdr.markForCheck();
       const { created, updated } = await this.supabaseService.syncTradesToAccount(trades, account.id);
+      this.mt5SyncStatus = 'success';
+      this.mt5SyncStatusMessage = `Sync complete: ${created} created, ${updated} updated in ${account.name}.`;
       this.snackBar.open(`${created} imported trade${created === 1 ? '' : 's'} created, ${updated} updated in ${account.name}.`, 'Dismiss', { duration: 5000 });
     } catch (error) {
       console.error('Failed to sync imported MT5 trades to Supabase:', error);
       const message = error instanceof Error ? error.message : 'Unknown sync error';
+      this.mt5SyncStatus = 'error';
+      this.mt5SyncStatusMessage = `Sync failed: ${message}`;
       this.snackBar.open(`Import sync failed: ${message}`, 'Dismiss', { duration: 8000 });
     } finally {
       this.isSyncingMT5Trades = false;
