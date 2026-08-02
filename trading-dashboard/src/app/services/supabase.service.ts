@@ -340,20 +340,31 @@ export class SupabaseService {
     let updated = 0;
 
     for (const trade of trades) {
-      trade.account_id = accountId;
-      if (trade.ticket === undefined || trade.ticket === null) continue;
+      const accountTrade = { ...trade, account_id: accountId };
+      if (accountTrade.ticket === undefined || accountTrade.ticket === null) continue;
 
-      const existing = await this.getTradeByTicket(trade.ticket, accountId);
+      const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
-        const saved = await this.updateTrade(existing.id, trade);
+        const saved = await this.updateTrade(existing.id, accountTrade);
         if (saved) updated++;
       } else {
-        const saved = await this.createTrade(trade);
+        const saved = await this.createTrade({
+          ...accountTrade,
+          time_open: this.addFiveHours(accountTrade.time_open),
+          time_close: this.addFiveHours(accountTrade.time_close)
+        });
         if (saved) created++;
       }
     }
 
     return { created, updated };
+  }
+
+  private addFiveHours(timestamp?: string): string | undefined {
+    if (!timestamp) return undefined;
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return timestamp;
+    return new Date(date.getTime() + 5 * 60 * 60 * 1000).toISOString();
   }
 
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {
