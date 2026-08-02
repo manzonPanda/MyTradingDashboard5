@@ -751,8 +751,8 @@ mt5AccountInfo: AccountSettings = {
         fill: true,
         tension: 0.4,
         pointBackgroundColor: 'rgb(16, 185, 129)',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
+        pointBorderColor: 'transparent',
+        pointBorderWidth: 0,
         pointRadius: 6,
         pointHoverRadius: 8,
         shadowOffsetX: 0,
@@ -3022,8 +3022,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             fill: true,
             tension: 0.3,
             pointBackgroundColor: 'rgb(16, 185, 129)', // Green starting point
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 3,
+            pointBorderColor: 'transparent',
+            pointBorderWidth: 0,
             pointRadius: 8,
             pointHoverRadius: 12
           },
@@ -3145,8 +3145,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
+          pointBorderColor: 'transparent',
+          pointBorderWidth: 0,
           pointRadius: balanceData.map((_, i, arr) => {
             if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
             return 6;
