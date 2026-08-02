@@ -115,10 +115,6 @@ app-root {
   filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.65)) drop-shadow(0 0 14px rgba(167, 139, 250, 0.46));
 }
 
-.aura-energy-fading {
-  opacity: 0 !important;
-  transition: opacity 180ms ease;
-}
 
 .aura-energy-svg {
   display: block;
