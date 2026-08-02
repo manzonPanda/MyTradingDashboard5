@@ -560,6 +560,8 @@ mt5AccountInfo: AccountSettings = {
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
+  mt5ImportMessage = '';
+  mt5ImportError = '';
   isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
@@ -2060,6 +2062,132 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     if (file) {
       this.readExcelFile(file);  // Parse the Excel file
     }
+  }
+
+  onMt5ReportSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    this.mt5ImportMessage = '';
+    this.mt5ImportError = '';
+    const reader = new FileReader();
+    reader.onload = (loadEvent: ProgressEvent<FileReader>) => {
+      try {
+        const data = new Uint8Array(loadEvent.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1, defval: '' });
+        const headerIndex = rows.findIndex(row => this.isMt5PositionsHeader(row));
+
+        if (headerIndex < 0) {
+          this.mt5ImportError = 'No MT5 Positions table was found in this workbook.';
+          this.cdr.markForCheck();
+          return;
+        }
+
+        const headers = rows[headerIndex].map((value: unknown) => this.normalizeMt5Header(value));
+        const timeColumns = this.findMt5ColumnIndexes(headers, 'time');
+        const priceColumns = this.findMt5ColumnIndexes(headers, 'price');
+        const positionIndex = this.findMt5ColumnIndex(headers, 'position');
+        const symbolIndex = this.findMt5ColumnIndex(headers, 'symbol');
+        const typeIndex = this.findMt5ColumnIndex(headers, 'type');
+        const volumeIndex = this.findMt5ColumnIndex(headers, 'volume');
+        const stopLossIndex = this.findMt5ColumnIndex(headers, 's/l');
+        const takeProfitIndex = this.findMt5ColumnIndex(headers, 't/p');
+        const commissionIndex = this.findMt5ColumnIndex(headers, 'commission');
+        const swapIndex = this.findMt5ColumnIndex(headers, 'swap');
+        const profitIndex = this.findMt5ColumnIndex(headers, 'profit');
+
+        const importedTrades = rows.slice(headerIndex + 1)
+          .filter(row => {
+            const firstCell = String(row[0] ?? '').trim().toLowerCase();
+            return firstCell !== 'orders' && firstCell !== 'deals' && row[symbolIndex] && row[positionIndex];
+          })
+          .map(row => {
+            const commission = this.toMt5Number(row[commissionIndex]);
+            const swap = this.toMt5Number(row[swapIndex]);
+            const profit = this.toMt5Number(row[profitIndex]);
+            return {
+              openDate: this.formatMt5Value(row[timeColumns[0]]),
+              tradeNotion: [],
+              status: 'Imported',
+              position: this.formatMt5Value(row[positionIndex]),
+              symbol: this.formatMt5Value(row[symbolIndex]),
+              type: this.formatMt5Value(row[typeIndex]),
+              volume: this.formatMt5Value(row[volumeIndex]),
+              entry: this.formatMt5Value(row[priceColumns[0]]),
+              sL: this.formatMt5Value(row[stopLossIndex]),
+              tP: this.formatMt5Value(row[takeProfitIndex]),
+              closeDate: this.formatMt5Value(row[timeColumns[1]]),
+              exit: this.formatMt5Value(row[priceColumns[1]]),
+              commission: commission.toFixed(2),
+              swap: swap.toFixed(2),
+              profit: profit.toFixed(2),
+              netProfit: (profit + commission + swap).toFixed(2),
+              riskPerTrade: '0',
+              rrr: '0',
+              mt5status: 'closed',
+              mfe: '0'
+            } as Table;
+          });
+
+        if (!importedTrades.length) {
+          this.mt5ImportError = 'The MT5 Positions table did not contain any trades.';
+          this.cdr.markForCheck();
+          return;
+        }
+
+        this.tableData = importedTrades;
+        this.currentPage = 1;
+        this.mt5ImportMessage = `${importedTrades.length} MT5 trade${importedTrades.length === 1 ? '' : 's'} imported.`;
+        this.generateTradingChartData();
+        this.updateDailyLimitMetrics();
+        this.cdr.markForCheck();
+      } catch (error) {
+        console.error('Unable to import MT5 report:', error);
+        this.mt5ImportError = 'The MT5 report could not be read. Please choose an Excel workbook.';
+        this.cdr.markForCheck();
+      }
+    };
+    reader.onerror = () => {
+      this.mt5ImportError = 'The MT5 report could not be read.';
+      this.cdr.markForCheck();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  private normalizeMt5Header(value: unknown): string {
+    return String(value ?? '').trim().toLowerCase().replace(/\\s+/g, '');
+  }
+
+  private isMt5PositionsHeader(row: unknown[]): boolean {
+    const headers = row.map(value => this.normalizeMt5Header(value));
+    return headers.includes('position') && headers.includes('symbol') && headers.includes('profit');
+  }
+
+  private findMt5ColumnIndexes(headers: string[], name: string): number[] {
+    return headers.reduce((indexes: number[], header, index) => {
+      if (header === name) indexes.push(index);
+      return indexes;
+    }, []);
+  }
+
+  private findMt5ColumnIndex(headers: string[], name: string): number {
+    return headers.indexOf(name);
+  }
+
+  private formatMt5Value(value: unknown): string {
+    if (value instanceof Date) {
+      return `${String(value.getFullYear()).padStart(4, '0')}.${String(value.getMonth() + 1).padStart(2, '0')}.${String(value.getDate()).padStart(2, '0')} ${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`;
+    }
+    return String(value ?? '').trim();
+  }
+
+  private toMt5Number(value: unknown): number {
+    const parsed = Number(String(value ?? '').replace(/,/g, '').trim());
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
     // This method reads the Excel file and converts it into a usable format

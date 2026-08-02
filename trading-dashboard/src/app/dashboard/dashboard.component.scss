@@ -6401,6 +6401,51 @@ table.simple-table {
   animation: fadeInUp 0.3s ease-out;
 }
 
+.mt5-report-import {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  background: var(--tf-bg-tertiary);
+  border-bottom: 1px solid var(--tf-border-primary);
+
+  .mt5-report-import-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-right: auto;
+
+    strong {
+      color: var(--tf-text-primary);
+      font-size: 0.9rem;
+    }
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.75rem;
+    }
+  }
+
+  .mt5-report-file-input {
+    display: none;
+  }
+
+  .mt5-import-message,
+  .mt5-import-error {
+    flex-basis: 100%;
+    font-size: 0.8rem;
+  }
+
+  .mt5-import-message {
+    color: var(--tf-positive);
+  }
+
+  .mt5-import-error {
+    color: var(--tf-negative);
+  }
+}
+
 // Simple Table Controls
 .simple-table-controls {
   display: flex;
