@@ -465,6 +465,10 @@ export class DashboardComponent implements AfterViewInit {
     return this.fixTicketRows.some(row => row.matched);
   }
 
+  get hasFixTicketPatchableRows(): boolean {
+    return this.hasFixTicketMatches || Object.values(this.fixTicketManualTickets).some(ticket => ticket.trim().length > 0);
+  }
+
   get syncAccounts(): Account[] {
     return [...this.accounts].sort((left, right) => {
       const leftDate = left.start_date ? Date.parse(left.start_date) : Number.POSITIVE_INFINITY;
@@ -585,6 +589,7 @@ mt5AccountInfo: AccountSettings = {
   fixTicketFileName = '';
   fixTicketRows: { openTime: string; adjustedOpenTime: string; ticket: string; matched: boolean; matchedTradeId?: string }[] = [];
   fixTicketDbRows: Trade[] = [];
+  fixTicketManualTickets: Record<string, string> = {};
   fixTicketComparisonVisible = false;
   isFixingTradeTickets = false;
   fixTicketStatus: 'idle' | 'ready' | 'fixing' | 'success' | 'error' = 'idle';
@@ -2194,6 +2199,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     input.value = '';
     this.fixTicketRows = [];
     this.fixTicketDbRows = [];
+    this.fixTicketManualTickets = {};
     this.fixTicketComparisonVisible = false;
     this.fixTicketFileName = file?.name || '';
     this.fixTicketStatus = 'idle';
@@ -2291,25 +2297,47 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     }
   }
 
+  isFixTicketTradeMatched(tradeId?: string): boolean {
+    return Boolean(tradeId && this.fixTicketRows.some(row => row.matchedTradeId === tradeId && row.matched));
+  }
+
+  getFixTicketInputValue(trade: Trade): string {
+    const matchedRow = this.fixTicketRows.find(row => row.matchedTradeId === trade.id && row.matched);
+    return matchedRow?.ticket || (trade.id ? this.fixTicketManualTickets[trade.id] || '' : '');
+  }
+
+  setFixTicketInputValue(trade: Trade, value: string): void {
+    if (!trade.id || this.isFixTicketTradeMatched(trade.id)) return;
+    this.fixTicketManualTickets[trade.id] = value;
+  }
+
   async patchMatchedTradeTickets(): Promise<void> {
-    const matchedRows = this.fixTicketRows.filter(row => row.matched && row.matchedTradeId);
-    if (this.isFixingTradeTickets || !matchedRows.length) return;
+    const patchRows = this.fixTicketDbRows
+      .map(trade => {
+        const matchedRow = this.fixTicketRows.find(row => row.matchedTradeId === trade.id && row.matched);
+        const ticket = matchedRow?.ticket || (trade.id ? this.fixTicketManualTickets[trade.id]?.trim() : '');
+        return trade.id && ticket ? { tradeId: trade.id, ticket } : null;
+      })
+      .filter((row): row is { tradeId: string; ticket: string } => row !== null);
+    if (this.isFixingTradeTickets || !patchRows.length) return;
 
     this.isFixingTradeTickets = true;
     this.fixTicketStatus = 'fixing';
     this.fixTicketProgress = 0;
-    this.fixTicketStatusMessage = `Patching 0 of ${matchedRows.length} matched tickets...`;
+    this.fixTicketStatusMessage = `Patching 0 of ${patchRows.length} tickets...`;
     this.cdr.markForCheck();
 
     try {
-      for (const [index, row] of matchedRows.entries()) {
-        await this.supabaseService.updateTradeTicket(row.matchedTradeId!, row.ticket);
-        this.fixTicketProgress = Math.round(((index + 1) / matchedRows.length) * 100);
-        this.fixTicketStatusMessage = `Patched ${index + 1} of ${matchedRows.length} matched tickets.`;
+      for (const [index, row] of patchRows.entries()) {
+        await this.supabaseService.updateTradeTicket(row.tradeId, row.ticket);
+        const dbTrade = this.fixTicketDbRows.find(trade => trade.id === row.tradeId);
+        if (dbTrade) dbTrade.ticket = row.ticket;
+        this.fixTicketProgress = Math.round(((index + 1) / patchRows.length) * 100);
+        this.fixTicketStatusMessage = `Patched ${index + 1} of ${patchRows.length} tickets.`;
         this.cdr.markForCheck();
       }
       this.fixTicketStatus = 'success';
-      this.fixTicketStatusMessage = `${matchedRows.length} matched ticket${matchedRows.length === 1 ? '' : 's'} patched to Supabase.`;
+      this.fixTicketStatusMessage = `${patchRows.length} ticket${patchRows.length === 1 ? '' : 's'} patched to Supabase.`;
     } catch (error) {
       this.fixTicketStatus = 'error';
       this.fixTicketStatusMessage = error instanceof Error ? error.message : 'Ticket patching failed.';

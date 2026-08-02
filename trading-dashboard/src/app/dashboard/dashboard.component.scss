@@ -6718,6 +6718,24 @@ table.simple-table {
   }
 }
 
+.fix-ticket-input {
+  width: 100%;
+  min-width: 90px;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 5px;
+  background: var(--tf-bg-secondary);
+  color: var(--tf-text-primary);
+  font: inherit;
+
+  &:disabled {
+    border-color: rgba(20, 184, 166, 0.4);
+    background: rgba(20, 184, 166, 0.1);
+    color: var(--tf-positive);
+    font-weight: 700;
+  }
+}
+
 .fix-ticket-table-scroll {
   max-height: 280px;
   overflow: auto;

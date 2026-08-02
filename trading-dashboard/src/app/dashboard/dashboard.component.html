@@ -1756,8 +1756,8 @@
   </section>
 
   <section id="fix-trade-ticket" class="fix-ticket-section" *ngIf="currentWorkspace === 'active-account'">
-    <div class="fix-ticket-card">
-      <div class="fix-ticket-copy">
+    <div class="mt5-report-import fix-ticket-card">
+      <div class="mt5-report-import-copy fix-ticket-copy">
         <h2 class="section-title">Fix Trade Ticket/Position</h2>
         <span>Match null-ticket trades by open date and minute, then populate their MT5 position IDs.</span>
       </div>
@@ -1802,7 +1802,16 @@
               <tbody>
                 <tr *ngFor="let trade of fixTicketDbRows">
                   <td>{{ formatMt5ComparisonTime(trade.time_open) }}</td>
-                  <td>{{ trade.ticket ?? 'null' }}</td>
+                  <td>
+                    <input
+                      class="fix-ticket-input"
+                      type="text"
+                      inputmode="numeric"
+                      placeholder="Enter ticket"
+                      [value]="getFixTicketInputValue(trade)"
+                      [disabled]="isFixTicketTradeMatched(trade.id) || isFixingTradeTickets"
+                      (input)="setFixTicketInputValue(trade, $any($event.target).value)" />
+                  </td>
                 </tr>
                 <tr *ngIf="!fixTicketDbRows.length"><td colspan="2">No null-ticket trades found.</td></tr>
               </tbody>
@@ -1832,7 +1841,7 @@
         class="btn-teal fix-ticket-patch-button"
         type="button"
         (click)="patchMatchedTradeTickets()"
-        [disabled]="!hasFixTicketMatches || isFixingTradeTickets">
+        [disabled]="!hasFixTicketPatchableRows || isFixingTradeTickets">
         <mat-icon [class.spinning]="isFixingTradeTickets">cloud_upload</mat-icon>
         {{ isFixingTradeTickets ? 'Patching...' : 'Patch Matched Tickets to Supabase' }}
       </button>
