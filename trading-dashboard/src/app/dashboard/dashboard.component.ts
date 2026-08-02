@@ -818,6 +818,7 @@ mt5AccountInfo: AccountSettings = {
             // Show main chart elements in legend, hide profit target and max loss text
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
+                   legendItem.text.startsWith('Daily Limit') ||
                    legendItem.text === '🟣 --- Starting Balance';
           }
         }
@@ -2924,6 +2925,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
+    const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
     let currentBalance = startingBalance;
     let cumulativePnL = 0;
     let peakBalance = startingBalance;
@@ -2999,6 +3001,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       });
     }
 
+    const dailyLimitBalance = currentBalance * (1 - dailyLimitPercent / 100);
+
     // If no trades, show empty chart with starting balance and reference lines
     if (sortedTrades.length === 0) {
       console.log('📊 No trade data found, showing empty chart...');
@@ -3029,6 +3033,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             borderColor: '#7c3aed',
             backgroundColor: 'transparent',
             borderWidth: 1,
+            borderDash: [8, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
+          {
+            label: `Daily Limit (${this.mt5AccountInfo.dailyLossLimit}%)`,
+            data: [dailyLimitBalance],
+            borderColor: '#F59E0B',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
             borderDash: [8, 4],
             fill: false,
             tension: 0,
@@ -3141,6 +3159,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           borderColor: '#7c3aed',
           backgroundColor: 'transparent',
           borderWidth: 1,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: `Daily Limit (${this.mt5AccountInfo.dailyLossLimit}%)`,
+          data: new Array(labels.length).fill(dailyLimitBalance),
+          borderColor: '#F59E0B',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
           borderDash: [8, 4],
           fill: false,
           tension: 0,
