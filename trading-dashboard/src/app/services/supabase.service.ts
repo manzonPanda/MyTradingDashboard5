@@ -355,12 +355,28 @@ export class SupabaseService {
         const updates = { ...accountTrade };
         const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;
         const hasRrrPlaceholder = updates.rrr === undefined || updates.rrr === null || updates.rrr === '' || updates.rrr === '0';
+        const hasReflectionPlaceholder = updates.daily_reflection === undefined || updates.daily_reflection === null || updates.daily_reflection === '';
+        const hasRulesPlaceholder = updates.rules_violated === undefined || updates.rules_violated === null || updates.rules_violated === '';
+        const hasRetrospectivePlaceholder = updates.weekly_retrospective === undefined || updates.weekly_retrospective === null || updates.weekly_retrospective === '';
+        const hasMupPlaceholder = updates.mup === undefined || updates.mup === null;
 
         if (existing.risk_per_trade !== null && existing.risk_per_trade !== undefined && hasRiskPlaceholder) {
           delete updates.risk_per_trade;
         }
         if (existing.rrr !== null && existing.rrr !== undefined && hasRrrPlaceholder) {
           delete updates.rrr;
+        }
+        if (existing.daily_reflection !== null && existing.daily_reflection !== undefined && hasReflectionPlaceholder) {
+          delete updates.daily_reflection;
+        }
+        if (existing.rules_violated !== null && existing.rules_violated !== undefined && hasRulesPlaceholder) {
+          delete updates.rules_violated;
+        }
+        if (existing.weekly_retrospective !== null && existing.weekly_retrospective !== undefined && hasRetrospectivePlaceholder) {
+          delete updates.weekly_retrospective;
+        }
+        if (existing.mup !== null && existing.mup !== undefined && hasMupPlaceholder) {
+          delete updates.mup;
         }
 
         const saved = await this.updateTrade(existing.id, updates);
