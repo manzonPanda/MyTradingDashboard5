@@ -395,7 +395,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--tf-border-primary);
   background: linear-gradient(90deg, var(--tf-bg-secondary) 0%, var(--tf-bg-tertiary) 100%);
 }
@@ -403,11 +403,11 @@
 .header-title {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--tf-text-primary);
   }
@@ -437,11 +437,11 @@
 }
 
 .trade-count {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--tf-text-secondary);
   background: var(--tf-bg-tertiary);
-  padding: 0.4rem 0.75rem;
+  padding: 0.3rem 0.55rem;
   border-radius: 6px;
   border: 1px solid var(--tf-border-primary);
 }
@@ -449,9 +449,9 @@
 // Live Metrics
 .live-metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  padding: 1.5rem;
+  grid-template-columns: repeat(3, 1fr) 1.1fr;
+  gap: 0.75rem;
+  padding: 1rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -461,8 +461,8 @@
 .metric-card {
   background: var(--tf-bg-card);
   border: 1px solid var(--tf-border-primary);
-  border-radius: 12px;
-  padding: 1.25rem;
+  border-radius: 10px;
+  padding: 0.75rem;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -475,7 +475,7 @@
     right: 0;
     height: 3px;
     background: linear-gradient(90deg, var(--tf-positive), transparent);
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.3s ease;
   }
 
@@ -505,13 +505,13 @@
 .metric-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
+  gap: 0.35rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.35px;
   color: var(--tf-text-secondary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 
   mat-icon {
     font-size: 14px;
@@ -520,10 +520,32 @@
   }
 }
 
+.rr-card,
+.pnl-card {
+  padding: 0.6rem;
+
+  .metric-label {
+    gap: 0.25rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.2px;
+    margin-bottom: 0.35rem;
+
+    mat-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  .metric-value {
+    font-size: 1.15rem;
+  }
+}
+
 .metric-value {
-  font-size: 1.75rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   line-height: 1;
   transition: all 0.3s ease;
 
@@ -546,7 +568,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -565,21 +587,39 @@
 .trade-gauge-card {
   background: var(--tf-bg-card);
   border: 1px solid var(--tf-border-primary);
-  border-radius: 12px;
-  padding: 1rem;
+  border-radius: 10px;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+
+  .trade-gauge-content {
+    justify-content: center;
+    width: 100%;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+  }
 }
 
 .trade-gauge-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
 }
 
 .trade-gauge-symbol {
   color: var(--tf-text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -590,8 +630,11 @@
 }
 
 .trade-gauge {
-  flex: 0 0 110px;
-  height: 110px;
+  flex: 0 1 100px;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  height: auto;
   position: relative;
 }
 
@@ -615,8 +658,9 @@
 }
 
 .trade-gauge-percent {
-  font-size: 1.1rem;
+  font-size: 1.6rem;
   font-weight: 800;
+  line-height: 1;
 }
 
 .trade-gauge-percent.positive {
