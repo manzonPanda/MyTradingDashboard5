@@ -218,12 +218,13 @@ export class SupabaseService {
     return (data as Trade[]) || [];
   }
 
-  async getTradeByTicket(ticket: number | string): Promise<Trade | null> {
-    const { data, error } = await this.supabase
+  async getTradeByTicket(ticket: number | string, accountId?: string): Promise<Trade | null> {
+    let query = this.supabase
       .from('trades')
       .select('*')
-      .eq('ticket', ticket)
-      .maybeSingle();
+      .eq('ticket', ticket);
+    if (accountId) query = query.eq('account_id', accountId);
+    const { data, error } = await query.maybeSingle();
     if (error) throw new Error(`Trade lookup failed: ${error.message}`);
     return data as Trade | null;
   }
@@ -342,7 +343,7 @@ export class SupabaseService {
       trade.account_id = accountId;
       if (trade.ticket === undefined || trade.ticket === null) continue;
 
-      const existing = await this.getTradeByTicket(trade.ticket);
+      const existing = await this.getTradeByTicket(trade.ticket, accountId);
       if (existing?.id) {
         const saved = await this.updateTrade(existing.id, trade);
         if (saved) updated++;
