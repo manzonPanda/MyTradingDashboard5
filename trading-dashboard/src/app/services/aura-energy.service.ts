@@ -287,7 +287,7 @@ export class AuraEnergyService {
           </filter>
         </defs>
         <path id="aura-route" fill="none" stroke="none" />
-        <path id="aura-trail" class="aura-energy-line" style="stroke-width:${strokeWidth}" />
+        <path id="aura-trail" class="aura-energy-line" stroke-width="${strokeWidth}" />
         <circle class="aura-energy-head" r="${headRadius}" fill="${colorHead}" />
       </svg>`;
   }
@@ -321,7 +321,7 @@ export class AuraEnergyService {
           </filter>
         </defs>
         <path id="aura-route" fill="none" stroke="none" />
-        <path id="aura-trail" class="aura-energy-line" style="stroke-width:${strokeWidth}" />
+        <path id="aura-trail" class="aura-energy-line" stroke-width="${strokeWidth}" />
         <circle class="aura-energy-head" r="${headRadius}" fill="${colorHead}" />`;
   }
 
@@ -380,8 +380,8 @@ export class AuraEnergyService {
 
     const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
     const trailStart = Math.max(0, this.routeLength - trailLength);
-    const headFadeProgress = Math.min(1, progress / 0.35);
-    const trailRetractionProgress = Math.max(0, (progress - 0.35) / 0.65);
+    const headFadeProgress = Math.min(1, progress / 0.4);
+    const trailRetractionProgress = Math.max(0, (progress - 0.4) / 0.6);
     const trailEnd = this.routeLength - trailLength * trailRetractionProgress;
 
     head.style.opacity = `${1 - headFadeProgress}`;
