@@ -950,6 +950,38 @@ mt5AccountInfo: AccountSettings = {
 
   private applyTheme(): void {
     this.renderer[this.isDarkTheme ? 'addClass' : 'removeClass'](this.document.body, 'dark-theme');
+    this.updateChartTheme();
+  }
+
+  private updateChartTheme(): void {
+    const textColor = this.isDarkTheme ? '#C4B5FD' : '#64748b';
+    const gridColor = this.isDarkTheme ? 'rgba(167, 139, 250, 0.18)' : 'rgba(0, 0, 0, 0.08)';
+    const chartOptions = this.chartOptions as any;
+
+    this.chartOptions = {
+      ...chartOptions,
+      plugins: {
+        ...chartOptions.plugins,
+        legend: {
+          ...chartOptions.plugins.legend,
+          labels: { ...chartOptions.plugins.legend.labels, color: textColor }
+        }
+      },
+      scales: {
+        ...chartOptions.scales,
+        x: {
+          ...chartOptions.scales.x,
+          grid: { ...chartOptions.scales.x.grid, color: gridColor },
+          ticks: { ...chartOptions.scales.x.ticks, color: textColor }
+        },
+        y: {
+          ...chartOptions.scales.y,
+          grid: { ...chartOptions.scales.y.grid, color: gridColor },
+          ticks: { ...chartOptions.scales.y.ticks, color: textColor },
+          title: { ...chartOptions.scales.y.title, color: textColor }
+        }
+      }
+    };
   }
 
   startReconnect() {

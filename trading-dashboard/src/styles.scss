@@ -24,6 +24,15 @@ body.dark-theme app-root {
   background-color: #0f172a;
 }
 
+body.dark-theme .tradezella-dashboard .chart-canvas-wrapper {
+  background: #172033 !important;
+}
+
+body.dark-theme .tradezella-dashboard .chart-canvas-wrapper .trading-chart {
+  background: #172033 !important;
+  box-shadow: inset 0 1px 3px rgba(148, 163, 184, 0.12);
+}
+
 body.dark-theme .app-footer {
   background: #111827;
   border-top-color: #334155;
@@ -102,9 +111,13 @@ app-root {
   height: 100%;
   z-index: 1000;
   pointer-events: none;
-  opacity: 0;
-  filter: drop-shadow(0 0 3px rgba(124, 58, 237, 0.35)) drop-shadow(0 0 8px rgba(99, 102, 241, 0.2));
-  animation: aura-energy-visibility 4s ease-in-out forwards;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.65)) drop-shadow(0 0 14px rgba(167, 139, 250, 0.46));
+}
+
+.aura-energy-fading {
+  opacity: 0 !important;
+  transition: opacity 180ms ease;
 }
 
 .aura-energy-svg {
@@ -114,53 +127,59 @@ app-root {
   overflow: visible;
 }
 
+.aura-energy-guide {
+  display: none;
+}
+
 .aura-energy-line {
   fill: none;
   vector-effect: non-scaling-stroke;
   stroke: url(#aura-energy-gradient);
-  stroke-width: 3.2;
-  stroke-linecap: butt;
-  stroke-dasharray: 90 910;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 38 962;
   stroke-dashoffset: 1000;
   filter: url(#aura-energy-bloom);
-  opacity: 0.98;
-  animation: aura-energy-travel 5s linear 1;
+  opacity: 1;
+  animation: none;
 }
 
 .aura-energy-head {
-  fill: #F5F3FF;
+  fill: #fff;
   filter: url(#aura-energy-bloom);
-  opacity: 0.98;
+  opacity: 1;
 }
 
 .aura-energy-pathway-preview {
-  opacity: 0.7 !important;
+  opacity: 1 !important;
   animation: none !important;
 }
 
+.aura-energy-pathway-preview .aura-energy-guide {
+  display: none;
+}
+
 .aura-energy-pathway-preview .aura-energy-line {
-  stroke-dasharray: none;
-  stroke-dashoffset: 0;
-  opacity: 0.5;
+  stroke-dasharray: 38 962;
+  stroke-dashoffset: 1000;
+  opacity: 1;
   animation: none;
 }
 
 .aura-energy-pathway-preview .aura-energy-head {
-  display: none;
+  display: block;
 }
 
 @keyframes aura-energy-visibility {
   0% { opacity: 0; }
-  10% { opacity: 0.98; }
-  90% { opacity: 0.98; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
   100% { opacity: 0; }
 }
 
 @keyframes aura-energy-travel {
-  0% { stroke-dashoffset: 1000; opacity: 0.4; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.4; }
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
