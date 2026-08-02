@@ -116,14 +116,6 @@ interface Table {
             <div class="metric-value" [ngClass]="getPercentageClass()">
               {{ percentageOfAccount }}%
             </div>
-            <div class="metric-subtext">
-              <span *ngIf="percentageOfAccount >= 0" class="positive-indicator">
-                At Risk
-              </span>
-              <span *ngIf="percentageOfAccount < 0" class="negative-indicator">
-                At Risk
-              </span>
-            </div>
           </div>
 
           <!-- Total Unrealized P&L -->
