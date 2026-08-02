@@ -4381,10 +4381,16 @@ table.simple-table {
 // Section Styling
 .upload-section,
 .calendar-section,
-.table-section {
+.table-section,
+.mt5-import-section {
   padding: 0 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.calendar-section {
+  max-width: 1200px;
+  padding: 0 1.5rem 1.5rem;
 }
 
 .upload-card,
@@ -6394,6 +6400,157 @@ table.simple-table {
 
 .fade-in-up {
   animation: fadeInUp 0.3s ease-out;
+}
+
+.mt5-report-import {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background: var(--tf-bg-tertiary);
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+
+  .mt5-report-import-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-right: auto;
+
+    strong {
+      color: var(--tf-text-primary);
+      font-size: 0.9rem;
+    }
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.75rem;
+    }
+  }
+
+  .mt5-report-file-input {
+    display: none;
+  }
+
+  .mt5-sync-account-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 220px;
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    select {
+      min-height: 36px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--tf-border-primary);
+      border-radius: 6px;
+      background: var(--tf-bg-card);
+      color: var(--tf-text-primary);
+    }
+  }
+
+  .mt5-sync-status {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(14, 116, 144, 0.08));
+
+    .mt5-sync-status-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: #0f766e;
+      font-size: 0.8rem;
+
+      mat-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+      }
+    }
+
+    .mt5-sync-status-message {
+      color: var(--tf-text-secondary);
+      font-size: 0.75rem;
+    }
+
+    &.status-success {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.08);
+
+      .mt5-sync-status-header { color: var(--tf-positive); }
+    }
+
+    &.status-error {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+
+      .mt5-sync-status-header { color: var(--tf-negative); }
+    }
+  }
+
+  .mt5-sync-progress-track {
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(13, 148, 136, 0.16);
+  }
+
+  .mt5-sync-progress-bar {
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #14b8a6, #06b6d4);
+    animation: mt5-sync-progress 1.4s ease-in-out infinite;
+  }
+
+  .mt5-import-message,
+  .mt5-import-error {
+    flex-basis: 100%;
+    font-size: 0.8rem;
+  }
+
+  .mt5-import-message {
+    color: var(--tf-positive);
+  }
+
+  .mt5-import-error {
+    color: var(--tf-negative);
+  }
+}
+
+@keyframes mt5-sync-progress {
+  0% { transform: translateX(-120%); }
+  50% { transform: translateX(170%); }
+  100% { transform: translateX(300%); }
+}
+
+.mt5-imported-table-container {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+  background: var(--tf-bg-card);
+
+  .mt5-imported-table {
+    min-width: 1100px;
+    margin: 0;
+
+    th,
+    td {
+      white-space: nowrap;
+    }
+  }
 }
 
 // Simple Table Controls

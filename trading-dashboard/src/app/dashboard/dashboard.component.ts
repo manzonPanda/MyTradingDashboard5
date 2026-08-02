@@ -434,6 +434,8 @@ export class DashboardComponent implements AfterViewInit {
   rawData: any[] = [];
   // Active Account Table
   tableData: Table[] = []; // Initialize as empty array
+  mt5ImportedTrades: Table[] = [];
+  mt5SyncAccountId = '';
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
@@ -560,6 +562,10 @@ mt5AccountInfo: AccountSettings = {
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
+  mt5ImportMessage = '';
+  mt5ImportError = '';
+  mt5SyncStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
+  mt5SyncStatusMessage = '';
   isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
@@ -751,8 +757,8 @@ mt5AccountInfo: AccountSettings = {
         fill: true,
         tension: 0.4,
         pointBackgroundColor: 'rgb(16, 185, 129)',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
+        pointBorderColor: 'transparent',
+        pointBorderWidth: 0,
         pointRadius: 6,
         pointHoverRadius: 8,
         shadowOffsetX: 0,
@@ -804,7 +810,7 @@ mt5AccountInfo: AccountSettings = {
     },
     plugins: {
       legend: {
-        display: true,
+        display: false,
         position: 'top',
         labels: {
           usePointStyle: true,
@@ -818,6 +824,7 @@ mt5AccountInfo: AccountSettings = {
             // Show main chart elements in legend, hide profit target and max loss text
             return legendItem.text === 'Account Balance' ||
                    legendItem.text.includes('Current P&L') ||
+                   legendItem.text.startsWith('Daily Limit') ||
                    legendItem.text === '🟣 --- Starting Balance';
           }
         }
@@ -1529,6 +1536,7 @@ mt5AccountInfo: AccountSettings = {
     try {
       this.accounts = await this.supabaseService.getAccounts();
       this.selectedAccount = this.accounts[0] ?? null;
+      this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
       this.applySelectedAccountSettings();
     } catch (error) {
       console.error('Unable to load Supabase accounts:', error);
@@ -2059,6 +2067,128 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     if (file) {
       this.readExcelFile(file);  // Parse the Excel file
     }
+  }
+
+  onMt5ReportSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    this.mt5ImportMessage = '';
+    this.mt5ImportError = '';
+    const reader = new FileReader();
+    reader.onload = (loadEvent: ProgressEvent<FileReader>) => {
+      try {
+        const data = new Uint8Array(loadEvent.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1, defval: '' });
+        const headerIndex = rows.findIndex(row => this.isMt5PositionsHeader(row));
+
+        if (headerIndex < 0) {
+          this.mt5ImportError = 'No MT5 Positions table was found in this workbook.';
+          this.cdr.markForCheck();
+          return;
+        }
+
+        const headers = rows[headerIndex].map((value: unknown) => this.normalizeMt5Header(value));
+        const timeColumns = this.findMt5ColumnIndexes(headers, 'time');
+        const priceColumns = this.findMt5ColumnIndexes(headers, 'price');
+        const positionIndex = this.findMt5ColumnIndex(headers, 'position');
+        const symbolIndex = this.findMt5ColumnIndex(headers, 'symbol');
+        const typeIndex = this.findMt5ColumnIndex(headers, 'type');
+        const volumeIndex = this.findMt5ColumnIndex(headers, 'volume');
+        const stopLossIndex = this.findMt5ColumnIndex(headers, 's/l');
+        const takeProfitIndex = this.findMt5ColumnIndex(headers, 't/p');
+        const commissionIndex = this.findMt5ColumnIndex(headers, 'commission');
+        const swapIndex = this.findMt5ColumnIndex(headers, 'swap');
+        const profitIndex = this.findMt5ColumnIndex(headers, 'profit');
+
+        const positionRows = rows.slice(headerIndex + 1);
+        const ordersIndex = positionRows.findIndex(row => String(row[0] ?? '').trim().toLowerCase() === 'orders');
+        const importedTrades = (ordersIndex >= 0 ? positionRows.slice(0, ordersIndex) : positionRows)
+          .filter(row => row[symbolIndex] && row[positionIndex])
+          .map(row => {
+            const commission = this.toMt5Number(row[commissionIndex]);
+            const swap = this.toMt5Number(row[swapIndex]);
+            const profit = this.toMt5Number(row[profitIndex]);
+            return {
+              openDate: this.formatMt5Value(row[timeColumns[0]]),
+              tradeNotion: [],
+              status: 'Imported',
+              position: this.formatMt5Value(row[positionIndex]),
+              symbol: this.formatMt5Value(row[symbolIndex]),
+              type: this.formatMt5Value(row[typeIndex]),
+              volume: this.formatMt5Value(row[volumeIndex]),
+              entry: this.formatMt5Value(row[priceColumns[0]]),
+              sL: this.formatMt5Value(row[stopLossIndex]),
+              tP: this.formatMt5Value(row[takeProfitIndex]),
+              closeDate: this.formatMt5Value(row[timeColumns[1]]),
+              exit: this.formatMt5Value(row[priceColumns[1]]),
+              commission: commission.toFixed(2),
+              swap: swap.toFixed(2),
+              profit: profit.toFixed(2),
+              netProfit: (profit + commission + swap).toFixed(2),
+              riskPerTrade: '0',
+              rrr: '0',
+              mt5status: 'closed',
+              mfe: '0'
+            } as Table;
+          });
+
+        if (!importedTrades.length) {
+          this.mt5ImportError = 'The MT5 Positions table did not contain any trades.';
+          this.cdr.markForCheck();
+          return;
+        }
+
+        this.mt5ImportedTrades = importedTrades;
+        this.mt5ImportMessage = `${importedTrades.length} MT5 trade${importedTrades.length === 1 ? '' : 's'} imported.`;
+        this.cdr.markForCheck();
+      } catch (error) {
+        console.error('Unable to import MT5 report:', error);
+        this.mt5ImportError = 'The MT5 report could not be read. Please choose an Excel workbook.';
+        this.cdr.markForCheck();
+      }
+    };
+    reader.onerror = () => {
+      this.mt5ImportError = 'The MT5 report could not be read.';
+      this.cdr.markForCheck();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  private normalizeMt5Header(value: unknown): string {
+    return String(value ?? '').trim().toLowerCase().replace(/\s+/g, '');
+  }
+
+  private isMt5PositionsHeader(row: unknown[]): boolean {
+    const headers = row.map(value => this.normalizeMt5Header(value));
+    return headers.includes('position') && headers.includes('symbol') && headers.includes('profit');
+  }
+
+  private findMt5ColumnIndexes(headers: string[], name: string): number[] {
+    return headers.reduce((indexes: number[], header, index) => {
+      if (header === name) indexes.push(index);
+      return indexes;
+    }, []);
+  }
+
+  private findMt5ColumnIndex(headers: string[], name: string): number {
+    return headers.indexOf(name);
+  }
+
+  private formatMt5Value(value: unknown): string {
+    if (value instanceof Date) {
+      return `${String(value.getFullYear()).padStart(4, '0')}.${String(value.getMonth() + 1).padStart(2, '0')}.${String(value.getDate()).padStart(2, '0')} ${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`;
+    }
+    return String(value ?? '').trim();
+  }
+
+  private toMt5Number(value: unknown): number {
+    const parsed = Number(String(value ?? '').replace(/,/g, '').trim());
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
     // This method reads the Excel file and converts it into a usable format
@@ -2924,6 +3054,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   generateTradingChartData(): void {
     console.log('🎨 Generating beautiful trading chart data...');
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
+    const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
     let currentBalance = startingBalance;
     let cumulativePnL = 0;
     let peakBalance = startingBalance;
@@ -2999,6 +3130,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       });
     }
 
+    const dailyLimitBalance = currentBalance * (1 - dailyLimitPercent / 100);
+
     // If no trades, show empty chart with starting balance and reference lines
     if (sortedTrades.length === 0) {
       console.log('📊 No trade data found, showing empty chart...');
@@ -3018,8 +3151,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             fill: true,
             tension: 0.3,
             pointBackgroundColor: 'rgb(16, 185, 129)', // Green starting point
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 3,
+            pointBorderColor: 'transparent',
+            pointBorderWidth: 0,
             pointRadius: 8,
             pointHoverRadius: 12
           },
@@ -3029,6 +3162,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             borderColor: '#7c3aed',
             backgroundColor: 'transparent',
             borderWidth: 1,
+            borderDash: [8, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: 'transparent'
+          },
+          {
+            label: `Daily Limit (${this.mt5AccountInfo.dailyLossLimit}%)`,
+            data: [dailyLimitBalance],
+            borderColor: '#F59E0B',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
             borderDash: [8, 4],
             fill: false,
             tension: 0,
@@ -3127,8 +3274,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
             const profit = val - arr[i-1];
             return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
           }),
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
+          pointBorderColor: 'transparent',
+          pointBorderWidth: 0,
           pointRadius: balanceData.map((_, i, arr) => {
             if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
             return 6;
@@ -3141,6 +3288,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           borderColor: '#7c3aed',
           backgroundColor: 'transparent',
           borderWidth: 1,
+          borderDash: [8, 4],
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'transparent'
+        },
+        {
+          label: `Daily Limit (${this.mt5AccountInfo.dailyLossLimit}%)`,
+          data: new Array(labels.length).fill(dailyLimitBalance),
+          borderColor: '#F59E0B',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
           borderDash: [8, 4],
           fill: false,
           tension: 0,
@@ -5265,6 +5426,41 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   //   });
   // }
 
+  async syncImportedMt5Trades(): Promise<void> {
+    if (this.isSyncingMT5Trades || !this.mt5ImportedTrades.length) return;
+
+    const account = this.accounts.find(item => item.id === this.mt5SyncAccountId);
+    if (!account) {
+      this.mt5SyncStatus = 'error';
+      this.mt5SyncStatusMessage = 'Choose a Supabase account before syncing.';
+      this.snackBar.open('Choose a Supabase account before syncing.', 'Dismiss', { duration: 5000 });
+      return;
+    }
+
+    this.isSyncingMT5Trades = true;
+    this.mt5SyncStatus = 'syncing';
+    this.mt5SyncStatusMessage = `Preparing ${this.mt5ImportedTrades.length} trades for ${account.name}...`;
+    this.cdr.markForCheck();
+    try {
+      const trades = this.mt5ImportedTrades.map(trade => this.mapMt5TradeForSupabase(trade));
+      this.mt5SyncStatusMessage = `Matching tickets and syncing to ${account.name}...`;
+      this.cdr.markForCheck();
+      const { created, updated } = await this.supabaseService.syncTradesToAccount(trades, account.id);
+      this.mt5SyncStatus = 'success';
+      this.mt5SyncStatusMessage = `Sync complete: ${created} created, ${updated} updated in ${account.name}.`;
+      this.snackBar.open(`${created} imported trade${created === 1 ? '' : 's'} created, ${updated} updated in ${account.name}.`, 'Dismiss', { duration: 5000 });
+    } catch (error) {
+      console.error('Failed to sync imported MT5 trades to Supabase:', error);
+      const message = error instanceof Error ? error.message : 'Unknown sync error';
+      this.mt5SyncStatus = 'error';
+      this.mt5SyncStatusMessage = `Sync failed: ${message}`;
+      this.snackBar.open(`Import sync failed: ${message}`, 'Dismiss', { duration: 8000 });
+    } finally {
+      this.isSyncingMT5Trades = false;
+      this.cdr.markForCheck();
+    }
+  }
+
   async syncMT5Trades(): Promise<void> {
     if (this.isSyncingMT5Trades) return;
 
@@ -5295,7 +5491,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
     return {
       ticket: trade.position,
-      buy_sell: trade.type === 'Buy' ? 'Buy' : 'Sell',
+      buy_sell: trade.type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
       time_open: this.formatMt5DateForSupabase(trade.openDate),
       time_close: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
@@ -5315,10 +5511,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   private formatMt5DateForSupabase(date: string): string | undefined {
     if (!date || date === '-') return undefined;
 
-    const match = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
-    if (!match) return undefined;
+    const yearFirstMatch = date.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})/);
+    if (yearFirstMatch) {
+      const [, year, month, day, hour, minute] = yearFirstMatch;
+      return `${year}-${month}-${day}T${hour}:${minute}:00`;
+    }
 
-    const [, month, day, year, hour, minute] = match;
+    const monthFirstMatch = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/);
+    if (!monthFirstMatch) return undefined;
+
+    const [, month, day, year, hour, minute] = monthFirstMatch;
     return `${year}-${month}-${day}T${hour}:${minute}:00`;
   }
 

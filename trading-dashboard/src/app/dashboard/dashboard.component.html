@@ -1654,7 +1654,85 @@
     </div>
   </section>
 
-  
+  <section id="mt5-import" class="mt5-import-section" *ngIf="currentWorkspace === 'active-account'">
+    <div class="mt5-report-import">
+      <div class="mt5-report-import-copy">
+        <h2 class="section-title">Import MT5 positions</h2>
+        <span>Upload an exported .xlsx or .xls report to display its trades below the active account table.</span>
+      </div>
+      <label class="mt5-sync-account-field">
+        <span>Sync to account</span>
+        <select [(ngModel)]="mt5SyncAccountId" [disabled]="isSyncingMT5Trades">
+          <option value="" disabled>Choose an account</option>
+          <option *ngFor="let account of accounts" [value]="account.id">
+            {{ account.name }}{{ account.account_number ? ' #' + account.account_number : '' }}
+          </option>
+        </select>
+      </label>
+      <input #mt5ReportInput class="mt5-report-file-input" type="file" accept=".xlsx,.xls" (change)="onMt5ReportSelected($event)" />
+      <button class="btn-info" type="button" (click)="mt5ReportInput.click()">
+        <mat-icon>upload_file</mat-icon>
+        Choose MT5 Excel file
+      </button>
+      <button class="btn-teal" type="button" (click)="syncImportedMt5Trades()" [disabled]="!mt5ImportedTrades.length || !mt5SyncAccountId || isSyncingMT5Trades">
+        <mat-icon [class.spinning]="isSyncingMT5Trades">sync</mat-icon>
+        {{ isSyncingMT5Trades ? 'Syncing...' : 'Sync to Supabase' }}
+      </button>
+      <div class="mt5-sync-status" *ngIf="mt5SyncStatus !== 'idle'" [ngClass]="'status-' + mt5SyncStatus" role="status" aria-live="polite">
+        <div class="mt5-sync-status-header">
+          <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+          <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
+        </div>
+        <div class="mt5-sync-progress-track" *ngIf="mt5SyncStatus === 'syncing'">
+          <div class="mt5-sync-progress-bar"></div>
+        </div>
+        <span class="mt5-sync-status-message">{{ mt5SyncStatusMessage }}</span>
+      </div>
+      <span class="mt5-import-message" *ngIf="mt5ImportMessage">{{ mt5ImportMessage }}</span>
+      <span class="mt5-import-error" *ngIf="mt5ImportError">{{ mt5ImportError }}</span>
+    </div>
+
+    <div class="mt5-imported-table-container" *ngIf="mt5ImportedTrades.length">
+      <table class="modern-table mt5-imported-table">
+        <thead>
+          <tr>
+            <th>Open Time</th>
+            <th>Position</th>
+            <th>Symbol</th>
+            <th>Type</th>
+            <th>Volume</th>
+            <th>Open Price</th>
+            <th>S / L</th>
+            <th>T / P</th>
+            <th>Close Time</th>
+            <th>Close Price</th>
+            <th>Commission</th>
+            <th>Swap</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let trade of mt5ImportedTrades" [ngClass]="{ 'positive-row': isPositiveValue(trade.netProfit), 'negative-row': isNegativeValue(trade.netProfit) }">
+            <td>{{ trade.openDate }}</td>
+            <td>{{ trade.position }}</td>
+            <td>{{ trade.symbol }}</td>
+            <td>{{ trade.type }}</td>
+            <td>{{ trade.volume }}</td>
+            <td>{{ trade.entry }}</td>
+            <td>{{ trade.sL }}</td>
+            <td>{{ trade.tP }}</td>
+            <td>{{ trade.closeDate }}</td>
+            <td>{{ trade.exit }}</td>
+            <td>{{ getSafeNumber(trade.commission) | number:'1.2-2' }}</td>
+            <td>{{ getSafeNumber(trade.swap) | number:'1.2-2' }}</td>
+            <td [ngClass]="{ 'positive': isPositiveValue(trade.netProfit), 'negative': isNegativeValue(trade.netProfit) }">
+              {{ getSafeNumber(trade.profit) | number:'1.2-2' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <!-- Manual Data Update to Notion Section -->
   <section id="notion-update" class="upload-section" *ngIf="currentWorkspace === 'notion-update'">
