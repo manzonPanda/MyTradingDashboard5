@@ -350,8 +350,8 @@ export class SupabaseService {
       } else {
         const saved = await this.createTrade({
           ...accountTrade,
-          time_open: this.addFiveHours(accountTrade.time_open),
-          time_close: this.addFiveHours(accountTrade.time_close)
+          time_open: this.addThirteenHours(accountTrade.time_open),
+          time_close: this.addThirteenHours(accountTrade.time_close)
         });
         if (saved) created++;
       }
@@ -360,11 +360,11 @@ export class SupabaseService {
     return { created, updated };
   }
 
-  private addFiveHours(timestamp?: string): string | undefined {
+  private addThirteenHours(timestamp?: string): string | undefined {
     if (!timestamp) return undefined;
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return timestamp;
-    return new Date(date.getTime() + 5 * 60 * 60 * 1000).toISOString();
+    return new Date(date.getTime() + 13 * 60 * 60 * 1000).toISOString();
   }
 
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {
