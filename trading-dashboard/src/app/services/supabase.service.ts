@@ -352,7 +352,18 @@ export class SupabaseService {
 
       const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
-        const saved = await this.updateTrade(existing.id, accountTrade);
+        const updates = { ...accountTrade };
+        const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;
+        const hasRrrPlaceholder = updates.rrr === undefined || updates.rrr === null || updates.rrr === '' || updates.rrr === '0';
+
+        if (existing.risk_per_trade !== null && existing.risk_per_trade !== undefined && hasRiskPlaceholder) {
+          delete updates.risk_per_trade;
+        }
+        if (existing.rrr !== null && existing.rrr !== undefined && hasRrrPlaceholder) {
+          delete updates.rrr;
+        }
+
+        const saved = await this.updateTrade(existing.id, updates);
         if (saved) updated++;
       } else {
         const saved = await this.createTrade({
