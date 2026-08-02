@@ -425,9 +425,6 @@ export class AuraEnergyService {
     let path = this.roundedRectPath(routeData[0]);
     for (let index = 1; index < routeData.length; index += 1) {
       const connector = this.createOrthogonalConnector(routeData[index - 1], routeData[index]);
-      if (!connector) {
-        break;
-      }
       path += connector + this.roundedRectPath(routeData[index], true);
     }
 
@@ -450,22 +447,20 @@ export class AuraEnergyService {
     return `${start} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius} Q ${left} ${top} ${left + radius} ${top} Z`;
   }
 
-  private createOrthogonalConnector(previous: RouteBox, next: RouteBox): string | undefined {
+  private createOrthogonalConnector(previous: RouteBox, next: RouteBox): string {
     const horizontalGap = next.left - previous.right;
     if (horizontalGap > 0) {
       const gutterX = previous.right + horizontalGap / 2;
-      const sharedY = Math.max(previous.top, Math.min(next.top, previous.bottom));
-      return ` M ${previous.right} ${sharedY} H ${gutterX} V ${next.top} H ${next.left + next.radius}`;
+      return ` H ${gutterX} V ${next.top} H ${next.left + next.radius}`;
     }
 
     const verticalGap = next.top - previous.bottom;
     if (verticalGap > 0) {
       const gutterY = previous.bottom + verticalGap / 2;
-      const sharedX = Math.max(previous.left, Math.min(next.left, previous.right));
-      return ` M ${sharedX} ${previous.bottom} V ${gutterY} H ${next.left + next.radius} V ${next.top}`;
+      return ` V ${gutterY} H ${next.left + next.radius} V ${next.top}`;
     }
 
-    return undefined;
+    return ` H ${next.left + next.radius} V ${next.top}`;
   }
 
   private finishTraveler(): void {
