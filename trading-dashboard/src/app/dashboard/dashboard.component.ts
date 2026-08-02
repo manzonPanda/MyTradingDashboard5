@@ -461,6 +461,10 @@ export class DashboardComponent implements AfterViewInit {
       : [];
   }
 
+  get hasFixTicketMatches(): boolean {
+    return this.fixTicketRows.some(row => row.matched);
+  }
+
   get syncAccounts(): Account[] {
     return [...this.accounts].sort((left, right) => {
       const leftDate = left.start_date ? Date.parse(left.start_date) : Number.POSITIVE_INFINITY;
@@ -577,6 +581,15 @@ mt5AccountInfo: AccountSettings = {
   mt5ImportError = '';
   mt5SyncStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
   mt5SyncStatusMessage = '';
+  fixTicketAccountId = '';
+  fixTicketFileName = '';
+  fixTicketRows: { openTime: string; adjustedOpenTime: string; ticket: string; matched: boolean; matchedTradeId?: string }[] = [];
+  fixTicketDbRows: Trade[] = [];
+  fixTicketComparisonVisible = false;
+  isFixingTradeTickets = false;
+  fixTicketStatus: 'idle' | 'ready' | 'fixing' | 'success' | 'error' = 'idle';
+  fixTicketStatusMessage = '';
+  fixTicketProgress = 0;
   mt5SyncProgress = 0;
   mt5SyncProcessed = 0;
   mt5SyncTotal = 0;
@@ -2173,6 +2186,169 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       this.cdr.markForCheck();
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  onFixTicketFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    this.fixTicketRows = [];
+    this.fixTicketDbRows = [];
+    this.fixTicketComparisonVisible = false;
+    this.fixTicketFileName = file?.name || '';
+    this.fixTicketStatus = 'idle';
+    this.fixTicketStatusMessage = '';
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = loadEvent => {
+      try {
+        const data = new Uint8Array(loadEvent.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1, defval: '' });
+        const headerIndex = rows.findIndex(row => this.isMt5PositionsHeader(row));
+        if (headerIndex < 0) throw new Error('No MT5 Positions table was found in this workbook.');
+
+        const headers = rows[headerIndex].map(value => this.normalizeMt5Header(value));
+        const timeIndex = this.findMt5ColumnIndex(headers, 'time');
+        const positionIndex = this.findMt5ColumnIndex(headers, 'position');
+        if (timeIndex < 0 || positionIndex < 0) throw new Error('The report is missing the Time or Position column.');
+
+        const positionRows = rows.slice(headerIndex + 1);
+        const ordersIndex = positionRows.findIndex(row => String(row[0] ?? '').trim().toLowerCase() === 'orders');
+        const importedRows = (ordersIndex >= 0 ? positionRows.slice(0, ordersIndex) : positionRows)
+          .filter(row => row[positionIndex] !== '' && row[positionIndex] !== null && row[timeIndex] !== '' && row[timeIndex] !== null)
+          .map(row => {
+            const openTime = this.formatMt5Value(row[timeIndex]);
+            return {
+              openTime,
+              adjustedOpenTime: this.formatMt5AdjustedMinute(row[timeIndex]),
+              ticket: this.formatMt5Ticket(row[positionIndex]),
+              matched: false
+            };
+          })
+          .filter(row => row.ticket && row.openTime);
+
+        if (!importedRows.length) throw new Error('No ticket and open-time pairs were found in the workbook.');
+        this.fixTicketRows = importedRows;
+        this.fixTicketStatus = 'ready';
+        this.fixTicketStatusMessage = `${importedRows.length} ticket${importedRows.length === 1 ? '' : 's'} ready to match.`;
+      } catch (error) {
+        this.fixTicketStatus = 'error';
+        this.fixTicketStatusMessage = error instanceof Error ? error.message : 'The MT5 report could not be read.';
+      }
+      this.cdr.markForCheck();
+    };
+    reader.onerror = () => {
+      this.fixTicketStatus = 'error';
+      this.fixTicketStatusMessage = 'The MT5 report could not be read.';
+      this.cdr.markForCheck();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  async compareNullTradeTickets(): Promise<void> {
+    if (this.isFixingTradeTickets || !this.fixTicketRows.length || !this.fixTicketAccountId) return;
+
+    this.isFixingTradeTickets = true;
+    this.fixTicketStatus = 'fixing';
+    this.fixTicketProgress = 5;
+    this.fixTicketStatusMessage = 'Loading trades with null tickets...';
+    this.cdr.markForCheck();
+
+    try {
+      const nullTicketTrades = await this.supabaseService.getTradesWithNullTickets(this.fixTicketAccountId);
+      this.fixTicketDbRows = nullTicketTrades;
+      this.fixTicketComparisonVisible = true;
+      const dbTradesByMinute = new Map<string, Trade[]>();
+      for (const trade of nullTicketTrades) {
+        const key = this.getMt5MinuteKey(trade.time_open);
+        if (!key) continue;
+        const tradesForMinute = dbTradesByMinute.get(key) || [];
+        tradesForMinute.push(trade);
+        dbTradesByMinute.set(key, tradesForMinute);
+      }
+
+      let matched = 0;
+      this.fixTicketRows = this.fixTicketRows.map(row => {
+        const key = this.getMt5MinuteKey(row.openTime, 5);
+        const tradesForMinute = key ? dbTradesByMinute.get(key) : undefined;
+        const matchingTrade = tradesForMinute?.shift();
+        if (matchingTrade?.id) matched++;
+        return { ...row, matched: Boolean(matchingTrade?.id), matchedTradeId: matchingTrade?.id };
+      });
+
+      this.fixTicketProgress = 100;
+      this.fixTicketStatus = 'success';
+      this.fixTicketStatusMessage = `Comparison complete: ${matched} of ${this.fixTicketRows.length} Excel positions matched. Review the tables, then patch matched tickets.`;
+    } catch (error) {
+      this.fixTicketStatus = 'error';
+      this.fixTicketStatusMessage = error instanceof Error ? error.message : 'Ticket comparison failed.';
+    } finally {
+      this.isFixingTradeTickets = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async patchMatchedTradeTickets(): Promise<void> {
+    const matchedRows = this.fixTicketRows.filter(row => row.matched && row.matchedTradeId);
+    if (this.isFixingTradeTickets || !matchedRows.length) return;
+
+    this.isFixingTradeTickets = true;
+    this.fixTicketStatus = 'fixing';
+    this.fixTicketProgress = 0;
+    this.fixTicketStatusMessage = `Patching 0 of ${matchedRows.length} matched tickets...`;
+    this.cdr.markForCheck();
+
+    try {
+      for (const [index, row] of matchedRows.entries()) {
+        await this.supabaseService.updateTradeTicket(row.matchedTradeId!, row.ticket);
+        this.fixTicketProgress = Math.round(((index + 1) / matchedRows.length) * 100);
+        this.fixTicketStatusMessage = `Patched ${index + 1} of ${matchedRows.length} matched tickets.`;
+        this.cdr.markForCheck();
+      }
+      this.fixTicketStatus = 'success';
+      this.fixTicketStatusMessage = `${matchedRows.length} matched ticket${matchedRows.length === 1 ? '' : 's'} patched to Supabase.`;
+    } catch (error) {
+      this.fixTicketStatus = 'error';
+      this.fixTicketStatusMessage = error instanceof Error ? error.message : 'Ticket patching failed.';
+    } finally {
+      this.isFixingTradeTickets = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  dismissFixTicketStatus(): void {
+    if (this.isFixingTradeTickets) return;
+    this.fixTicketStatus = this.fixTicketRows.length ? 'ready' : 'idle';
+    this.fixTicketStatusMessage = this.fixTicketRows.length ? `${this.fixTicketRows.length} ticket${this.fixTicketRows.length === 1 ? '' : 's'} ready to match.` : '';
+    this.cdr.markForCheck();
+  }
+
+  private formatMt5AdjustedMinute(value: unknown): string {
+    const key = this.getMt5MinuteKey(this.formatMt5Value(value), 5);
+    return key ? `${key.replace('T', ' ')}:00` : this.formatMt5Value(value);
+  }
+
+  formatMt5ComparisonTime(value?: string): string {
+    const key = this.getMt5MinuteKey(value);
+    return key ? `${key.replace('T', ' ')}:00` : value || '-';
+  }
+
+  private formatMt5Ticket(value: unknown): string {
+    const formatted = this.formatMt5Value(value);
+    const numeric = Number(formatted);
+    return Number.isFinite(numeric) ? String(Math.trunc(numeric)) : formatted;
+  }
+
+  private getMt5MinuteKey(value?: string, addHours = 0): string | undefined {
+    if (!value) return undefined;
+    const match = value.match(/^(\d{4})[.-](\d{2})[.-](\d{2})[\sT]+(\d{2}):(\d{2})/);
+    if (!match) return undefined;
+    const [, year, month, day, hour, minute] = match.map(Number);
+    const timestamp = Date.UTC(year, month - 1, day, hour, minute) + addHours * 60 * 60 * 1000;
+    return new Date(timestamp).toISOString().slice(0, 16);
   }
 
   private normalizeMt5Header(value: unknown): string {

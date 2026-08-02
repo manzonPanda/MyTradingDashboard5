@@ -6616,6 +6616,165 @@ table.simple-table {
   }
 }
 
+.fix-ticket-section {
+  margin-top: 1rem;
+}
+
+.fix-ticket-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+  background: var(--tf-bg-tertiary);
+
+  .mt5-report-file-input {
+    display: none;
+  }
+
+  .fix-ticket-copy {
+    display: flex;
+    flex: 1 1 260px;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-right: auto;
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.75rem;
+    }
+  }
+
+  .fix-ticket-status {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-left: 3px solid #14b8a6;
+    border-radius: 8px;
+    background: var(--tf-bg-card);
+    color: var(--tf-text-secondary);
+    font-size: 0.75rem;
+
+    &.status-success { border-left-color: var(--tf-positive); }
+    &.status-error { border-left-color: var(--tf-negative); }
+  }
+
+  .fix-ticket-status-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--tf-text-primary);
+  }
+
+  .fix-ticket-dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--tf-text-secondary);
+    cursor: pointer;
+
+    &:hover { background: rgba(100, 116, 139, 0.14); }
+
+    mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+}
+
+.fix-ticket-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  flex-basis: 100%;
+  margin-top: 0.25rem;
+}
+
+.fix-ticket-table-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 8px;
+  background: var(--tf-bg-card);
+
+  h3 {
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    color: var(--tf-text-primary);
+    font-size: 0.78rem;
+  }
+}
+
+.fix-ticket-table-scroll {
+  max-height: 280px;
+  overflow: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+  }
+
+  th,
+  td {
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--tf-bg-secondary);
+    color: var(--tf-text-secondary);
+    font-weight: 600;
+  }
+
+  td {
+    color: var(--tf-text-primary);
+  }
+
+  tr:last-child td { border-bottom: 0; }
+}
+
+.fix-ticket-patch-button {
+  flex-basis: 100%;
+  justify-content: center;
+}
+
+.fix-ticket-match {
+  color: var(--tf-positive) !important;
+  font-weight: 700;
+}
+
+.fix-ticket-progress-track {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(13, 148, 136, 0.16);
+}
+
+.fix-ticket-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #06b6d4);
+  transition: width 220ms ease;
+}
+
 .mt5-imported-table-container {
   margin-top: 1rem;
   overflow-x: auto;

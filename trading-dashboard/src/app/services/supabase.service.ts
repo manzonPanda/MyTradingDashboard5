@@ -229,6 +229,21 @@ export class SupabaseService {
     return data as Trade | null;
   }
 
+  async getTradesWithNullTickets(accountId: string): Promise<Trade[]> {
+    const { data, error } = await this.supabase
+      .from('trades')
+      .select('id, account_id, ticket, time_open')
+      .eq('account_id', accountId)
+      .is('ticket', null)
+      .order('time_open', { ascending: true, nullsFirst: false });
+    if (error) throw new Error(`Null-ticket trade lookup failed: ${error.message}`);
+    return (data as Trade[]) || [];
+  }
+
+  async updateTradeTicket(id: string, ticket: number | string): Promise<Trade | null> {
+    return this.updateTrade(id, { ticket });
+  }
+
   /**
    * Fetch all trades from Supabase, ordered by time_open descending,
    * and map them to the NotionPerformanceData shape that the dashboard
