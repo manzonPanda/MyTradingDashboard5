@@ -2101,11 +2101,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         const swapIndex = this.findMt5ColumnIndex(headers, 'swap');
         const profitIndex = this.findMt5ColumnIndex(headers, 'profit');
 
-        const importedTrades = rows.slice(headerIndex + 1)
-          .filter(row => {
-            const firstCell = String(row[0] ?? '').trim().toLowerCase();
-            return firstCell !== 'orders' && firstCell !== 'deals' && row[symbolIndex] && row[positionIndex];
-          })
+        const positionRows = rows.slice(headerIndex + 1);
+        const ordersIndex = positionRows.findIndex(row => String(row[0] ?? '').trim().toLowerCase() === 'orders');
+        const importedTrades = (ordersIndex >= 0 ? positionRows.slice(0, ordersIndex) : positionRows)
+          .filter(row => row[symbolIndex] && row[positionIndex])
           .map(row => {
             const commission = this.toMt5Number(row[commissionIndex]);
             const swap = this.toMt5Number(row[swapIndex]);
@@ -2157,7 +2156,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   private normalizeMt5Header(value: unknown): string {
-    return String(value ?? '').trim().toLowerCase().replace(/\\s+/g, '');
+    return String(value ?? '').trim().toLowerCase().replace(/\s+/g, '');
   }
 
   private isMt5PositionsHeader(row: unknown[]): boolean {
