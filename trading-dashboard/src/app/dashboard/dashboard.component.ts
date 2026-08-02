@@ -5488,6 +5488,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  dismissMt5SyncStatus(): void {
+    if (this.isSyncingMT5Trades) return;
+    this.mt5SyncStatus = 'idle';
+    this.mt5SyncStatusMessage = '';
+    this.cdr.markForCheck();
+  }
+
   async syncMT5Trades(): Promise<void> {
     if (this.isSyncingMT5Trades) return;
 

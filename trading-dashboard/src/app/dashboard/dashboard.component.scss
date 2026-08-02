@@ -6456,13 +6456,16 @@ table.simple-table {
   }
 
   .mt5-sync-status {
-    flex: 0 1 420px;
-    width: min(100%, 420px);
-    min-width: 280px;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+    width: min(420px, calc(100vw - 2rem));
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    margin-left: auto;
+    margin: 0;
     padding: 0.55rem 0.7rem;
     border: 1px solid rgba(45, 212, 191, 0.28);
     border-left: 3px solid #14b8a6;
@@ -6475,6 +6478,37 @@ table.simple-table {
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
+    }
+
+    .mt5-sync-notification-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .mt5-sync-dismiss-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--tf-text-secondary);
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(100, 116, 139, 0.14);
+        color: var(--tf-text-primary);
+      }
+
+      mat-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+      }
     }
 
     .mt5-sync-status-header {

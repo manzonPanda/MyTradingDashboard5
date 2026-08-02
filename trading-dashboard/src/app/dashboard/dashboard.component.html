@@ -1684,9 +1684,20 @@
             <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
             <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
           </div>
-          <div class="mt5-sync-progress-summary" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success' || mt5SyncStatus === 'error'">
-            <strong>{{ mt5SyncProgress }}%</strong>
-            <span>{{ mt5SyncProcessed }} / {{ mt5SyncTotal }} trades</span>
+          <div class="mt5-sync-notification-actions">
+            <div class="mt5-sync-progress-summary" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success' || mt5SyncStatus === 'error'">
+              <strong>{{ mt5SyncProgress }}%</strong>
+              <span>{{ mt5SyncProcessed }} / {{ mt5SyncTotal }} trades</span>
+            </div>
+            <button
+              *ngIf="mt5SyncStatus !== 'syncing'"
+              class="mt5-sync-dismiss-button"
+              type="button"
+              aria-label="Close sync notification"
+              title="Close notification"
+              (click)="dismissMt5SyncStatus()">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
         </div>
         <div class="mt5-sync-progress-track" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success'">
