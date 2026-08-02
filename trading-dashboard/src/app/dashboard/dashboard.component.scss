@@ -4382,7 +4382,8 @@ table.simple-table {
 .upload-section,
 .calendar-section,
 .table-section,
-.mt5-import-section {
+.mt5-import-section,
+.fix-ticket-section {
   padding: 0 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -6456,21 +6457,67 @@ table.simple-table {
   }
 
   .mt5-sync-status {
-    flex-basis: 100%;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+    width: min(480px, calc(100vw - 2rem));
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0.35rem;
+    margin: 0;
     padding: 0.7rem 0.85rem;
     border: 1px solid rgba(45, 212, 191, 0.28);
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(14, 116, 144, 0.08));
+    border-left: 3px solid #14b8a6;
+    border-radius: 8px;
+    background: var(--tf-bg-card);
+    box-shadow: 0 4px 14px rgba(15, 118, 110, 0.08);
+
+    .mt5-sync-status-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .mt5-sync-notification-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .mt5-sync-dismiss-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--tf-text-secondary);
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(100, 116, 139, 0.14);
+        color: var(--tf-text-primary);
+      }
+
+      mat-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+      }
+    }
 
     .mt5-sync-status-header {
       display: flex;
       align-items: center;
       gap: 0.45rem;
       color: #0f766e;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
 
       mat-icon {
         width: 18px;
@@ -6480,38 +6527,79 @@ table.simple-table {
     }
 
     .mt5-sync-status-message {
+      overflow: hidden;
       color: var(--tf-text-secondary);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
+      line-height: 1.3;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mt5-sync-progress-summary,
+    .mt5-sync-counts {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      color: var(--tf-text-secondary);
+      font-size: 0.68rem;
+      white-space: nowrap;
+    }
+
+    .mt5-sync-progress-summary {
+      align-items: baseline;
+      justify-content: flex-end;
+
+      strong {
+        color: var(--tf-text-primary);
+        font-size: 0.84rem;
+      }
+    }
+
+    .mt5-sync-counts {
+      justify-content: flex-start;
+      color: var(--tf-text-primary);
+
+      span + span::before {
+        content: '•';
+        margin-right: 0.75rem;
+        color: var(--tf-text-secondary);
+      }
     }
 
     &.status-success {
       border-color: rgba(16, 185, 129, 0.3);
-      background: rgba(16, 185, 129, 0.08);
+      background: var(--tf-bg-card);
+      opacity: 1;
+
+      border-left-color: var(--tf-positive);
 
       .mt5-sync-status-header { color: var(--tf-positive); }
     }
 
     &.status-error {
       border-color: rgba(239, 68, 68, 0.3);
-      background: rgba(239, 68, 68, 0.08);
+      background: var(--tf-bg-card);
+      opacity: 1;
+
+      border-left-color: var(--tf-negative);
 
       .mt5-sync-status-header { color: var(--tf-negative); }
     }
   }
 
   .mt5-sync-progress-track {
-    height: 4px;
+    height: 3px;
     overflow: hidden;
     border-radius: 999px;
     background: rgba(13, 148, 136, 0.16);
   }
 
   .mt5-sync-progress-bar {
-    width: 38%;
     height: 100%;
+    min-width: 0;
     border-radius: inherit;
     background: linear-gradient(90deg, #14b8a6, #06b6d4);
-    animation: mt5-sync-progress 1.4s ease-in-out infinite;
+    transition: width 220ms ease;
   }
 
   .mt5-import-message,
@@ -6529,10 +6617,181 @@ table.simple-table {
   }
 }
 
-@keyframes mt5-sync-progress {
-  0% { transform: translateX(-120%); }
-  50% { transform: translateX(170%); }
-  100% { transform: translateX(300%); }
+.fix-ticket-section {
+  margin-top: 1rem;
+}
+
+.fix-ticket-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+  background: var(--tf-bg-tertiary);
+
+  .mt5-report-file-input {
+    display: none;
+  }
+
+  .fix-ticket-copy {
+    display: flex;
+    flex: 1 1 260px;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-right: auto;
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.75rem;
+    }
+  }
+
+  .fix-ticket-status {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-left: 3px solid #14b8a6;
+    border-radius: 8px;
+    background: var(--tf-bg-card);
+    color: var(--tf-text-secondary);
+    font-size: 0.75rem;
+
+    &.status-success { border-left-color: var(--tf-positive); }
+    &.status-error { border-left-color: var(--tf-negative); }
+  }
+
+  .fix-ticket-status-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--tf-text-primary);
+  }
+
+  .fix-ticket-dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--tf-text-secondary);
+    cursor: pointer;
+
+    &:hover { background: rgba(100, 116, 139, 0.14); }
+
+    mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+}
+
+.fix-ticket-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  flex-basis: 100%;
+  margin-top: 0.25rem;
+}
+
+.fix-ticket-table-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 8px;
+  background: var(--tf-bg-card);
+
+  h3 {
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    color: var(--tf-text-primary);
+    font-size: 0.78rem;
+  }
+}
+
+.fix-ticket-input {
+  width: 100%;
+  min-width: 90px;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 5px;
+  background: var(--tf-bg-secondary);
+  color: var(--tf-text-primary);
+  font: inherit;
+
+  &:disabled {
+    border-color: rgba(20, 184, 166, 0.4);
+    background: rgba(20, 184, 166, 0.1);
+    color: var(--tf-positive);
+    font-weight: 700;
+  }
+}
+
+.fix-ticket-table-scroll {
+  max-height: 280px;
+  overflow: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+  }
+
+  th,
+  td {
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--tf-border-primary);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--tf-bg-secondary);
+    color: var(--tf-text-secondary);
+    font-weight: 600;
+  }
+
+  td {
+    color: var(--tf-text-primary);
+  }
+
+  tr:last-child td { border-bottom: 0; }
+}
+
+.fix-ticket-patch-button {
+  flex-basis: 100%;
+  justify-content: center;
+}
+
+.fix-ticket-match {
+  color: var(--tf-positive) !important;
+  font-weight: 700;
+}
+
+.fix-ticket-progress-track {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(13, 148, 136, 0.16);
+}
+
+.fix-ticket-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #06b6d4);
+  transition: width 220ms ease;
 }
 
 .mt5-imported-table-container {

@@ -229,6 +229,21 @@ export class SupabaseService {
     return data as Trade | null;
   }
 
+  async getTradesWithNullTickets(accountId: string): Promise<Trade[]> {
+    const { data, error } = await this.supabase
+      .from('trades')
+      .select('id, account_id, ticket, time_open')
+      .eq('account_id', accountId)
+      .is('ticket', null)
+      .order('time_open', { ascending: true, nullsFirst: false });
+    if (error) throw new Error(`Null-ticket trade lookup failed: ${error.message}`);
+    return (data as Trade[]) || [];
+  }
+
+  async updateTradeTicket(id: string, ticket: number | string): Promise<Trade | null> {
+    return this.updateTrade(id, { ticket });
+  }
+
   /**
    * Fetch all trades from Supabase, ordered by time_open descending,
    * and map them to the NotionPerformanceData shape that the dashboard
@@ -335,36 +350,71 @@ export class SupabaseService {
     return this.syncTradesToAccount(trades, accountId);
   }
 
-  async syncTradesToAccount(trades: Partial<Trade>[], accountId: string): Promise<{ created: number; updated: number }> {
+  async syncTradesToAccount(
+    trades: Partial<Trade>[],
+    accountId: string,
+    onProgress?: (processed: number, total: number, created: number, updated: number) => void
+  ): Promise<{ created: number; updated: number }> {
     let created = 0;
     let updated = 0;
 
-    for (const trade of trades) {
+    for (const [index, trade] of trades.entries()) {
       const accountTrade = { ...trade, account_id: accountId };
-      if (accountTrade.ticket === undefined || accountTrade.ticket === null) continue;
+      if (accountTrade.ticket === undefined || accountTrade.ticket === null) {
+        onProgress?.(index + 1, trades.length, created, updated);
+        continue;
+      }
 
       const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
-        const saved = await this.updateTrade(existing.id, accountTrade);
+        const updates = { ...accountTrade };
+        const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;
+        const hasRrrPlaceholder = updates.rrr === undefined || updates.rrr === null || updates.rrr === '' || updates.rrr === '0';
+        const hasReflectionPlaceholder = updates.daily_reflection === undefined || updates.daily_reflection === null || updates.daily_reflection === '';
+        const hasRulesPlaceholder = updates.rules_violated === undefined || updates.rules_violated === null || updates.rules_violated === '';
+        const hasRetrospectivePlaceholder = updates.weekly_retrospective === undefined || updates.weekly_retrospective === null || updates.weekly_retrospective === '';
+        const hasMupPlaceholder = updates.mup === undefined || updates.mup === null;
+
+        if (existing.risk_per_trade !== null && existing.risk_per_trade !== undefined && hasRiskPlaceholder) {
+          delete updates.risk_per_trade;
+        }
+        if (existing.rrr !== null && existing.rrr !== undefined && hasRrrPlaceholder) {
+          delete updates.rrr;
+        }
+        if (existing.daily_reflection !== null && existing.daily_reflection !== undefined && hasReflectionPlaceholder) {
+          delete updates.daily_reflection;
+        }
+        if (existing.rules_violated !== null && existing.rules_violated !== undefined && hasRulesPlaceholder) {
+          delete updates.rules_violated;
+        }
+        if (existing.weekly_retrospective !== null && existing.weekly_retrospective !== undefined && hasRetrospectivePlaceholder) {
+          delete updates.weekly_retrospective;
+        }
+        if (existing.mup !== null && existing.mup !== undefined && hasMupPlaceholder) {
+          delete updates.mup;
+        }
+
+        const saved = await this.updateTrade(existing.id, updates);
         if (saved) updated++;
       } else {
         const saved = await this.createTrade({
           ...accountTrade,
-          time_open: this.addFiveHours(accountTrade.time_open),
-          time_close: this.addFiveHours(accountTrade.time_close)
+          time_open: this.addThirteenHours(accountTrade.time_open),
+          time_close: this.addThirteenHours(accountTrade.time_close)
         });
         if (saved) created++;
       }
+      onProgress?.(index + 1, trades.length, created, updated);
     }
 
     return { created, updated };
   }
 
-  private addFiveHours(timestamp?: string): string | undefined {
+  private addThirteenHours(timestamp?: string): string | undefined {
     if (!timestamp) return undefined;
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return timestamp;
-    return new Date(date.getTime() + 5 * 60 * 60 * 1000).toISOString();
+    return new Date(date.getTime() + 13 * 60 * 60 * 1000).toISOString();
   }
 
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {

@@ -1664,7 +1664,7 @@
         <span>Sync to account</span>
         <select [(ngModel)]="mt5SyncAccountId" [disabled]="isSyncingMT5Trades">
           <option value="" disabled>Choose an account</option>
-          <option *ngFor="let account of accounts" [value]="account.id">
+          <option *ngFor="let account of syncAccounts" [value]="account.id">
             {{ account.name }}{{ account.account_number ? ' #' + account.account_number : '' }}
           </option>
         </select>
@@ -1679,12 +1679,33 @@
         {{ isSyncingMT5Trades ? 'Syncing...' : 'Sync to Supabase' }}
       </button>
       <div class="mt5-sync-status" *ngIf="mt5SyncStatus !== 'idle'" [ngClass]="'status-' + mt5SyncStatus" role="status" aria-live="polite">
-        <div class="mt5-sync-status-header">
-          <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
-          <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
+        <div class="mt5-sync-status-topline">
+          <div class="mt5-sync-status-header">
+            <mat-icon>{{ mt5SyncStatus === 'syncing' ? 'sync' : mt5SyncStatus === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+            <strong>{{ mt5SyncStatus === 'syncing' ? 'Sync in progress' : mt5SyncStatus === 'success' ? 'Supabase sync complete' : 'Supabase sync needs attention' }}</strong>
+          </div>
+          <div class="mt5-sync-notification-actions">
+            <div class="mt5-sync-progress-summary" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success' || mt5SyncStatus === 'error'">
+              <strong>{{ mt5SyncProgress }}%</strong>
+              <span>{{ mt5SyncProcessed }} / {{ mt5SyncTotal }} trades</span>
+            </div>
+            <button
+              *ngIf="mt5SyncStatus !== 'syncing'"
+              class="mt5-sync-dismiss-button"
+              type="button"
+              aria-label="Close sync notification"
+              title="Close notification"
+              (click)="dismissMt5SyncStatus()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
         </div>
-        <div class="mt5-sync-progress-track" *ngIf="mt5SyncStatus === 'syncing'">
-          <div class="mt5-sync-progress-bar"></div>
+        <div class="mt5-sync-progress-track" *ngIf="mt5SyncStatus === 'syncing' || mt5SyncStatus === 'success'">
+          <div class="mt5-sync-progress-bar" [style.width.%]="mt5SyncProgress"></div>
+        </div>
+        <div class="mt5-sync-counts" *ngIf="mt5SyncProcessed > 0">
+          <span>{{ mt5SyncCreated }} created</span>
+          <span>{{ mt5SyncUpdated }} updated</span>
         </div>
         <span class="mt5-sync-status-message">{{ mt5SyncStatusMessage }}</span>
       </div>
@@ -1731,6 +1752,99 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <section id="fix-trade-ticket" class="fix-ticket-section" *ngIf="currentWorkspace === 'active-account'">
+    <div class="mt5-report-import fix-ticket-card">
+      <div class="mt5-report-import-copy fix-ticket-copy">
+        <h2 class="section-title">Fix Trade Ticket/Position</h2>
+        <span>Match null-ticket trades by open date and minute, then populate their MT5 position IDs.</span>
+      </div>
+      <label class="mt5-sync-account-field">
+        <span>Account to fix</span>
+        <select [(ngModel)]="fixTicketAccountId" [disabled]="isFixingTradeTickets">
+          <option value="" disabled>Choose an account</option>
+          <option *ngFor="let account of syncAccounts" [value]="account.id">
+            {{ account.name }}{{ account.account_number ? ' #' + account.account_number : '' }}
+          </option>
+        </select>
+      </label>
+      <input #fixTicketFileInput class="mt5-report-file-input" type="file" accept=".xlsx,.xls" (change)="onFixTicketFileSelected($event)" />
+      <button class="btn-info" type="button" (click)="fixTicketFileInput.click()" [disabled]="isFixingTradeTickets">
+        <mat-icon>upload_file</mat-icon>
+        {{ fixTicketFileName || 'Choose MT5 Excel file' }}
+      </button>
+      <button class="btn-teal" type="button" (click)="compareNullTradeTickets()" [disabled]="!fixTicketRows.length || !fixTicketAccountId || isFixingTradeTickets">
+        <mat-icon [class.spinning]="isFixingTradeTickets">compare_arrows</mat-icon>
+        {{ isFixingTradeTickets ? 'Comparing...' : 'Fix Ticket ID' }}
+      </button>
+      <div class="fix-ticket-status" *ngIf="fixTicketStatus !== 'idle'" [ngClass]="'status-' + fixTicketStatus" role="status" aria-live="polite">
+        <div class="fix-ticket-status-topline">
+          <strong>{{ fixTicketStatus === 'fixing' ? 'Ticket repair in progress' : fixTicketStatus === 'success' ? 'Ticket repair complete' : fixTicketStatus === 'error' ? 'Ticket repair needs attention' : 'Ticket file ready' }}</strong>
+          <button *ngIf="fixTicketStatus !== 'fixing'" class="fix-ticket-dismiss" type="button" aria-label="Close ticket repair status" (click)="dismissFixTicketStatus()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="fix-ticket-progress-track" *ngIf="fixTicketStatus === 'fixing' || fixTicketStatus === 'success'">
+          <div class="fix-ticket-progress-bar" [style.width.%]="fixTicketProgress"></div>
+        </div>
+        <span>{{ fixTicketStatusMessage }}</span>
+      </div>
+      <div class="fix-ticket-comparison" *ngIf="fixTicketComparisonVisible">
+        <div class="fix-ticket-table-panel">
+          <h3>Database null tickets</h3>
+          <div class="fix-ticket-table-scroll">
+            <table>
+              <thead>
+                <tr><th>time_open</th><th>ticket</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let trade of fixTicketDbRows">
+                  <td>{{ formatMt5ComparisonTime(trade.time_open) }}</td>
+                  <td>
+                    <input
+                      class="fix-ticket-input"
+                      type="text"
+                      inputmode="numeric"
+                      placeholder="Enter ticket"
+                      [value]="getFixTicketInputValue(trade)"
+                      [disabled]="isFixTicketTradeMatched(trade.id) || isFixingTradeTickets"
+                      (input)="setFixTicketInputValue(trade, $any($event.target).value)" />
+                  </td>
+                </tr>
+                <tr *ngIf="!fixTicketDbRows.length"><td colspan="2">No null-ticket trades found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="fix-ticket-table-panel">
+          <h3>Excel positions</h3>
+          <div class="fix-ticket-table-scroll">
+            <table>
+              <thead>
+                <tr><th>time_open</th><th>ticket</th><th>match</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of fixTicketRows">
+                  <td>{{ row.adjustedOpenTime }}</td>
+                  <td>{{ row.ticket }}</td>
+                  <td [class.fix-ticket-match]="row.matched">{{ row.matched ? 'Match' : 'No match' }}</td>
+                </tr>
+                <tr *ngIf="!fixTicketRows.length"><td colspan="3">No Excel rows loaded.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <button
+        class="btn-teal fix-ticket-patch-button"
+        type="button"
+        (click)="patchMatchedTradeTickets()"
+        [disabled]="!hasFixTicketPatchableRows || isFixingTradeTickets">
+        <mat-icon [class.spinning]="isFixingTradeTickets">cloud_upload</mat-icon>
+        {{ isFixingTradeTickets ? 'Patching...' : 'Patch Matched Tickets to Supabase' }}
+      </button>
     </div>
   </section>
 
