@@ -4381,7 +4381,8 @@ table.simple-table {
 // Section Styling
 .upload-section,
 .calendar-section,
-.table-section {
+.table-section,
+.mt5-import-section {
   padding: 0 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -6406,9 +6407,10 @@ table.simple-table {
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding: 0.85rem 1rem;
+  padding: 1rem;
   background: var(--tf-bg-tertiary);
-  border-bottom: 1px solid var(--tf-border-primary);
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
 
   .mt5-report-import-copy {
     display: flex;

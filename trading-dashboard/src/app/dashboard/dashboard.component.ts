@@ -434,6 +434,7 @@ export class DashboardComponent implements AfterViewInit {
   rawData: any[] = [];
   // Active Account Table
   tableData: Table[] = []; // Initialize as empty array
+  mt5ImportedTrades: Table[] = [];
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
@@ -2139,11 +2140,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           return;
         }
 
-        this.tableData = importedTrades;
-        this.currentPage = 1;
+        this.mt5ImportedTrades = importedTrades;
         this.mt5ImportMessage = `${importedTrades.length} MT5 trade${importedTrades.length === 1 ? '' : 's'} imported.`;
-        this.generateTradingChartData();
-        this.updateDailyLimitMetrics();
         this.cdr.markForCheck();
       } catch (error) {
         console.error('Unable to import MT5 report:', error);
