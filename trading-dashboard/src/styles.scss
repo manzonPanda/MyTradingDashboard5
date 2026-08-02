@@ -135,10 +135,9 @@ app-root {
   fill: none;
   vector-effect: non-scaling-stroke;
   stroke: url(#aura-energy-gradient);
-  stroke-width: 3;
+  stroke-width: 6;
   stroke-linecap: round;
-  stroke-dasharray: 38 962;
-  stroke-dashoffset: 1000;
+  stroke-linejoin: round;
   filter: url(#aura-energy-bloom);
   opacity: 1;
   animation: none;
@@ -184,6 +183,306 @@ app-root {
 
 @media (prefers-reduced-motion: reduce) {
   .aura-energy-pulse { display: none; }
+}
+
+// AURA Energy configuration modal
+.aura-config-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: aura-config-fade-in 180ms ease;
+}
+
+.aura-config-modal {
+  width: min(560px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(124, 58, 237, 0.25);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  display: flex;
+  flex-direction: column;
+  animation: aura-config-pop-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aura-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.18);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(167, 139, 250, 0.04));
+  border-radius: 18px 18px 0 0;
+}
+
+.aura-config-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #4c1d95;
+  }
+}
+
+.aura-config-icon {
+  color: #7c3aed;
+  background: rgba(167, 139, 250, 0.18);
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.aura-config-close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 160ms ease, color 160ms ease;
+
+  &:hover {
+    background: rgba(167, 139, 250, 0.15);
+    color: #4c1d95;
+  }
+}
+
+.aura-config-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aura-config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.aura-config-toggle-row {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+}
+
+.aura-config-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .aura-config-label {
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.95rem;
+  }
+
+  small {
+    color: #94a3b8;
+    font-size: 0.8rem;
+  }
+}
+
+.aura-config-input {
+  width: 120px;
+  padding: 8px 12px;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #334155;
+  background: #faf9ff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.aura-config-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7c3aed;
+  margin-top: 4px;
+}
+
+.aura-config-colors {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.aura-color-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  input[type="color"] {
+    width: 48px;
+    height: 48px;
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 2px;
+    background: #faf9ff;
+    transition: border-color 160ms ease, transform 160ms ease;
+
+    &:hover {
+      border-color: #7c3aed;
+      transform: scale(1.05);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.aura-config-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(167, 139, 250, 0.18);
+}
+
+.aura-config-reset,
+.aura-config-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.aura-config-reset {
+  background: rgba(167, 139, 250, 0.12);
+  color: #6d28d9;
+
+  &:hover {
+    background: rgba(167, 139, 250, 0.22);
+    transform: translateY(-1px);
+  }
+}
+
+.aura-config-apply {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(124, 58, 237, 0.45);
+  }
+}
+
+@keyframes aura-config-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes aura-config-pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// Dark theme support for AURA config modal
+body.dark-theme {
+  .aura-config-modal {
+    background: #172033;
+    border-color: rgba(167, 139, 250, 0.25);
+  }
+
+  .aura-config-header {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(167, 139, 250, 0.08));
+    border-bottom-color: rgba(167, 139, 250, 0.2);
+
+    h2 { color: #e9d5ff; }
+  }
+
+  .aura-config-icon {
+    color: #c4b5fd;
+    background: rgba(167, 139, 250, 0.2);
+  }
+
+  .aura-config-close {
+    color: #94a3b8;
+
+    &:hover {
+      background: rgba(167, 139, 250, 0.2);
+      color: #e9d5ff;
+    }
+  }
+
+  .aura-config-label-group .aura-config-label { color: #e2e8f0; }
+  .aura-config-label-group small { color: #94a3b8; }
+
+  .aura-config-input {
+    background: #0f172a;
+    border-color: rgba(167, 139, 250, 0.3);
+    color: #e2e8f0;
+  }
+
+  .aura-config-section-title { color: #c4b5fd; }
+
+  .aura-color-field {
+    span { color: #94a3b8; }
+    input[type="color"] {
+      background: #0f172a;
+      border-color: rgba(167, 139, 250, 0.3);
+    }
+  }
+
+  .aura-config-actions {
+    border-top-color: rgba(167, 139, 250, 0.2);
+  }
+
+  .aura-config-reset {
+    background: rgba(167, 139, 250, 0.18);
+    color: #c4b5fd;
+
+    &:hover { background: rgba(167, 139, 250, 0.28); }
+  }
 }
 
 // News notification snackbar styling

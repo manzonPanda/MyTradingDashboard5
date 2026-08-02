@@ -85,9 +85,9 @@
         <mat-icon>{{ isSyncingMT5Trades ? 'sync' : 'sync_alt' }}</mat-icon>
         <span><strong>{{ isSyncingMT5Trades ? 'Syncing MT5 trades…' : 'Sync MT5 trades' }}</strong></span>
       </button>
-      <button class="navigation-link aura-pathway-toggle" type="button" [class.is-active]="isAuraPathwayVisible" [attr.aria-pressed]="isAuraPathwayVisible" title="Show AURA pathway" (click)="toggleAuraPathway()">
-        <mat-icon>{{ isAuraPathwayVisible ? 'visibility_off' : 'route' }}</mat-icon>
-        <span><strong>{{ isAuraPathwayVisible ? 'Hide AURA pathway' : 'Show AURA pathway' }}</strong></span>
+      <button class="navigation-link aura-config-toggle" type="button" title="Configure AURA energy" (click)="openAuraConfigModal()">
+        <mat-icon>tune</mat-icon>
+        <span><strong>Configure AURA energy</strong></span>
       </button>
     </section>
 
@@ -2042,6 +2042,142 @@
       </div>
     </div>
   </section>
+
+  <!-- AURA Energy Configuration Modal -->
+  <div *ngIf="isAuraConfigModalOpen" class="aura-config-backdrop" (click)="closeAuraConfigModal()">
+    <section class="aura-config-modal" role="dialog" aria-modal="true" aria-labelledby="aura-config-title" (click)="$event.stopPropagation()">
+      <div class="aura-config-header">
+        <div class="aura-config-heading">
+          <mat-icon class="aura-config-icon">auto_awesome</mat-icon>
+          <h2 id="aura-config-title">Configure AURA Energy</h2>
+        </div>
+        <button class="aura-config-close" type="button" aria-label="Close AURA energy settings" (click)="closeAuraConfigModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="aura-config-body">
+        <div class="aura-config-row aura-config-toggle-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Enable AURA energy</span>
+            <small>Turn the ambient energy pulse on or off.</small>
+          </div>
+          <mat-slide-toggle [checked]="auraConfig.enabled" (change)="onAuraConfigEnabledChange($event.checked)" color="primary"></mat-slide-toggle>
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Travel duration</span>
+            <small>How long the energy takes to travel the route (ms).</small>
+          </div>
+          <input class="aura-config-input" type="number" min="500" step="100" [(ngModel)]="auraConfig.travelDurationMs" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Minimum delay</span>
+            <small>Shortest pause between pulses (ms).</small>
+          </div>
+          <input class="aura-config-input" type="number" min="0" step="500" [(ngModel)]="auraConfig.minDelayMs" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Maximum delay</span>
+            <small>Longest pause between pulses (ms).</small>
+          </div>
+          <input class="aura-config-input" type="number" min="0" step="500" [(ngModel)]="auraConfig.maxDelayMs" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Trail length</span>
+            <small>Length of the energy trail as a % of the route.</small>
+          </div>
+          <input class="aura-config-input" type="number" min="1" max="100" step="1" [(ngModel)]="auraConfig.trailLengthPercent" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Stroke width</span>
+            <small>Thickness of the energy line.</small>
+          </div>
+          <input class="aura-config-input" type="number" min="1" max="20" step="0.5" [(ngModel)]="auraConfig.strokeWidth" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Head radius</span>
+            <small>Size of the glowing head orb.</small>
+          </div>
+          <input class="aura-config-input" type="number" min="1" max="30" step="0.5" [(ngModel)]="auraConfig.headRadius" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Bloom intensity</span>
+            <small>Glow blur strength (higher = softer glow).</small>
+          </div>
+          <input class="aura-config-input" type="number" min="0" max="20" step="0.1" [(ngModel)]="auraConfig.bloomIntensity" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Fade duration</span>
+            <small>How long the energy fades out at the end (ms).</small>
+          </div>
+          <input class="aura-config-input" type="number" min="0" step="20" [(ngModel)]="auraConfig.fadeDurationMs" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Minimum targets</span>
+            <small>Fewest cards the energy visits per pulse.</small>
+          </div>
+          <input class="aura-config-input" type="number" min="1" max="10" step="1" [(ngModel)]="auraConfig.minTargets" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-row">
+          <div class="aura-config-label-group">
+            <span class="aura-config-label">Maximum targets</span>
+            <small>Most cards the energy visits per pulse.</small>
+          </div>
+          <input class="aura-config-input" type="number" min="1" max="10" step="1" [(ngModel)]="auraConfig.maxTargets" [disabled]="!auraConfig.enabled">
+        </div>
+
+        <div class="aura-config-section-title">Colors</div>
+        <div class="aura-config-colors">
+          <label class="aura-color-field">
+            <span>Start</span>
+            <input type="color" [(ngModel)]="auraConfig.colorStart" [disabled]="!auraConfig.enabled">
+          </label>
+          <label class="aura-color-field">
+            <span>Mid</span>
+            <input type="color" [(ngModel)]="auraConfig.colorMid" [disabled]="!auraConfig.enabled">
+          </label>
+          <label class="aura-color-field">
+            <span>Peak</span>
+            <input type="color" [(ngModel)]="auraConfig.colorPeak" [disabled]="!auraConfig.enabled">
+          </label>
+          <label class="aura-color-field">
+            <span>Head</span>
+            <input type="color" [(ngModel)]="auraConfig.colorHead" [disabled]="!auraConfig.enabled">
+          </label>
+        </div>
+      </div>
+
+      <div class="aura-config-actions">
+        <button type="button" class="aura-config-reset" (click)="resetAuraConfig()">
+          <mat-icon>restart_alt</mat-icon>
+          Reset to defaults
+        </button>
+        <button type="button" class="aura-config-apply" (click)="applyAuraConfig()">
+          <mat-icon>check</mat-icon>
+          Apply settings
+        </button>
+      </div>
+    </section>
+  </div>
 
   <div *ngIf="showAccountRiskCalculator" class="risk-calculator-backdrop" (click)="closeAccountRiskCalculator()">
     <section class="account-risk-modal" role="dialog" aria-modal="true" aria-labelledby="risk-calculator-title" (click)="$event.stopPropagation()">

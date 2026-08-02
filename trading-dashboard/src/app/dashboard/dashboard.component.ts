@@ -37,7 +37,7 @@ import { ViewChild, ElementRef, AfterViewInit, HostListener, Renderer2 } from '@
 import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
-import { AuraEnergyService } from '../services/aura-energy.service';
+import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { TradeService } from '../services/trade.service';
 import { Account, RoiTransaction, SupabaseService, Trade } from '../services/supabase.service';
 import { environment } from '../../../src/environments/environment';
@@ -159,7 +159,9 @@ export class DashboardComponent implements AfterViewInit {
   environment = environment;
   isDashboardNavigationOpen = true;
   isNavigationDisplayMenuOpen = false;
-  isAuraPathwayVisible = false;
+  isAuraConfigModalOpen = false;
+  auraConfig: AuraEnergyConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
+  readonly auraConfigDefaults = DEFAULT_AURA_ENERGY_CONFIG;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
   roiTransactions: RoiTransaction[] = [];
@@ -937,9 +939,32 @@ mt5AccountInfo: AccountSettings = {
     Chart.register(...registerables);
   }
 
-  toggleAuraPathway(): void {
-    this.isAuraPathwayVisible = !this.isAuraPathwayVisible;
-    this.auraEnergy.setPathwayPreview(this.isAuraPathwayVisible);
+  openAuraConfigModal(): void {
+    this.auraConfig = this.auraEnergy.getConfig();
+    this.isAuraConfigModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeAuraConfigModal(): void {
+    this.isAuraConfigModalOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  applyAuraConfig(): void {
+    this.auraEnergy.updateConfig(this.auraConfig);
+    this.snackBar.open('AURA energy settings saved.', 'Dismiss', { duration: 3000 });
+    this.closeAuraConfigModal();
+  }
+
+  resetAuraConfig(): void {
+    this.auraConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
+    this.auraEnergy.resetConfig();
+    this.cdr.markForCheck();
+  }
+
+  onAuraConfigEnabledChange(checked: boolean): void {
+    this.auraConfig.enabled = checked;
+    this.auraEnergy.updateConfig({ enabled: checked });
   }
 
   toggleTheme(): void {

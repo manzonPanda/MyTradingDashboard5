@@ -9,11 +9,48 @@ interface RouteBox {
   radius: number;
 }
 
+export interface AuraEnergyConfig {
+  enabled: boolean;
+  travelDurationMs: number;
+  minDelayMs: number;
+  maxDelayMs: number;
+  trailLengthPercent: number;
+  strokeWidth: number;
+  headRadius: number;
+  bloomIntensity: number;
+  fadeDurationMs: number;
+  colorStart: string;
+  colorMid: string;
+  colorPeak: string;
+  colorHead: string;
+  minTargets: number;
+  maxTargets: number;
+}
+
+export const DEFAULT_AURA_ENERGY_CONFIG: AuraEnergyConfig = {
+  enabled: true,
+  travelDurationMs: 5000,
+  minDelayMs: 5000,
+  maxDelayMs: 15000,
+  trailLengthPercent: 8,
+  strokeWidth: 6,
+  headRadius: 9,
+  bloomIntensity: 4.5,
+  fadeDurationMs: 180,
+  colorStart: '#7C3AED',
+  colorMid: '#A78BFA',
+  colorPeak: '#E9D5FF',
+  colorHead: '#FFFFFF',
+  minTargets: 2,
+  maxTargets: 4
+};
+
+const STORAGE_KEY = 'aura-energy-config';
+
 @Injectable({ providedIn: 'root' })
 export class AuraEnergyService {
   private readonly document = inject(DOCUMENT);
   private readonly zone = inject(NgZone);
-  private readonly travelDurationMs = 5000;
   private timerId?: number;
   private fadeId?: number;
   private frameId?: number;
@@ -27,9 +64,73 @@ export class AuraEnergyService {
   private progress = 0;
   private isAuraTraveling = false;
   private isDestroyed = false;
+  private travelStartTime = 0;
+  private config: AuraEnergyConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
+
+  constructor() {
+    this.loadConfig();
+  }
+
+  getConfig(): AuraEnergyConfig {
+    return { ...this.config };
+  }
+
+  updateConfig(partial: Partial<AuraEnergyConfig>): void {
+    const wasEnabled = this.config.enabled;
+    this.config = { ...this.config, ...partial };
+    this.persistConfig();
+
+    if (!this.config.enabled) {
+      this.clearTimer();
+      this.clearFadeTimer();
+      this.finishTraveler();
+      return;
+    }
+
+    if (!wasEnabled && this.config.enabled) {
+      this.start();
+      return;
+    }
+
+    // If currently traveling, refresh the overlay visuals to reflect new config
+    if (this.isAuraTraveling && this.activeOverlay) {
+      this.refreshOverlayAppearance();
+    }
+  }
+
+  resetConfig(): void {
+    this.config = { ...DEFAULT_AURA_ENERGY_CONFIG };
+    this.persistConfig();
+    if (this.isAuraTraveling && this.activeOverlay) {
+      this.refreshOverlayAppearance();
+    }
+  }
+
+  private persistConfig(): void {
+    try {
+      this.document.defaultView?.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.config));
+    } catch {
+      // Ignore storage errors (private mode, quota, etc.)
+    }
+  }
+
+  private loadConfig(): void {
+    try {
+      const raw = this.document.defaultView?.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<AuraEnergyConfig>;
+        this.config = { ...DEFAULT_AURA_ENERGY_CONFIG, ...parsed };
+      }
+    } catch {
+      // Ignore parse errors and keep defaults
+    }
+  }
 
   start(): void {
     if (this.prefersReducedMotion() || this.isDestroyed || this.isAuraTraveling || this.timerId) {
+      return;
+    }
+    if (!this.config.enabled) {
       return;
     }
 
@@ -63,20 +164,20 @@ export class AuraEnergyService {
   }
 
   private scheduleNextPulse(delay: number): void {
-    if (this.isDestroyed || this.isAuraTraveling || this.timerId) {
+    if (this.isDestroyed || this.isAuraTraveling || this.timerId || !this.config.enabled) {
       return;
     }
 
     this.timerId = window.setTimeout(() => {
       this.timerId = undefined;
-      if (!this.isDestroyed && !this.prefersReducedMotion() && !this.isAuraTraveling) {
+      if (!this.isDestroyed && !this.prefersReducedMotion() && !this.isAuraTraveling && this.config.enabled) {
         this.startTraveler();
       }
     }, delay);
   }
 
   private startTraveler(): void {
-    if (this.isDestroyed || this.isAuraTraveling) {
+    if (this.isDestroyed || this.isAuraTraveling || !this.config.enabled) {
       return;
     }
 
@@ -115,7 +216,9 @@ export class AuraEnergyService {
   private selectRandomTargets(): HTMLElement[] {
     const targets = Array.from(this.document.querySelectorAll<HTMLElement>('[data-aura-target]'))
       .filter((target) => this.isEligibleTarget(target));
-    const count = Math.min(targets.length, 2 + Math.floor(Math.random() * 3));
+    const minCount = Math.max(1, this.config.minTargets);
+    const maxCount = Math.max(minCount, this.config.maxTargets);
+    const count = Math.min(targets.length, minCount + Math.floor(Math.random() * (maxCount - minCount + 1)));
 
     return this.shuffle(targets).slice(0, count).sort((first, second) => {
       const firstBounds = first.getBoundingClientRect();
@@ -128,25 +231,65 @@ export class AuraEnergyService {
     const overlay = this.document.createElement('div');
     overlay.className = 'aura-energy-pulse';
     overlay.setAttribute('aria-hidden', 'true');
-    overlay.innerHTML = `
+    overlay.innerHTML = this.buildOverlaySvg();
+    return overlay;
+  }
+
+  private buildOverlaySvg(): string {
+    const { colorStart, colorMid, colorPeak, colorHead, bloomIntensity, strokeWidth, headRadius } = this.config;
+    const softBlur = Math.max(0.4, bloomIntensity * 0.31).toFixed(2);
+    return `
       <svg class="aura-energy-svg" focusable="false" preserveAspectRatio="none">
         <defs>
           <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0" />
-            <stop offset="50%" stop-color="#A78BFA" stop-opacity="0.35" />
-            <stop offset="82%" stop-color="#E9D5FF" stop-opacity="0.9" />
-            <stop offset="100%" stop-color="#FFFFFF" />
+            <stop offset="0%" stop-color="${colorStart}" stop-opacity="0" />
+            <stop offset="50%" stop-color="${colorMid}" stop-opacity="0.35" />
+            <stop offset="82%" stop-color="${colorPeak}" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="${colorHead}" />
           </linearGradient>
           <filter id="aura-energy-bloom" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="2.4" result="wide-blur" />
-            <feGaussianBlur in="SourceGraphic" stdDeviation="0.7" result="soft-blur" />
+            <feGaussianBlur stdDeviation="${bloomIntensity}" result="wide-blur" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="${softBlur}" result="soft-blur" />
             <feMerge><feMergeNode in="wide-blur" /><feMergeNode in="soft-blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        <path id="aura-route" class="aura-energy-line" />
-        <circle class="aura-energy-head" r="6" />
+        <path id="aura-route" fill="none" stroke="none" />
+        <path id="aura-trail" class="aura-energy-line" style="stroke-width:${strokeWidth}" />
+        <circle class="aura-energy-head" r="${headRadius}" fill="${colorHead}" />
       </svg>`;
-    return overlay;
+  }
+
+  private refreshOverlayAppearance(): void {
+    if (!this.activeOverlay) {
+      return;
+    }
+    const svg = this.activeOverlay.querySelector<SVGSVGElement>('.aura-energy-svg');
+    if (svg) {
+      svg.innerHTML = this.buildOverlaySvgInner();
+    }
+    this.renderTraveler();
+  }
+
+  private buildOverlaySvgInner(): string {
+    const { colorStart, colorMid, colorPeak, colorHead, bloomIntensity, strokeWidth, headRadius } = this.config;
+    const softBlur = Math.max(0.4, bloomIntensity * 0.31).toFixed(2);
+    return `
+        <defs>
+          <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="${colorStart}" stop-opacity="0" />
+            <stop offset="50%" stop-color="${colorMid}" stop-opacity="0.35" />
+            <stop offset="82%" stop-color="${colorPeak}" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="${colorHead}" />
+          </linearGradient>
+          <filter id="aura-energy-bloom" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="${bloomIntensity}" result="wide-blur" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="${softBlur}" result="soft-blur" />
+            <feMerge><feMergeNode in="wide-blur" /><feMergeNode in="soft-blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        <path id="aura-route" fill="none" stroke="none" />
+        <path id="aura-trail" class="aura-energy-line" style="stroke-width:${strokeWidth}" />
+        <circle class="aura-energy-head" r="${headRadius}" fill="${colorHead}" />`;
   }
 
   private animateTraveler = (timestamp: number): void => {
@@ -157,7 +300,7 @@ export class AuraEnergyService {
     if (!this.travelStartTime) {
       this.travelStartTime = timestamp;
     }
-    this.progress = Math.min(1, (timestamp - this.travelStartTime) / this.travelDurationMs);
+    this.progress = Math.min(1, (timestamp - this.travelStartTime) / this.config.travelDurationMs);
     this.renderTraveler();
 
     if (this.progress >= 1) {
@@ -166,28 +309,39 @@ export class AuraEnergyService {
         this.fadeId = undefined;
         this.finishTraveler();
         this.scheduleNextPulse(this.randomDelay());
-      }, 180);
+      }, this.config.fadeDurationMs);
       return;
     }
 
     this.frameId = window.requestAnimationFrame(this.animateTraveler);
   };
 
-  private travelStartTime = 0;
-
   private renderTraveler(): void {
-    const path = this.activeOverlay?.querySelector<SVGPathElement>('#aura-route');
+    const route = this.activeOverlay?.querySelector<SVGPathElement>('#aura-route');
+    const trail = this.activeOverlay?.querySelector<SVGPathElement>('#aura-trail');
     const head = this.activeOverlay?.querySelector<SVGCircleElement>('.aura-energy-head');
-    if (!path || !head) {
+    if (!route || !trail || !head) {
       return;
     }
 
     const distance = this.routeLength * this.progress;
-    const point = path.getPointAtLength(distance);
-    path.style.strokeDasharray = `${Math.max(26, this.routeLength * 0.035)} ${this.routeLength}`;
-    path.style.strokeDashoffset = `${-distance}`;
-    head.setAttribute('cx', `${point.x}`);
-    head.setAttribute('cy', `${point.y}`);
+    const headPoint = route.getPointAtLength(distance);
+    const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
+    // Build the trail as a SINGLE continuous segment by sampling real points
+    // along the route from (distance - trailLength) to distance. This avoids
+    // strokeDasharray repeating per subpath (which caused multiple energy blobs).
+    const startDistance = Math.max(0, distance - trailLength);
+    const samples = 12;
+    let trailPath = '';
+    for (let i = 0; i <= samples; i += 1) {
+      const t = i / samples;
+      const d = startDistance + (distance - startDistance) * t;
+      const p = route.getPointAtLength(d);
+      trailPath += i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`;
+    }
+    trail.setAttribute('d', trailPath);
+    head.setAttribute('cx', `${headPoint.x}`);
+    head.setAttribute('cy', `${headPoint.y}`);
   }
 
   private requestRouteUpdate = (): void => {
@@ -337,7 +491,9 @@ export class AuraEnergyService {
   }
 
   private randomDelay(): number {
-    return 5000 + Math.round(Math.random() * 10000);
+    const min = Math.max(0, this.config.minDelayMs);
+    const max = Math.max(min, this.config.maxDelayMs);
+    return min + Math.round(Math.random() * (max - min));
   }
 
   private prefersReducedMotion(): boolean {
