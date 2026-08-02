@@ -589,6 +589,18 @@
   border: 1px solid var(--tf-border-primary);
   border-radius: 10px;
   padding: 0.75rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+  }
 }
 
 .trade-gauge-heading {
