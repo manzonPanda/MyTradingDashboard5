@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, NgZone, inject } from '@angular/core';
+import { AuraEnergySettings, SupabaseService } from './supabase.service';
 
 interface RouteBox {
   left: number;
@@ -29,9 +30,9 @@ export interface AuraEnergyConfig {
 
 export const DEFAULT_AURA_ENERGY_CONFIG: AuraEnergyConfig = {
   enabled: true,
-  travelDurationMs: 5000,
-  minDelayMs: 5000,
-  maxDelayMs: 15000,
+  travelDurationMs: 2000,
+  minDelayMs: 2000,
+  maxDelayMs: 5000,
   trailLengthPercent: 8,
   strokeWidth: 6,
   headRadius: 9,
@@ -45,12 +46,12 @@ export const DEFAULT_AURA_ENERGY_CONFIG: AuraEnergyConfig = {
   maxTargets: 4
 };
 
-const STORAGE_KEY = 'aura-energy-config';
-
 @Injectable({ providedIn: 'root' })
 export class AuraEnergyService {
   private readonly document = inject(DOCUMENT);
   private readonly zone = inject(NgZone);
+  private readonly supabaseService = inject(SupabaseService);
+  private settingsId?: string;
   private timerId?: number;
   private fadeId?: number;
   private frameId?: number;
@@ -67,10 +68,6 @@ export class AuraEnergyService {
   private travelStartTime = 0;
   private config: AuraEnergyConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
 
-  constructor() {
-    this.loadConfig();
-  }
-
   getConfig(): AuraEnergyConfig {
     return { ...this.config };
   }
@@ -78,7 +75,6 @@ export class AuraEnergyService {
   updateConfig(partial: Partial<AuraEnergyConfig>): void {
     const wasEnabled = this.config.enabled;
     this.config = { ...this.config, ...partial };
-    this.persistConfig();
 
     if (!this.config.enabled) {
       this.clearTimer();
@@ -98,32 +94,67 @@ export class AuraEnergyService {
     }
   }
 
-  resetConfig(): void {
-    this.config = { ...DEFAULT_AURA_ENERGY_CONFIG };
-    this.persistConfig();
-    if (this.isAuraTraveling && this.activeOverlay) {
-      this.refreshOverlayAppearance();
+  async loadConfig(): Promise<AuraEnergyConfig> {
+    const settings = await this.supabaseService.getAuraEnergySettings();
+    if (!settings) {
+      return this.getConfig();
     }
+
+    this.settingsId = settings.id;
+    this.config = this.fromSettings(settings);
+    return this.getConfig();
   }
 
-  private persistConfig(): void {
-    try {
-      this.document.defaultView?.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.config));
-    } catch {
-      // Ignore storage errors (private mode, quota, etc.)
+  async saveConfig(config: AuraEnergyConfig = this.config): Promise<AuraEnergyConfig> {
+    if (!this.settingsId) {
+      const settings = await this.supabaseService.getAuraEnergySettings();
+      if (!settings) throw new Error('No AURA energy settings row exists.');
+      this.settingsId = settings.id;
     }
+
+    const settings = await this.supabaseService.updateAuraEnergySettings(this.settingsId, this.toSettings(config));
+    this.config = this.fromSettings(settings);
+    return this.getConfig();
   }
 
-  private loadConfig(): void {
-    try {
-      const raw = this.document.defaultView?.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<AuraEnergyConfig>;
-        this.config = { ...DEFAULT_AURA_ENERGY_CONFIG, ...parsed };
-      }
-    } catch {
-      // Ignore parse errors and keep defaults
-    }
+  private toSettings(config: AuraEnergyConfig): Omit<AuraEnergySettings, 'id' | 'created_at' | 'updated_at'> {
+    return {
+      enabled: config.enabled,
+      travel_duration_ms: config.travelDurationMs,
+      min_delay_ms: config.minDelayMs,
+      max_delay_ms: config.maxDelayMs,
+      trail_length_percent: config.trailLengthPercent,
+      stroke_width: config.strokeWidth,
+      head_radius: config.headRadius,
+      bloom_intensity: config.bloomIntensity,
+      fade_duration_ms: config.fadeDurationMs,
+      color_start: config.colorStart,
+      color_mid: config.colorMid,
+      color_peak: config.colorPeak,
+      color_head: config.colorHead,
+      min_targets: config.minTargets,
+      max_targets: config.maxTargets
+    };
+  }
+
+  private fromSettings(settings: AuraEnergySettings): AuraEnergyConfig {
+    return {
+      enabled: settings.enabled,
+      travelDurationMs: Number(settings.travel_duration_ms),
+      minDelayMs: Number(settings.min_delay_ms),
+      maxDelayMs: Number(settings.max_delay_ms),
+      trailLengthPercent: Number(settings.trail_length_percent),
+      strokeWidth: Number(settings.stroke_width),
+      headRadius: Number(settings.head_radius),
+      bloomIntensity: Number(settings.bloom_intensity),
+      fadeDurationMs: Number(settings.fade_duration_ms),
+      colorStart: settings.color_start,
+      colorMid: settings.color_mid,
+      colorPeak: settings.color_peak,
+      colorHead: settings.color_head,
+      minTargets: Number(settings.min_targets),
+      maxTargets: Number(settings.max_targets)
+    };
   }
 
   start(): void {

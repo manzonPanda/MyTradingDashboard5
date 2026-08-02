@@ -2167,11 +2167,11 @@
       </div>
 
       <div class="aura-config-actions">
-        <button type="button" class="aura-config-reset" (click)="resetAuraConfig()">
+        <button type="button" class="aura-config-reset" (click)="resetAuraConfig()" [disabled]="isSavingAuraConfig">
           <mat-icon>restart_alt</mat-icon>
           Reset to defaults
         </button>
-        <button type="button" class="aura-config-apply" (click)="applyAuraConfig()">
+        <button type="button" class="aura-config-apply" (click)="applyAuraConfig()" [disabled]="isSavingAuraConfig">
           <mat-icon>check</mat-icon>
           Apply settings
         </button>

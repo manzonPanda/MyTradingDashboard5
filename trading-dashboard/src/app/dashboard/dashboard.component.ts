@@ -160,6 +160,7 @@ export class DashboardComponent implements AfterViewInit {
   isDashboardNavigationOpen = true;
   isNavigationDisplayMenuOpen = false;
   isAuraConfigModalOpen = false;
+  isSavingAuraConfig = false;
   auraConfig: AuraEnergyConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
   readonly auraConfigDefaults = DEFAULT_AURA_ENERGY_CONFIG;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
@@ -950,16 +951,42 @@ mt5AccountInfo: AccountSettings = {
     this.cdr.markForCheck();
   }
 
-  applyAuraConfig(): void {
-    this.auraEnergy.updateConfig(this.auraConfig);
-    this.snackBar.open('AURA energy settings saved.', 'Dismiss', { duration: 3000 });
-    this.closeAuraConfigModal();
+  async applyAuraConfig(): Promise<void> {
+    if (this.auraConfig.maxDelayMs < this.auraConfig.minDelayMs || this.auraConfig.maxTargets < this.auraConfig.minTargets) {
+      this.snackBar.open('Maximum values must be at least their corresponding minimums.', 'Dismiss', { duration: 4000 });
+      return;
+    }
+
+    this.isSavingAuraConfig = true;
+    this.cdr.markForCheck();
+    try {
+      this.auraEnergy.updateConfig(this.auraConfig);
+      this.auraConfig = await this.auraEnergy.saveConfig();
+      this.snackBar.open('AURA energy settings saved.', 'Dismiss', { duration: 3000 });
+      this.closeAuraConfigModal();
+    } catch (error) {
+      console.error('Unable to save AURA energy settings:', error);
+      this.snackBar.open('Unable to save AURA energy settings.', 'Dismiss', { duration: 4000 });
+    } finally {
+      this.isSavingAuraConfig = false;
+      this.cdr.markForCheck();
+    }
   }
 
-  resetAuraConfig(): void {
-    this.auraConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
-    this.auraEnergy.resetConfig();
+  async resetAuraConfig(): Promise<void> {
+    this.isSavingAuraConfig = true;
     this.cdr.markForCheck();
+    try {
+      this.auraEnergy.updateConfig(DEFAULT_AURA_ENERGY_CONFIG);
+      this.auraConfig = await this.auraEnergy.saveConfig();
+      this.snackBar.open('AURA energy settings reset.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to reset AURA energy settings:', error);
+      this.snackBar.open('Unable to reset AURA energy settings.', 'Dismiss', { duration: 4000 });
+    } finally {
+      this.isSavingAuraConfig = false;
+      this.cdr.markForCheck();
+    }
   }
 
   onAuraConfigEnabledChange(checked: boolean): void {
@@ -1733,12 +1760,19 @@ mt5AccountInfo: AccountSettings = {
     // Removed complex dummy data as requested by user
   }
 
-  ngAfterViewInit() {
-    // Initialize the stunning trading chart
+  async ngAfterViewInit(): Promise<void> {
     setTimeout(() => {
       this.generateTradingChartData();
     }, 1000);
+
+    try {
+      this.auraConfig = await this.auraEnergy.loadConfig();
+    } catch (error) {
+      console.error('Unable to load AURA energy settings:', error);
+    }
+
     this.auraEnergy.start();
+    this.cdr.markForCheck();
   }
 
   initializeDataTable(): void {
