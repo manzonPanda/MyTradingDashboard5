@@ -30,6 +30,27 @@ export interface RoiTransaction {
   accounts?: { name: string } | null;
 }
 
+export interface AuraEnergySettings {
+  id: string;
+  enabled: boolean;
+  travel_duration_ms: number;
+  min_delay_ms: number;
+  max_delay_ms: number;
+  trail_length_percent: number;
+  stroke_width: number;
+  head_radius: number;
+  bloom_intensity: number;
+  fade_duration_ms: number;
+  color_start: string;
+  color_mid: string;
+  color_peak: string;
+  color_head: string;
+  min_targets: number;
+  max_targets: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Trade {
   id?: string;
   account_id?: string;
@@ -73,6 +94,28 @@ export class SupabaseService {
 
   get client(): SupabaseClient {
     return this.supabase;
+  }
+
+  async getAuraEnergySettings(): Promise<AuraEnergySettings | null> {
+    const { data, error } = await this.supabase
+      .from('aura_energy_settings')
+      .select('*')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(`AURA energy settings loading failed: ${error.message}`);
+    return data as AuraEnergySettings | null;
+  }
+
+  async updateAuraEnergySettings(id: string, updates: Omit<AuraEnergySettings, 'id' | 'created_at' | 'updated_at'>): Promise<AuraEnergySettings> {
+    const { data, error } = await this.supabase
+      .from('aura_energy_settings')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) throw new Error(`AURA energy settings update failed: ${error.message}`);
+    return data as AuraEnergySettings;
   }
 
   async getAccounts(): Promise<Account[]> {
