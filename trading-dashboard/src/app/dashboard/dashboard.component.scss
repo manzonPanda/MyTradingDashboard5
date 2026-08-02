@@ -6448,6 +6448,24 @@ table.simple-table {
   }
 }
 
+.mt5-imported-table-container {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+  background: var(--tf-bg-card);
+
+  .mt5-imported-table {
+    min-width: 1100px;
+    margin: 0;
+
+    th,
+    td {
+      white-space: nowrap;
+    }
+  }
+}
+
 // Simple Table Controls
 .simple-table-controls {
   display: flex;

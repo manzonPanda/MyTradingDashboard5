@@ -1668,6 +1668,47 @@
       <span class="mt5-import-message" *ngIf="mt5ImportMessage">{{ mt5ImportMessage }}</span>
       <span class="mt5-import-error" *ngIf="mt5ImportError">{{ mt5ImportError }}</span>
     </div>
+
+    <div class="mt5-imported-table-container" *ngIf="mt5ImportedTrades.length">
+      <table class="modern-table mt5-imported-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Position</th>
+            <th>Symbol</th>
+            <th>Type</th>
+            <th>Volume</th>
+            <th>Price</th>
+            <th>S / L</th>
+            <th>T / P</th>
+            <th>Time</th>
+            <th>Price</th>
+            <th>Commission</th>
+            <th>Swap</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let trade of mt5ImportedTrades" [ngClass]="{ 'positive-row': isPositiveValue(trade.netProfit), 'negative-row': isNegativeValue(trade.netProfit) }">
+            <td>{{ trade.openDate }}</td>
+            <td>{{ trade.position }}</td>
+            <td>{{ trade.symbol }}</td>
+            <td>{{ trade.type }}</td>
+            <td>{{ trade.volume }}</td>
+            <td>{{ trade.entry }}</td>
+            <td>{{ trade.sL }}</td>
+            <td>{{ trade.tP }}</td>
+            <td>{{ trade.closeDate }}</td>
+            <td>{{ trade.exit }}</td>
+            <td>{{ getSafeNumber(trade.commission) | number:'1.2-2' }}</td>
+            <td>{{ getSafeNumber(trade.swap) | number:'1.2-2' }}</td>
+            <td [ngClass]="{ 'positive': isPositiveValue(trade.netProfit), 'negative': isNegativeValue(trade.netProfit) }">
+              {{ getSafeNumber(trade.profit) | number:'1.2-2' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <!-- Manual Data Update to Notion Section -->
