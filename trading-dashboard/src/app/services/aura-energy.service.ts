@@ -143,7 +143,7 @@ export class AuraEnergyService {
             <feMerge><feMergeNode in="wide-blur" /><feMergeNode in="soft-blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        <path id="aura-route" class="aura-energy-line" pathLength="1000" />
+        <path id="aura-route" class="aura-energy-line" />
         <circle class="aura-energy-head" r="6" />
       </svg>`;
     return overlay;
@@ -165,6 +165,7 @@ export class AuraEnergyService {
       this.fadeId = window.setTimeout(() => {
         this.fadeId = undefined;
         this.finishTraveler();
+        this.scheduleNextPulse(this.randomDelay());
       }, 180);
       return;
     }
