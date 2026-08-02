@@ -66,6 +66,8 @@ export class AuraEnergyService {
   private isAuraTraveling = false;
   private isDestroyed = false;
   private travelStartTime = 0;
+  private dissipationStartTime = 0;
+  private isDissipating = false;
   private config: AuraEnergyConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
 
   getConfig(): AuraEnergyConfig {
@@ -335,13 +337,18 @@ export class AuraEnergyService {
     this.renderTraveler();
 
     if (this.progress >= 1) {
-      this.activeOverlay.classList.add('aura-energy-fading');
-      this.fadeId = window.setTimeout(() => {
-        this.fadeId = undefined;
+      if (!this.isDissipating) {
+        this.isDissipating = true;
+        this.dissipationStartTime = timestamp;
+      }
+
+      const dissipationProgress = Math.min(1, (timestamp - this.dissipationStartTime) / this.config.fadeDurationMs);
+      this.renderDissipation(dissipationProgress);
+      if (dissipationProgress >= 1) {
         this.finishTraveler();
         this.scheduleNextPulse(this.randomDelay());
-      }, this.config.fadeDurationMs);
-      return;
+        return;
+      }
     }
 
     this.frameId = window.requestAnimationFrame(this.animateTraveler);
@@ -356,23 +363,46 @@ export class AuraEnergyService {
     }
 
     const distance = this.routeLength * this.progress;
-    const headPoint = route.getPointAtLength(distance);
     const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
-    // Build the trail as a SINGLE continuous segment by sampling real points
-    // along the route from (distance - trailLength) to distance. This avoids
-    // strokeDasharray repeating per subpath (which caused multiple energy blobs).
-    const startDistance = Math.max(0, distance - trailLength);
+    this.renderTrail(route, trail, Math.max(0, distance - trailLength), distance);
+    const headPoint = route.getPointAtLength(distance);
+    head.setAttribute('cx', `${headPoint.x}`);
+    head.setAttribute('cy', `${headPoint.y}`);
+  }
+
+  private renderDissipation(progress: number): void {
+    const route = this.activeOverlay?.querySelector<SVGPathElement>('#aura-route');
+    const trail = this.activeOverlay?.querySelector<SVGPathElement>('#aura-trail');
+    const head = this.activeOverlay?.querySelector<SVGCircleElement>('.aura-energy-head');
+    if (!route || !trail || !head) {
+      return;
+    }
+
+    const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
+    const trailStart = Math.max(0, this.routeLength - trailLength);
+    const headFadeProgress = Math.min(1, progress / 0.35);
+    const trailRetractionProgress = Math.max(0, (progress - 0.35) / 0.65);
+    const trailEnd = this.routeLength - trailLength * trailRetractionProgress;
+
+    head.style.opacity = `${1 - headFadeProgress}`;
+    this.renderTrail(route, trail, trailStart, Math.max(trailStart, trailEnd));
+  }
+
+  private renderTrail(route: SVGPathElement, trail: SVGPathElement, startDistance: number, endDistance: number): void {
+    if (endDistance <= startDistance) {
+      trail.setAttribute('d', '');
+      return;
+    }
+
     const samples = 12;
     let trailPath = '';
     for (let i = 0; i <= samples; i += 1) {
       const t = i / samples;
-      const d = startDistance + (distance - startDistance) * t;
+      const d = startDistance + (endDistance - startDistance) * t;
       const p = route.getPointAtLength(d);
       trailPath += i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`;
     }
     trail.setAttribute('d', trailPath);
-    head.setAttribute('cx', `${headPoint.x}`);
-    head.setAttribute('cy', `${headPoint.y}`);
   }
 
   private requestRouteUpdate = (): void => {
@@ -476,6 +506,8 @@ export class AuraEnergyService {
     this.routeLength = 0;
     this.progress = 0;
     this.travelStartTime = 0;
+    this.dissipationStartTime = 0;
+    this.isDissipating = false;
     this.isAuraTraveling = false;
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
