@@ -6433,6 +6433,28 @@ table.simple-table {
     display: none;
   }
 
+  .mt5-sync-account-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 220px;
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    select {
+      min-height: 36px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--tf-border-primary);
+      border-radius: 6px;
+      background: var(--tf-bg-card);
+      color: var(--tf-text-primary);
+    }
+  }
+
   .mt5-import-message,
   .mt5-import-error {
     flex-basis: 100%;

@@ -331,7 +331,10 @@ export class SupabaseService {
 
   async syncMt5Trades(trades: Partial<Trade>[], accountName: string): Promise<{ created: number; updated: number }> {
     const accountId = await this.getOrCreateAccountId(accountName);
+    return this.syncTradesToAccount(trades, accountId);
+  }
 
+  async syncTradesToAccount(trades: Partial<Trade>[], accountId: string): Promise<{ created: number; updated: number }> {
     let created = 0;
     let updated = 0;
 

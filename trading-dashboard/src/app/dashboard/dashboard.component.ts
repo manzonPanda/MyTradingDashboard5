@@ -435,6 +435,7 @@ export class DashboardComponent implements AfterViewInit {
   // Active Account Table
   tableData: Table[] = []; // Initialize as empty array
   mt5ImportedTrades: Table[] = [];
+  mt5SyncAccountId = '';
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
@@ -1533,6 +1534,7 @@ mt5AccountInfo: AccountSettings = {
     try {
       this.accounts = await this.supabaseService.getAccounts();
       this.selectedAccount = this.accounts[0] ?? null;
+      this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
       this.applySelectedAccountSettings();
     } catch (error) {
       console.error('Unable to load Supabase accounts:', error);
@@ -5422,6 +5424,30 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   //   });
   // }
 
+  async syncImportedMt5Trades(): Promise<void> {
+    if (this.isSyncingMT5Trades || !this.mt5ImportedTrades.length) return;
+
+    const account = this.accounts.find(item => item.id === this.mt5SyncAccountId);
+    if (!account) {
+      this.snackBar.open('Choose a Supabase account before syncing.', 'Dismiss', { duration: 5000 });
+      return;
+    }
+
+    this.isSyncingMT5Trades = true;
+    try {
+      const trades = this.mt5ImportedTrades.map(trade => this.mapMt5TradeForSupabase(trade));
+      const { created, updated } = await this.supabaseService.syncTradesToAccount(trades, account.id);
+      this.snackBar.open(`${created} imported trade${created === 1 ? '' : 's'} created, ${updated} updated in ${account.name}.`, 'Dismiss', { duration: 5000 });
+    } catch (error) {
+      console.error('Failed to sync imported MT5 trades to Supabase:', error);
+      const message = error instanceof Error ? error.message : 'Unknown sync error';
+      this.snackBar.open(`Import sync failed: ${message}`, 'Dismiss', { duration: 8000 });
+    } finally {
+      this.isSyncingMT5Trades = false;
+      this.cdr.markForCheck();
+    }
+  }
+
   async syncMT5Trades(): Promise<void> {
     if (this.isSyncingMT5Trades) return;
 
@@ -5452,7 +5478,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
     return {
       ticket: trade.position,
-      buy_sell: trade.type === 'Buy' ? 'Buy' : 'Sell',
+      buy_sell: trade.type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
       time_open: this.formatMt5DateForSupabase(trade.openDate),
       time_close: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
@@ -5472,10 +5498,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   private formatMt5DateForSupabase(date: string): string | undefined {
     if (!date || date === '-') return undefined;
 
-    const match = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
-    if (!match) return undefined;
+    const yearFirstMatch = date.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})/);
+    if (yearFirstMatch) {
+      const [, year, month, day, hour, minute] = yearFirstMatch;
+      return `${year}-${month}-${day}T${hour}:${minute}:00`;
+    }
 
-    const [, month, day, year, hour, minute] = match;
+    const monthFirstMatch = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/);
+    if (!monthFirstMatch) return undefined;
+
+    const [, month, day, year, hour, minute] = monthFirstMatch;
     return `${year}-${month}-${day}T${hour}:${minute}:00`;
   }
 
