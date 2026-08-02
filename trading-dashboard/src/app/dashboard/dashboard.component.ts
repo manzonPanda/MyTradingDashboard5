@@ -461,6 +461,17 @@ export class DashboardComponent implements AfterViewInit {
       : [];
   }
 
+  get syncAccounts(): Account[] {
+    return [...this.accounts].sort((left, right) => {
+      const leftDate = left.start_date ? Date.parse(left.start_date) : Number.POSITIVE_INFINITY;
+      const rightDate = right.start_date ? Date.parse(right.start_date) : Number.POSITIVE_INFINITY;
+      const leftSortDate = Number.isNaN(leftDate) ? Number.POSITIVE_INFINITY : leftDate;
+      const rightSortDate = Number.isNaN(rightDate) ? Number.POSITIVE_INFINITY : rightDate;
+
+      return leftSortDate - rightSortDate || left.name.localeCompare(right.name);
+    });
+  }
+
   get pagedAccounts(): Account[] {
     const startIndex = (this.accountPage - 1) * this.accountPageSize;
     return this.filteredAccounts.slice(startIndex, startIndex + this.accountPageSize);

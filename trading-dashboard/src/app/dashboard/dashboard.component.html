@@ -1664,7 +1664,7 @@
         <span>Sync to account</span>
         <select [(ngModel)]="mt5SyncAccountId" [disabled]="isSyncingMT5Trades">
           <option value="" disabled>Choose an account</option>
-          <option *ngFor="let account of accounts" [value]="account.id">
+          <option *ngFor="let account of syncAccounts" [value]="account.id">
             {{ account.name }}{{ account.account_number ? ' #' + account.account_number : '' }}
           </option>
         </select>
