@@ -566,6 +566,11 @@ mt5AccountInfo: AccountSettings = {
   mt5ImportError = '';
   mt5SyncStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
   mt5SyncStatusMessage = '';
+  mt5SyncProgress = 0;
+  mt5SyncProcessed = 0;
+  mt5SyncTotal = 0;
+  mt5SyncCreated = 0;
+  mt5SyncUpdated = 0;
   isLoadingMetrics = true; // Loading state for metrics cards
   mockTicket = Math.floor(Math.random() * 999999999) + 100000000;
   //uploading progress bar
@@ -5439,21 +5444,43 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     this.isSyncingMT5Trades = true;
     this.mt5SyncStatus = 'syncing';
-    this.mt5SyncStatusMessage = `Preparing ${this.mt5ImportedTrades.length} trades for ${account.name}...`;
+    this.mt5SyncProgress = 5;
+    this.mt5SyncProcessed = 0;
+    this.mt5SyncTotal = this.mt5ImportedTrades.length;
+    this.mt5SyncCreated = 0;
+    this.mt5SyncUpdated = 0;
+    this.mt5SyncStatusMessage = `Preparing ${this.mt5SyncTotal} trades for ${account.name}...`;
     this.cdr.markForCheck();
     try {
       const trades = this.mt5ImportedTrades.map(trade => this.mapMt5TradeForSupabase(trade));
+      this.mt5SyncProgress = 10;
       this.mt5SyncStatusMessage = `Matching tickets and syncing to ${account.name}...`;
       this.cdr.markForCheck();
-      const { created, updated } = await this.supabaseService.syncTradesToAccount(trades, account.id);
+      const { created, updated } = await this.supabaseService.syncTradesToAccount(
+        trades,
+        account.id,
+        (processed, total, createdCount, updatedCount) => {
+          this.mt5SyncProcessed = processed;
+          this.mt5SyncTotal = total;
+          this.mt5SyncCreated = createdCount;
+          this.mt5SyncUpdated = updatedCount;
+          this.mt5SyncProgress = 10 + Math.round((processed / total) * 85);
+          this.mt5SyncStatusMessage = `Synced ${processed} of ${total} trades to ${account.name}.`;
+          this.cdr.markForCheck();
+        }
+      );
       this.mt5SyncStatus = 'success';
+      this.mt5SyncProgress = 100;
+      this.mt5SyncProcessed = this.mt5SyncTotal;
+      this.mt5SyncCreated = created;
+      this.mt5SyncUpdated = updated;
       this.mt5SyncStatusMessage = `Sync complete: ${created} created, ${updated} updated in ${account.name}.`;
       this.snackBar.open(`${created} imported trade${created === 1 ? '' : 's'} created, ${updated} updated in ${account.name}.`, 'Dismiss', { duration: 5000 });
     } catch (error) {
       console.error('Failed to sync imported MT5 trades to Supabase:', error);
       const message = error instanceof Error ? error.message : 'Unknown sync error';
       this.mt5SyncStatus = 'error';
-      this.mt5SyncStatusMessage = `Sync failed: ${message}`;
+      this.mt5SyncStatusMessage = `Sync failed after ${this.mt5SyncProcessed} of ${this.mt5SyncTotal} trades: ${message}`;
       this.snackBar.open(`Import sync failed: ${message}`, 'Dismiss', { duration: 8000 });
     } finally {
       this.isSyncingMT5Trades = false;
