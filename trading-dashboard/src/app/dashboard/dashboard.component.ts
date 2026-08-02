@@ -804,7 +804,7 @@ mt5AccountInfo: AccountSettings = {
     },
     plugins: {
       legend: {
-        display: true,
+        display: false,
         position: 'top',
         labels: {
           usePointStyle: true,
