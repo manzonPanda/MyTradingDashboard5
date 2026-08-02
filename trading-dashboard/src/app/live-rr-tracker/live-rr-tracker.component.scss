@@ -588,7 +588,7 @@
   background: var(--tf-bg-card);
   border: 1px solid var(--tf-border-primary);
   border-radius: 10px;
-  padding: 0.75rem;
+  padding: 0.4rem;
   position: relative;
   overflow: hidden;
   min-width: 0;
@@ -630,9 +630,9 @@
 }
 
 .trade-gauge {
-  flex: 0 1 90px;
+  flex: 0 1 100px;
   width: 100%;
-  max-width: 90px;
+  max-width: 100%;
   aspect-ratio: 1;
   height: auto;
   position: relative;
