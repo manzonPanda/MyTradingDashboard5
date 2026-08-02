@@ -10177,6 +10177,49 @@ table.simple-table {
   }
 }
 
+:host-context(body.dark-theme) .navigation-timeline-card {
+  ::ng-deep app-dream-timeline {
+    .dream-time-minimal {
+      .start-date-horizontal {
+        color: #cbd5e1 !important;
+        background: #1e293b !important;
+        border-color: #475569 !important;
+      }
+
+      .time-units {
+        background: #172033 !important;
+        border-color: #475569 !important;
+
+        .time-unit,
+        .time-unit:nth-child(1),
+        .time-unit:nth-child(2),
+        .time-unit:nth-child(3),
+        .time-unit:nth-child(4),
+        .time-unit:nth-child(5),
+        .time-unit:nth-child(6) {
+          border-left-color: #475569 !important;
+
+          .value {
+            color: #c4b5fd !important;
+            -webkit-text-fill-color: #c4b5fd !important;
+          }
+
+          .label,
+          &:nth-child(1) .label,
+          &:nth-child(2) .label,
+          &:nth-child(3) .label,
+          &:nth-child(4) .label,
+          &:nth-child(5) .label,
+          &:nth-child(6) .label {
+            background: transparent !important;
+            color: #94a3b8 !important;
+          }
+        }
+      }
+    }
+  }
+}
+
 .navigation-connections-card {
   ::ng-deep app-connection-status {
     display: block;
