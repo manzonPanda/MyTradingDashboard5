@@ -111,9 +111,13 @@ app-root {
   height: 100%;
   z-index: 1000;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
   filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.65)) drop-shadow(0 0 14px rgba(167, 139, 250, 0.46));
-  animation: aura-energy-visibility 5s ease-in-out forwards;
+}
+
+.aura-energy-fading {
+  opacity: 0 !important;
+  transition: opacity 180ms ease;
 }
 
 .aura-energy-svg {
@@ -137,7 +141,7 @@ app-root {
   stroke-dashoffset: 1000;
   filter: url(#aura-energy-bloom);
   opacity: 1;
-  animation: aura-energy-travel 5s linear 1;
+  animation: none;
 }
 
 .aura-energy-head {
@@ -159,7 +163,7 @@ app-root {
   stroke-dasharray: 38 962;
   stroke-dashoffset: 1000;
   opacity: 1;
-  animation: aura-energy-travel 5s linear infinite;
+  animation: none;
 }
 
 .aura-energy-pathway-preview .aura-energy-head {
