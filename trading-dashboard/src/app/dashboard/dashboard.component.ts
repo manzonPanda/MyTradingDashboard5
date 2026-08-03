@@ -5982,7 +5982,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     let response: any[] = [];
 
     try {
-      response = await this.getSupabaseTrades();
+      const [supabaseTrades, mt5History] = await Promise.all([
+        this.getSupabaseTrades(),
+        this.getMt5API()
+      ]);
+      response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
       this.isLoadingMT5Data = false;
@@ -6039,6 +6043,29 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   
+  private reconcileMt5Statuses(supabaseTrades: any[], mt5History: any[]): any[] {
+    const mt5ByPosition = new Map(
+      (mt5History || [])
+        .filter(trade => trade?.position_id !== undefined && trade?.position_id !== null)
+        .map(trade => [String(trade.position_id), trade])
+    );
+
+    return supabaseTrades.map(trade => {
+      const mt5Trade = mt5ByPosition.get(String(trade.position_id));
+      if (!mt5Trade || String(mt5Trade.status).toLowerCase() === 'open') return trade;
+
+      return {
+        ...trade,
+        status: mt5Trade.status,
+        time_close: mt5Trade.time_close || trade.time_close,
+        exit_price: mt5Trade.exit_price || trade.exit_price,
+        profit: mt5Trade.profit ?? trade.profit,
+        commission: mt5Trade.commission ?? trade.commission,
+        swap: mt5Trade.swap ?? trade.swap
+      };
+    });
+  }
+
   private async getSupabaseTrades(): Promise<any[]> {
     if (!this.selectedAccount) return [];
     const trades = await this.supabaseService.getAllTrades(this.selectedAccount.id);
