@@ -130,10 +130,10 @@ interface Table {
             </div>
           </div>
 
-        <div class="live-extremes-summary" aria-label="Maximum favorable and adverse excursion">
-          <span class="mfe-value"><mat-icon>north_east</mat-icon><strong>MFE {{ formatR(totalMfeR) }}</strong><em>({{ formatCurrency(totalMfeValue) }})</em></span>
+        <div class="live-extremes-summary" aria-label="Best and worst unrealized trade movement">
+          <span class="mfe-value" title="Maximum Favorable Excursion"><mat-icon>north_east</mat-icon><strong>Best unrealized {{ formatR(totalMfeR) }}</strong><em>({{ formatCurrency(totalMfeValue) }})</em></span>
           <span class="extremes-divider">|</span>
-          <span class="mae-value"><mat-icon>south_west</mat-icon><strong>MAE {{ formatR(totalMaeR) }}</strong><em>({{ formatCurrency(totalMaeValue) }})</em></span>
+          <span class="mae-value" title="Maximum Adverse Excursion"><mat-icon>south_west</mat-icon><strong>Worst unrealized {{ formatR(totalMaeR) }}</strong><em>({{ formatCurrency(totalMaeValue) }})</em></span>
         </div>
 
         <div class="live-trade-gauges">
