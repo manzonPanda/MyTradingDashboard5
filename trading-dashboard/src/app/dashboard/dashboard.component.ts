@@ -1088,6 +1088,10 @@ mt5AccountInfo: AccountSettings = {
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
     private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
+    if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
+      this.isDashboardNavigationOpen = false;
+      this.navigationDisplayMode = 'collapsed';
+    }
     this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
     this.loadLiveTradeSoundSettings();
     this.applyTheme();

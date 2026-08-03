@@ -265,15 +265,19 @@
 // 🌟 RESPONSIVE MAGIC 🌟
 @media (max-width: 1200px) {
   .header-right-section {
+    height: auto;
+
     .dream-timeline-header-widget {
+      height: auto;
+
       app-dream-timeline {
         .dream-time-minimal .time-units {
+          flex-wrap: wrap;
           gap: 12px;
           padding: 12px 18px;
 
-          .time-unit:nth-child(5),
-          .time-unit:nth-child(6) {
-            display: none;
+          .time-unit {
+            flex: 1 1 4.5rem;
           }
 
           .time-unit .value {
@@ -298,11 +302,8 @@
           gap: 8px;
           padding: 8px 12px;
 
-          .time-unit:nth-child(n+4) {
-            display: none;
-          }
-
           .time-unit {
+            flex: 1 1 4rem;
             padding: 6px 8px;
 
             .value {
