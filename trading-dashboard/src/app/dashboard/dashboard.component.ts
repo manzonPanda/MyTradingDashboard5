@@ -443,9 +443,9 @@ export class DashboardComponent implements AfterViewInit {
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
-  private readonly threeToFourRSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F00f1808637444152afeca89de2a86bf4?alt=media&token=f0783a0d-4c30-4e94-95b7-c3b109851b22&apiKey=36c2f203afb3443492a83c1d11922b41';
-  private readonly threeToFourRNotifiedTickets = new Set<string>();
-  private readonly threeToFourRAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly gaugeAlertSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F00f1808637444152afeca89de2a86bf4?alt=media&token=f0783a0d-4c30-4e94-95b7-c3b109851b22&apiKey=36c2f203afb3443492a83c1d11922b41';
+  private readonly gaugeAlertNotifiedTickets = new Set<string>();
+  private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
@@ -6160,7 +6160,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Update the beautiful chart with new data
       this.updateChartWithNewTrade(newTrade);
-      this.notifyThreeToFourR(newTrade, trade.live_rr);
+      this.notifyGaugePercentage(newTrade);
 
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
@@ -6196,8 +6196,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
       const finalMfe = Number(closedTrade.mfe) || 0;
       const finalMae = Number(closedTrade.mae) || 0;
-      this.stopThreeToFourRAlert(String(trade.ticket));
-      this.threeToFourRNotifiedTickets.delete(String(trade.ticket));
+      this.stopGaugeAlert(String(trade.ticket));
+      this.gaugeAlertNotifiedTickets.delete(String(trade.ticket));
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];
@@ -6219,38 +6219,40 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  private notifyThreeToFourR(trade: Table, liveR: unknown): void {
-    const rValue = Number(liveR);
+  private notifyGaugePercentage(trade: Table): void {
+    const accountSize = Number(this.mt5AccountInfo.startingBalance);
+    const profit = Number.parseFloat(trade.profit) || 0;
+    const gaugePercentage = accountSize > 0 ? (profit / accountSize) * 100 : 0;
     const ticket = String(trade.position);
-    const isInAlertRange = Number.isFinite(rValue) && rValue > 3 && rValue < 4;
+    const isInAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 2.7 && gaugePercentage < 3.4;
 
     if (!isInAlertRange) {
-      this.stopThreeToFourRAlert(ticket);
+      this.stopGaugeAlert(ticket);
       return;
     }
 
-    if (!this.threeToFourRAlertSounds.has(ticket)) {
-      const sound = new Audio(this.threeToFourRSoundUrl);
+    if (!this.gaugeAlertSounds.has(ticket)) {
+      const sound = new Audio(this.gaugeAlertSoundUrl);
       sound.loop = true;
-      this.threeToFourRAlertSounds.set(ticket, sound);
+      this.gaugeAlertSounds.set(ticket, sound);
       sound.play().catch(error => {
-        this.stopThreeToFourRAlert(ticket);
-        console.warn('Unable to play 3R–4R alert sound:', error);
+        this.stopGaugeAlert(ticket);
+        console.warn('Unable to play gauge percentage alert sound:', error);
       });
     }
 
-    if (!this.threeToFourRNotifiedTickets.has(ticket)) {
-      this.threeToFourRNotifiedTickets.add(ticket);
-      this.snackBar.open(`${trade.symbol || 'Trade'} crossed ${rValue.toFixed(2)}R`, 'Dismiss', { duration: 5000 });
+    if (!this.gaugeAlertNotifiedTickets.has(ticket)) {
+      this.gaugeAlertNotifiedTickets.add(ticket);
+      this.snackBar.open(`${trade.symbol || 'Trade'} reached ${gaugePercentage.toFixed(2)}%`, 'Dismiss', { duration: 5000 });
     }
   }
 
-  private stopThreeToFourRAlert(ticket: string): void {
-    const sound = this.threeToFourRAlertSounds.get(ticket);
+  private stopGaugeAlert(ticket: string): void {
+    const sound = this.gaugeAlertSounds.get(ticket);
     if (!sound) return;
     sound.pause();
     sound.currentTime = 0;
-    this.threeToFourRAlertSounds.delete(ticket);
+    this.gaugeAlertSounds.delete(ticket);
   }
 
   updateMT5TradePrice(priceData: any): void {
@@ -6270,11 +6272,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Update current profit values
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      this.notifyGaugePercentage(trade);
 
       // Update live RR from socket data (real-time risk-reward ratio)
       if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
         trade.rrr = Number(priceData.live_rr).toFixed(2);
-        this.notifyThreeToFourR(trade, priceData.live_rr);
         console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
       }
       if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
