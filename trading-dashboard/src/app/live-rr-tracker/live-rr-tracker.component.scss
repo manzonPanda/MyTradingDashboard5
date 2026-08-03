@@ -520,7 +520,8 @@
 
   span {
     min-width: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: normal;
     text-align: center;
   }
 
@@ -556,7 +557,8 @@
 .metric-value {
   min-width: 0;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
   font-size: clamp(0.9rem, 1.8vw, 1.35rem);
   font-weight: 800;
   margin-bottom: 0.35rem;
