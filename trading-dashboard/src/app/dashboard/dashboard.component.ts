@@ -593,10 +593,11 @@ export class DashboardComponent implements AfterViewInit {
       }
     } catch (error) {
       console.error(`Unable to ${this.isCreatingAccount ? 'create' : 'update'} account:`, error);
-      this.snackBar.open(`Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000 });
+      this.snackBar.open(error instanceof Error ? error.message : `Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000 });
+    } finally {
       this.isSavingAccount = false;
+      this.cdr.markForCheck();
     }
-    this.cdr.markForCheck();
   }
 
   isMostRecentAccount(account: Account): boolean {

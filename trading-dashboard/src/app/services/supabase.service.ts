@@ -128,13 +128,31 @@ export class SupabaseService {
   }
 
   async createAccount(account: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
-    const { data, error } = await this.supabase
-      .from('accounts')
-      .insert(account)
-      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at, updated_at')
-      .single();
-    if (error) throw new Error(`Account creation failed: ${error.message}`);
-    return data as Account;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const { data, error } = await this.supabase
+        .from('accounts')
+        .insert(account)
+        .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at, updated_at')
+        .abortSignal(controller.signal)
+        .single();
+      if (error) {
+        if (controller.signal.aborted) {
+          throw new Error('The account request timed out. Check your connection and try again.');
+        }
+        throw new Error(`Account creation failed: ${error.message}`);
+      }
+      return data as Account;
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new Error('The account request timed out. Check your connection and try again.');
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
   }
 
   async updateAccount(id: string, updates: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
