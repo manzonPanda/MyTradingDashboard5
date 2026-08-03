@@ -443,7 +443,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
-  private readonly threeToFourRSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2Fa4408eec10134befa8c63006fdd4ebab?alt=media&token=990c3aa1-e4cc-4370-b596-8b935094a46f&apiKey=36c2f203afb3443492a83c1d11922b41';
+  private readonly threeToFourRSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F00f1808637444152afeca89de2a86bf4?alt=media&token=f0783a0d-4c30-4e94-95b7-c3b109851b22&apiKey=36c2f203afb3443492a83c1d11922b41';
   private readonly threeToFourRNotifiedTickets = new Set<string>();
   private readonly threeToFourRAlertSounds = new Map<string, HTMLAudioElement>();
   private liveExtremesCacheTimer?: number;
