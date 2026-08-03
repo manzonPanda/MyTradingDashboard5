@@ -371,7 +371,9 @@ export class AuraEnergyService {
       return;
     }
 
-    const distance = this.routeLength * this.progress;
+    // The route is closed, so its exact endpoint is also its starting point.
+    const travelDistance = Math.max(0, this.routeLength - 2);
+    const distance = travelDistance * this.progress;
     const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
     this.renderTrail(route, trail, Math.max(0, distance - trailLength), distance);
     const headPoint = route.getPointAtLength(distance);
