@@ -90,7 +90,7 @@ interface Table {
         <div class="live-header">
           <div class="header-title">
             <mat-icon class="live-icon">fiber_manual_record</mat-icon>
-            <h3>Live Trading Session</h3>
+            <h3>Trades</h3>
           </div>
           <div class="header-meta">
             <button
