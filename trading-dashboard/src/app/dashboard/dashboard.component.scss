@@ -12281,3 +12281,279 @@ table.simple-table {
 .trade-sound-save:hover { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
 .trade-sound-preview:disabled { cursor: not-allowed; opacity: 0.5; }
 @media (max-width: 540px) { .trade-sound-settings-actions { align-items: stretch; flex-direction: column; } .trade-sound-settings-save-actions { justify-content: flex-end; } }
+
+@media (max-width: 1199px) {
+  .dashboard-header {
+    height: auto;
+    overflow: visible;
+
+    .header-content,
+    .trading-week-container,
+    .trading-week-container .trading-days-grid {
+      height: 150px;
+    }
+
+    .trading-week-container .trading-days-grid .day-column {
+      min-width: 90px;
+
+      &:has(.no-news) {
+        min-width: 70px;
+      }
+
+      &:nth-child(4) {
+        min-width: 260px !important;
+        max-width: 360px;
+      }
+    }
+  }
+
+  .metrics-section .metrics-container {
+    flex-direction: column;
+  }
+
+  .metrics-section .left-feature-square,
+  .metrics-section .trading-chart-container {
+    width: 100%;
+  }
+
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: clamp(30rem, 58vw, 38rem);
+  }
+
+  .metrics-section .trading-chart-container .chart-header,
+  .metrics-section .trading-chart-container .chart-stats,
+  .mt5-account-info .account-targets {
+    flex-wrap: wrap;
+  }
+
+  .metrics-section .trading-chart-container .chart-header {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .metrics-section .trading-chart-container .chart-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .input-and-buttons-row,
+  .quick-percentage-buttons {
+    flex-wrap: wrap !important;
+  }
+
+  .accounts-browser {
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .roi-workspace {
+    padding-inline: clamp(1rem, 3vw, 2rem);
+  }
+
+  .roi-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .tradezella-dashboard.dashboard-navigation-open {
+    width: calc(100% - 4.75rem);
+    margin-left: 4.75rem;
+  }
+
+  .dashboard-navigation-backdrop {
+    display: block;
+  }
+
+  .dashboard-navigation.is-expanded {
+    width: min(16rem, calc(100vw - 1rem));
+  }
+
+  .dashboard-navigation-toggle.is-expanded {
+    left: min(14.2rem, calc(100vw - 3rem));
+  }
+
+  .accounts-browser {
+    grid-template-columns: 1fr;
+  }
+
+  .account-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .calendar-grid-container {
+    grid-template-columns: minmax(0, 1fr) 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tradezella-dashboard,
+  .tradezella-dashboard.dashboard-navigation-open {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .dashboard-navigation {
+    width: min(14rem, calc(100vw - 1.25rem));
+    transform: translateX(-100%);
+    transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+
+    &.is-expanded {
+      transform: translateX(0);
+    }
+  }
+
+  .dashboard-header {
+    padding: 0.65rem;
+
+    .header-content,
+    .header-left-section,
+    .trading-week-container,
+    .trading-week-container .trading-days-grid {
+      height: 138px;
+    }
+
+    .trading-week-container .trading-days-grid {
+      gap: 0.25rem;
+      padding: 0.2rem;
+    }
+
+    .trading-week-container .trading-days-grid .day-column {
+      min-width: 84px;
+
+      &:nth-child(4) {
+        min-width: 220px !important;
+      }
+    }
+  }
+
+  .metrics-section,
+  .upload-section,
+  .calendar-section,
+  .table-section {
+    padding: 0.75rem;
+  }
+
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: clamp(24rem, 112vw, 30rem);
+  }
+
+  .metrics-section .trading-chart-container .chart-title-section .chart-title-row,
+  .metrics-section .trading-chart-container .chart-title-section .chart-title,
+  .metrics-section .trading-chart-container .chart-stats,
+  .mt5-account-info .account-targets {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metrics-section .trading-chart-container .chart-stats .stat-item,
+  .mt5-account-info .target-card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .mt5-account-info .target-card {
+    min-width: 0;
+  }
+
+  .chart-overlay-info {
+    top: 1rem !important;
+    right: 1rem !important;
+  }
+
+  .calendar-grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  .roi-metrics,
+  .roi-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .roi-hero,
+  .roi-card-heading,
+  .roi-transaction-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .roi-hero-actions,
+  .roi-filter-tabs {
+    width: 100%;
+  }
+
+  .roi-add-entry-button,
+  .roi-filter-tabs button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .firm-selector-heading,
+  .selected-firm-heading,
+  .account-choice-topline,
+  .account-choice-actions {
+    flex-wrap: wrap;
+  }
+
+  .firm-selector-copy strong,
+  .firm-selector-copy small,
+  .account-choice strong,
+  .account-row-details strong,
+  .roi-transaction-copy p {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header .trading-week-container .trading-days-grid .day-column {
+    min-width: 76px;
+
+    &:nth-child(4) {
+      min-width: 190px !important;
+    }
+  }
+
+  .metrics-section .trading-chart-container .chart-header {
+    padding: 0.5rem;
+  }
+
+  .metrics-section .trading-chart-container .chart-title-section .chart-title {
+    font-size: 1rem;
+  }
+
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: 24rem;
+  }
+
+  .accounts-table td {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: left;
+  }
+
+  .roi-workspace {
+    padding-inline: 0.75rem;
+  }
+
+  .roi-hero,
+  .firm-selector,
+  .selected-firm-accounts {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .dashboard-header .trading-week-container .trading-days-grid .day-column:nth-child(4) {
+    min-width: 175px !important;
+  }
+
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: 22rem;
+  }
+
+  .dashboard-navigation.is-expanded {
+    width: calc(100vw - 0.75rem);
+  }
+}
