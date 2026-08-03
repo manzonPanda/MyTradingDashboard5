@@ -449,7 +449,7 @@
 // Live Metrics
 .live-metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, 1.15fr) repeat(2, 0.85fr);
   grid-template-rows: auto auto;
   gap: 0.75rem;
   padding: 1rem;
