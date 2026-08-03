@@ -114,7 +114,9 @@
 
   .notion-table-container {
     position: relative;
+    max-width: 100%;
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
 
     .loading-overlay {
       position: absolute;

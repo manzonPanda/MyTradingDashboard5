@@ -12550,10 +12550,104 @@ table.simple-table {
   }
 
   .metrics-section .trading-chart-container .chart-canvas-wrapper {
-    height: 22rem;
+    height: clamp(20rem, 110vw, 22rem);
   }
 
   .dashboard-navigation.is-expanded {
     width: calc(100vw - 0.75rem);
+  }
+}
+
+@media (max-width: 1199px) {
+  .metrics-section .metrics-container,
+  .metrics-section .trading-chart-container,
+  .metrics-section .left-feature-square,
+  .chart-header,
+  .chart-title-section,
+  .chart-controls,
+  .calendar-section,
+  .table-section {
+    min-width: 0;
+  }
+
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: clamp(26rem, 56vw, 38rem);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .live-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .live-trade-gauges {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .live-extremes-summary {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header .trading-week-container .trading-days-grid {
+    scroll-snap-type: x proximity;
+    overscroll-behavior-inline: contain;
+  }
+
+  .dashboard-header .trading-week-container .trading-days-grid .day-column {
+    scroll-snap-align: start;
+    min-width: min(78vw, 18rem);
+  }
+
+  .dashboard-header .trading-week-container .trading-days-grid .day-column:nth-child(4) {
+    min-width: min(82vw, 20rem) !important;
+  }
+
+  .dashboard-header .event-title,
+  .dashboard-header .summary-text,
+  .dashboard-header .no-news-text,
+  .metric-label span,
+  .metric-value {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .metrics-section .trading-chart-container .chart-stats,
+  .mt5-account-info .account-targets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .metrics-section .trading-chart-container .chart-stats .stat-item,
+  .mt5-account-info .target-card {
+    width: auto;
+  }
+
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: clamp(21rem, 100vw, 30rem);
+    min-height: 0;
+  }
+
+  .table-container,
+  .simple-table-container,
+  .notion-table-container {
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-section .trading-chart-container .chart-canvas-wrapper {
+    height: clamp(20rem, 110vw, 24rem);
+  }
+
+  .metrics-section .trading-chart-container .chart-stats,
+  .mt5-account-info .account-targets {
+    grid-template-columns: 1fr;
   }
 }
