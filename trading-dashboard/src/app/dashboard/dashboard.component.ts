@@ -443,6 +443,11 @@ export class DashboardComponent implements AfterViewInit {
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
+  private readonly gaugeAlertSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F00f1808637444152afeca89de2a86bf4?alt=media&token=f0783a0d-4c30-4e94-95b7-c3b109851b22&apiKey=36c2f203afb3443492a83c1d11922b41';
+  private readonly highGaugeAlertSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F0004ffa69d294042b96dd00385ca3d40?alt=media&token=c0906d58-20e0-4129-8fd7-946db30ee96b&apiKey=36c2f203afb3443492a83c1d11922b41';
+  private readonly gaugeAlertNotifiedTickets = new Set<string>();
+  private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
@@ -6093,6 +6098,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.clearLiveExtremes(ticket);
   }
 
+  private async persistLiveTrade(trade: Table): Promise<void> {
+    if (!this.selectedAccount) return;
+    const tradeForSupabase = {
+      ...this.mapMt5TradeForSupabase(trade),
+      mfe: this.toNumber(trade.mfe),
+      mae: this.toNumber(trade.mae ?? '0')
+    };
+    await this.supabaseService.saveTradeForAccount(tradeForSupabase, this.selectedAccount.id);
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
@@ -6147,6 +6162,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Update the beautiful chart with new data
       this.updateChartWithNewTrade(newTrade);
+      this.notifyGaugePercentage(newTrade);
 
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
@@ -6154,8 +6170,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Go to last page of the table to show the latest trade
       this.setPage(this.getTotalPages());
 
-      //call Notion api to add new entry
-      this.createNewEntry(newTrade);
+      void this.persistLiveTrade(newTrade).catch(error => {
+        console.error('Unable to persist opened trade:', error);
+      });
 
     } else {
       console.log('⚠️ Trade already exists, skipping duplicate');
@@ -6181,16 +6198,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
       const finalMfe = Number(closedTrade.mfe) || 0;
       const finalMae = Number(closedTrade.mae) || 0;
+      this.stopGaugeAlert(String(trade.ticket));
+      this.gaugeAlertNotifiedTickets.delete(String(trade.ticket));
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];
 
+      void this.persistLiveTrade(closedTrade).catch(error => {
+        console.error('Unable to persist closed trade:', error);
+      });
       void this.persistClosedTradeExtremes(trade.ticket, finalMfe, finalMae).catch(error => {
         console.error('Unable to persist final MFE/MAE:', error);
       });
-
-      //call Notion api to update an existing entry for closed trade
-      this.updateExistingEntry(closedTrade);
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
@@ -6199,6 +6218,54 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.updateChartWithClosedTrade(closedTrade);
 
       console.log('✅ MT5 trade closed');
+    }
+  }
+
+  private notifyGaugePercentage(trade: Table): void {
+    const accountSize = Number(this.mt5AccountInfo.startingBalance);
+    const profit = Number.parseFloat(trade.profit) || 0;
+    const gaugePercentage = accountSize > 0 ? (profit / accountSize) * 100 : 0;
+    const ticket = String(trade.position);
+    const isInAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 2.8 && gaugePercentage < 3.3;
+    const isAboveHighAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 3.4;
+
+    if (!isInAlertRange && !isAboveHighAlertRange) {
+      this.stopGaugeAlert(ticket);
+      return;
+    }
+
+    const soundMap = isAboveHighAlertRange ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
+    const inactiveSoundMap = isAboveHighAlertRange ? this.gaugeAlertSounds : this.highGaugeAlertSounds;
+    const inactiveSound = inactiveSoundMap.get(ticket);
+    if (inactiveSound) {
+      inactiveSound.pause();
+      inactiveSound.currentTime = 0;
+      inactiveSoundMap.delete(ticket);
+    }
+
+    if (!soundMap.has(ticket)) {
+      const sound = new Audio(isAboveHighAlertRange ? this.highGaugeAlertSoundUrl : this.gaugeAlertSoundUrl);
+      sound.loop = true;
+      soundMap.set(ticket, sound);
+      sound.play().catch(error => {
+        this.stopGaugeAlert(ticket);
+        console.warn('Unable to play gauge percentage alert sound:', error);
+      });
+    }
+
+    if (!this.gaugeAlertNotifiedTickets.has(ticket)) {
+      this.gaugeAlertNotifiedTickets.add(ticket);
+      this.snackBar.open(`${trade.symbol || 'Trade'} reached ${gaugePercentage.toFixed(2)}%`, 'Dismiss', { duration: 5000 });
+    }
+  }
+
+  private stopGaugeAlert(ticket: string): void {
+    for (const soundMap of [this.gaugeAlertSounds, this.highGaugeAlertSounds]) {
+      const sound = soundMap.get(ticket);
+      if (!sound) continue;
+      sound.pause();
+      sound.currentTime = 0;
+      soundMap.delete(ticket);
     }
   }
 
@@ -6219,6 +6286,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Update current profit values
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      this.notifyGaugePercentage(trade);
 
       // Update live RR from socket data (real-time risk-reward ratio)
       if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
