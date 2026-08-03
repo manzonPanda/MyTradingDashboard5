@@ -210,7 +210,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     openTrades.forEach((trade) => {
       const profit = parseFloat(trade.profit || '0') || 0;
       const slRisk = parseFloat(trade.riskPerTrade || '0') || 0;
-      totalR += slRisk > 0 ? profit / slRisk : 0;
+      const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
+      const tradeR = Number.isFinite(reportedR) ? reportedR : (slRisk > 0 ? profit / slRisk : 0);
+      totalR += tradeR;
       totalUnrealizedPnL += profit;
       totalSlRisk += slRisk;
     });

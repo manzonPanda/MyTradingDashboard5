@@ -6131,8 +6131,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Update live RR from socket data (real-time risk-reward ratio)
       if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
-        trade.rrr = priceData.live_rr.toFixed(2);
+        trade.rrr = Number(priceData.live_rr).toFixed(2);
         console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
+      }
+      if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
+        trade.riskPerTrade = Math.abs(Number(priceData.sl_value)).toFixed(2);
       }
 
       // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
@@ -6154,6 +6157,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           liveIndicator.classList.add('pulse-dot');
         }
       }
+      return;
+    }
+
+    if (this.selectedAccount && livePositionId !== undefined && livePositionId !== null && livePositionId !== '') {
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      this.addMT5LiveTrade({
+        ...priceData,
+        ticket: livePositionId,
+        time_open: now,
+        price_open: Number(priceData.price_open ?? priceData.price_current ?? 0),
+        type: Number(priceData.type ?? priceData.trade_type ?? 0),
+        volume: Number(priceData.volume ?? 0),
+        profit: Number(priceData.profit ?? 0),
+        risk_usd: Math.abs(Number(priceData.sl_value ?? priceData.risk_usd ?? 0)),
+        status: 'open'
+      });
     }
   }
 
