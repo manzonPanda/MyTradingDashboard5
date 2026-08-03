@@ -449,12 +449,14 @@
 // Live Metrics
 .live-metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 1.1fr;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: auto auto;
   gap: 0.75rem;
   padding: 1rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
   }
 }
 
@@ -581,7 +583,12 @@
 }
 
 .live-trade-gauges {
-  display: contents;
+  display: grid;
+  grid-column: 4 / span 2;
+  grid-row: 1 / span 2;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  align-items: start;
+  gap: 0.5rem;
 }
 
 .trade-gauge-card {
@@ -614,7 +621,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  grid-column: 1 / -1;
+  grid-column: 1 / span 3;
+  grid-row: 2;
   padding: 0.1rem 0 0.35rem;
   color: var(--tf-text-secondary);
   font-size: 0.65rem;
@@ -807,6 +815,17 @@
 
   .live-metrics {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .live-extremes-summary,
+  .live-trade-gauges {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .live-trade-gauges {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 
   .status-bar {
