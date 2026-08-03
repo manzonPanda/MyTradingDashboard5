@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -139,7 +139,7 @@ interface Table {
         <div class="live-trade-gauges">
           <article *ngFor="let trade of openTrades" class="trade-gauge-card">
             <div class="trade-gauge-heading">
-              <span class="trade-gauge-symbol">{{ trade.symbol }}</span>
+              <span class="trade-gauge-symbol" [attr.title]="trade.symbol">{{ formatHoldingTime(trade) }}</span>
             </div>
             <div class="trade-gauge-content">
               <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
@@ -164,7 +164,7 @@ interface Table {
   styleUrls: ['./live-rr-tracker.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LiveRRTrackerComponent implements OnInit, OnChanges {
+export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
@@ -181,9 +181,17 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   totalMaeValue = 0;
   totalMfeR = 0;
   totalMaeR = 0;
+  private holdingTimeInterval?: ReturnType<typeof setInterval>;
+
+  constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.calculateLiveMetrics();
+    this.holdingTimeInterval = setInterval(() => this.cdr.markForCheck(), 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -260,6 +268,24 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     this.totalMfeR = 0;
     this.totalMaeR = 0;
     this.openTrades = [];
+  }
+
+  formatHoldingTime(trade: Table): string {
+    const openedAt = new Date(trade.openDate || '').getTime();
+    if (!Number.isFinite(openedAt)) return '00s';
+
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - openedAt) / 1000));
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    if (minutes > 0) {
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${String(seconds).padStart(2, '0')}s`;
   }
 
   getTradeProfit(trade: Table): number {
