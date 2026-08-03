@@ -415,9 +415,15 @@ def start_reconnect():
 def close_position(position):
     symbol_info = mt5.symbol_info(position.symbol)
     tick = mt5.symbol_info_tick(position.symbol)
-    if symbol_info is None or tick is None:
-        return {"ticket": position.ticket, "error": "Market price unavailable"}
 
+    if symbol_info is None or tick is None:
+        return {
+            "ticket": position.ticket,
+            "success": False,
+            "error": "Market price unavailable"
+        }
+
+    # Send the opposite order to close the position
     if position.type == mt5.ORDER_TYPE_BUY:
         order_type = mt5.ORDER_TYPE_SELL
         price = tick.bid
@@ -425,9 +431,10 @@ def close_position(position):
         order_type = mt5.ORDER_TYPE_BUY
         price = tick.ask
 
+    # Use IOC if supported; otherwise use FOK
     filling_mode = (
         mt5.ORDER_FILLING_IOC
-        if symbol_info.filling_mode & mt5.SYMBOL_FILLING_IOC
+        if symbol_info.filling_mode & mt5.ORDER_FILLING_IOC
         else mt5.ORDER_FILLING_FOK
     )
 
@@ -446,15 +453,28 @@ def close_position(position):
     }
 
     result = mt5.order_send(request_data)
+
+    if result is None:
+        return {
+            "ticket": position.ticket,
+            "success": False,
+            "error": "MT5 order_send returned no result",
+            "last_error": str(mt5.last_error())
+        }
+
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         return {
             "ticket": position.ticket,
+            "success": False,
             "error": "Close failed",
             "retcode": result.retcode,
             "comment": result.comment
         }
 
-    return {"ticket": position.ticket, "success": True}
+    return {
+        "ticket": position.ticket,
+        "success": True
+    }
 
 
 @app.route('/api/close_trade', methods=['POST'])
