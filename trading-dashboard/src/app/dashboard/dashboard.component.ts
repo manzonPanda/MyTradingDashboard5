@@ -3377,6 +3377,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
     const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
     const chartRange = Math.max(startingBalance * 0.1, 1);
+    const chartTickStep = Math.max(1, Math.ceil((chartRange * 2) / 6 / 50) * 50);
     const chartOptions = this.chartOptions as any;
     this.chartOptions = {
       ...chartOptions,
@@ -3385,7 +3386,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         y: {
           ...chartOptions.scales.y,
           min: startingBalance - chartRange,
-          max: startingBalance + chartRange
+          max: startingBalance + chartRange,
+          ticks: {
+            ...chartOptions.scales.y.ticks,
+            stepSize: chartTickStep,
+            maxTicksLimit: 7
+          }
         }
       }
     };
