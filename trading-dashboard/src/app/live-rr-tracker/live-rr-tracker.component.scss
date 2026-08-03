@@ -848,6 +848,221 @@
   }
 }
 
+.gauge-settings-button,
+.gauge-settings-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  color: var(--tf-text-secondary);
+  background: transparent;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    color: var(--tf-text-primary);
+    background: var(--tf-bg-tertiary);
+    transform: translateY(-1px);
+  }
+}
+
+.gauge-settings-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.gauge-settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(8px);
+  animation: gauge-settings-fade-in 0.2s ease-out;
+}
+
+@keyframes gauge-settings-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.gauge-settings-modal {
+  width: min(100%, 420px);
+  padding: 1.5rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 20px;
+  background: var(--tf-bg-card);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+  animation: gauge-settings-rise-in 0.24s ease-out;
+}
+
+@keyframes gauge-settings-rise-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.gauge-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gauge-settings-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--tf-positive);
+  background: color-mix(in srgb, var(--tf-positive) 14%, transparent);
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.gauge-settings-eyebrow {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: var(--tf-text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gauge-settings-modal h2 {
+  margin: 0;
+  color: var(--tf-text-primary);
+  font-size: 1.25rem;
+}
+
+.gauge-settings-close {
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border-radius: 9px;
+}
+
+.gauge-settings-description {
+  margin: 1.25rem 0;
+  color: var(--tf-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.gauge-settings-field {
+  display: block;
+  color: var(--tf-text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.gauge-settings-input-wrap {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 12px;
+  background: var(--tf-bg-secondary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-within {
+    border-color: var(--tf-positive);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tf-positive) 16%, transparent);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.8rem 0;
+    border: 0;
+    outline: 0;
+    color: var(--tf-text-primary);
+    background: transparent;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  strong {
+    color: var(--tf-text-secondary);
+  }
+}
+
+.gauge-settings-help {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  color: var(--tf-text-secondary);
+  font-size: 0.75rem;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.gauge-settings-preview {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  color: var(--tf-text-secondary);
+  background: var(--tf-bg-tertiary);
+  font-size: 0.8rem;
+
+  strong {
+    color: var(--tf-positive);
+  }
+}
+
+.gauge-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.gauge-cancel-button,
+.gauge-save-button {
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.gauge-cancel-button {
+  border: 1px solid var(--tf-border-primary);
+  color: var(--tf-text-secondary);
+  background: transparent;
+}
+
+.gauge-save-button {
+  border: 1px solid var(--tf-positive);
+  color: #fff;
+  background: var(--tf-positive);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--tf-positive) 24%, transparent);
+}
+
 // Responsive Design
 @media (max-width: 768px) {
   .empty-state-container {
