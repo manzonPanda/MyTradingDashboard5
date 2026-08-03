@@ -83,6 +83,7 @@ interface Table {
   rrr:string;
   mt5status:string;// if trade is live(open) or closed in MT5
   mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
+  mae?: string; // Maximum Adverse Excursion - tracks lowest unrealized profit
 }
 
 interface NotionPerformanceData {
@@ -439,11 +440,18 @@ export class DashboardComponent implements AfterViewInit {
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
+  private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
+  private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
+  private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
+  private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
+  isCreatingAccount = false;
   accountPage = 1;
   readonly accountPageSize = 5;
   isSavingAccount = false;
+  isDeletingAccount = false;
   accountEditForm: Partial<Account> = {};
+  accountPendingDeletion: Account | null = null;
   isLoadingAccounts = true;
 
   get firms(): { name: string; accountCount: number }[] {
@@ -511,7 +519,25 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  openAccountCreator(): void {
+    this.isCreatingAccount = true;
+    this.editingAccountId = null;
+    this.accountEditForm = {
+      name: '',
+      firm: this.selectedFirm === 'Independent accounts' ? '' : this.selectedFirm ?? '',
+      account_number: '',
+      initial_balance: 0,
+      profit_target_percent: 0,
+      max_total_drawdown_percent: 0,
+      daily_loss_limit_percent: 0,
+      start_date: new Date().toISOString().slice(0, 10),
+      status: 'active'
+    };
+    this.cdr.markForCheck();
+  }
+
   editAccount(account: Account): void {
+    this.isCreatingAccount = false;
     this.editingAccountId = account.id;
     this.accountEditForm = {
       name: account.name,
@@ -529,39 +555,103 @@ export class DashboardComponent implements AfterViewInit {
 
   cancelAccountEdit(): void {
     this.editingAccountId = null;
+    this.isCreatingAccount = false;
     this.accountEditForm = {};
     this.isSavingAccount = false;
   }
 
-  async saveAccountEdit(): Promise<void> {
-    if (!this.editingAccountId || !this.accountEditForm.name?.trim()) return;
+  requestAccountDeletion(account: Account): void {
+    if (this.isDeletingAccount) return;
+    this.accountPendingDeletion = account;
+    this.cdr.markForCheck();
+  }
 
-    this.isSavingAccount = true;
+  cancelAccountDeletion(): void {
+    if (this.isDeletingAccount) return;
+    this.accountPendingDeletion = null;
+    this.cdr.markForCheck();
+  }
+
+  async confirmAccountDeletion(): Promise<void> {
+    const account = this.accountPendingDeletion;
+    if (!account || this.isDeletingAccount) return;
+
+    this.isDeletingAccount = true;
     try {
-      const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, {
-        name: this.accountEditForm.name.trim(),
-        firm: this.accountEditForm.firm?.trim() || null,
-        account_number: this.accountEditForm.account_number?.trim() || null,
-        initial_balance: Number(this.accountEditForm.initial_balance) || 0,
-        profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
-        max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
-        daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
-        start_date: this.accountEditForm.start_date || null,
-        status: this.accountEditForm.status || 'active'
-      });
-      this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
-      if (this.selectedAccount?.id === updatedAccount.id) {
-        this.selectedAccount = updatedAccount;
+      await this.supabaseService.deleteAccount(account.id);
+      this.accounts = this.accounts.filter(item => item.id !== account.id);
+
+      if (this.selectedAccount?.id === account.id) {
+        this.selectedAccount = this.accounts[0] ?? null;
+        if (this.selectedAccount) {
+          localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
+          this.selectedFirm = this.selectedAccount.firm?.trim() || 'Independent accounts';
+        } else {
+          localStorage.removeItem(this.selectedAccountStorageKey);
+          this.selectedFirm = null;
+        }
         this.applySelectedAccountSettings();
       }
-      this.cancelAccountEdit();
-      this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
+
+      if (this.selectedFirm && !this.firms.some(firm => firm.name === this.selectedFirm)) {
+        this.selectedFirm = this.firms[0]?.name ?? null;
+        this.accountPage = 1;
+      }
+      this.accountPendingDeletion = null;
+      this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000 });
     } catch (error) {
-      console.error('Unable to update account:', error);
-      this.snackBar.open('Unable to save account details.', 'Dismiss', { duration: 5000 });
-      this.isSavingAccount = false;
+      console.error('Unable to delete account:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete account.', 'Dismiss', { duration: 5000 });
+    } finally {
+      this.isDeletingAccount = false;
+      this.cdr.markForCheck();
     }
-    this.cdr.markForCheck();
+  }
+
+  async saveAccountEdit(): Promise<void> {
+    if (!this.accountEditForm.name?.trim()) return;
+
+    this.isSavingAccount = true;
+    const accountData = {
+      name: this.accountEditForm.name.trim(),
+      firm: this.accountEditForm.firm?.trim() || null,
+      account_number: this.accountEditForm.account_number?.trim() || null,
+      initial_balance: Number(this.accountEditForm.initial_balance) || 0,
+      profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
+      max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
+      daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
+      start_date: this.accountEditForm.start_date || null,
+      status: this.accountEditForm.status || 'active'
+    };
+
+    try {
+      if (this.isCreatingAccount) {
+        const createdAccount = await this.supabaseService.createAccount(accountData);
+        this.accounts = [createdAccount, ...this.accounts];
+        this.selectedAccount = createdAccount;
+        localStorage.setItem(this.selectedAccountStorageKey, createdAccount.id);
+        this.selectedFirm = createdAccount.firm?.trim() || 'Independent accounts';
+        this.accountPage = 1;
+        this.applySelectedAccountSettings();
+        this.cancelAccountEdit();
+        this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000 });
+      } else if (this.editingAccountId) {
+        const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, accountData);
+        this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
+        if (this.selectedAccount?.id === updatedAccount.id) {
+          this.selectedAccount = updatedAccount;
+          this.applySelectedAccountSettings();
+        }
+        this.cancelAccountEdit();
+        this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
+      }
+    } catch (error) {
+      console.error(`Unable to ${this.isCreatingAccount ? 'create' : 'update'} account:`, error);
+      this.snackBar.open(error instanceof Error ? error.message : `Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000 });
+    } finally {
+      this.isSavingAccount = false;
+      this.cdr.markForCheck();
+    }
   }
 
   isMostRecentAccount(account: Account): boolean {
@@ -1569,7 +1659,13 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
-      this.selectedAccount = this.accounts[0] ?? null;
+      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey);
+      this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
+      if (this.selectedAccount) {
+        localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
+      } else {
+        localStorage.removeItem(this.selectedAccountStorageKey);
+      }
       this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
       this.applySelectedAccountSettings();
     } catch (error) {
@@ -1605,6 +1701,7 @@ mt5AccountInfo: AccountSettings = {
     }
 
     this.selectedAccount = account;
+    localStorage.setItem(this.selectedAccountStorageKey, account.id);
     this.applySelectedAccountSettings();
     this.currentPage = 1;
     await this.loadMT5Data();
@@ -1857,6 +1954,9 @@ mt5AccountInfo: AccountSettings = {
   }
 
   ngOnDestroy(): void {
+    if (this.liveExtremesCacheTimer) {
+      window.clearTimeout(this.liveExtremesCacheTimer);
+    }
     this.auraEnergy.destroy();
     // Clean up click outside listener
     this.removeClickOutsideListener();
@@ -1913,7 +2013,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
  addTradesToCalendar() {
-  // console.log("tableData::"+this.tableData)
+  this.events = [];
     this.tableData.forEach(row => {
       const tradeDateString = row.openDate; // Column 0: the date string
       const symbol = row.symbol;           // Column 2: symbol
@@ -5813,7 +5913,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
       mt5status: trade.status || '',
-      mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
+      mfe: (trade.mfe ?? 0).toString(),
+      mae: (trade.mae ?? 0).toString()
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
@@ -5863,6 +5964,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         trade_type: trade.buy_sell === 'Buy' ? 0 : 1,
         volume: trade.lots ?? 0,
         swap: trade.swap ?? 0,
+        mfe: trade.mfe ?? 0,
+        mae: trade.mae ?? 0,
         fromSupabase: true
       }));
   }
@@ -5916,10 +6019,67 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
 
+  private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
+    try {
+      localStorage.removeItem(this.legacyLiveExtremesStorageKey);
+      const cached = JSON.parse(localStorage.getItem(this.liveExtremesStorageKey) || '{}');
+      return cached && typeof cached === 'object' ? cached : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private getLiveExtremes(ticket: number | string): { mfe: number; mae: number } {
+    const accountId = this.selectedAccount?.id;
+    const cached = accountId ? this.getLiveExtremesCache()[accountId]?.[String(ticket)] : undefined;
+    return {
+      mfe: Number.isFinite(Number(cached?.mfe)) ? Number(cached?.mfe) : 0,
+      mae: Number.isFinite(Number(cached?.mae)) ? Number(cached?.mae) : 0
+    };
+  }
+
+  private queueLiveExtremesCacheWrite(): void {
+    if (this.liveExtremesCacheTimer) return;
+    this.liveExtremesCacheTimer = window.setTimeout(() => {
+      this.liveExtremesCacheTimer = undefined;
+      const accountId = this.selectedAccount?.id;
+      if (!accountId) return;
+      const cache = this.getLiveExtremesCache();
+      const accountCache = cache[accountId] ?? {};
+      for (const trade of this.mt5LiveTrades) {
+        if (trade.closeDate && trade.closeDate !== '-') continue;
+        accountCache[String(trade.position)] = {
+          mfe: Number(trade.mfe) || 0,
+          mae: Number(trade.mae) || 0
+        };
+      }
+      cache[accountId] = accountCache;
+      localStorage.setItem(this.liveExtremesStorageKey, JSON.stringify(cache));
+    }, 3000);
+  }
+
+  private clearLiveExtremes(ticket: number | string): void {
+    const accountId = this.selectedAccount?.id;
+    if (!accountId) return;
+    const cache = this.getLiveExtremesCache();
+    delete cache[accountId]?.[String(ticket)];
+    if (cache[accountId] && Object.keys(cache[accountId]).length === 0) {
+      delete cache[accountId];
+    }
+    localStorage.setItem(this.liveExtremesStorageKey, JSON.stringify(cache));
+  }
+
+  private async persistClosedTradeExtremes(ticket: number | string, mfe: number, mae: number): Promise<void> {
+    if (!this.selectedAccount) return;
+    await this.supabaseService.updateTradeMfeMaeByTicket(ticket, this.selectedAccount.id, mfe, mae);
+    this.clearLiveExtremes(ticket);
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
     console.log("Open date from MT5:",trade.time_open)
+    const extremes = this.getLiveExtremes(trade.ticket);
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: "-",
@@ -5940,7 +6100,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
       mt5status: trade.status || '',
-      mfe: '0', // Initialize MFE to 0 for new live trades
+      mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
+      mae: String(Math.min(extremes.mae, Number(trade.mae) || 0))
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
@@ -6000,13 +6161,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
+      const finalMfe = Number(closedTrade.mfe) || 0;
+      const finalMae = Number(closedTrade.mae) || 0;
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];
 
-      //call Notion api to update an existing entry for closed trade
-      this.updateExistingEntry(closedTrade);  
+      void this.persistClosedTradeExtremes(trade.ticket, finalMfe, finalMae).catch(error => {
+        console.error('Unable to persist final MFE/MAE:', error);
+      });
 
+      //call Notion api to update an existing entry for closed trade
+      this.updateExistingEntry(closedTrade);
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
@@ -6038,18 +6204,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Update live RR from socket data (real-time risk-reward ratio)
       if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
-        trade.rrr = priceData.live_rr.toFixed(2);
+        trade.rrr = Number(priceData.live_rr).toFixed(2);
         console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
       }
-
-      // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
-      const currentMfe = parseFloat(trade.mfe || '0');
-      if (currentProfit > 0 && currentProfit > currentMfe) {
-        trade.mfe = currentProfit.toString();
-      } else if (!trade.mfe) {
-        // Initialize MFE to 0 if not set
-        trade.mfe = '0';
+      if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
+        trade.riskPerTrade = Math.abs(Number(priceData.sl_value)).toFixed(2);
       }
+
+      const currentMfe = Number(trade.mfe) || 0;
+      const currentMae = Number(trade.mae) || 0;
+      trade.mfe = String(Math.max(currentMfe, currentProfit));
+      trade.mae = String(Math.min(currentMae, currentProfit));
+      this.queueLiveExtremesCacheWrite();
 
       this.mt5LiveTrades = [...this.mt5LiveTrades];
       this.updateTableDataOnly();
@@ -6061,20 +6227,33 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           liveIndicator.classList.add('pulse-dot');
         }
       }
+      return;
+    }
+
+    if (this.selectedAccount && livePositionId !== undefined && livePositionId !== null && livePositionId !== '') {
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      this.addMT5LiveTrade({
+        ...priceData,
+        ticket: livePositionId,
+        time_open: now,
+        price_open: Number(priceData.price_open ?? priceData.price_current ?? 0),
+        type: Number(priceData.type ?? priceData.trade_type ?? 0),
+        volume: Number(priceData.volume ?? 0),
+        profit: Number(priceData.profit ?? 0),
+        risk_usd: Math.abs(Number(priceData.sl_value ?? priceData.risk_usd ?? 0)),
+        status: 'open'
+      });
     }
   }
 
   updateTableDataOnly(): void {
-    this.tableData = [...this.mt5LiveTrades, ];
+    this.tableData = [...this.mt5LiveTrades];
 
-    // Update Daily Limit metrics on live updates
     this.updateDailyLimitMetrics();
-
-    // Check for profit target achievement on live updates
+    this.generateTradingChartData();
     this.checkForProfitTargetCelebration();
 
-    // Trigger change detection so LiveRRTrackerComponent updates
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   updateTableData(): void {
@@ -6082,29 +6261,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('������ Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
-    // Get existing non-MT5 trades (those loaded from Firestore)
-    const existingTrades = this.tableData ? this.tableData.filter(trade =>
-      !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
-    ) : [];
-
-    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
-
-    // Create completely new array reference to trigger Angular change detection
     const previousLength = this.tableData ? this.tableData.length : 0;
-    this.tableData = [...this.mt5LiveTrades, ...existingTrades];
+    this.tableData = [...this.mt5LiveTrades];
 
     // Recalculate Daily Limit metrics
     this.updateDailyLimitMetrics();
 
-    console.log('✅ After update - tableData:', this.tableData.length, 'trades');
-    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('✅ After update - tableData:', this.tableData.length, 'account-scoped trades');
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
 
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
     this.generateTradingChartData();
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
 
     // Check for profit target achievement and celebrate! 🎉
     this.checkForProfitTargetCelebration();

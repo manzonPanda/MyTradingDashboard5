@@ -66,6 +66,8 @@ export interface Trade {
   pnl?: number;
   rules_violated?: string;
   weekly_retrospective?: string;
+  mfe?: number;
+  mae?: number;
   mup?: number;
   price_close?: number;
   price_open?: number;
@@ -127,6 +129,34 @@ export class SupabaseService {
     return (data as Account[]) || [];
   }
 
+  async createAccount(account: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const { data, error } = await this.supabase
+        .from('accounts')
+        .insert(account)
+        .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at, updated_at')
+        .abortSignal(controller.signal)
+        .single();
+      if (error) {
+        if (controller.signal.aborted) {
+          throw new Error('The account request timed out. Check your connection and try again.');
+        }
+        throw new Error(`Account creation failed: ${error.message}`);
+      }
+      return data as Account;
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new Error('The account request timed out. Check your connection and try again.');
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
   async updateAccount(id: string, updates: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
     const { data, error } = await this.supabase
       .from('accounts')
@@ -136,6 +166,14 @@ export class SupabaseService {
       .single();
     if (error) throw new Error(`Account update failed: ${error.message}`);
     return data as Account;
+  }
+
+  async deleteAccount(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('accounts')
+      .delete()
+      .eq('id', id);
+    if (error) throw new Error(`Account deletion failed: ${error.message}`);
   }
 
   async getRoiTransactions(): Promise<RoiTransaction[]> {
@@ -242,6 +280,18 @@ export class SupabaseService {
 
   async updateTradeTicket(id: string, ticket: number | string): Promise<Trade | null> {
     return this.updateTrade(id, { ticket });
+  }
+
+  async updateTradeMfeMaeByTicket(ticket: number | string, accountId: string, mfe: number, mae: number): Promise<Trade | null> {
+    const { data, error } = await this.supabase
+      .from('trades')
+      .update({ mfe, mae })
+      .eq('ticket', ticket)
+      .eq('account_id', accountId)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(`Trade MFE/MAE update failed: ${error.message}`);
+    return data as Trade | null;
   }
 
   /**

@@ -20,6 +20,7 @@ interface Table {
   rrr: string;
   mt5status: string;
   mfe: string;
+  mae?: string;
 }
 
 @Component({
@@ -129,6 +130,12 @@ interface Table {
             </div>
           </div>
 
+        <div class="live-extremes-summary" aria-label="MFE and MAE">
+          <span class="mfe-value" title="MFE"><mat-icon>north_east</mat-icon><strong>MFE {{ formatR(totalMfeR) }}</strong><em>({{ formatCurrency(totalMfeValue) }})</em></span>
+          <span class="extremes-divider">|</span>
+          <span class="mae-value" title="MAE"><mat-icon>south_west</mat-icon><strong>MAE {{ formatR(totalMaeR) }}</strong><em>({{ formatCurrency(totalMaeValue) }})</em></span>
+        </div>
+
         <div class="live-trade-gauges">
           <article *ngFor="let trade of openTrades" class="trade-gauge-card">
             <div class="trade-gauge-heading">
@@ -170,6 +177,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   percentageOfAccount: number = 0;
   totalUnrealizedPnL: string = '$0.00';
   totalUnrealizedValue: number = 0;
+  totalMfeValue = 0;
+  totalMaeValue = 0;
+  totalMfeR = 0;
+  totalMaeR = 0;
 
   ngOnInit() {
     this.calculateLiveMetrics();
@@ -206,15 +217,25 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     let totalR = 0;
     let totalUnrealizedPnL = 0;
     let totalSlRisk = 0; // Total risk from stop loss
+    let totalMfeValue = 0;
+    let totalMaeValue = 0;
 
     openTrades.forEach((trade) => {
       const profit = parseFloat(trade.profit || '0') || 0;
       const slRisk = parseFloat(trade.riskPerTrade || '0') || 0;
-      totalR += slRisk > 0 ? profit / slRisk : 0;
+      const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
+      const tradeR = Number.isFinite(reportedR) ? reportedR : (slRisk > 0 ? profit / slRisk : 0);
+      totalR += tradeR;
       totalUnrealizedPnL += profit;
       totalSlRisk += slRisk;
+      totalMfeValue += Math.max(0, Number(trade.mfe) || 0);
+      totalMaeValue += Math.min(0, Number(trade.mae) || 0);
     });
 
+    this.totalMfeValue = totalMfeValue;
+    this.totalMaeValue = totalMaeValue;
+    this.totalMfeR = totalSlRisk > 0 ? totalMfeValue / totalSlRisk : 0;
+    this.totalMaeR = totalSlRisk > 0 ? totalMaeValue / totalSlRisk : 0;
     this.totalRRValue = totalR;
     this.totalRRGained = totalR >= 0 ? `+${totalR.toFixed(2)}R` : `${totalR.toFixed(2)}R`;
 
@@ -234,6 +255,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     this.percentageOfAccount = 0;
     this.totalUnrealizedPnL = '$0.00';
     this.totalUnrealizedValue = 0;
+    this.totalMfeValue = 0;
+    this.totalMaeValue = 0;
+    this.totalMfeR = 0;
+    this.totalMaeR = 0;
     this.openTrades = [];
   }
 
@@ -262,6 +287,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     if (this.getTradeProfit(trade) > 0) return 'positive';
     if (this.getTradeProfit(trade) < 0) return 'negative';
     return 'neutral';
+  }
+
+  formatR(value: number): string {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}R`;
   }
 
   formatCurrency(amount: number): string {

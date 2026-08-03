@@ -297,9 +297,18 @@ export class AuraEnergyService {
       return;
     }
     const svg = this.activeOverlay.querySelector<SVGSVGElement>('.aura-energy-svg');
-    if (svg) {
-      svg.innerHTML = this.buildOverlaySvgInner();
+    if (!svg) {
+      return;
     }
+
+    svg.innerHTML = this.buildOverlaySvgInner();
+    const route = svg.querySelector<SVGPathElement>('#aura-route');
+    if (!route || !this.routePath) {
+      return;
+    }
+
+    route.setAttribute('d', this.routePath);
+    this.routeLength = route.getTotalLength();
     this.renderTraveler();
   }
 
