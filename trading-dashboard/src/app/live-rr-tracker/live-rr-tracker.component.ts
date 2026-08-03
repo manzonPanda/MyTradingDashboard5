@@ -356,7 +356,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   getTradeGaugeDash(trade: Table): string {
     const circumference = 2 * Math.PI * 44;
-    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 0.5);
+    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 1);
     const arc = fraction * circumference;
     return `${arc} ${Math.max(0, circumference - arc)}`;
   }
