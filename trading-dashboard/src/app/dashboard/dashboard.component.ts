@@ -447,6 +447,7 @@ export class DashboardComponent implements AfterViewInit {
   isSavingAccount = false;
   isDeletingAccount = false;
   accountEditForm: Partial<Account> = {};
+  accountPendingDeletion: Account | null = null;
   isLoadingAccounts = true;
 
   get firms(): { name: string; accountCount: number }[] {
@@ -555,9 +556,21 @@ export class DashboardComponent implements AfterViewInit {
     this.isSavingAccount = false;
   }
 
-  async deleteAccount(account: Account): Promise<void> {
-    const confirmed = window.confirm(`Delete ${account.name}? This cannot be undone.`);
-    if (!confirmed || this.isDeletingAccount) return;
+  requestAccountDeletion(account: Account): void {
+    if (this.isDeletingAccount) return;
+    this.accountPendingDeletion = account;
+    this.cdr.markForCheck();
+  }
+
+  cancelAccountDeletion(): void {
+    if (this.isDeletingAccount) return;
+    this.accountPendingDeletion = null;
+    this.cdr.markForCheck();
+  }
+
+  async confirmAccountDeletion(): Promise<void> {
+    const account = this.accountPendingDeletion;
+    if (!account || this.isDeletingAccount) return;
 
     this.isDeletingAccount = true;
     try {
@@ -580,6 +593,7 @@ export class DashboardComponent implements AfterViewInit {
         this.selectedFirm = this.firms[0]?.name ?? null;
         this.accountPage = 1;
       }
+      this.accountPendingDeletion = null;
       this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000 });
     } catch (error) {
       console.error('Unable to delete account:', error);

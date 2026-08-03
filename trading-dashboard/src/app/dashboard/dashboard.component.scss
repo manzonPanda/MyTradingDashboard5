@@ -11418,6 +11418,111 @@ table.simple-table {
   backdrop-filter: blur(8px);
 }
 
+.account-delete-modal {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  width: min(480px, 100%);
+  padding: 1.5rem;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  border-radius: 1.35rem;
+  background: var(--tf-bg-secondary);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.35);
+}
+
+.account-delete-icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+
+  mat-icon {
+    width: 1.45rem;
+    height: 1.45rem;
+    font-size: 1.45rem;
+  }
+}
+
+.account-delete-copy {
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: var(--tf-text-primary);
+    font-size: 1.15rem;
+  }
+
+  p:last-child {
+    margin-top: 0.4rem;
+    color: var(--tf-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+}
+
+.account-delete-kicker {
+  margin-bottom: 0.25rem !important;
+  color: #dc2626;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.account-delete-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 0.4rem;
+}
+
+.account-delete-cancel,
+.account-delete-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+}
+
+.account-delete-cancel {
+  border: 1px solid var(--tf-border-primary);
+  background: transparent;
+  color: var(--tf-text-secondary);
+}
+
+.account-delete-confirm {
+  border: 1px solid #dc2626;
+  background: #dc2626;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+  }
+
+  mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
 .account-edit-modal {
   width: min(760px, 100%);
   max-height: min(720px, calc(100vh - 2.5rem));
