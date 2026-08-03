@@ -20,6 +20,7 @@ interface Table {
   rrr: string;
   mt5status: string;
   mfe: string;
+  mae?: string;
 }
 
 @Component({
@@ -133,6 +134,10 @@ interface Table {
           <article *ngFor="let trade of openTrades" class="trade-gauge-card">
             <div class="trade-gauge-heading">
               <span class="trade-gauge-symbol">{{ trade.symbol }}</span>
+            </div>
+            <div class="trade-extremes" aria-label="Maximum favorable and adverse excursion">
+              <span class="mfe-value">MFE {{ trade.mfe || '0' }}</span>
+              <span class="mae-value">MAE {{ trade.mae || '0' }}</span>
             </div>
             <div class="trade-gauge-content">
               <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">

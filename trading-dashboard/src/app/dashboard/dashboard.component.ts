@@ -83,6 +83,7 @@ interface Table {
   rrr:string;
   mt5status:string;// if trade is live(open) or closed in MT5
   mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
+  mae?: string; // Maximum Adverse Excursion - tracks lowest unrealized profit
 }
 
 interface NotionPerformanceData {
@@ -440,6 +441,9 @@ export class DashboardComponent implements AfterViewInit {
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
+  private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
+  private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
+  private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
   accountPage = 1;
@@ -1950,6 +1954,9 @@ mt5AccountInfo: AccountSettings = {
   }
 
   ngOnDestroy(): void {
+    if (this.liveExtremesCacheTimer) {
+      window.clearTimeout(this.liveExtremesCacheTimer);
+    }
     this.auraEnergy.destroy();
     // Clean up click outside listener
     this.removeClickOutsideListener();
@@ -5906,7 +5913,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
       mt5status: trade.status || '',
-      mfe: '0', // Initialize MFE to 0 for loaded MT5 trades
+      mfe: (trade.mfe ?? 0).toString(),
+      mae: (trade.mae ?? 0).toString()
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
@@ -5956,6 +5964,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         trade_type: trade.buy_sell === 'Buy' ? 0 : 1,
         volume: trade.lots ?? 0,
         swap: trade.swap ?? 0,
+        mfe: trade.mfe ?? 0,
+        mae: trade.mae ?? 0,
         fromSupabase: true
       }));
   }
@@ -6009,10 +6019,67 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
 
+  private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
+    try {
+      localStorage.removeItem(this.legacyLiveExtremesStorageKey);
+      const cached = JSON.parse(localStorage.getItem(this.liveExtremesStorageKey) || '{}');
+      return cached && typeof cached === 'object' ? cached : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private getLiveExtremes(ticket: number | string): { mfe: number; mae: number } {
+    const accountId = this.selectedAccount?.id;
+    const cached = accountId ? this.getLiveExtremesCache()[accountId]?.[String(ticket)] : undefined;
+    return {
+      mfe: Number.isFinite(Number(cached?.mfe)) ? Number(cached?.mfe) : 0,
+      mae: Number.isFinite(Number(cached?.mae)) ? Number(cached?.mae) : 0
+    };
+  }
+
+  private queueLiveExtremesCacheWrite(): void {
+    if (this.liveExtremesCacheTimer) return;
+    this.liveExtremesCacheTimer = window.setTimeout(() => {
+      this.liveExtremesCacheTimer = undefined;
+      const accountId = this.selectedAccount?.id;
+      if (!accountId) return;
+      const cache = this.getLiveExtremesCache();
+      const accountCache = cache[accountId] ?? {};
+      for (const trade of this.mt5LiveTrades) {
+        if (trade.closeDate && trade.closeDate !== '-') continue;
+        accountCache[String(trade.position)] = {
+          mfe: Number(trade.mfe) || 0,
+          mae: Number(trade.mae) || 0
+        };
+      }
+      cache[accountId] = accountCache;
+      localStorage.setItem(this.liveExtremesStorageKey, JSON.stringify(cache));
+    }, 3000);
+  }
+
+  private clearLiveExtremes(ticket: number | string): void {
+    const accountId = this.selectedAccount?.id;
+    if (!accountId) return;
+    const cache = this.getLiveExtremesCache();
+    delete cache[accountId]?.[String(ticket)];
+    if (cache[accountId] && Object.keys(cache[accountId]).length === 0) {
+      delete cache[accountId];
+    }
+    localStorage.setItem(this.liveExtremesStorageKey, JSON.stringify(cache));
+  }
+
+  private async persistClosedTradeExtremes(ticket: number | string, mfe: number, mae: number): Promise<void> {
+    if (!this.selectedAccount) return;
+    await this.supabaseService.updateTradeMfeMaeByTicket(ticket, this.selectedAccount.id, mfe, mae);
+    this.clearLiveExtremes(ticket);
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
     console.log("Open date from MT5:",trade.time_open)
+    const extremes = this.getLiveExtremes(trade.ticket);
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       closeDate: "-",
@@ -6033,7 +6100,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
       mt5status: trade.status || '',
-      mfe: '0', // Initialize MFE to 0 for new live trades
+      mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
+      mae: String(Math.min(extremes.mae, Number(trade.mae) || 0))
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
@@ -6093,13 +6161,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
+      const finalMfe = Number(closedTrade.mfe) || 0;
+      const finalMae = Number(closedTrade.mae) || 0;
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];
 
-      //call Notion api to update an existing entry for closed trade
-      this.updateExistingEntry(closedTrade);  
+      void this.persistClosedTradeExtremes(trade.ticket, finalMfe, finalMae).catch(error => {
+        console.error('Unable to persist final MFE/MAE:', error);
+      });
 
+      //call Notion api to update an existing entry for closed trade
+      this.updateExistingEntry(closedTrade);
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
@@ -6138,14 +6211,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         trade.riskPerTrade = Math.abs(Number(priceData.sl_value)).toFixed(2);
       }
 
-      // Track MFE (Maximum Favorable Excursion) - only increases when profit goes higher
-      const currentMfe = parseFloat(trade.mfe || '0');
-      if (currentProfit > 0 && currentProfit > currentMfe) {
-        trade.mfe = currentProfit.toString();
-      } else if (!trade.mfe) {
-        // Initialize MFE to 0 if not set
-        trade.mfe = '0';
-      }
+      const currentMfe = Number(trade.mfe) || 0;
+      const currentMae = Number(trade.mae) || 0;
+      trade.mfe = String(Math.max(currentMfe, currentProfit));
+      trade.mae = String(Math.min(currentMae, currentProfit));
+      this.queueLiveExtremesCacheWrite();
 
       this.mt5LiveTrades = [...this.mt5LiveTrades];
       this.updateTableDataOnly();

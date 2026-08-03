@@ -609,6 +609,23 @@
   }
 }
 
+.trade-extremes {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0 0.55rem 0.45rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+
+  .mfe-value {
+    color: var(--tf-positive);
+  }
+
+  .mae-value {
+    color: var(--tf-negative);
+  }
+}
+
 .trade-gauge-heading {
   display: flex;
   align-items: center;

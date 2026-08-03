@@ -66,6 +66,8 @@ export interface Trade {
   pnl?: number;
   rules_violated?: string;
   weekly_retrospective?: string;
+  mfe?: number;
+  mae?: number;
   mup?: number;
   price_close?: number;
   price_open?: number;
@@ -278,6 +280,18 @@ export class SupabaseService {
 
   async updateTradeTicket(id: string, ticket: number | string): Promise<Trade | null> {
     return this.updateTrade(id, { ticket });
+  }
+
+  async updateTradeMfeMaeByTicket(ticket: number | string, accountId: string, mfe: number, mae: number): Promise<Trade | null> {
+    const { data, error } = await this.supabase
+      .from('trades')
+      .update({ mfe, mae })
+      .eq('ticket', ticket)
+      .eq('account_id', accountId)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(`Trade MFE/MAE update failed: ${error.message}`);
+    return data as Trade | null;
   }
 
   /**
