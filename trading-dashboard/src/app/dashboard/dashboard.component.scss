@@ -11729,11 +11729,17 @@ table.simple-table {
   }
 
   .dashboard-navigation {
-    width: 4.75rem;
-    padding-top: 4.75rem;
+    width: min(21rem, calc(100vw - 1.25rem));
+    padding: 4.75rem 0.8rem 1rem;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    box-shadow: none;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
 
     &.is-expanded {
       width: min(21rem, calc(100vw - 1.25rem));
+      transform: translateX(0);
+      box-shadow: 12px 0 30px rgba(15, 23, 42, 0.22);
     }
   }
 
@@ -12280,4 +12286,103 @@ table.simple-table {
 .trade-sound-preview:hover, .trade-sound-cancel:hover, .trade-sound-settings-close:hover { background: var(--tf-bg-hover); }
 .trade-sound-save:hover { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
 .trade-sound-preview:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* ==========================================================================
+   Consolidated responsive layout overrides
+   Fixes content overflow and cramped layouts on tablet and phone widths.
+   ========================================================================== */
+
+/* Prevent stray horizontal page scroll on every width. Inner chart/table
+   areas keep their own overflow-x scroll containers, so this only clips the
+   few-pixel phantom overflow from edge cards. */
+.tradezella-dashboard {
+  overflow-x: hidden;
+}
+
+.tradezella-dashboard .metrics-grid .metric-card {
+  min-width: 0;
+}
+
+/* Tablet and below: stack the two-column metrics row, let stat rows wrap,
+   and let the header size to its content instead of a fixed viewport height. */
+@media (max-width: 1024px) {
+  .tradezella-dashboard .metrics-section .metrics-container {
+    flex-direction: column;
+  }
+
+  .tradezella-dashboard .metrics-section .metrics-container > .trading-chart-container,
+  .tradezella-dashboard .metrics-section .metrics-container > .metrics-grid {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .tradezella-dashboard .chart-stats,
+  .tradezella-dashboard .account-targets {
+    flex-wrap: wrap;
+  }
+
+  .tradezella-dashboard .chart-stats .stat-item {
+    flex: 1 1 140px;
+    max-width: none;
+  }
+
+  .tradezella-dashboard .account-targets .target-card {
+    flex: 1 1 140px;
+  }
+
+  .tradezella-dashboard .dashboard-header {
+    height: auto;
+  }
+
+  .tradezella-dashboard .dashboard-header .header-content {
+    height: auto;
+  }
+}
+
+/* Phone landscape / small tablet: single-column metric grids and full-width
+   trading-week block; keep the day strip horizontally scrollable. */
+@media (max-width: 768px) {
+  .tradezella-dashboard .dashboard-header .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .tradezella-dashboard .dashboard-header .trading-week-container,
+  .tradezella-dashboard .dashboard-header .trading-week-container .trading-days-grid {
+    height: auto;
+  }
+
+  .tradezella-dashboard .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tradezella-dashboard .roi-metrics,
+  .tradezella-dashboard .roi-content-grid,
+  .tradezella-dashboard .compact-emotion-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phone portrait: stack stat cards, reduce padding and heading sizes. */
+@media (max-width: 480px) {
+  .tradezella-dashboard .chart-stats,
+  .tradezella-dashboard .account-targets {
+    flex-direction: column;
+  }
+
+  .tradezella-dashboard .chart-stats .stat-item,
+  .tradezella-dashboard .account-targets .target-card {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .tradezella-dashboard .metrics-section {
+    padding: 0.5rem 0.35rem;
+  }
+
+  .tradezella-dashboard .dashboard-header {
+    padding: 0.5rem 0.5rem;
+  }
+}
 @media (max-width: 540px) { .trade-sound-settings-actions { align-items: stretch; flex-direction: column; } .trade-sound-settings-save-actions { justify-content: flex-end; } }
