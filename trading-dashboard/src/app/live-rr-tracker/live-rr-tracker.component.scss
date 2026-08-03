@@ -392,6 +392,7 @@
 
 // Live Header
 .live-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -867,14 +868,21 @@
 }
 
 .gauge-settings-button {
+  position: absolute;
+  left: 50%;
   width: 32px;
   height: 32px;
   border-radius: 9px;
+  transform: translateX(-50%);
 
   mat-icon {
     font-size: 18px;
     width: 18px;
     height: 18px;
+  }
+
+  &:hover {
+    transform: translateX(-50%) translateY(-1px);
   }
 }
 
