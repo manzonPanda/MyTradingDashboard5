@@ -13,5 +13,14 @@
     "pathRewrite": {
       "^/notion-api": "/api"
     }
+  },
+  "/mt5-api": {
+    "target": "https://mt5-api.jakemt5.host",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/mt5-api": ""
+    }
   }
 }
