@@ -443,6 +443,8 @@ export class DashboardComponent implements AfterViewInit {
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
+  private readonly threeToFourRSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2Fa4408eec10134befa8c63006fdd4ebab?alt=media&token=990c3aa1-e4cc-4370-b596-8b935094a46f&apiKey=36c2f203afb3443492a83c1d11922b41';
+  private readonly threeToFourRNotifiedTickets = new Set<string>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
@@ -6157,6 +6159,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Update the beautiful chart with new data
       this.updateChartWithNewTrade(newTrade);
+      this.notifyThreeToFourR(newTrade, trade.live_rr);
 
       // Force Angular change detection for immediate display
       this.cdr.detectChanges();
@@ -6192,6 +6195,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
       const finalMfe = Number(closedTrade.mfe) || 0;
       const finalMae = Number(closedTrade.mae) || 0;
+      this.threeToFourRNotifiedTickets.delete(String(trade.ticket));
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];
@@ -6211,6 +6215,17 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       console.log('✅ MT5 trade closed');
     }
+  }
+
+  private notifyThreeToFourR(trade: Table, liveR: unknown): void {
+    const rValue = Number(liveR);
+    const ticket = String(trade.position);
+    if (!Number.isFinite(rValue) || rValue <= 3 || rValue >= 4 || this.threeToFourRNotifiedTickets.has(ticket)) return;
+
+    this.threeToFourRNotifiedTickets.add(ticket);
+    const sound = new Audio(this.threeToFourRSoundUrl);
+    sound.play().catch(error => console.warn('Unable to play 3R–4R alert sound:', error));
+    this.snackBar.open(`${trade.symbol || 'Trade'} crossed ${rValue.toFixed(2)}R`, 'Dismiss', { duration: 5000 });
   }
 
   updateMT5TradePrice(priceData: any): void {
@@ -6234,6 +6249,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Update live RR from socket data (real-time risk-reward ratio)
       if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
         trade.rrr = Number(priceData.live_rr).toFixed(2);
+        this.notifyThreeToFourR(trade, priceData.live_rr);
         console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
       }
       if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
