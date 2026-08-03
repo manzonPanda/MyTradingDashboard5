@@ -247,8 +247,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     openTrades.forEach((trade) => {
       const profit = parseFloat(trade.profit || '0') || 0;
       const slRisk = parseFloat(trade.riskPerTrade || '0') || 0;
-      const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
-      const tradeR = Number.isFinite(reportedR) ? reportedR : (slRisk > 0 ? profit / slRisk : 0);
+      const tradeR = this.getTradeR(trade);
       totalR += tradeR;
       totalUnrealizedPnL += profit;
       totalSlRisk += slRisk;
@@ -356,9 +355,20 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   getTradeGaugeDash(trade: Table): string {
     const circumference = 2 * Math.PI * 44;
-    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 1);
+    const value = this.getTradeProfit(trade) > 0
+      ? Math.abs(this.getTradeR(trade)) / 4
+      : Math.abs(this.getTradePercent(trade)) / 1;
+    const fraction = Math.min(1, value);
     const arc = fraction * circumference;
     return `${arc} ${Math.max(0, circumference - arc)}`;
+  }
+
+  getTradeR(trade: Table): number {
+    const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
+    if (Number.isFinite(reportedR)) return reportedR;
+
+    const risk = parseFloat(trade.riskPerTrade || '0') || 0;
+    return risk > 0 ? this.getTradeProfit(trade) / risk : 0;
   }
 
   getTradeGaugeColor(trade: Table): string {
