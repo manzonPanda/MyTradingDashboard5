@@ -11273,7 +11273,8 @@ table.simple-table {
 }
 
 .account-set-active,
-.account-table-edit {
+.account-table-edit,
+.account-table-delete {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -11305,8 +11306,9 @@ table.simple-table {
   }
 }
 
-.account-table-edit {
-  &:hover {
+.account-table-edit,
+.account-table-delete {
+  &:hover:not(:disabled) {
     background: #7C3AED;
     color: #fff;
   }
@@ -11315,6 +11317,21 @@ table.simple-table {
     width: 1rem;
     height: 1rem;
     font-size: 1rem;
+  }
+}
+
+.account-table-delete {
+  border-color: rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+
+  &:hover:not(:disabled) {
+    background: #dc2626;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
   }
 }
 

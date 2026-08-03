@@ -445,6 +445,7 @@ export class DashboardComponent implements AfterViewInit {
   accountPage = 1;
   readonly accountPageSize = 5;
   isSavingAccount = false;
+  isDeletingAccount = false;
   accountEditForm: Partial<Account> = {};
   isLoadingAccounts = true;
 
@@ -552,6 +553,41 @@ export class DashboardComponent implements AfterViewInit {
     this.isCreatingAccount = false;
     this.accountEditForm = {};
     this.isSavingAccount = false;
+  }
+
+  async deleteAccount(account: Account): Promise<void> {
+    const confirmed = window.confirm(`Delete ${account.name}? This cannot be undone.`);
+    if (!confirmed || this.isDeletingAccount) return;
+
+    this.isDeletingAccount = true;
+    try {
+      await this.supabaseService.deleteAccount(account.id);
+      this.accounts = this.accounts.filter(item => item.id !== account.id);
+
+      if (this.selectedAccount?.id === account.id) {
+        this.selectedAccount = this.accounts[0] ?? null;
+        if (this.selectedAccount) {
+          localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
+          this.selectedFirm = this.selectedAccount.firm?.trim() || 'Independent accounts';
+        } else {
+          localStorage.removeItem(this.selectedAccountStorageKey);
+          this.selectedFirm = null;
+        }
+        this.applySelectedAccountSettings();
+      }
+
+      if (this.selectedFirm && !this.firms.some(firm => firm.name === this.selectedFirm)) {
+        this.selectedFirm = this.firms[0]?.name ?? null;
+        this.accountPage = 1;
+      }
+      this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to delete account:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete account.', 'Dismiss', { duration: 5000 });
+    } finally {
+      this.isDeletingAccount = false;
+      this.cdr.markForCheck();
+    }
   }
 
   async saveAccountEdit(): Promise<void> {

@@ -1186,6 +1186,7 @@
                         <span>{{ selectedAccount?.id === account.id ? 'Dashboard active' : 'Set active' }}</span>
                       </button>
                       <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                      <button type="button" class="account-table-delete" aria-label="Delete account" title="Delete account" [disabled]="isDeletingAccount" (click)="deleteAccount(account)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
                     </td>
                   </tr>
                 }

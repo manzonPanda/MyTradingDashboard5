@@ -166,6 +166,14 @@ export class SupabaseService {
     return data as Account;
   }
 
+  async deleteAccount(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('accounts')
+      .delete()
+      .eq('id', id);
+    if (error) throw new Error(`Account deletion failed: ${error.message}`);
+  }
+
   async getRoiTransactions(): Promise<RoiTransaction[]> {
     const { data, error } = await this.supabase
       .from('roi_transactions')
