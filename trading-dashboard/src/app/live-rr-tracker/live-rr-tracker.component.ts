@@ -90,9 +90,17 @@ interface Table {
         <div class="live-header">
           <div class="header-title">
             <mat-icon class="live-icon">fiber_manual_record</mat-icon>
-            <h3>Live Trading Session</h3>
+            <h3>Trades</h3>
           </div>
           <div class="header-meta">
+            <button
+              type="button"
+              class="gauge-settings-button"
+              aria-label="Open gauge settings"
+              title="Gauge settings"
+              (click)="openGaugeSettings()">
+              <mat-icon>settings</mat-icon>
+            </button>
             <button
               type="button"
               class="close-all-button"
@@ -102,6 +110,41 @@ interface Table {
             </button>
             <span *ngIf="closeAllStatus" class="close-all-status" aria-live="polite">{{ closeAllStatus }}</span>
           </div>
+        </div>
+
+        <div *ngIf="isGaugeSettingsOpen" class="gauge-settings-backdrop" role="presentation" (click)="closeGaugeSettings()">
+          <section class="gauge-settings-modal" role="dialog" aria-modal="true" aria-labelledby="gauge-settings-title" (click)="$event.stopPropagation()">
+            <div class="gauge-settings-heading">
+              <div class="gauge-settings-icon"><mat-icon>speed</mat-icon></div>
+              <div>
+                <span class="gauge-settings-eyebrow">Trades display</span>
+                <h2 id="gauge-settings-title">Gauge settings</h2>
+              </div>
+              <button type="button" class="gauge-settings-close" aria-label="Close gauge settings" (click)="closeGaugeSettings()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <p class="gauge-settings-description">Choose the positive P&amp;L percentage that fills the live trade gauge.</p>
+            <label class="gauge-settings-field">
+              <span>Maximum positive gauge</span>
+              <div class="gauge-settings-input-wrap">
+                <input type="number" min="0.1" max="100" step="0.1" [value]="gaugePercentDraft" (input)="gaugePercentDraft = $any($event.target).value" aria-describedby="gauge-settings-help">
+                <strong>%</strong>
+              </div>
+            </label>
+            <div id="gauge-settings-help" class="gauge-settings-help">
+              <mat-icon>info</mat-icon>
+              <span>Negative trades keep their existing counter-clockwise scale.</span>
+            </div>
+            <div class="gauge-settings-preview">
+              <span>Current maximum</span>
+              <strong>{{ positiveGaugePercentMax | number:'1.1-1' }}%</strong>
+            </div>
+            <div class="gauge-settings-actions">
+              <button type="button" class="gauge-cancel-button" (click)="closeGaugeSettings()">Cancel</button>
+              <button type="button" class="gauge-save-button" (click)="saveGaugeSettings()">Save settings</button>
+            </div>
+          </section>
         </div>
 
         <div class="live-metrics">
@@ -154,7 +197,7 @@ interface Table {
                 <svg viewBox="0 0 100 100" class="trade-gauge-svg">
                   <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
                   <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
-                          [attr.stroke-dasharray]="getTradeGaugeDash(trade)" transform="rotate(-90 50 50)"/>
+                          [attr.stroke-dasharray]="getTradeGaugeDash(trade)" [attr.transform]="getTradeGaugeTransform(trade)"/>
                   <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
                 </svg>
                 <div class="trade-gauge-center">
@@ -192,6 +235,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   isClosingAll = false;
   isCloseAllArmed = false;
   closeAllStatus = '';
+  positiveGaugePercentMax = 4;
+  gaugePercentDraft = '4';
+  isGaugeSettingsOpen = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
 
@@ -201,6 +247,11 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit() {
+    const savedGaugeMax = Number(localStorage.getItem('live-trade-gauge-max-percent'));
+    if (Number.isFinite(savedGaugeMax) && savedGaugeMax >= 0.1 && savedGaugeMax <= 100) {
+      this.positiveGaugePercentMax = savedGaugeMax;
+      this.gaugePercentDraft = String(savedGaugeMax);
+    }
     this.calculateLiveMetrics();
     this.holdingTimeInterval = setInterval(() => this.cdr.markForCheck(), 1000);
   }
@@ -247,8 +298,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     openTrades.forEach((trade) => {
       const profit = parseFloat(trade.profit || '0') || 0;
       const slRisk = parseFloat(trade.riskPerTrade || '0') || 0;
-      const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
-      const tradeR = Number.isFinite(reportedR) ? reportedR : (slRisk > 0 ? profit / slRisk : 0);
+      const tradeR = this.getTradeR(trade);
       totalR += tradeR;
       totalUnrealizedPnL += profit;
       totalSlRisk += slRisk;
@@ -284,6 +334,25 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     this.totalMfeR = 0;
     this.totalMaeR = 0;
     this.openTrades = [];
+  }
+
+  openGaugeSettings(): void {
+    this.gaugePercentDraft = String(this.positiveGaugePercentMax);
+    this.isGaugeSettingsOpen = true;
+  }
+
+  closeGaugeSettings(): void {
+    this.isGaugeSettingsOpen = false;
+  }
+
+  saveGaugeSettings(): void {
+    const nextMax = Number(this.gaugePercentDraft);
+    if (!Number.isFinite(nextMax) || nextMax < 0.1 || nextMax > 100) return;
+
+    this.positiveGaugePercentMax = nextMax;
+    this.gaugePercentDraft = String(nextMax);
+    localStorage.setItem('live-trade-gauge-max-percent', String(nextMax));
+    this.isGaugeSettingsOpen = false;
   }
 
   closeAllTrades(): void {
@@ -356,13 +425,30 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   getTradeGaugeDash(trade: Table): string {
     const circumference = 2 * Math.PI * 44;
-    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 4);
+    const value = this.getTradeProfit(trade) > 0
+      ? Math.abs(this.getTradePercent(trade)) / this.positiveGaugePercentMax
+      : Math.abs(this.getTradePercent(trade)) / 1;
+    const fraction = Math.min(1, value);
     const arc = fraction * circumference;
     return `${arc} ${Math.max(0, circumference - arc)}`;
   }
 
+  getTradeR(trade: Table): number {
+    const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
+    if (Number.isFinite(reportedR)) return reportedR;
+
+    const risk = parseFloat(trade.riskPerTrade || '0') || 0;
+    return risk > 0 ? this.getTradeProfit(trade) / risk : 0;
+  }
+
   getTradeGaugeColor(trade: Table): string {
     return this.getTradeProfit(trade) < 0 ? '#ef4444' : '#10b981';
+  }
+
+  getTradeGaugeTransform(trade: Table): string {
+    return this.getTradeProfit(trade) < 0
+      ? 'rotate(90 50 50) scale(-1 1) translate(-100 0)'
+      : 'rotate(-90 50 50)';
   }
 
   getTradePnLClass(trade: Table): string {
