@@ -461,8 +461,8 @@ export class DashboardComponent implements AfterViewInit {
   private readonly liveTradeSoundSettingsStorageKey = 'trading-dashboard.live-trade-sound-settings';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
-  private readonly gaugeAlertSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F00f1808637444152afeca89de2a86bf4?alt=media&token=f0783a0d-4c30-4e94-95b7-c3b109851b22&apiKey=36c2f203afb3443492a83c1d11922b41';
-  private readonly highGaugeAlertSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F0004ffa69d294042b96dd00385ca3d40?alt=media&token=c0906d58-20e0-4129-8fd7-946db30ee96b&apiKey=36c2f203afb3443492a83c1d11922b41';
+  private readonly gaugeAlertSoundUrl = '/assets/sounds/trade-alert.flac';
+  private readonly highGaugeAlertSoundUrl = '/assets/sounds/trade-alert-high.wav';
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
@@ -692,6 +692,7 @@ mt5AccountInfo: AccountSettings = {
   dailyLossLimit: 0
 };
   mt5LiveTrades: Table[] = []; // Live trades from MT5
+  private mt5OpenPositionIds: Set<string> | null = null;
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
   mt5ImportMessage = '';
@@ -5986,6 +5987,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.getSupabaseTrades(),
         this.getMt5API()
       ]);
+      this.mt5OpenPositionIds = new Set(
+        (mt5History || [])
+          .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
+          .map((trade: any) => String(trade.position_id))
+      );
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
@@ -6043,6 +6049,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   
+  getCurrentMt5LiveTrades(): Table[] {
+    if (!this.mt5OpenPositionIds) {
+      return this.mt5LiveTrades.filter(trade => String(trade.mt5status).toLowerCase() === 'open' || !trade.closeDate || trade.closeDate === '-');
+    }
+    return this.mt5LiveTrades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
+  }
+
   private reconcileMt5Statuses(supabaseTrades: any[], mt5History: any[]): any[] {
     const mt5ByPosition = new Map(
       (mt5History || [])
@@ -6246,6 +6259,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (existingIndex == -1) {
       console.log('✅ Adding new trade to mt5LiveTrades...');
       this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
+      this.mt5OpenPositionIds?.add(String(newTrade.position));
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
@@ -6302,6 +6316,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const finalMae = Number(closedTrade.mae) || 0;
       this.stopGaugeAlert(String(trade.ticket));
       this.gaugeAlertNotifiedTickets.delete(String(trade.ticket));
+      this.mt5OpenPositionIds?.delete(String(trade.ticket));
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];

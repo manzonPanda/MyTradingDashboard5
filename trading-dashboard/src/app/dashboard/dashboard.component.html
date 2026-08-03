@@ -663,7 +663,7 @@
 
         <div class="live-rr-widget-compact" data-aura-target>
           <app-live-rr-tracker
-      [mt5LiveTrades]="mt5LiveTrades"
+      [mt5LiveTrades]="getCurrentMt5LiveTrades()"
       [tableData]="tableData"
       [accountSize]="mt5AccountInfo.startingBalance"
       [liveTradeSoundSettings]="liveTradeSoundSettings"
