@@ -371,9 +371,7 @@ export class AuraEnergyService {
       return;
     }
 
-    // The route is closed, so its exact endpoint is also its starting point.
-    const travelDistance = Math.max(0, this.routeLength - 2);
-    const distance = travelDistance * this.progress;
+    const distance = this.routeLength * this.progress;
     const trailLength = Math.max(60, this.routeLength * (this.config.trailLengthPercent / 100));
     this.renderTrail(route, trail, Math.max(0, distance - trailLength), distance);
     const headPoint = route.getPointAtLength(distance);
@@ -463,10 +461,11 @@ export class AuraEnergyService {
       return;
     }
 
-    let path = this.roundedRectPath(routeData[0]);
+    let path = this.roundedRectPath(routeData[0], false, routeData.length > 1);
     for (let index = 1; index < routeData.length; index += 1) {
       const connector = this.createOrthogonalConnector(routeData[index - 1], routeData[index]);
-      path += connector + this.roundedRectPath(routeData[index], true);
+      const isLastTarget = index === routeData.length - 1;
+      path += connector + this.roundedRectPath(routeData[index], true, !isLastTarget);
     }
 
     if (path === this.previousRoute && this.activeTargets.length > 1) {
@@ -482,10 +481,11 @@ export class AuraEnergyService {
     this.renderTraveler();
   }
 
-  private roundedRectPath(box: RouteBox, continuation = false): string {
+  private roundedRectPath(box: RouteBox, continuation = false, close = true): string {
     const { left, top, right, bottom, radius } = box;
     const start = continuation ? '' : `M ${left + radius} ${top}`;
-    return `${start} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius} Q ${left} ${top} ${left + radius} ${top} Z`;
+    const finalCurve = close ? ` Q ${left} ${top} ${left + radius} ${top} Z` : '';
+    return `${start} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius}${finalCurve}`;
   }
 
   private createOrthogonalConnector(previous: RouteBox, next: RouteBox): string {
