@@ -467,6 +467,7 @@
   padding: 0.75rem;
   transition: all 0.3s ease;
   position: relative;
+  min-width: 0;
   overflow: hidden;
 
   &::before {
@@ -513,7 +514,15 @@
   text-transform: uppercase;
   letter-spacing: 0.35px;
   color: var(--tf-text-secondary);
+  min-width: 0;
   margin-bottom: 0.5rem;
+  line-height: 1.15;
+
+  span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
 
   mat-icon {
     font-size: 14px;
@@ -545,10 +554,13 @@
 }
 
 .metric-value {
-  font-size: 1.35rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: clamp(0.9rem, 1.8vw, 1.35rem);
   font-weight: 800;
   margin-bottom: 0.35rem;
-  line-height: 1;
+  line-height: 1.05;
   transition: all 0.3s ease;
 
   &.positive {
