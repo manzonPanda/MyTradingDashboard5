@@ -12249,3 +12249,35 @@ table.simple-table {
 
 @media (max-width: 900px) { .roi-content-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } }
+
+.trade-sound-settings-backdrop { position: fixed; z-index: 1200; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
+.trade-sound-settings-modal { width: min(100%, 34rem); overflow: hidden; border: 1px solid var(--tf-border-primary); border-radius: 1rem; background: var(--tf-bg-card); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35); }
+.trade-sound-settings-header, .trade-sound-settings-row, .trade-sound-settings-actions, .trade-sound-settings-save-actions, .trade-sound-settings-heading { display: flex; align-items: center; }
+.trade-sound-settings-header { justify-content: space-between; gap: 1rem; padding: 1.25rem 1.4rem; border-bottom: 1px solid var(--tf-border-primary); }
+.trade-sound-settings-heading { gap: 0.75rem; }
+.trade-sound-settings-heading mat-icon { color: #7c3aed; }
+.trade-sound-settings-heading p, .trade-sound-settings-heading h2 { margin: 0; }
+.trade-sound-settings-heading p { color: var(--tf-text-muted); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.trade-sound-settings-heading h2 { color: var(--tf-text-primary); font-size: 1.25rem; }
+.trade-sound-settings-close, .trade-sound-cancel, .trade-sound-preview, .trade-sound-save { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+.trade-sound-settings-close { width: 2.25rem; height: 2.25rem; border-radius: 50%; background: var(--tf-bg-tertiary); color: var(--tf-text-secondary); }
+.trade-sound-settings-body { display: grid; gap: 1rem; padding: 1.4rem; }
+.trade-sound-settings-row { justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--tf-border-primary); }
+.trade-sound-settings-copy { display: grid; gap: 0.2rem; color: var(--tf-text-primary); }
+.trade-sound-settings-copy small { color: var(--tf-text-muted); line-height: 1.4; }
+.trade-sound-settings-field { display: grid; gap: 0.4rem; color: var(--tf-text-secondary); font-size: 0.85rem; font-weight: 700; }
+.trade-sound-settings-field > span { display: flex; justify-content: space-between; }
+.trade-sound-settings-field small { color: var(--tf-text-muted); }
+.trade-sound-settings-field input { width: 100%; box-sizing: border-box; padding: 0.7rem 0.8rem; border: 1px solid var(--tf-border-primary); border-radius: 0.55rem; background: var(--tf-bg-primary); color: var(--tf-text-primary); font: inherit; }
+.trade-sound-settings-field input:focus { outline: 0; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12); }
+.trade-sound-settings-field input:disabled { cursor: not-allowed; opacity: 0.5; }
+.trade-sound-volume-field input { padding: 0; accent-color: #7c3aed; }
+.trade-sound-settings-actions { justify-content: space-between; gap: 1rem; padding: 1.1rem 1.4rem; border-top: 1px solid var(--tf-border-primary); }
+.trade-sound-settings-save-actions { gap: 0.65rem; }
+.trade-sound-preview, .trade-sound-cancel, .trade-sound-save { padding: 0.65rem 0.85rem; border-radius: 0.6rem; }
+.trade-sound-preview, .trade-sound-cancel { background: var(--tf-bg-tertiary); color: var(--tf-text-secondary); }
+.trade-sound-save { background: linear-gradient(135deg, #6d28d9, #8b5cf6); color: #fff; }
+.trade-sound-preview:hover, .trade-sound-cancel:hover, .trade-sound-settings-close:hover { background: var(--tf-bg-hover); }
+.trade-sound-save:hover { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
+.trade-sound-preview:disabled { cursor: not-allowed; opacity: 0.5; }
+@media (max-width: 540px) { .trade-sound-settings-actions { align-items: stretch; flex-direction: column; } .trade-sound-settings-save-actions { justify-content: flex-end; } }
