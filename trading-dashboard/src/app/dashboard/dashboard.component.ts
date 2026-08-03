@@ -62,6 +62,20 @@ interface AccountSettings {
   dailyLossLimit: number;
 }
 
+interface LiveTradeSoundSettings {
+  enabled: boolean;
+  alertThreshold: number;
+  highAlertThreshold: number;
+  volume: number;
+}
+
+const DEFAULT_LIVE_TRADE_SOUND_SETTINGS: LiveTradeSoundSettings = {
+  enabled: true,
+  alertThreshold: 2.8,
+  highAlertThreshold: 3.4,
+  volume: 0.7
+};
+
 interface Table {
   openDate: string;
   tradeNotion: Trades[];
@@ -163,6 +177,9 @@ export class DashboardComponent implements AfterViewInit {
   isAuraConfigModalOpen = false;
   isSavingAuraConfig = false;
   auraConfig: AuraEnergyConfig = { ...DEFAULT_AURA_ENERGY_CONFIG };
+  isLiveTradeSoundSettingsOpen = false;
+  liveTradeSoundSettings: LiveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
+  liveTradeSoundSettingsDraft: LiveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
   readonly auraConfigDefaults = DEFAULT_AURA_ENERGY_CONFIG;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
@@ -441,6 +458,7 @@ export class DashboardComponent implements AfterViewInit {
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
+  private readonly liveTradeSoundSettingsStorageKey = 'trading-dashboard.live-trade-sound-settings';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
   private readonly gaugeAlertSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2F00f1808637444152afeca89de2a86bf4?alt=media&token=f0783a0d-4c30-4e94-95b7-c3b109851b22&apiKey=36c2f203afb3443492a83c1d11922b41';
@@ -1070,10 +1088,60 @@ mt5AccountInfo: AccountSettings = {
     private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isDarkTheme = this.document.defaultView?.localStorage.getItem('dashboard-theme') === 'dark';
+    this.loadLiveTradeSoundSettings();
     this.applyTheme();
 
     // Register Chart.js components
     Chart.register(...registerables);
+  }
+
+  openLiveTradeSoundSettings(): void {
+    this.liveTradeSoundSettingsDraft = { ...this.liveTradeSoundSettings };
+    this.isLiveTradeSoundSettingsOpen = true;
+  }
+
+  closeLiveTradeSoundSettings(): void {
+    this.isLiveTradeSoundSettingsOpen = false;
+  }
+
+  saveLiveTradeSoundSettings(): void {
+    const settings = this.liveTradeSoundSettingsDraft;
+    if (settings.alertThreshold < 0 || settings.highAlertThreshold <= settings.alertThreshold || settings.volume < 0 || settings.volume > 1) {
+      this.snackBar.open('Set a valid alert range and volume.', 'Dismiss', { duration: 4000 });
+      return;
+    }
+
+    this.liveTradeSoundSettings = { ...settings };
+    this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
+    if (!this.liveTradeSoundSettings.enabled) {
+      for (const ticket of new Set([...this.gaugeAlertSounds.keys(), ...this.highGaugeAlertSounds.keys()])) {
+        this.stopGaugeAlert(ticket);
+      }
+    }
+    this.closeLiveTradeSoundSettings();
+    this.snackBar.open('Live trade sound settings saved.', 'Dismiss', { duration: 3000 });
+    this.cdr.markForCheck();
+  }
+
+  testLiveTradeSound(): void {
+    if (!this.liveTradeSoundSettingsDraft.enabled) return;
+    const sound = new Audio(this.gaugeAlertSoundUrl);
+    sound.volume = this.liveTradeSoundSettingsDraft.volume;
+    sound.play().catch(() => this.snackBar.open('Your browser blocked the sound preview.', 'Dismiss', { duration: 4000 }));
+  }
+
+  private loadLiveTradeSoundSettings(): void {
+    try {
+      const saved = this.document.defaultView?.localStorage.getItem(this.liveTradeSoundSettingsStorageKey);
+      if (!saved) return;
+      const parsed = JSON.parse(saved) as Partial<LiveTradeSoundSettings>;
+      const settings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS, ...parsed };
+      if (settings.alertThreshold >= 0 && settings.highAlertThreshold > settings.alertThreshold && settings.volume >= 0 && settings.volume <= 1) {
+        this.liveTradeSoundSettings = settings;
+      }
+    } catch {
+      this.liveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
+    }
   }
 
   openAuraConfigModal(): void {
@@ -6226,8 +6294,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const profit = Number.parseFloat(trade.profit) || 0;
     const gaugePercentage = accountSize > 0 ? (profit / accountSize) * 100 : 0;
     const ticket = String(trade.position);
-    const isInAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 2.8 && gaugePercentage < 3.3;
-    const isAboveHighAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 3.4;
+    const { enabled, alertThreshold, highAlertThreshold, volume } = this.liveTradeSoundSettings;
+    const isInAlertRange = enabled && Number.isFinite(gaugePercentage) && gaugePercentage >= alertThreshold && gaugePercentage < highAlertThreshold;
+    const isAboveHighAlertRange = enabled && Number.isFinite(gaugePercentage) && gaugePercentage >= highAlertThreshold;
 
     if (!isInAlertRange && !isAboveHighAlertRange) {
       this.stopGaugeAlert(ticket);
@@ -6246,6 +6315,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (!soundMap.has(ticket)) {
       const sound = new Audio(isAboveHighAlertRange ? this.highGaugeAlertSoundUrl : this.gaugeAlertSoundUrl);
       sound.loop = true;
+      sound.volume = volume;
       soundMap.set(ticket, sound);
       sound.play().catch(error => {
         this.stopGaugeAlert(ticket);
