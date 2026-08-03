@@ -609,13 +609,34 @@
   }
 }
 
-.trade-extremes {
+.live-extremes-summary {
   display: flex;
-  justify-content: space-between;
-  gap: 0.35rem;
-  padding: 0 0.55rem 0.45rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  grid-column: 1 / -1;
+  padding: 0.1rem 0 0.35rem;
+  color: var(--tf-text-secondary);
   font-size: 0.65rem;
   font-weight: 700;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  em {
+    color: var(--tf-text-muted);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  mat-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+    font-size: 0.85rem;
+  }
 
   .mfe-value {
     color: var(--tf-positive);
@@ -623,6 +644,10 @@
 
   .mae-value {
     color: var(--tf-negative);
+  }
+
+  .extremes-divider {
+    color: var(--tf-border-secondary);
   }
 }
 
