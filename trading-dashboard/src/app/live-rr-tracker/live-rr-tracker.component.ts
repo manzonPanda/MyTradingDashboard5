@@ -154,7 +154,7 @@ interface Table {
                 <svg viewBox="0 0 100 100" class="trade-gauge-svg">
                   <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
                   <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
-                          [attr.stroke-dasharray]="getTradeGaugeDash(trade)" transform="rotate(-90 50 50)"/>
+                          [attr.stroke-dasharray]="getTradeGaugeDash(trade)" [attr.transform]="getTradeGaugeTransform(trade)"/>
                   <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
                 </svg>
                 <div class="trade-gauge-center">
@@ -356,13 +356,19 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   getTradeGaugeDash(trade: Table): string {
     const circumference = 2 * Math.PI * 44;
-    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 4);
+    const fraction = Math.min(1, Math.abs(this.getTradePercent(trade)) / 0.5);
     const arc = fraction * circumference;
     return `${arc} ${Math.max(0, circumference - arc)}`;
   }
 
   getTradeGaugeColor(trade: Table): string {
     return this.getTradeProfit(trade) < 0 ? '#ef4444' : '#10b981';
+  }
+
+  getTradeGaugeTransform(trade: Table): string {
+    return this.getTradeProfit(trade) < 0
+      ? 'rotate(90 50 50) scale(-1 1) translate(-100 0)'
+      : 'rotate(-90 50 50)';
   }
 
   getTradePnLClass(trade: Table): string {
