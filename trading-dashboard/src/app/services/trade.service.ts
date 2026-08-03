@@ -13,4 +13,8 @@ export class TradeService {
   closeTrade(ticket: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/close_trade`, { ticket });
   }
+
+  closeAllTrades(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/close_all_trades`, {});
+  }
 }

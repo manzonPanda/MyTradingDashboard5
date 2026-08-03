@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { TradeService } from '../services/trade.service';
 
 interface Table {
   openDate: string;
@@ -92,7 +93,13 @@ interface Table {
             <h3>Live Trading Session</h3>
           </div>
           <div class="header-meta">
-            <span class="trade-count">{{ openTradeCount }} Trade<span *ngIf="openTradeCount !== 1">s</span> Open</span>
+            <button
+              type="button"
+              class="close-all-button"
+              [disabled]="isClosingAll"
+              (click)="closeAllTrades()">
+              {{ isClosingAll ? 'Closing...' : 'Close All' }}
+            </button>
           </div>
         </div>
 
@@ -181,9 +188,13 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   totalMaeValue = 0;
   totalMfeR = 0;
   totalMaeR = 0;
+  isClosingAll = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
 
-  constructor(private readonly cdr: ChangeDetectorRef) {}
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly tradeService: TradeService
+  ) {}
 
   ngOnInit() {
     this.calculateLiveMetrics();
@@ -268,6 +279,32 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     this.totalMfeR = 0;
     this.totalMaeR = 0;
     this.openTrades = [];
+  }
+
+  closeAllTrades(): void {
+    if (this.isClosingAll || this.openTradeCount === 0) return;
+    if (!window.confirm(`Close all ${this.openTradeCount} open trade${this.openTradeCount === 1 ? '' : 's'}?`)) return;
+
+    this.isClosingAll = true;
+    this.tradeService.closeAllTrades().subscribe({
+      next: (response) => {
+        if (response?.success) {
+          this.openTrades = [];
+          this.hasLiveTrades = false;
+          this.openTradeCount = 0;
+          this.resetMetrics();
+        } else {
+          window.alert('Some trades could not be closed.');
+        }
+        this.isClosingAll = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isClosingAll = false;
+        this.cdr.markForCheck();
+        window.alert('Unable to close the open trades.');
+      }
+    });
   }
 
   formatHoldingTime(trade: Table): string {

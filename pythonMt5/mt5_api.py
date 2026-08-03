@@ -412,25 +412,12 @@ def start_reconnect():
     Timer(10, reconnect_mt5).start()
     return jsonify({"message": "Reconnect countdown started"})
 
-@app.route('/api/close_trade', methods=['POST'])
-def close_trade():
-    data = request.json
-    ticket = data.get("ticket")
-    
-    if not ticket:
-        return jsonify({"error": "Ticket is required"}), 400
+def close_position(position):
+    tick = mt5.symbol_info_tick(position.symbol)
+    if tick is None:
+        return {"ticket": position.ticket, "error": "Market price unavailable"}
 
-    positions = mt5.positions_get(ticket)
-    if not positions:
-        return {"error": "Position not found"}
-
-    pos = positions[0]
-    symbol = pos.symbol
-    volume = pos.volume
-
-    tick = mt5.symbol_info_tick(symbol)
-
-    if pos.type == mt5.ORDER_TYPE_BUY:
+    if position.type == mt5.ORDER_TYPE_BUY:
         order_type = mt5.ORDER_TYPE_SELL
         price = tick.bid
     else:
@@ -439,10 +426,10 @@ def close_trade():
 
     request_data = {
         "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": symbol,
-        "volume": volume,
+        "symbol": position.symbol,
+        "volume": position.volume,
         "type": order_type,
-        "position": ticket,
+        "position": position.ticket,
         "price": price,
         "deviation": 20,
         "magic": 100,
@@ -452,15 +439,45 @@ def close_trade():
     }
 
     result = mt5.order_send(request_data)
-
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         return {
+            "ticket": position.ticket,
             "error": "Close failed",
             "retcode": result.retcode,
             "comment": result.comment
         }
 
-    return {"success": True, "ticket": ticket}
+    return {"ticket": position.ticket, "success": True}
+
+
+@app.route('/api/close_trade', methods=['POST'])
+def close_trade():
+    data = request.json or {}
+    ticket = data.get("ticket")
+
+    if not ticket:
+        return jsonify({"error": "Ticket is required"}), 400
+
+    positions = mt5.positions_get(ticket=ticket)
+    if not positions:
+        return jsonify({"error": "Position not found"}), 404
+
+    result = close_position(positions[0])
+    return jsonify(result), 200 if result.get("success") else 502
+
+
+@app.route('/api/close_all_trades', methods=['POST'])
+def close_all_trades():
+    positions = mt5.positions_get() or []
+    results = [close_position(position) for position in positions]
+    failed = [result for result in results if not result.get("success")]
+
+    return jsonify({
+        "success": not failed,
+        "requested": len(positions),
+        "closed": len(positions) - len(failed),
+        "failed": failed
+    }), 200 if not failed else 502
 
 @socketio.on('connect')
 def on_connect():
