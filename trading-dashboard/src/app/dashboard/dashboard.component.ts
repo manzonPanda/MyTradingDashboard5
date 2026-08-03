@@ -1740,6 +1740,7 @@ mt5AccountInfo: AccountSettings = {
       const balance = Number(data?.balance ?? data?.account_balance ?? data?.equity);
       if (Number.isFinite(balance) && balance > 0) {
         this.mt5AccountInfo.balance = balance;
+        this.generateTradingChartData();
         this.cdr.markForCheck();
       }
       console.warn("Account Info Received:", data);
@@ -3375,6 +3376,25 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('🎨 Generating beautiful trading chart data...');
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
     const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
+    const chartRange = Math.max(startingBalance * 0.1, 1);
+    const chartOptions = this.chartOptions as any;
+    this.chartOptions = {
+      ...chartOptions,
+      scales: {
+        ...chartOptions.scales,
+        y: {
+          ...chartOptions.scales.y,
+          min: startingBalance - chartRange,
+          max: startingBalance + chartRange,
+          ticks: {
+            ...chartOptions.scales.y.ticks,
+            stepSize: undefined,
+            count: 10,
+            maxTicksLimit: 10
+          }
+        }
+      }
+    };
     let currentBalance = startingBalance;
     let cumulativePnL = 0;
     let peakBalance = startingBalance;
@@ -4254,9 +4274,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   calculateAccountSize(): number {
-    const balanceFromMt5 = this.mt5AccountInfo?.balance ?? 0;
-    const totalPnL = this.calculateTotalPnL();
-    return balanceFromMt5 - totalPnL;
+    return this.mt5AccountInfo?.startingBalance ?? 0;
   }
 
   calculateAvgTradeDuration(): string {

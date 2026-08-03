@@ -1,6 +1,7 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { TradeService } from '../services/trade.service';
 
 interface Table {
   openDate: string;
@@ -92,7 +93,14 @@ interface Table {
             <h3>Live Trading Session</h3>
           </div>
           <div class="header-meta">
-            <span class="trade-count">{{ openTradeCount }} Trade<span *ngIf="openTradeCount !== 1">s</span> Open</span>
+            <button
+              type="button"
+              class="close-all-button"
+              [disabled]="isClosingAll"
+              (click)="closeAllTrades()">
+              {{ isClosingAll ? 'Closing...' : (isCloseAllArmed ? 'Confirmed?' : 'Close All') }}
+            </button>
+            <span *ngIf="closeAllStatus" class="close-all-status" aria-live="polite">{{ closeAllStatus }}</span>
           </div>
         </div>
 
@@ -139,7 +147,7 @@ interface Table {
         <div class="live-trade-gauges">
           <article *ngFor="let trade of openTrades" class="trade-gauge-card">
             <div class="trade-gauge-heading">
-              <span class="trade-gauge-symbol">{{ trade.symbol }}</span>
+              <span class="trade-gauge-symbol" [attr.title]="trade.symbol">{{ formatHoldingTime(trade) }}</span>
             </div>
             <div class="trade-gauge-content">
               <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
@@ -164,7 +172,7 @@ interface Table {
   styleUrls: ['./live-rr-tracker.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LiveRRTrackerComponent implements OnInit, OnChanges {
+export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
@@ -181,9 +189,25 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
   totalMaeValue = 0;
   totalMfeR = 0;
   totalMaeR = 0;
+  isClosingAll = false;
+  isCloseAllArmed = false;
+  closeAllStatus = '';
+  private holdingTimeInterval?: ReturnType<typeof setInterval>;
+  private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
+
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly tradeService: TradeService
+  ) {}
 
   ngOnInit() {
     this.calculateLiveMetrics();
+    this.holdingTimeInterval = setInterval(() => this.cdr.markForCheck(), 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
+    if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -260,6 +284,63 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges {
     this.totalMfeR = 0;
     this.totalMaeR = 0;
     this.openTrades = [];
+  }
+
+  closeAllTrades(): void {
+    if (this.isClosingAll || this.openTradeCount === 0) return;
+
+    if (!this.isCloseAllArmed) {
+      this.isCloseAllArmed = true;
+      this.closeAllConfirmationTimeout = setTimeout(() => {
+        this.isCloseAllArmed = false;
+        this.cdr.markForCheck();
+      }, 5000);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
+    this.isCloseAllArmed = false;
+    this.closeAllStatus = '';
+    this.isClosingAll = true;
+    this.tradeService.closeAllTrades().subscribe({
+      next: (response) => {
+        if (response?.success) {
+          this.openTrades = [];
+          this.hasLiveTrades = false;
+          this.openTradeCount = 0;
+          this.resetMetrics();
+          this.closeAllStatus = '';
+        } else {
+          this.closeAllStatus = 'Some trades could not be closed.';
+        }
+        this.isClosingAll = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isClosingAll = false;
+        this.closeAllStatus = 'Unable to close the open trades.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  formatHoldingTime(trade: Table): string {
+    const openedAt = new Date(trade.openDate || '').getTime();
+    if (!Number.isFinite(openedAt)) return '00s';
+
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - openedAt) / 1000));
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    if (minutes > 0) {
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${String(seconds).padStart(2, '0')}s`;
   }
 
   getTradeProfit(trade: Table): number {
