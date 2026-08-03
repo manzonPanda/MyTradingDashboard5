@@ -98,7 +98,7 @@ interface Table {
               class="close-all-button"
               [disabled]="isClosingAll"
               (click)="closeAllTrades()">
-              {{ isClosingAll ? 'Closing...' : 'Close All' }}
+              {{ isClosingAll ? 'Closing...' : (isCloseAllArmed ? 'Confirmed?' : 'Close All') }}
             </button>
           </div>
         </div>
@@ -189,7 +189,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   totalMfeR = 0;
   totalMaeR = 0;
   isClosingAll = false;
+  isCloseAllArmed = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
+  private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
 
   constructor(
     private readonly cdr: ChangeDetectorRef,
@@ -203,6 +205,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
+    if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -283,8 +286,19 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   closeAllTrades(): void {
     if (this.isClosingAll || this.openTradeCount === 0) return;
-    if (!window.confirm(`Close all ${this.openTradeCount} open trade${this.openTradeCount === 1 ? '' : 's'}?`)) return;
 
+    if (!this.isCloseAllArmed) {
+      this.isCloseAllArmed = true;
+      this.closeAllConfirmationTimeout = setTimeout(() => {
+        this.isCloseAllArmed = false;
+        this.cdr.markForCheck();
+      }, 5000);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
+    this.isCloseAllArmed = false;
     this.isClosingAll = true;
     this.tradeService.closeAllTrades().subscribe({
       next: (response) => {
