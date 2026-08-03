@@ -6224,7 +6224,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const profit = Number.parseFloat(trade.profit) || 0;
     const gaugePercentage = accountSize > 0 ? (profit / accountSize) * 100 : 0;
     const ticket = String(trade.position);
-    const isInAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 2.7 && gaugePercentage < 3.4;
+    const isInAlertRange = Number.isFinite(gaugePercentage) && gaugePercentage > 2.8 && gaugePercentage < 3.3;
 
     if (!isInAlertRange) {
       this.stopGaugeAlert(ticket);
