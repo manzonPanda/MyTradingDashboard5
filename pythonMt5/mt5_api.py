@@ -413,8 +413,9 @@ def start_reconnect():
     return jsonify({"message": "Reconnect countdown started"})
 
 def close_position(position):
+    symbol_info = mt5.symbol_info(position.symbol)
     tick = mt5.symbol_info_tick(position.symbol)
-    if tick is None:
+    if symbol_info is None or tick is None:
         return {"ticket": position.ticket, "error": "Market price unavailable"}
 
     if position.type == mt5.ORDER_TYPE_BUY:
@@ -423,6 +424,12 @@ def close_position(position):
     else:
         order_type = mt5.ORDER_TYPE_BUY
         price = tick.ask
+
+    filling_mode = (
+        mt5.ORDER_FILLING_IOC
+        if symbol_info.filling_mode & mt5.SYMBOL_FILLING_IOC
+        else mt5.ORDER_FILLING_FOK
+    )
 
     request_data = {
         "action": mt5.TRADE_ACTION_DEAL,
@@ -435,7 +442,7 @@ def close_position(position):
         "magic": 100,
         "comment": "",
         "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_IOC,
+        "type_filling": filling_mode,
     }
 
     result = mt5.order_send(request_data)
