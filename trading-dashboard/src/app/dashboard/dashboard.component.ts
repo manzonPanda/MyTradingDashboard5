@@ -6158,16 +6158,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableDataOnly(): void {
-    this.tableData = [...this.mt5LiveTrades, ];
+    this.tableData = [...this.mt5LiveTrades];
 
-    // Update Daily Limit metrics on live updates
     this.updateDailyLimitMetrics();
-
-    // Check for profit target achievement on live updates
+    this.generateTradingChartData();
     this.checkForProfitTargetCelebration();
 
-    // Trigger change detection so LiveRRTrackerComponent updates
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   updateTableData(): void {
@@ -6188,7 +6185,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
     this.generateTradingChartData();
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
 
     // Check for profit target achievement and celebrate! 🎉
     this.checkForProfitTargetCelebration();
