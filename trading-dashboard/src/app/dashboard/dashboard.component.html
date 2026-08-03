@@ -1336,9 +1336,9 @@
           <mat-icon>data_usage</mat-icon>
           Populate Data
         </button>
-        <button class="btn-secondary trade-sound-settings-trigger" type="button" (click)="openLiveTradeSoundSettings()">
-          <mat-icon>settings</mat-icon>
-          Trade settings
+        <button class="btn-secondary trade-sound-settings-trigger" type="button" title="Configure sound notification thresholds" (click)="openLiveTradeSoundSettings()">
+          <mat-icon>volume_up</mat-icon>
+          Sound settings
         </button>
       </div>
 
@@ -2283,12 +2283,14 @@
           <mat-slide-toggle [(ngModel)]="liveTradeSoundSettingsDraft.enabled" color="primary"></mat-slide-toggle>
         </div>
         <label class="trade-sound-settings-field">
-          <span>Alert at account profit %</span>
-          <input type="number" min="0" step="0.1" [(ngModel)]="liveTradeSoundSettingsDraft.alertThreshold" [disabled]="!liveTradeSoundSettingsDraft.enabled">
+          <span>Sound notification threshold</span>
+          <input type="number" min="0" step="0.1" aria-label="Sound notification threshold as account profit percentage" [(ngModel)]="liveTradeSoundSettingsDraft.alertThreshold" [disabled]="!liveTradeSoundSettingsDraft.enabled">
+          <small>Start the alert when an open trade reaches this account-profit percentage.</small>
         </label>
         <label class="trade-sound-settings-field">
-          <span>High-priority alert at %</span>
-          <input type="number" min="0" step="0.1" [(ngModel)]="liveTradeSoundSettingsDraft.highAlertThreshold" [disabled]="!liveTradeSoundSettingsDraft.enabled">
+          <span>High-priority sound threshold</span>
+          <input type="number" min="0" step="0.1" aria-label="High-priority sound threshold as account profit percentage" [(ngModel)]="liveTradeSoundSettingsDraft.highAlertThreshold" [disabled]="!liveTradeSoundSettingsDraft.enabled">
+          <small>Use the high-priority sound once the profit percentage reaches this level.</small>
         </label>
         <label class="trade-sound-settings-field trade-sound-volume-field">
           <span>Volume <small>{{ liveTradeSoundSettingsDraft.volume * 100 | number:'1.0-0' }}%</small></span>

@@ -1113,10 +1113,8 @@ mt5AccountInfo: AccountSettings = {
 
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
-    if (!this.liveTradeSoundSettings.enabled) {
-      for (const ticket of new Set([...this.gaugeAlertSounds.keys(), ...this.highGaugeAlertSounds.keys()])) {
-        this.stopGaugeAlert(ticket);
-      }
+    for (const trade of this.mt5LiveTrades) {
+      this.notifyGaugePercentage(trade);
     }
     this.closeLiveTradeSoundSettings();
     this.snackBar.open('Live trade sound settings saved.', 'Dismiss', { duration: 3000 });
