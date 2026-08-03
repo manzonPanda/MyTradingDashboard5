@@ -445,6 +445,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
   private readonly threeToFourRSoundUrl = 'https://cdn.builder.io/o/assets%2F36c2f203afb3443492a83c1d11922b41%2Fa4408eec10134befa8c63006fdd4ebab?alt=media&token=990c3aa1-e4cc-4370-b596-8b935094a46f&apiKey=36c2f203afb3443492a83c1d11922b41';
   private readonly threeToFourRNotifiedTickets = new Set<string>();
+  private readonly threeToFourRAlertSounds = new Map<string, HTMLAudioElement>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
@@ -6195,6 +6196,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
       const finalMfe = Number(closedTrade.mfe) || 0;
       const finalMae = Number(closedTrade.mae) || 0;
+      this.stopThreeToFourRAlert(String(trade.ticket));
       this.threeToFourRNotifiedTickets.delete(String(trade.ticket));
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
@@ -6220,12 +6222,35 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   private notifyThreeToFourR(trade: Table, liveR: unknown): void {
     const rValue = Number(liveR);
     const ticket = String(trade.position);
-    if (!Number.isFinite(rValue) || rValue <= 3 || rValue >= 4 || this.threeToFourRNotifiedTickets.has(ticket)) return;
+    const isInAlertRange = Number.isFinite(rValue) && rValue > 3 && rValue < 4;
 
-    this.threeToFourRNotifiedTickets.add(ticket);
-    const sound = new Audio(this.threeToFourRSoundUrl);
-    sound.play().catch(error => console.warn('Unable to play 3R–4R alert sound:', error));
-    this.snackBar.open(`${trade.symbol || 'Trade'} crossed ${rValue.toFixed(2)}R`, 'Dismiss', { duration: 5000 });
+    if (!isInAlertRange) {
+      this.stopThreeToFourRAlert(ticket);
+      return;
+    }
+
+    if (!this.threeToFourRAlertSounds.has(ticket)) {
+      const sound = new Audio(this.threeToFourRSoundUrl);
+      sound.loop = true;
+      this.threeToFourRAlertSounds.set(ticket, sound);
+      sound.play().catch(error => {
+        this.stopThreeToFourRAlert(ticket);
+        console.warn('Unable to play 3R–4R alert sound:', error);
+      });
+    }
+
+    if (!this.threeToFourRNotifiedTickets.has(ticket)) {
+      this.threeToFourRNotifiedTickets.add(ticket);
+      this.snackBar.open(`${trade.symbol || 'Trade'} crossed ${rValue.toFixed(2)}R`, 'Dismiss', { duration: 5000 });
+    }
+  }
+
+  private stopThreeToFourRAlert(ticket: string): void {
+    const sound = this.threeToFourRAlertSounds.get(ticket);
+    if (!sound) return;
+    sound.pause();
+    sound.currentTime = 0;
+    this.threeToFourRAlertSounds.delete(ticket);
   }
 
   updateMT5TradePrice(priceData: any): void {
