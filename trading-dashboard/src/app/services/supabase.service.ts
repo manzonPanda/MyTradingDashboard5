@@ -395,6 +395,15 @@ export class SupabaseService {
     return data as Trade;
   }
 
+  async saveTradeForAccount(trade: Partial<Trade>, accountId: string): Promise<Trade | null> {
+    const tradeForAccount = { ...trade, account_id: accountId };
+    if (tradeForAccount.ticket !== undefined && tradeForAccount.ticket !== null) {
+      const existing = await this.getTradeByTicket(tradeForAccount.ticket, accountId);
+      if (existing?.id) return this.updateTrade(existing.id, tradeForAccount);
+    }
+    return this.createTrade(tradeForAccount);
+  }
+
   async syncMt5Trades(trades: Partial<Trade>[], accountName: string): Promise<{ created: number; updated: number }> {
     const accountId = await this.getOrCreateAccountId(accountName);
     return this.syncTradesToAccount(trades, accountId);

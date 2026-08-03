@@ -6093,6 +6093,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.clearLiveExtremes(ticket);
   }
 
+  private async persistLiveTrade(trade: Table): Promise<void> {
+    if (!this.selectedAccount) return;
+    const tradeForSupabase = {
+      ...this.mapMt5TradeForSupabase(trade),
+      mfe: this.toNumber(trade.mfe),
+      mae: this.toNumber(trade.mae ?? '0')
+    };
+    await this.supabaseService.saveTradeForAccount(tradeForSupabase, this.selectedAccount.id);
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     const trade = tradeData;
     if (!trade) return;
@@ -6154,8 +6164,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Go to last page of the table to show the latest trade
       this.setPage(this.getTotalPages());
 
-      //call Notion api to add new entry
-      this.createNewEntry(newTrade);
+      void this.persistLiveTrade(newTrade).catch(error => {
+        console.error('Unable to persist opened trade:', error);
+      });
 
     } else {
       console.log('⚠️ Trade already exists, skipping duplicate');
@@ -6185,12 +6196,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];
 
+      void this.persistLiveTrade(closedTrade).catch(error => {
+        console.error('Unable to persist closed trade:', error);
+      });
       void this.persistClosedTradeExtremes(trade.ticket, finalMfe, finalMae).catch(error => {
         console.error('Unable to persist final MFE/MAE:', error);
       });
-
-      //call Notion api to update an existing entry for closed trade
-      this.updateExistingEntry(closedTrade);
 
       // this.mt5LiveTrades.splice(liveIndex, 1);
       this.updateTableData();
