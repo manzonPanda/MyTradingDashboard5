@@ -439,6 +439,7 @@ export class DashboardComponent implements AfterViewInit {
   accounts: Account[] = [];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
+  private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   editingAccountId: string | null = null;
   accountPage = 1;
   readonly accountPageSize = 5;
@@ -1569,7 +1570,13 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
-      this.selectedAccount = this.accounts[0] ?? null;
+      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey);
+      this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
+      if (this.selectedAccount) {
+        localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
+      } else {
+        localStorage.removeItem(this.selectedAccountStorageKey);
+      }
       this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
       this.applySelectedAccountSettings();
     } catch (error) {
@@ -1605,6 +1612,7 @@ mt5AccountInfo: AccountSettings = {
     }
 
     this.selectedAccount = account;
+    localStorage.setItem(this.selectedAccountStorageKey, account.id);
     this.applySelectedAccountSettings();
     this.currentPage = 1;
     await this.loadMT5Data();
