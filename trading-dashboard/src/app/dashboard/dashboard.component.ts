@@ -2006,7 +2006,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
  addTradesToCalendar() {
-  // console.log("tableData::"+this.tableData)
+  this.events = [];
     this.tableData.forEach(row => {
       const tradeDateString = row.openDate; // Column 0: the date string
       const symbol = row.symbol;           // Column 2: symbol
@@ -6175,22 +6175,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     console.log('������ Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
-    // Get existing non-MT5 trades (those loaded from Firestore)
-    const existingTrades = this.tableData ? this.tableData.filter(trade =>
-      !this.mt5LiveTrades.some(mt5Trade => mt5Trade.position === trade.position)
-    ) : [];
-
-    console.log('📁 Existing non-MT5 trades:', existingTrades.length);
-
-    // Create completely new array reference to trigger Angular change detection
     const previousLength = this.tableData ? this.tableData.length : 0;
-    this.tableData = [...this.mt5LiveTrades, ...existingTrades];
+    this.tableData = [...this.mt5LiveTrades];
 
     // Recalculate Daily Limit metrics
     this.updateDailyLimitMetrics();
 
-    console.log('✅ After update - tableData:', this.tableData.length, 'trades');
-    console.log('📈 Breakdown: MT5:', this.mt5LiveTrades.length, '+ Existing:', existingTrades.length);
+    console.log('✅ After update - tableData:', this.tableData.length, 'account-scoped trades');
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
     console.log('🎯 Final tableData:', this.tableData);
 
