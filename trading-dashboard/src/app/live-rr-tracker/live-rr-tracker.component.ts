@@ -317,9 +317,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
         this.isClosingAll = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (error) => {
+        const failedTrade = error?.error?.failed?.[0];
         this.isClosingAll = false;
-        this.closeAllStatus = 'Unable to close the open trades.';
+        this.closeAllStatus = failedTrade?.comment || failedTrade?.error || 'Unable to close the open trades.';
         this.cdr.markForCheck();
       }
     });
