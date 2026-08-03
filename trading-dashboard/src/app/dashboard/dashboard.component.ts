@@ -3390,7 +3390,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           ticks: {
             ...chartOptions.scales.y.ticks,
             stepSize: chartTickStep,
-            maxTicksLimit: 7
+            maxTicksLimit: 10
           }
         }
       }
