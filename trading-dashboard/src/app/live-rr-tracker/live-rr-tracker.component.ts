@@ -158,12 +158,12 @@ interface Table {
                 <span>Enable sound alerts</span>
               </label>
               <label class="trade-display-sound-field">
-                <span>Sound notification threshold</span>
-                <input type="number" min="0" step="0.1" [(ngModel)]="soundSettingsDraft.alertThreshold" [disabled]="!soundSettingsDraft.enabled">
+                <span>Sound notification threshold (%)</span>
+                <input type="number" min="0" step="0.1" aria-label="Sound notification threshold percentage" [(ngModel)]="soundSettingsDraft.alertThreshold" [disabled]="!soundSettingsDraft.enabled">
               </label>
               <label class="trade-display-sound-field">
-                <span>High-priority sound threshold</span>
-                <input type="number" min="0" step="0.1" [(ngModel)]="soundSettingsDraft.highAlertThreshold" [disabled]="!soundSettingsDraft.enabled">
+                <span>High-priority sound threshold (%)</span>
+                <input type="number" min="0" step="0.1" aria-label="High-priority sound threshold percentage" [(ngModel)]="soundSettingsDraft.highAlertThreshold" [disabled]="!soundSettingsDraft.enabled">
               </label>
             </div>
             <div class="gauge-settings-actions">
