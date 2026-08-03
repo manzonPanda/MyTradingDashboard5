@@ -100,6 +100,7 @@ interface Table {
               (click)="closeAllTrades()">
               {{ isClosingAll ? 'Closing...' : (isCloseAllArmed ? 'Confirmed?' : 'Close All') }}
             </button>
+            <span *ngIf="closeAllStatus" class="close-all-status" aria-live="polite">{{ closeAllStatus }}</span>
           </div>
         </div>
 
@@ -190,6 +191,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   totalMaeR = 0;
   isClosingAll = false;
   isCloseAllArmed = false;
+  closeAllStatus = '';
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
 
@@ -299,6 +301,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
     if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
     this.isCloseAllArmed = false;
+    this.closeAllStatus = '';
     this.isClosingAll = true;
     this.tradeService.closeAllTrades().subscribe({
       next: (response) => {
@@ -307,16 +310,17 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
           this.hasLiveTrades = false;
           this.openTradeCount = 0;
           this.resetMetrics();
+          this.closeAllStatus = '';
         } else {
-          window.alert('Some trades could not be closed.');
+          this.closeAllStatus = 'Some trades could not be closed.';
         }
         this.isClosingAll = false;
         this.cdr.markForCheck();
       },
       error: () => {
         this.isClosingAll = false;
+        this.closeAllStatus = 'Unable to close the open trades.';
         this.cdr.markForCheck();
-        window.alert('Unable to close the open trades.');
       }
     });
   }
