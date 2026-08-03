@@ -1023,6 +1023,57 @@
   }
 }
 
+.trade-display-sound-settings {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--tf-border-primary);
+}
+
+.trade-display-sound-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--tf-text-primary);
+
+  mat-icon {
+    color: var(--tf-positive);
+  }
+}
+
+.trade-display-sound-toggle,
+.trade-display-sound-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--tf-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.trade-display-sound-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.trade-display-sound-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 0.5rem;
+  background: var(--tf-bg-primary);
+  color: var(--tf-text-primary);
+  font: inherit;
+}
+
+.trade-display-sound-field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .gauge-settings-preview {
   display: flex;
   justify-content: space-between;

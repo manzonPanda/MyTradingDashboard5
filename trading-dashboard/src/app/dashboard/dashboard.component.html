@@ -663,10 +663,12 @@
 
         <div class="live-rr-widget-compact" data-aura-target>
           <app-live-rr-tracker
-            [mt5LiveTrades]="mt5LiveTrades"
-            [tableData]="tableData"
-            [accountSize]="mt5AccountInfo.startingBalance">
-          </app-live-rr-tracker>
+      [mt5LiveTrades]="getCurrentMt5LiveTrades()"
+      [tableData]="tableData"
+      [accountSize]="mt5AccountInfo.startingBalance"
+      [liveTradeSoundSettings]="liveTradeSoundSettings"
+      (liveTradeSoundSettingsChange)="onLiveTradeSoundSettingsChange($event)">
+    </app-live-rr-tracker>
         </div>
 
         <div data-aura-target class="metric-card daily-limit-card">
@@ -1335,10 +1337,6 @@
         <button class="btn-secondary" (click)="populateData()">
           <mat-icon>data_usage</mat-icon>
           Populate Data
-        </button>
-        <button class="btn-secondary trade-sound-settings-trigger" type="button" (click)="openLiveTradeSoundSettings()">
-          <mat-icon>settings</mat-icon>
-          Trade settings
         </button>
       </div>
 
@@ -2259,58 +2257,6 @@
     </div>
   </section>
 
-  <div *ngIf="isLiveTradeSoundSettingsOpen" class="trade-sound-settings-backdrop" (click)="closeLiveTradeSoundSettings()">
-    <section class="trade-sound-settings-modal" role="dialog" aria-modal="true" aria-labelledby="trade-sound-settings-title" (click)="$event.stopPropagation()">
-      <div class="trade-sound-settings-header">
-        <div class="trade-sound-settings-heading">
-          <mat-icon>volume_up</mat-icon>
-          <div>
-            <p>Live trades</p>
-            <h2 id="trade-sound-settings-title">Sound notifications</h2>
-          </div>
-        </div>
-        <button class="trade-sound-settings-close" type="button" aria-label="Close trade sound settings" (click)="closeLiveTradeSoundSettings()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-
-      <div class="trade-sound-settings-body">
-        <div class="trade-sound-settings-row">
-          <div class="trade-sound-settings-copy">
-            <strong>Enable sound alerts</strong>
-            <small>Play a looping alert when an open trade reaches your configured profit level.</small>
-          </div>
-          <mat-slide-toggle [(ngModel)]="liveTradeSoundSettingsDraft.enabled" color="primary"></mat-slide-toggle>
-        </div>
-        <label class="trade-sound-settings-field">
-          <span>Alert at account profit %</span>
-          <input type="number" min="0" step="0.1" [(ngModel)]="liveTradeSoundSettingsDraft.alertThreshold" [disabled]="!liveTradeSoundSettingsDraft.enabled">
-        </label>
-        <label class="trade-sound-settings-field">
-          <span>High-priority alert at %</span>
-          <input type="number" min="0" step="0.1" [(ngModel)]="liveTradeSoundSettingsDraft.highAlertThreshold" [disabled]="!liveTradeSoundSettingsDraft.enabled">
-        </label>
-        <label class="trade-sound-settings-field trade-sound-volume-field">
-          <span>Volume <small>{{ liveTradeSoundSettingsDraft.volume * 100 | number:'1.0-0' }}%</small></span>
-          <input type="range" min="0" max="1" step="0.05" [(ngModel)]="liveTradeSoundSettingsDraft.volume" [disabled]="!liveTradeSoundSettingsDraft.enabled">
-        </label>
-      </div>
-
-      <div class="trade-sound-settings-actions">
-        <button type="button" class="trade-sound-preview" [disabled]="!liveTradeSoundSettingsDraft.enabled" (click)="testLiveTradeSound()">
-          <mat-icon>play_arrow</mat-icon>
-          Preview sound
-        </button>
-        <div class="trade-sound-settings-save-actions">
-          <button type="button" class="trade-sound-cancel" (click)="closeLiveTradeSoundSettings()">Cancel</button>
-          <button type="button" class="trade-sound-save" (click)="saveLiveTradeSoundSettings()">
-            <mat-icon>save</mat-icon>
-            Save settings
-          </button>
-        </div>
-      </div>
-    </section>
-  </div>
 
   <!-- AURA Energy Configuration Modal -->
   <div *ngIf="isAuraConfigModalOpen" class="aura-config-backdrop" (click)="closeAuraConfigModal()">
