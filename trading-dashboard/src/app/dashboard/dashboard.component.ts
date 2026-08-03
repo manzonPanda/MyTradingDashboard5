@@ -29,7 +29,7 @@ import { firstValueFrom } from 'rxjs';
 import { ConnectionStatusComponent } from '../connection-status/connection-status.component';
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.component';
-import { LiveRRTrackerComponent } from '../live-rr-tracker/live-rr-tracker.component';
+import { LiveRRTrackerComponent, LiveTradeSoundSettings as LiveTradeSoundSettingsModel } from '../live-rr-tracker/live-rr-tracker.component';
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -1102,6 +1102,15 @@ mt5AccountInfo: AccountSettings = {
 
   closeLiveTradeSoundSettings(): void {
     this.isLiveTradeSoundSettingsOpen = false;
+  }
+
+  onLiveTradeSoundSettingsChange(settings: LiveTradeSoundSettingsModel): void {
+    this.liveTradeSoundSettings = { ...settings };
+    this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
+    for (const trade of this.mt5LiveTrades) {
+      this.notifyGaugePercentage(trade);
+    }
+    this.cdr.markForCheck();
   }
 
   saveLiveTradeSoundSettings(): void {

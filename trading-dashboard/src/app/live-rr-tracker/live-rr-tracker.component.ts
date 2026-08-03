@@ -1,7 +1,15 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { TradeService } from '../services/trade.service';
+
+export interface LiveTradeSoundSettings {
+  enabled: boolean;
+  alertThreshold: number;
+  highAlertThreshold: number;
+  volume: number;
+}
 
 interface Table {
   openDate: string;
@@ -27,7 +35,7 @@ interface Table {
 @Component({
   selector: 'app-live-rr-tracker',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, FormsModule],
   template: `
     <div class="live-rr-tracker-container">
       <!-- Empty State - No Live Trades -->
@@ -140,9 +148,27 @@ interface Table {
               <span>Current maximum</span>
               <strong>{{ positiveGaugePercentMax | number:'1.1-1' }}%</strong>
             </div>
+            <div class="trade-display-sound-settings">
+              <div class="trade-display-sound-heading">
+                <mat-icon>volume_up</mat-icon>
+                <strong>Sound notifications</strong>
+              </div>
+              <label class="trade-display-sound-toggle">
+                <input type="checkbox" [checked]="soundSettingsDraft.enabled" (change)="soundSettingsDraft.enabled = $any($event.target).checked">
+                <span>Enable sound alerts</span>
+              </label>
+              <label class="trade-display-sound-field">
+                <span>Sound notification threshold</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="soundSettingsDraft.alertThreshold" [disabled]="!soundSettingsDraft.enabled">
+              </label>
+              <label class="trade-display-sound-field">
+                <span>High-priority sound threshold</span>
+                <input type="number" min="0" step="0.1" [(ngModel)]="soundSettingsDraft.highAlertThreshold" [disabled]="!soundSettingsDraft.enabled">
+              </label>
+            </div>
             <div class="gauge-settings-actions">
               <button type="button" class="gauge-cancel-button" (click)="closeGaugeSettings()">Cancel</button>
-              <button type="button" class="gauge-save-button" (click)="saveGaugeSettings()">Save settings</button>
+              <button type="button" class="gauge-save-button" (click)="saveGaugeSettings(); saveSoundSettings()">Save settings</button>
             </div>
           </section>
         </div>
@@ -219,6 +245,8 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
+  @Input() liveTradeSoundSettings: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
+  @Output() liveTradeSoundSettingsChange = new EventEmitter<LiveTradeSoundSettings>();
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
@@ -237,6 +265,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   closeAllStatus = '';
   positiveGaugePercentMax = 4;
   gaugePercentDraft = '4';
+  soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
@@ -338,7 +367,13 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   openGaugeSettings(): void {
     this.gaugePercentDraft = String(this.positiveGaugePercentMax);
+    this.soundSettingsDraft = { ...this.liveTradeSoundSettings };
     this.isGaugeSettingsOpen = true;
+  }
+
+  saveSoundSettings(): void {
+    if (this.soundSettingsDraft.alertThreshold < 0 || this.soundSettingsDraft.highAlertThreshold <= this.soundSettingsDraft.alertThreshold || this.soundSettingsDraft.volume < 0 || this.soundSettingsDraft.volume > 1) return;
+    this.liveTradeSoundSettingsChange.emit({ ...this.soundSettingsDraft });
   }
 
   closeGaugeSettings(): void {
