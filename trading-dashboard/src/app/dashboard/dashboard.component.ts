@@ -441,6 +441,7 @@ export class DashboardComponent implements AfterViewInit {
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   editingAccountId: string | null = null;
+  isCreatingAccount = false;
   accountPage = 1;
   readonly accountPageSize = 5;
   isSavingAccount = false;
@@ -512,7 +513,25 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
+  openAccountCreator(): void {
+    this.isCreatingAccount = true;
+    this.editingAccountId = null;
+    this.accountEditForm = {
+      name: '',
+      firm: this.selectedFirm === 'Independent accounts' ? '' : this.selectedFirm ?? '',
+      account_number: '',
+      initial_balance: 0,
+      profit_target_percent: 0,
+      max_total_drawdown_percent: 0,
+      daily_loss_limit_percent: 0,
+      start_date: new Date().toISOString().slice(0, 10),
+      status: 'active'
+    };
+    this.cdr.markForCheck();
+  }
+
   editAccount(account: Account): void {
+    this.isCreatingAccount = false;
     this.editingAccountId = account.id;
     this.accountEditForm = {
       name: account.name,
@@ -530,36 +549,51 @@ export class DashboardComponent implements AfterViewInit {
 
   cancelAccountEdit(): void {
     this.editingAccountId = null;
+    this.isCreatingAccount = false;
     this.accountEditForm = {};
     this.isSavingAccount = false;
   }
 
   async saveAccountEdit(): Promise<void> {
-    if (!this.editingAccountId || !this.accountEditForm.name?.trim()) return;
+    if (!this.accountEditForm.name?.trim()) return;
 
     this.isSavingAccount = true;
+    const accountData = {
+      name: this.accountEditForm.name.trim(),
+      firm: this.accountEditForm.firm?.trim() || null,
+      account_number: this.accountEditForm.account_number?.trim() || null,
+      initial_balance: Number(this.accountEditForm.initial_balance) || 0,
+      profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
+      max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
+      daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
+      start_date: this.accountEditForm.start_date || null,
+      status: this.accountEditForm.status || 'active'
+    };
+
     try {
-      const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, {
-        name: this.accountEditForm.name.trim(),
-        firm: this.accountEditForm.firm?.trim() || null,
-        account_number: this.accountEditForm.account_number?.trim() || null,
-        initial_balance: Number(this.accountEditForm.initial_balance) || 0,
-        profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
-        max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
-        daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
-        start_date: this.accountEditForm.start_date || null,
-        status: this.accountEditForm.status || 'active'
-      });
-      this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
-      if (this.selectedAccount?.id === updatedAccount.id) {
-        this.selectedAccount = updatedAccount;
+      if (this.isCreatingAccount) {
+        const createdAccount = await this.supabaseService.createAccount(accountData);
+        this.accounts = [createdAccount, ...this.accounts];
+        this.selectedAccount = createdAccount;
+        localStorage.setItem(this.selectedAccountStorageKey, createdAccount.id);
+        this.selectedFirm = createdAccount.firm?.trim() || 'Independent accounts';
+        this.accountPage = 1;
         this.applySelectedAccountSettings();
+        this.cancelAccountEdit();
+        this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000 });
+      } else if (this.editingAccountId) {
+        const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, accountData);
+        this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
+        if (this.selectedAccount?.id === updatedAccount.id) {
+          this.selectedAccount = updatedAccount;
+          this.applySelectedAccountSettings();
+        }
+        this.cancelAccountEdit();
+        this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
       }
-      this.cancelAccountEdit();
-      this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
     } catch (error) {
-      console.error('Unable to update account:', error);
-      this.snackBar.open('Unable to save account details.', 'Dismiss', { duration: 5000 });
+      console.error(`Unable to ${this.isCreatingAccount ? 'create' : 'update'} account:`, error);
+      this.snackBar.open(`Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000 });
       this.isSavingAccount = false;
     }
     this.cdr.markForCheck();

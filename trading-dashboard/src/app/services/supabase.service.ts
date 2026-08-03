@@ -127,6 +127,16 @@ export class SupabaseService {
     return (data as Account[]) || [];
   }
 
+  async createAccount(account: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
+    const { data, error } = await this.supabase
+      .from('accounts')
+      .insert(account)
+      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at, updated_at')
+      .single();
+    if (error) throw new Error(`Account creation failed: ${error.message}`);
+    return data as Account;
+  }
+
   async updateAccount(id: string, updates: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
     const { data, error } = await this.supabase
       .from('accounts')
