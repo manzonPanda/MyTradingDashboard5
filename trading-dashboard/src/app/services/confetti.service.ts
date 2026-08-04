@@ -32,6 +32,7 @@ export class ConfettiService {
   private particles: Particle[] = [];
   private animationId: number | null = null;
   private audio: HTMLAudioElement | null = null;
+  private readonly celebrationMusic = new Audio('/assets/sounds/profit-target-theme.mp3');
   private isPlaying = false;
 
   constructor() {
@@ -399,6 +400,26 @@ export class ConfettiService {
       this.stopCelebration();
     });
 
+    const musicButton = document.createElement('button');
+    musicButton.innerHTML = '⏸ Pause Music';
+    musicButton.style.cssText = `
+      margin-left: 12px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 25px;
+      padding: 12px 24px;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    `;
+    musicButton.addEventListener('click', async () => {
+      await this.toggleCelebrationMusic();
+      musicButton.innerHTML = this.celebrationMusic.paused ? '▶ Play Music' : '⏸ Pause Music';
+    });
+
     // Add enhanced CSS animations
     if (!document.getElementById('celebration-styles')) {
       const style = document.createElement('style');
@@ -522,6 +543,7 @@ export class ConfettiService {
     textContainer.appendChild(textOverlay);
     textContainer.appendChild(subtitle);
     textContainer.appendChild(closeButton);
+    textContainer.appendChild(musicButton);
 
     textContainer.style.animation = 'celebrationFadeIn 0.8s ease-out';
 
@@ -542,6 +564,8 @@ export class ConfettiService {
 
   private stopCelebration(): void {
     this.isPlaying = false;
+    this.celebrationMusic.pause();
+    this.celebrationMusic.currentTime = 0;
 
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
@@ -566,6 +590,24 @@ export class ConfettiService {
     }
 
     this.particles = [];
+  }
+
+  async playCelebrationMusic(): Promise<void> {
+    this.celebrationMusic.loop = true;
+    if (this.celebrationMusic.ended) this.celebrationMusic.currentTime = 0;
+    try {
+      await this.celebrationMusic.play();
+    } catch (error) {
+      console.warn('Could not play profit-target music:', error);
+    }
+  }
+
+  async toggleCelebrationMusic(): Promise<void> {
+    if (this.celebrationMusic.paused) {
+      await this.playCelebrationMusic();
+    } else {
+      this.celebrationMusic.pause();
+    }
   }
 
   // Public method to manually stop celebration

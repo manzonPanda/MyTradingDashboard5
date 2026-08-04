@@ -951,10 +951,14 @@
         <!-- Emotion Selection -->
         <div class="emotion-section-compact" *ngIf="!isTradeEmotionalSubmitted(trade)">
           <img
-            *ngIf="trade.screenshotUrl"
+            *ngIf="trade.screenshotUrl && !hasScreenshotLoadError(trade.position)"
             class="emotion-trade-screenshot"
             [src]="trade.screenshotUrl"
-            [alt]="trade.symbol + ' trade screenshot'">
+            [alt]="trade.symbol + ' trade screenshot'"
+            (error)="onScreenshotLoadError(trade.position)">
+          <div *ngIf="hasScreenshotLoadError(trade.position)" class="screenshot-load-fallback">
+            Screenshot unavailable
+          </div>
           <div class="emotion-prompt-compact">How do you feel?</div>
 
           <!-- Quick Emotion Buttons -->

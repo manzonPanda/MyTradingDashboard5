@@ -485,6 +485,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
@@ -714,6 +715,8 @@ mt5AccountInfo: AccountSettings = {
 };
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   private mt5OpenPositionIds: Set<string> | null = null;
+  private mt5AccountLogin: string | null = null;
+  private mt5DataLoadVersion = 0;
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
   mt5ImportMessage = '';
@@ -1855,8 +1858,13 @@ mt5AccountInfo: AccountSettings = {
 
     this.selectedAccount = account;
     localStorage.setItem(this.selectedAccountStorageKey, account.id);
+    this.mt5LiveTrades = [];
+    this.recentlyAddedTrades = [];
+    this.mt5OpenPositionIds = new Set();
+    this.updateTableData();
     this.applySelectedAccountSettings();
     this.currentPage = 1;
+    this.cdr.markForCheck();
     await this.loadMT5Data();
     this.generateTradingChartData();
     this.cdr.markForCheck();
@@ -1890,12 +1898,21 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on("account_info", (data) => {
+      this.mt5AccountLogin = this.normalizeAccountNumber(data?.login);
       const balance = Number(data?.balance ?? data?.account_balance ?? data?.equity);
       if (Number.isFinite(balance) && balance > 0) {
         this.mt5AccountInfo.balance = balance;
         this.generateTradingChartData();
-        this.cdr.markForCheck();
       }
+      if (!this.isActiveMt5Account()) {
+        this.mt5LiveTrades = [];
+        this.recentlyAddedTrades = [];
+        this.mt5OpenPositionIds = new Set();
+        this.updateTableData();
+      } else {
+        void this.loadMT5Data();
+      }
+      this.cdr.markForCheck();
       console.warn("Account Info Received:", data);
     });
 
@@ -1905,6 +1922,7 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on("trade_opened", (data: any) => {
+      if (!this.isActiveMt5Account()) return;
       console.warn("New trade opened:", data);
       this.addMT5LiveTrade(data);
     });
@@ -1915,6 +1933,7 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on('price_update', (data: any) => {
+      if (!this.isActiveMt5Account()) return;
       console.log("📊 Live price update received:", {
         symbol: data.symbol,
         ticket: data.ticket,
@@ -6045,6 +6064,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   async loadMT5Data(): Promise<void> {
+    const loadVersion = ++this.mt5DataLoadVersion;
+    const accountId = this.selectedAccount?.id ?? null;
     this.isLoadingMT5Data = true;
     console.log('🔄 loadMT5Data started');
     let response: any[] = [];
@@ -6055,16 +6076,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.getMt5API()
       ]);
       this.mt5OpenPositionIds = new Set(
-        (mt5History || [])
-          .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
-          .map((trade: any) => String(trade.position_id))
+        this.isActiveMt5Account()
+          ? (mt5History || [])
+              .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
+              .map((trade: any) => String(trade.position_id))
+          : []
       );
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
-      this.isLoadingMT5Data = false;
-      this.cdr.markForCheck();
+      if (loadVersion === this.mt5DataLoadVersion) {
+        this.isLoadingMT5Data = false;
+        this.cdr.markForCheck();
+      }
     }
+
+    if (loadVersion !== this.mt5DataLoadVersion || accountId !== (this.selectedAccount?.id ?? null)) return;
 
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
@@ -6109,17 +6136,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     } catch (error) {
       console.warn('Unable to load saved trade screenshots:', error);
     }
-    await Promise.all(mt5Trades
-      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
-      .map(async trade => {
-        const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
-        if (screenshotUrl) {
-          trade.screenshotUrl = screenshotUrl;
-          this.cacheTradeScreenshot(trade.position, screenshotUrl);
-        }
-      }));
     this.mt5LiveTrades = mt5Trades;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
+    void Promise.all(mt5Trades
+      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
+      .map(trade => this.hydrateTradeScreenshot(trade)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -6268,17 +6289,45 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  private async hydrateTradeScreenshot(trade: Table): Promise<void> {
-    if (trade.screenshotUrl) return;
-    const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
-    if (!screenshotUrl) return;
+  hasScreenshotLoadError(ticket: number | string): boolean {
+    return this.screenshotLoadErrors.has(String(ticket));
+  }
 
-    trade.screenshotUrl = screenshotUrl;
-    this.cacheTradeScreenshot(trade.position, screenshotUrl);
-    this.mt5LiveTrades = [...this.mt5LiveTrades];
-    this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
-      String(recentTrade.position) === String(trade.position) ? trade : recentTrade
-    );
+  onScreenshotLoadError(ticket: number | string): void {
+    this.screenshotLoadErrors.add(String(ticket));
+    this.cdr.markForCheck();
+  }
+
+  private normalizeAccountNumber(value: unknown): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized || null;
+  }
+
+  private isActiveMt5Account(): boolean {
+    const selectedAccountNumber = this.normalizeAccountNumber(this.selectedAccount?.account_number);
+    return Boolean(selectedAccountNumber && this.mt5AccountLogin && selectedAccountNumber === this.mt5AccountLogin);
+  }
+
+  private async hydrateTradeScreenshot(trade: Table): Promise<void> {
+    for (let attempt = 0; attempt < 15 && !trade.screenshotUrl; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
+      if (!screenshotUrl) continue;
+
+      trade.screenshotUrl = screenshotUrl;
+      this.screenshotLoadErrors.delete(String(trade.position));
+      this.cacheTradeScreenshot(trade.position, screenshotUrl);
+      this.mt5LiveTrades = [...this.mt5LiveTrades];
+      this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
+        String(recentTrade.position) === String(trade.position) ? trade : recentTrade
+      );
+      this.cdr.markForCheck();
+    }
+
+    this.screenshotLoadErrors.add(String(trade.position));
     this.cdr.markForCheck();
   }
 
@@ -6349,6 +6398,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   addMT5LiveTrade(tradeData: any): void {
+    if (!this.isActiveMt5Account()) return;
     const trade = tradeData;
     if (!trade) return;
     console.log("Open date from MT5:",trade.time_open)
@@ -6994,11 +7044,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         // Trigger the amazing persistent confetti celebration!
         this.confetti.celebrateProfitTarget(this.mt5AccountInfo.profitTarget);
 
-        // Optional: Also play sound for big wins (trades over $100 profit)
-        const totalPnL = this.calculateTotalPnL();
-        if (totalPnL >= 100) {
-          this.playCelebrationSound();
-        }
+        this.playProfitTargetMusic();
       }
     } else {
       // If we fall below target, stop celebration and reset flag
@@ -7008,6 +7054,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.hasCelebratedCurrentTarget = false;
       }
     }
+  }
+
+  private playProfitTargetMusic(): void {
+    void this.confetti.playCelebrationMusic();
   }
 
   // Helper method to play celebration sound
