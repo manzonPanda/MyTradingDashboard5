@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, NgZone, inject } from '@angular/core';
+import { AuthService } from './auth.service';
 import { AuraEnergySettings, SupabaseService } from './supabase.service';
 
 interface RouteBox {
@@ -51,7 +52,7 @@ export class AuraEnergyService {
   private readonly document = inject(DOCUMENT);
   private readonly zone = inject(NgZone);
   private readonly supabaseService = inject(SupabaseService);
-  private settingsId?: string;
+  private readonly authService = inject(AuthService);
   private timerId?: number;
   private fadeId?: number;
   private frameId?: number;
@@ -97,65 +98,60 @@ export class AuraEnergyService {
   }
 
   async loadConfig(): Promise<AuraEnergyConfig> {
-    const settings = await this.supabaseService.getAuraEnergySettings();
-    if (!settings) {
-      return this.getConfig();
-    }
+    const userId = this.authService.user()?.id;
+    if (!userId) return this.getConfig();
 
-    this.settingsId = settings.id;
-    this.config = this.fromSettings(settings);
+    const settings = await this.supabaseService.getAuraEnergySettings(userId);
+    if (settings) this.config = this.fromSettings(settings);
     return this.getConfig();
   }
 
   async saveConfig(config: AuraEnergyConfig = this.config): Promise<AuraEnergyConfig> {
-    if (!this.settingsId) {
-      const settings = await this.supabaseService.getAuraEnergySettings();
-      if (!settings) throw new Error('No AURA energy settings row exists.');
-      this.settingsId = settings.id;
-    }
+    const userId = this.authService.user()?.id;
+    if (!userId) throw new Error('No authenticated user exists.');
 
-    const settings = await this.supabaseService.updateAuraEnergySettings(this.settingsId, this.toSettings(config));
+    const settings = await this.supabaseService.updateAuraEnergySettings(userId, this.toSettings(config));
     this.config = this.fromSettings(settings);
     return this.getConfig();
   }
 
-  private toSettings(config: AuraEnergyConfig): Omit<AuraEnergySettings, 'id' | 'created_at' | 'updated_at'> {
+  private toSettings(config: AuraEnergyConfig): AuraEnergySettings {
     return {
-      enabled: config.enabled,
-      travel_duration_ms: config.travelDurationMs,
-      min_delay_ms: config.minDelayMs,
-      max_delay_ms: config.maxDelayMs,
-      trail_length_percent: config.trailLengthPercent,
-      stroke_width: config.strokeWidth,
-      head_radius: config.headRadius,
-      bloom_intensity: config.bloomIntensity,
-      fade_duration_ms: config.fadeDurationMs,
-      color_start: config.colorStart,
-      color_mid: config.colorMid,
-      color_peak: config.colorPeak,
-      color_head: config.colorHead,
-      min_targets: config.minTargets,
-      max_targets: config.maxTargets
+      aura_enabled: config.enabled,
+      aura_travel_duration_ms: config.travelDurationMs,
+      aura_min_delay_ms: config.minDelayMs,
+      aura_max_delay_ms: config.maxDelayMs,
+      aura_trail_length_percent: config.trailLengthPercent,
+      aura_stroke_width: config.strokeWidth,
+      aura_head_radius: config.headRadius,
+      aura_bloom_intensity: config.bloomIntensity,
+      aura_fade_duration_ms: config.fadeDurationMs,
+      aura_color_start: config.colorStart,
+      aura_color_mid: config.colorMid,
+      aura_color_peak: config.colorPeak,
+      aura_color_head: config.colorHead,
+      aura_min_targets: config.minTargets,
+      aura_max_targets: config.maxTargets
     };
   }
 
   private fromSettings(settings: AuraEnergySettings): AuraEnergyConfig {
     return {
-      enabled: settings.enabled,
-      travelDurationMs: Number(settings.travel_duration_ms),
-      minDelayMs: Number(settings.min_delay_ms),
-      maxDelayMs: Number(settings.max_delay_ms),
-      trailLengthPercent: Number(settings.trail_length_percent),
-      strokeWidth: Number(settings.stroke_width),
-      headRadius: Number(settings.head_radius),
-      bloomIntensity: Number(settings.bloom_intensity),
-      fadeDurationMs: Number(settings.fade_duration_ms),
-      colorStart: settings.color_start,
-      colorMid: settings.color_mid,
-      colorPeak: settings.color_peak,
-      colorHead: settings.color_head,
-      minTargets: Number(settings.min_targets),
-      maxTargets: Number(settings.max_targets)
+      enabled: settings.aura_enabled,
+      travelDurationMs: Number(settings.aura_travel_duration_ms),
+      minDelayMs: Number(settings.aura_min_delay_ms),
+      maxDelayMs: Number(settings.aura_max_delay_ms),
+      trailLengthPercent: Number(settings.aura_trail_length_percent),
+      strokeWidth: Number(settings.aura_stroke_width),
+      headRadius: Number(settings.aura_head_radius),
+      bloomIntensity: Number(settings.aura_bloom_intensity),
+      fadeDurationMs: Number(settings.aura_fade_duration_ms),
+      colorStart: settings.aura_color_start,
+      colorMid: settings.aura_color_mid,
+      colorPeak: settings.aura_color_peak,
+      colorHead: settings.aura_color_head,
+      minTargets: Number(settings.aura_min_targets),
+      maxTargets: Number(settings.aura_max_targets)
     };
   }
 
