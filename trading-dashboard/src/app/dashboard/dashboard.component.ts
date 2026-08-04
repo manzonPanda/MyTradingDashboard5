@@ -38,7 +38,6 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
-import { TradeService } from '../services/trade.service';
 import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { ProfileSettingsComponent } from '../settings/profile-settings.component';
@@ -1117,7 +1116,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
+    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
@@ -1943,17 +1942,6 @@ mt5AccountInfo: AccountSettings = {
 
       // Trigger change detection to display live trading session
       this.cdr.markForCheck();
-
-      if (Number(data.live_rr) >= 5){//close trade if reached 5R
-        this.tradeService.closeTrade(data.ticket).subscribe({
-          next: (res) => {
-            console.log('Trade closed:', data.ticket, res);
-          },
-          error: (err) => {
-            console.error('Close failed:', err);
-          }
-        });
-      }
 
       // console.log('✅ Live trading session metrics updated. Open trades:', this.mt5LiveTrades.length);
     });
