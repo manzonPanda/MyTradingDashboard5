@@ -63,6 +63,7 @@ export class AuraEnergyService {
   private routePath = '';
   private previousRoute = '';
   private routeLength = 0;
+  private routeStartCorner = 0;
   private progress = 0;
   private isAuraTraveling = false;
   private isDestroyed = false;
@@ -217,6 +218,7 @@ export class AuraEnergyService {
     }
 
     this.activeTargets = this.selectRandomTargets();
+    this.routeStartCorner = Math.floor(Math.random() * 4);
     if (!this.activeTargets.length) {
       this.scheduleNextPulse(this.randomDelay());
       return;
@@ -457,7 +459,7 @@ export class AuraEnergyService {
       return;
     }
 
-    let path = this.roundedRectPath(routeData[0], false, routeData.length > 1);
+    let path = this.roundedRectPath(routeData[0], false, routeData.length > 1, this.routeStartCorner);
     for (let index = 1; index < routeData.length; index += 1) {
       const connector = this.createOrthogonalConnector(routeData[index - 1], routeData[index]);
       const isLastTarget = index === routeData.length - 1;
@@ -477,11 +479,39 @@ export class AuraEnergyService {
     this.renderTraveler();
   }
 
-  private roundedRectPath(box: RouteBox, continuation = false, close = true): string {
+  private roundedRectPath(box: RouteBox, continuation = false, close = true, startCorner = 0): string {
     const { left, top, right, bottom, radius } = box;
-    const start = continuation ? '' : `M ${left + radius} ${top}`;
-    const finalCurve = close ? ` Q ${left} ${top} ${left + radius} ${top} Z` : '';
-    return `${start} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius}${finalCurve}`;
+    const start = continuation ? '' : this.roundedRectStart(box, startCorner);
+    const closingCurves = [
+      ` Q ${left} ${top} ${left + radius} ${top}`,
+      ` Q ${right} ${top} ${right} ${top + radius}`,
+      ` Q ${right} ${bottom} ${right - radius} ${bottom}`,
+      ` Q ${left} ${bottom} ${left} ${bottom - radius}`
+    ];
+    const finalCurve = close ? closingCurves[startCorner] : '';
+    return `${start}${this.roundedRectSegments(box, startCorner)}${finalCurve}`;
+  }
+
+  private roundedRectStart(box: RouteBox, corner: number): string {
+    const { left, top, right, bottom, radius } = box;
+    const starts = [
+      `M ${left + radius} ${top}`,
+      `M ${right} ${top + radius}`,
+      `M ${right - radius} ${bottom}`,
+      `M ${left} ${bottom - radius}`
+    ];
+    return starts[corner];
+  }
+
+  private roundedRectSegments(box: RouteBox, corner: number): string {
+    const { left, top, right, bottom, radius } = box;
+    const segments = [
+      ` H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius}`,
+      ` V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius} Q ${left} ${top} ${left + radius} ${top} H ${right - radius}`,
+      ` H ${left + radius} Q ${left} ${bottom} ${left} ${bottom - radius} V ${top + radius} Q ${left} ${top} ${left + radius} ${top} H ${right - radius} Q ${right} ${top} ${right} ${top + radius}`,
+      ` V ${top + radius} Q ${left} ${top} ${left + radius} ${top} H ${right - radius} Q ${right} ${top} ${right} ${top + radius} V ${bottom - radius} Q ${right} ${bottom} ${right - radius} ${bottom} H ${left + radius}`
+    ];
+    return segments[corner];
   }
 
   private createOrthogonalConnector(previous: RouteBox, next: RouteBox): string {
@@ -512,6 +542,7 @@ export class AuraEnergyService {
     this.routePath = '';
     this.routeLength = 0;
     this.progress = 0;
+    this.routeStartCorner = 0;
     this.travelStartTime = 0;
     this.dissipationStartTime = 0;
     this.isDissipating = false;
