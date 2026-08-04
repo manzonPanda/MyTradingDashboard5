@@ -1,7 +1,7 @@
 <main class="settings-page" *ngIf="!loading; else loadingState">
   <header class="settings-header">
     <div><p class="eyebrow">A.U.R.A. workspace</p><h1>Profile & settings</h1><p>Personalize your trading targets, dashboard, AURA, and notifications.</p></div>
-    <div class="header-actions"><button type="button" class="secondary-button" (click)="signOut()">Sign out</button><button type="button" class="primary-button" (click)="save()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save settings' }}</button></div>
+    <div class="header-actions"><button type="button" class="secondary-button" (click)="backToDashboard()">Back to dashboard</button><button type="button" class="secondary-button" (click)="signOut()">Sign out</button><button type="button" class="primary-button" (click)="save()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save settings' }}</button></div>
   </header>
 
   <p class="message" *ngIf="message" role="status">{{ message }}</p>
