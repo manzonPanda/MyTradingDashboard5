@@ -76,7 +76,7 @@
           <mat-icon>hub</mat-icon>
           <span>Connected services</span>
         </div>
-        <app-connection-status></app-connection-status>
+        <app-connection-status (reconnectRequested)="startReconnect()"></app-connection-status>
       </div>
     </section>
 

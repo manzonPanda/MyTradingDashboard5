@@ -1284,12 +1284,8 @@ mt5AccountInfo: AccountSettings = {
     };
   }
 
-  startReconnect() {
-    this.http.post(`${this.BACKEND_URL_MT5}/api/start-reconnect`, {})
-      .subscribe({
-        next: (res) => console.log(res),
-        error: (err) => console.error(err)
-      });
+  startReconnect(): void {
+    void this.loadMT5Data();
   }
   
   private getPhilippinesNow(): Date {

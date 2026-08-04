@@ -7,6 +7,7 @@ import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../../src/environments/environment';
+import { EventEmitter, Output } from '@angular/core';
 
 interface ServerStatus {
   name: string;
@@ -33,6 +34,8 @@ interface MT5HealthResponse {
   imports: [CommonModule, MatTooltipModule, HttpClientModule],
 })
 export class ConnectionStatusComponent implements OnInit, OnDestroy {
+  @Output() reconnectRequested = new EventEmitter<void>();
+
   servers: ServerStatus[] = [
     {
       name: 'Angular',
@@ -161,9 +164,12 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   //   }
   // }
    reconnectMT5() {
-    this.http.post('http://localhost:5000/api/start-reconnect', {})
+    this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
-        next: (res) => console.log(res),
+        next: (res) => {
+          console.log(res);
+          this.reconnectRequested.emit();
+        },
         error: (err) => console.error(err)
       });
   }
