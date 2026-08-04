@@ -173,66 +173,48 @@ interface Table {
           </section>
         </div>
 
-        <div class="live-metrics">
-          <!-- Total RR Gained -->
-          <div class="metric-card rr-card">
-            <div class="metric-label">
-              <mat-icon>trending_up</mat-icon>
-              <span>Total R Gained</span>
+        <div class="open-trade-metrics-list">
+          <article *ngFor="let trade of openTrades; trackBy: trackByTrade" class="trade-metrics-grid">
+            <div class="trade-metric-card trade-r-card">
+              <div class="metric-label"><mat-icon>trending_up</mat-icon><span>Total R Gained</span></div>
+              <div class="metric-value" [ngClass]="getTradeRClass(trade)">{{ formatR(getTradeR(trade)) }}</div>
             </div>
-            <div class="metric-value" [ngClass]="getRRClass()">
-              {{ totalRRGained }}
-            </div>
-          </div>
 
-          <!-- Account Percentage -->
-          <div class="metric-card percentage-card">
-            <div class="metric-label">
-              <mat-icon>account_balance</mat-icon>
-              <span>Account Risk</span>
+            <div class="trade-metric-card trade-risk-card">
+              <div class="metric-label"><mat-icon>account_balance</mat-icon><span>Account Risk</span></div>
+              <div class="metric-value" [ngClass]="getTradeRiskClass(trade)">{{ getTradeRiskPercent(trade) | number:'1.2-2' }}%</div>
             </div>
-            <div class="metric-value" [ngClass]="getPercentageClass()">
-              {{ percentageOfAccount }}%
-            </div>
-          </div>
 
-          <!-- Total Unrealized P&L -->
-          <div class="metric-card pnl-card">
-            <div class="metric-label">
-              <mat-icon>money</mat-icon>
-              <span>Unrealized P&L</span>
+            <div class="trade-metric-card trade-pnl-card">
+              <div class="metric-label"><mat-icon>money</mat-icon><span>Unrealized P&amp;L</span></div>
+              <div class="metric-value" [ngClass]="getTradePnLClass(trade)">{{ formatCurrency(getTradeProfit(trade)) }}</div>
             </div>
-            <div class="metric-value" [ngClass]="getPnLClass()">
-              {{ totalUnrealizedPnL }}
-            </div>
-          </div>
 
-        <div class="live-extremes-summary" aria-label="MFE and MAE">
-          <span class="mfe-value" title="MFE"><mat-icon>north_east</mat-icon><strong>MFE {{ formatR(totalMfeR) }}</strong><em>({{ formatCurrency(totalMfeValue) }})</em></span>
-          <span class="extremes-divider">|</span>
-          <span class="mae-value" title="MAE"><mat-icon>south_west</mat-icon><strong>MAE {{ formatR(totalMaeR) }}</strong><em>({{ formatCurrency(totalMaeValue) }})</em></span>
-        </div>
-
-        <div class="live-trade-gauges">
-          <article *ngFor="let trade of openTrades" class="trade-gauge-card">
-            <div class="trade-gauge-heading">
-              <span class="trade-gauge-symbol" [attr.title]="trade.symbol">{{ formatHoldingTime(trade) }}</span>
+            <div class="trade-extremes-summary" aria-label="MFE and MAE">
+              <span class="mfe-value" title="MFE"><mat-icon>north_east</mat-icon><strong>MFE {{ formatR(getTradeMfeR(trade)) }}</strong><em>({{ formatCurrency(getTradeMfeValue(trade)) }})</em></span>
+              <span class="extremes-divider">|</span>
+              <span class="mae-value" title="MAE"><mat-icon>south_west</mat-icon><strong>MAE {{ formatR(getTradeMaeR(trade)) }}</strong><em>({{ formatCurrency(getTradeMaeValue(trade)) }})</em></span>
             </div>
-            <div class="trade-gauge-content">
-              <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
-                <svg viewBox="0 0 100 100" class="trade-gauge-svg">
-                  <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
-                  <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
-                          [attr.stroke-dasharray]="getTradeGaugeDash(trade)" [attr.transform]="getTradeGaugeTransform(trade)"/>
-                  <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
-                </svg>
-                <div class="trade-gauge-center">
-                  <div class="trade-gauge-percent" [ngClass]="getTradePnLClass(trade)">{{ getTradePercent(trade) | number:'1.2-2' }}%</div>
+
+            <div class="trade-gauge-card">
+              <div class="trade-gauge-heading">
+                <span class="trade-gauge-symbol" [attr.title]="trade.symbol">{{ trade.symbol || 'Open trade' }} · {{ formatHoldingTime(trade) }}</span>
+              </div>
+              <div class="trade-gauge-content">
+                <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
+                  <svg viewBox="0 0 100 100" class="trade-gauge-svg">
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                    <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
+                            [attr.stroke-dasharray]="getTradeGaugeDash(trade)" [attr.transform]="getTradeGaugeTransform(trade)"/>
+                    <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
+                  </svg>
+                  <div class="trade-gauge-center">
+                    <div class="trade-gauge-percent" [ngClass]="getTradePnLClass(trade)">{{ getTradePercent(trade) | number:'1.2-2' }}%</div>
+                  </div>
                 </div>
               </div>
             </div>
           </article>
-        </div>
         </div>
 
       </div>
@@ -456,6 +438,46 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     return this.accountSize > 0
       ? (this.getTradeProfit(trade) / this.accountSize) * 100
       : 0;
+  }
+
+  getTradeRiskPercent(trade: Table): number {
+    const risk = this.getTradeRisk(trade);
+    return this.accountSize > 0 ? (risk / this.accountSize) * 100 : 0;
+  }
+
+  getTradeRisk(trade: Table): number {
+    return parseFloat(trade.riskPerTrade || '0') || 0;
+  }
+
+  getTradeMfeValue(trade: Table): number {
+    return Math.max(0, Number(trade.mfe) || 0);
+  }
+
+  getTradeMaeValue(trade: Table): number {
+    return Math.min(0, Number(trade.mae) || 0);
+  }
+
+  getTradeMfeR(trade: Table): number {
+    const risk = this.getTradeRisk(trade);
+    return risk > 0 ? this.getTradeMfeValue(trade) / risk : 0;
+  }
+
+  getTradeMaeR(trade: Table): number {
+    const risk = this.getTradeRisk(trade);
+    return risk > 0 ? this.getTradeMaeValue(trade) / risk : 0;
+  }
+
+  getTradeRClass(trade: Table): string {
+    const value = this.getTradeR(trade);
+    return value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
+  }
+
+  getTradeRiskClass(trade: Table): string {
+    return this.getTradeRiskPercent(trade) > 0 ? 'positive' : 'neutral';
+  }
+
+  trackByTrade(index: number, trade: Table): string | number {
+    return trade.position || index;
   }
 
   getTradeGaugeDash(trade: Table): string {
