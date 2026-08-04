@@ -714,6 +714,7 @@ mt5AccountInfo: AccountSettings = {
 };
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   private mt5OpenPositionIds: Set<string> | null = null;
+  private mt5DataLoadVersion = 0;
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
   mt5ImportMessage = '';
@@ -1855,8 +1856,13 @@ mt5AccountInfo: AccountSettings = {
 
     this.selectedAccount = account;
     localStorage.setItem(this.selectedAccountStorageKey, account.id);
+    this.mt5LiveTrades = [];
+    this.recentlyAddedTrades = [];
+    this.mt5OpenPositionIds = new Set();
+    this.updateTableData();
     this.applySelectedAccountSettings();
     this.currentPage = 1;
+    this.cdr.markForCheck();
     await this.loadMT5Data();
     this.generateTradingChartData();
     this.cdr.markForCheck();
@@ -6045,6 +6051,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   async loadMT5Data(): Promise<void> {
+    const loadVersion = ++this.mt5DataLoadVersion;
+    const accountId = this.selectedAccount?.id ?? null;
     this.isLoadingMT5Data = true;
     console.log('🔄 loadMT5Data started');
     let response: any[] = [];
@@ -6062,9 +6070,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
-      this.isLoadingMT5Data = false;
-      this.cdr.markForCheck();
+      if (loadVersion === this.mt5DataLoadVersion) {
+        this.isLoadingMT5Data = false;
+        this.cdr.markForCheck();
+      }
     }
+
+    if (loadVersion !== this.mt5DataLoadVersion || accountId !== (this.selectedAccount?.id ?? null)) return;
 
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
@@ -6109,17 +6121,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     } catch (error) {
       console.warn('Unable to load saved trade screenshots:', error);
     }
-    await Promise.all(mt5Trades
-      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
-      .map(async trade => {
-        const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
-        if (screenshotUrl) {
-          trade.screenshotUrl = screenshotUrl;
-          this.cacheTradeScreenshot(trade.position, screenshotUrl);
-        }
-      }));
     this.mt5LiveTrades = mt5Trades;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
+    void Promise.all(mt5Trades
+      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
+      .map(trade => this.hydrateTradeScreenshot(trade)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -6269,17 +6275,22 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private async hydrateTradeScreenshot(trade: Table): Promise<void> {
-    if (trade.screenshotUrl) return;
-    const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
-    if (!screenshotUrl) return;
+    for (let attempt = 0; attempt < 5 && !trade.screenshotUrl; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
-    trade.screenshotUrl = screenshotUrl;
-    this.cacheTradeScreenshot(trade.position, screenshotUrl);
-    this.mt5LiveTrades = [...this.mt5LiveTrades];
-    this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
-      String(recentTrade.position) === String(trade.position) ? trade : recentTrade
-    );
-    this.cdr.markForCheck();
+      const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
+      if (!screenshotUrl) continue;
+
+      trade.screenshotUrl = screenshotUrl;
+      this.cacheTradeScreenshot(trade.position, screenshotUrl);
+      this.mt5LiveTrades = [...this.mt5LiveTrades];
+      this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
+        String(recentTrade.position) === String(trade.position) ? trade : recentTrade
+      );
+      this.cdr.markForCheck();
+    }
   }
 
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
