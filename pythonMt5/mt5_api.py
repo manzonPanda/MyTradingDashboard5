@@ -8,6 +8,9 @@ import requests
 import mss
 import mss.tools
 import win32gui
+import win32api
+import win32con
+import win32process
 from dotenv import load_dotenv
 import time
 import eventlet
@@ -54,6 +57,7 @@ def find_mt5_window():
     matches = []
     visible_titles = []
     configured_title = MT5_WINDOW_TITLE.casefold()
+    terminal_path = os.path.normcase(os.path.abspath(MASTER))
 
     def collect(hwnd, _):
         if not win32gui.IsWindowVisible(hwnd):
@@ -63,7 +67,20 @@ def find_mt5_window():
         if title:
             visible_titles.append(title)
         normalized_title = title.casefold()
-        if configured_title in normalized_title or 'metatrader' in normalized_title:
+        title_matches = configured_title in normalized_title or 'metatrader' in normalized_title
+        _, process_id = win32process.GetWindowThreadProcessId(hwnd)
+        process_matches = False
+        try:
+            process = win32api.OpenProcess(win32con.PROCESS_QUERY_LIMITED_INFORMATION, False, process_id)
+            try:
+                process_path = win32process.GetModuleFileNameEx(process, 0)
+                process_matches = os.path.normcase(os.path.abspath(process_path)) == terminal_path
+            finally:
+                win32api.CloseHandle(process)
+        except win32api.error:
+            pass
+
+        if title_matches or process_matches:
             matches.append(hwnd)
 
     win32gui.EnumWindows(collect, None)
