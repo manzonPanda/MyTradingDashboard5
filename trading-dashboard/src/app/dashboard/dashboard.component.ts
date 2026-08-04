@@ -7044,11 +7044,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         // Trigger the amazing persistent confetti celebration!
         this.confetti.celebrateProfitTarget(this.mt5AccountInfo.profitTarget);
 
-        // Optional: Also play sound for big wins (trades over $100 profit)
-        const totalPnL = this.calculateTotalPnL();
-        if (totalPnL >= 100) {
-          this.playCelebrationSound();
-        }
+        this.playProfitTargetMusic();
       }
     } else {
       // If we fall below target, stop celebration and reset flag
@@ -7058,6 +7054,14 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.hasCelebratedCurrentTarget = false;
       }
     }
+  }
+
+  private playProfitTargetMusic(): void {
+    const music = new Audio('/assets/sounds/profit-target-theme.mp3');
+    music.volume = 1;
+    music.play().catch(error => {
+      console.warn('Could not play profit-target music:', error);
+    });
   }
 
   // Helper method to play celebration sound
