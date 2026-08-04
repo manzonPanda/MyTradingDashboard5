@@ -198,7 +198,7 @@ interface Table {
 
             <div class="trade-gauge-card">
               <div class="trade-gauge-heading">
-                <span class="trade-gauge-symbol" [attr.title]="trade.symbol">{{ trade.symbol || 'Open trade' }} · {{ formatHoldingTime(trade) }}</span>
+                <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
               <div class="trade-gauge-content">
                 <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
