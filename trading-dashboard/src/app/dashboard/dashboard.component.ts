@@ -549,10 +549,10 @@ export class DashboardComponent implements AfterViewInit {
       name: '',
       firm: this.selectedFirm === 'Independent accounts' ? '' : this.selectedFirm ?? '',
       account_number: '',
-      initial_balance: 0,
-      profit_target_percent: 0,
-      max_total_drawdown_percent: 0,
-      daily_loss_limit_percent: 0,
+      initial_balance: null,
+      profit_target_percent: null,
+      max_total_drawdown_percent: null,
+      daily_loss_limit_percent: null,
       start_date: new Date().toISOString().slice(0, 10),
       status: 'active'
     };
@@ -6316,8 +6316,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
-      const finalMfe = Number(closedTrade.mfe) || 0;
-      const finalMae = Number(closedTrade.mae) || 0;
+      const closingProfit = Number(trade.profit);
+      const finalMfe = Math.max(Number(closedTrade.mfe) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
+      const finalMae = Math.min(Number(closedTrade.mae) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
+      closedTrade.mfe = String(finalMfe);
+      closedTrade.mae = String(finalMae);
       this.stopGaugeAlert(String(trade.ticket));
       this.gaugeAlertNotifiedTickets.delete(String(trade.ticket));
       this.mt5OpenPositionIds?.delete(String(trade.ticket));
