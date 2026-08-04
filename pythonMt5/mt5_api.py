@@ -139,7 +139,11 @@ def upload_trade_screenshot(ticket: int, symbol: str):
     signed_url = f'{SUPABASE_URL}/storage/v1/object/sign/{SUPABASE_STORAGE_BUCKET}/{storage_path}'
     signed_response = requests.post(
         signed_url,
-        headers=headers,
+        headers={
+            'Authorization': f'Bearer {SUPABASE_SERVICE_ROLE_KEY}',
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Content-Type': 'application/json'
+        },
         json={'expiresIn': 86400},
         timeout=30
     )
@@ -677,4 +681,4 @@ def on_connect():
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
