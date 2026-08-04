@@ -477,6 +477,89 @@
 }
 
 // Live Metrics
+.open-trade-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.trade-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1.15fr) repeat(2, 0.85fr);
+  grid-template-rows: auto auto;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.trade-metrics-grid + .trade-metrics-grid {
+  padding-top: 0.75rem;
+  border-top: 3px solid var(--tf-border-secondary);
+}
+
+.trade-metric-card {
+  min-width: 0;
+  padding: 0.6rem;
+  background: var(--tf-bg-card);
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 10px;
+}
+
+.trade-r-card { grid-column: 1; grid-row: 1; }
+.trade-risk-card { grid-column: 2; grid-row: 1; padding: 0.75rem; }
+.trade-pnl-card { grid-column: 3; grid-row: 1; }
+
+.trade-extremes-summary {
+  display: flex;
+  grid-column: 1 / span 3;
+  grid-row: 2;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.1rem 0 0.35rem;
+  color: var(--tf-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  em {
+    color: var(--tf-text-muted);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  mat-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    font-size: 0.95rem;
+  }
+
+  .mfe-value { color: var(--tf-positive); }
+  .mae-value { color: var(--tf-negative); }
+  .extremes-divider { color: var(--tf-border-secondary); }
+}
+
+.trade-metrics-grid > .trade-gauge-card {
+  grid-column: 4 / span 2;
+  grid-row: 1 / span 2;
+  width: min(100%, 132px);
+  justify-self: center;
+}
+
+.trade-screenshot {
+  display: block;
+  width: 100%;
+  max-height: 96px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--tf-border-primary);
+}
+
 .live-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1.15fr) repeat(2, 0.85fr);
@@ -1131,6 +1214,20 @@
 
   .empty-title {
     font-size: 1.5rem;
+  }
+
+  .trade-metrics-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .trade-r-card,
+  .trade-risk-card,
+  .trade-pnl-card,
+  .trade-extremes-summary,
+  .trade-metrics-grid > .trade-gauge-card {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .live-metrics {

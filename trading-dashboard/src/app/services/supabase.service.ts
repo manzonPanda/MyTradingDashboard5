@@ -76,26 +76,23 @@ export interface UserSettings {
   updated_at?: string;
 }
 
-export interface AuraEnergySettings {
-  id: string;
-  enabled: boolean;
-  travel_duration_ms: number;
-  min_delay_ms: number;
-  max_delay_ms: number;
-  trail_length_percent: number;
-  stroke_width: number;
-  head_radius: number;
-  bloom_intensity: number;
-  fade_duration_ms: number;
-  color_start: string;
-  color_mid: string;
-  color_peak: string;
-  color_head: string;
-  min_targets: number;
-  max_targets: number;
-  created_at?: string;
-  updated_at?: string;
-}
+export type AuraEnergySettings = Pick<UserSettings,
+  | 'aura_enabled'
+  | 'aura_travel_duration_ms'
+  | 'aura_min_delay_ms'
+  | 'aura_max_delay_ms'
+  | 'aura_trail_length_percent'
+  | 'aura_stroke_width'
+  | 'aura_head_radius'
+  | 'aura_bloom_intensity'
+  | 'aura_fade_duration_ms'
+  | 'aura_color_start'
+  | 'aura_color_mid'
+  | 'aura_color_peak'
+  | 'aura_color_head'
+  | 'aura_min_targets'
+  | 'aura_max_targets'
+>;
 
 export interface Trade {
   id?: string;
@@ -168,23 +165,21 @@ export class SupabaseService {
     return data as UserSettings;
   }
 
-  async getAuraEnergySettings(): Promise<AuraEnergySettings | null> {
+  async getAuraEnergySettings(userId: string): Promise<AuraEnergySettings | null> {
     const { data, error } = await this.supabase
-      .from('aura_energy_settings')
-      .select('*')
-      .order('created_at', { ascending: true })
-      .limit(1)
+      .from('user_settings')
+      .select('aura_enabled, aura_travel_duration_ms, aura_min_delay_ms, aura_max_delay_ms, aura_trail_length_percent, aura_stroke_width, aura_head_radius, aura_bloom_intensity, aura_fade_duration_ms, aura_color_start, aura_color_mid, aura_color_peak, aura_color_head, aura_min_targets, aura_max_targets')
+      .eq('user_id', userId)
       .maybeSingle();
     if (error) throw new Error(`AURA energy settings loading failed: ${error.message}`);
     return data as AuraEnergySettings | null;
   }
 
-  async updateAuraEnergySettings(id: string, updates: Omit<AuraEnergySettings, 'id' | 'created_at' | 'updated_at'>): Promise<AuraEnergySettings> {
+  async updateAuraEnergySettings(userId: string, updates: AuraEnergySettings): Promise<AuraEnergySettings> {
     const { data, error } = await this.supabase
-      .from('aura_energy_settings')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select('*')
+      .from('user_settings')
+      .upsert({ user_id: userId, ...updates })
+      .select('aura_enabled, aura_travel_duration_ms, aura_min_delay_ms, aura_max_delay_ms, aura_trail_length_percent, aura_stroke_width, aura_head_radius, aura_bloom_intensity, aura_fade_duration_ms, aura_color_start, aura_color_mid, aura_color_peak, aura_color_head, aura_min_targets, aura_max_targets')
       .single();
     if (error) throw new Error(`AURA energy settings update failed: ${error.message}`);
     return data as AuraEnergySettings;

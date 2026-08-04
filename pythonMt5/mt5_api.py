@@ -3,6 +3,12 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 import MetaTrader5 as mt5
 import threading
+import os
+import requests
+import mss
+import mss.tools
+import win32gui
+from dotenv import load_dotenv
 import time
 import eventlet
 from datetime import datetime, timedelta, timezone
@@ -17,6 +23,7 @@ from threading import Timer
 import eventlet
 
 eventlet.monkey_patch()  # <- important for eventlet
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -36,7 +43,102 @@ seen_orders = set()
 
 # Keep track of currently open position tickets
 last_positions = {}
- 
+
+SUPABASE_URL = os.getenv('SUPABASE_URL', '').rstrip('/')
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'trade-screenshots')
+MT5_WINDOW_TITLE = os.getenv('MT5_WINDOW_TITLE', 'MetaTrader 5')
+
+
+def find_mt5_window():
+    matches = []
+
+    def collect(hwnd, _):
+        if win32gui.IsWindowVisible(hwnd):
+            title = win32gui.GetWindowText(hwnd)
+            if MT5_WINDOW_TITLE.lower() in title.lower():
+                matches.append(hwnd)
+
+    win32gui.EnumWindows(collect, None)
+    return matches[0] if matches else None
+
+
+def upload_trade_screenshot(ticket: int, symbol: str):
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        print('⚠️ Screenshot upload skipped: Supabase server credentials are not configured')
+        return None
+
+    hwnd = find_mt5_window()
+    if not hwnd:
+        print('⚠️ Screenshot upload skipped: MT5 window was not found')
+        return None
+
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    width = right - left
+    height = bottom - top
+    if width <= 0 or height <= 0:
+        print('⚠️ Screenshot upload skipped: MT5 window has invalid bounds')
+        return None
+
+    with mss.mss() as screen:
+        image = screen.grab({'left': left, 'top': top, 'width': width, 'height': height})
+        image_bytes = mss.tools.to_png(image.rgb, image.size)
+
+    safe_symbol = ''.join(character if character.isalnum() or character in ('-', '_') else '_' for character in symbol)
+    storage_path = f'{safe_symbol}/{ticket}.png'
+    headers = {
+        'Authorization': f'Bearer {SUPABASE_SERVICE_ROLE_KEY}',
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Content-Type': 'image/png',
+        'x-upsert': 'true'
+    }
+    upload_url = f'{SUPABASE_URL}/storage/v1/object/{SUPABASE_STORAGE_BUCKET}/{storage_path}'
+    upload_response = requests.post(upload_url, headers=headers, data=image_bytes, timeout=30)
+    upload_response.raise_for_status()
+
+    metadata_url = f'{SUPABASE_URL}/rest/v1/trade_screenshots'
+    metadata_response = requests.post(
+        metadata_url,
+        headers={**headers, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+        json={'ticket': str(ticket), 'symbol': symbol, 'storage_path': storage_path},
+        timeout=30
+    )
+    metadata_response.raise_for_status()
+
+    signed_url = f'{SUPABASE_URL}/storage/v1/object/sign/{SUPABASE_STORAGE_BUCKET}/{storage_path}'
+    signed_response = requests.post(
+        signed_url,
+        headers=headers,
+        json={'expiresIn': 86400},
+        timeout=30
+    )
+    signed_response.raise_for_status()
+    signed_path = signed_response.json().get('signedURL')
+    return f'{SUPABASE_URL}{signed_path}' if signed_path and signed_path.startswith('/') else signed_path
+
+def emit_trade_opened(pos, open_time_str, risk_usd):
+    screenshot_url = None
+    try:
+        screenshot_url = upload_trade_screenshot(pos.ticket, pos.symbol)
+    except Exception as error:
+        print(f'⚠️ Unable to capture/upload screenshot for ticket {pos.ticket}: {error}')
+
+    socketio.emit('trade_opened', {
+        'ticket': pos.ticket,
+        'symbol': pos.symbol,
+        'volume': pos.volume,
+        'type': pos.type,
+        'price_open': pos.price_open,
+        'sl': pos.sl,
+        'tp': pos.tp,
+        'profit': pos.profit,
+        'time_open': open_time_str,
+        'risk_usd': round(risk_usd, 2) if risk_usd is not None else None,
+        'screenshot_url': screenshot_url,
+        'object': pos
+    })
+
+
 def watch_trades():
     global seen_tickets, last_positions, seen_orders, pendingOrders
     print("✅ Trade watcher thread started...")
@@ -108,19 +210,7 @@ def watch_trades():
                 else:
                     print("⚠�� Cannot calculate risk (missing SL or symbol info)")
 
-                socketio.emit('trade_opened', {
-                    "ticket": pos.ticket,
-                    "symbol": pos.symbol,
-                    "volume": pos.volume,
-                    "type": pos.type,
-                    "price_open": pos.price_open,
-                    "sl": pos.sl,
-                    "tp": pos.tp,
-                    "profit": pos.profit,
-                    "time_open": open_time_str,
-                    "risk_usd": round(risk_usd, 2) if risk_usd is not None else None,
-                    "object": pos
-                })
+                socketio.start_background_task(emit_trade_opened, pos, open_time_str, risk_usd)
 
         # Detect closed positions
         closed_tickets = set(last_positions.keys()) - set(current_positions.keys())
