@@ -6087,7 +6087,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: (trade.mfe ?? 0).toString(),
       mae: (trade.mae ?? 0).toString(),
-      screenshotUrl: this.getCachedTradeScreenshot(trade.position_id)
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id)
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
