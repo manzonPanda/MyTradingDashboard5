@@ -633,6 +633,7 @@ export class DashboardComponent implements AfterViewInit {
           this.selectedFirm = null;
         }
         this.applySelectedAccountSettings();
+        await this.loadMT5Data();
       }
 
       if (this.selectedFirm && !this.firms.some(firm => firm.name === this.selectedFirm)) {
@@ -675,6 +676,7 @@ export class DashboardComponent implements AfterViewInit {
         this.selectedFirm = createdAccount.firm?.trim() || 'Independent accounts';
         this.accountPage = 1;
         this.applySelectedAccountSettings();
+        await this.loadMT5Data();
         this.cancelAccountEdit();
         this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000 });
       } else if (this.editingAccountId) {
@@ -1790,6 +1792,7 @@ mt5AccountInfo: AccountSettings = {
         localStorage.removeItem(this.selectedAccountStorageKey);
       }
       this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
+      this.selectedFirm = this.selectedAccount?.firm?.trim() || (this.selectedAccount ? 'Independent accounts' : null);
       this.applySelectedAccountSettings();
     } catch (error) {
       console.error('Unable to load Supabase accounts:', error);

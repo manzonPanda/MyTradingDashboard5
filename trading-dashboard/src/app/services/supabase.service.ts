@@ -141,6 +141,12 @@ export class SupabaseService {
     return this.supabase;
   }
 
+  private async getAuthenticatedUserId(): Promise<string> {
+    const { data, error } = await this.supabase.auth.getUser();
+    if (error || !data.user) throw new Error('You must be signed in to manage accounts.');
+    return data.user.id;
+  }
+
   async getProfile(userId: string): Promise<Profile | null> {
     const { data, error } = await this.supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
     if (error) throw new Error(`Profile loading failed: ${error.message}`);
@@ -195,13 +201,14 @@ export class SupabaseService {
   }
 
   async createAccount(account: Omit<Partial<Account>, 'id' | 'created_at' | 'updated_at'>): Promise<Account> {
+    const userId = await this.getAuthenticatedUserId();
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
     try {
       const { data, error } = await this.supabase
         .from('accounts')
-        .insert(account)
+        .insert({ ...account, user_id: userId })
         .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, created_at, updated_at')
         .abortSignal(controller.signal)
         .single();
@@ -295,13 +302,14 @@ export class SupabaseService {
   }
 
   async getOrCreateAccountId(accountName: string): Promise<string> {
+    const userId = await this.getAuthenticatedUserId();
     const existingId = await this.getAccountIdByName(accountName);
     if (existingId) return existingId;
 
     const accountNumber = accountName.match(/#(\d+)/)?.[1] ?? null;
     const { data, error } = await this.supabase
       .from('accounts')
-      .insert({ name: accountName, account_number: accountNumber })
+      .insert({ name: accountName, account_number: accountNumber, user_id: userId })
       .select('id')
       .single();
     if (error) throw new Error(`Account creation failed: ${error.message}`);
