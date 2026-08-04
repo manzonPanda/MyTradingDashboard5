@@ -6106,6 +6106,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     } catch (error) {
       console.warn('Unable to load saved trade screenshots:', error);
     }
+    await Promise.all(mt5Trades
+      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
+      .map(async trade => {
+        const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position, trade.symbol);
+        if (screenshotUrl) {
+          trade.screenshotUrl = screenshotUrl;
+          this.cacheTradeScreenshot(trade.position, screenshotUrl);
+        }
+      }));
     this.mt5LiveTrades = mt5Trades;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
@@ -6256,6 +6265,20 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  private async hydrateTradeScreenshot(trade: Table): Promise<void> {
+    if (trade.screenshotUrl) return;
+    const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position, trade.symbol);
+    if (!screenshotUrl) return;
+
+    trade.screenshotUrl = screenshotUrl;
+    this.cacheTradeScreenshot(trade.position, screenshotUrl);
+    this.mt5LiveTrades = [...this.mt5LiveTrades];
+    this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
+      String(recentTrade.position) === String(trade.position) ? trade : recentTrade
+    );
+    this.cdr.markForCheck();
+  }
+
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
     try {
       localStorage.removeItem(this.legacyLiveExtremesStorageKey);
@@ -6371,6 +6394,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Track as recently added for visual indication
       this.recentlyAddedTrades.unshift(newTrade);
+      void this.hydrateTradeScreenshot(newTrade);
 
       // Remove from recent list after 5 seconds
       // setTimeout(() => {

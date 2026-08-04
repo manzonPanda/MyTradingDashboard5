@@ -553,6 +553,15 @@ export class SupabaseService {
     return data as Trade;
   }
 
+  async getTradeScreenshotUrl(ticket: number | string, symbol: string): Promise<string | null> {
+    const safeSymbol = symbol.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const { data, error } = await this.supabase.storage
+      .from('trade-screenshots')
+      .createSignedUrl(`${safeSymbol}/${ticket}.png`, 86400);
+    if (error) return null;
+    return data?.signedUrl ?? null;
+  }
+
   async getTradeScreenshotUrls(tickets: Array<number | string>): Promise<Record<string, string>> {
     if (!tickets.length) return {};
 
