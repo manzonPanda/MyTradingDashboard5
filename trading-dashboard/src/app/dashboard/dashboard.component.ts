@@ -714,6 +714,7 @@ mt5AccountInfo: AccountSettings = {
 };
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   private mt5OpenPositionIds: Set<string> | null = null;
+  private mt5AccountLogin: string | null = null;
   private mt5DataLoadVersion = 0;
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
@@ -1896,12 +1897,21 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on("account_info", (data) => {
+      this.mt5AccountLogin = this.normalizeAccountNumber(data?.login);
       const balance = Number(data?.balance ?? data?.account_balance ?? data?.equity);
       if (Number.isFinite(balance) && balance > 0) {
         this.mt5AccountInfo.balance = balance;
         this.generateTradingChartData();
-        this.cdr.markForCheck();
       }
+      if (!this.isActiveMt5Account()) {
+        this.mt5LiveTrades = [];
+        this.recentlyAddedTrades = [];
+        this.mt5OpenPositionIds = new Set();
+        this.updateTableData();
+      } else {
+        void this.loadMT5Data();
+      }
+      this.cdr.markForCheck();
       console.warn("Account Info Received:", data);
     });
 
@@ -1911,6 +1921,7 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on("trade_opened", (data: any) => {
+      if (!this.isActiveMt5Account()) return;
       console.warn("New trade opened:", data);
       this.addMT5LiveTrade(data);
     });
@@ -1921,6 +1932,7 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on('price_update', (data: any) => {
+      if (!this.isActiveMt5Account()) return;
       console.log("📊 Live price update received:", {
         symbol: data.symbol,
         ticket: data.ticket,
@@ -6063,9 +6075,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.getMt5API()
       ]);
       this.mt5OpenPositionIds = new Set(
-        (mt5History || [])
-          .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
-          .map((trade: any) => String(trade.position_id))
+        this.isActiveMt5Account()
+          ? (mt5History || [])
+              .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
+              .map((trade: any) => String(trade.position_id))
+          : []
       );
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
@@ -6274,6 +6288,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  private normalizeAccountNumber(value: unknown): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized || null;
+  }
+
+  private isActiveMt5Account(): boolean {
+    const selectedAccountNumber = this.normalizeAccountNumber(this.selectedAccount?.account_number);
+    return Boolean(selectedAccountNumber && this.mt5AccountLogin && selectedAccountNumber === this.mt5AccountLogin);
+  }
+
   private async hydrateTradeScreenshot(trade: Table): Promise<void> {
     for (let attempt = 0; attempt < 5 && !trade.screenshotUrl; attempt++) {
       if (attempt > 0) {
@@ -6360,6 +6384,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   addMT5LiveTrade(tradeData: any): void {
+    if (!this.isActiveMt5Account()) return;
     const trade = tradeData;
     if (!trade) return;
     console.log("Open date from MT5:",trade.time_open)
