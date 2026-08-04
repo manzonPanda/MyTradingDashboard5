@@ -10347,7 +10347,7 @@ table.simple-table {
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   > mat-icon:first-child {
-    color: #7C3AED;
+    color: var(--tf-accent-primary);
   }
 
   span {
@@ -10371,13 +10371,13 @@ table.simple-table {
   }
 
   &.is-active {
-    border-color: rgba(129, 140, 248, 0.4);
-    background: rgba(124, 58, 237, 0.16);
+    border-color: var(--tf-border-secondary);
+    background: var(--tf-bg-hover);
   }
 
   &:hover {
-    border-color: rgba(129, 140, 248, 0.28);
-    background: rgba(124, 58, 237, 0.1);
+    border-color: var(--tf-border-secondary);
+    background: var(--tf-bg-hover);
     transform: translateX(3px);
   }
 }
@@ -10719,9 +10719,9 @@ table.simple-table {
   margin-top: 0.75rem;
   padding: 0.55rem;
   border-radius: 0.7rem;
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  background: linear-gradient(135deg, var(--tf-accent-primary), var(--tf-accent-secondary));
   color: #fff;
-  box-shadow: 0 8px 18px rgba(67, 56, 202, 0.28);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--tf-accent-primary) 28%, transparent);
 }
 
 .navigation-profile-main {
