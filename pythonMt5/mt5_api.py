@@ -52,15 +52,29 @@ MT5_WINDOW_TITLE = os.getenv('MT5_WINDOW_TITLE', 'MetaTrader 5')
 
 def find_mt5_window():
     matches = []
+    visible_titles = []
+    configured_title = MT5_WINDOW_TITLE.casefold()
 
     def collect(hwnd, _):
-        if win32gui.IsWindowVisible(hwnd):
-            title = win32gui.GetWindowText(hwnd)
-            if MT5_WINDOW_TITLE.lower() in title.lower():
-                matches.append(hwnd)
+        if not win32gui.IsWindowVisible(hwnd):
+            return
+
+        title = win32gui.GetWindowText(hwnd).strip()
+        if title:
+            visible_titles.append(title)
+        normalized_title = title.casefold()
+        if configured_title in normalized_title or 'metatrader' in normalized_title:
+            matches.append(hwnd)
 
     win32gui.EnumWindows(collect, None)
-    return matches[0] if matches else None
+    if not matches:
+        print(f'⚠️ No MT5 window matched {MT5_WINDOW_TITLE!r}. Visible windows: {visible_titles[:20]}')
+        return None
+
+    for hwnd in matches:
+        if not win32gui.IsIconic(hwnd):
+            return hwnd
+    return matches[0]
 
 
 def upload_trade_screenshot(ticket: int, symbol: str):
