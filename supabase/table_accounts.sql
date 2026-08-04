@@ -12,5 +12,7 @@ create table public.accounts (
   notes text null,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
-  constraint accounts_pkey primary key (id)
+  user_id uuid null,
+  constraint accounts_pkey primary key (id),
+  constraint accounts_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE
 ) TABLESPACE pg_default;
