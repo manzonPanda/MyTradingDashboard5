@@ -1,0 +1,59 @@
+<main class="settings-page" *ngIf="!loading; else loadingState">
+  <header class="settings-header">
+    <div><p class="eyebrow">A.U.R.A. workspace</p><h1>Profile & settings</h1><p>Personalize your trading targets, dashboard, AURA, and notifications.</p></div>
+    <div class="header-actions"><button type="button" class="secondary-button" (click)="signOut()">Sign out</button><button type="button" class="primary-button" (click)="save()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save settings' }}</button></div>
+  </header>
+
+  <p class="message" *ngIf="message" role="status">{{ message }}</p>
+  <form (ngSubmit)="save()">
+    <section class="settings-card"><h2>Profile</h2><div class="field-grid">
+      <label><span>Display name</span><input name="display_name" [(ngModel)]="profile.display_name" /></label>
+      <label><span>Avatar URL</span><input name="avatar_url" type="url" [(ngModel)]="profile.avatar_url" /></label>
+      <label><span>Started trading date</span><input name="started_trading_date" type="date" [(ngModel)]="profile.started_trading_date" /></label>
+    </div></section>
+
+    <section class="settings-card"><h2>Trading targets</h2><div class="field-grid">
+      <label><span>Per-trade target (%)</span><input name="per_trade_target_percent" type="number" step=".01" [(ngModel)]="settings.per_trade_target_percent" /></label>
+      <label><span>Sound threshold (%)</span><input name="sound_notifications_threshold" type="number" step=".01" [(ngModel)]="settings.sound_notifications_threshold" /></label>
+      <label><span>Daily target (%)</span><input name="daily_target_percent" type="number" step=".01" [(ngModel)]="settings.daily_target_percent" /></label>
+      <label><span>Weekly R target</span><input name="weekly_r_target" type="number" step=".1" [(ngModel)]="settings.weekly_r_target" /></label>
+      <label><span>Default chart mode</span><select name="default_chart_mode" [(ngModel)]="settings.default_chart_mode"><option value="trades">Trades</option><option value="daily">Daily</option></select></label>
+      <label><span>Trading day reset time</span><input name="trading_day_reset_time" type="time" [(ngModel)]="settings.trading_day_reset_time" /></label>
+    </div></section>
+
+    <section class="settings-card"><h2>Dashboard</h2><div class="field-grid">
+      <label><span>Default account</span><select name="default_account_id" [(ngModel)]="settings.default_account_id"><option [ngValue]="null">No default account</option><option *ngFor="let account of accounts" [ngValue]="account.id">{{ account.name }}</option></select></label>
+      <label class="checkbox"><input name="show_account_balance" type="checkbox" [(ngModel)]="settings.show_account_balance" /> Show account balance</label>
+      <label class="checkbox"><input name="show_pnl" type="checkbox" [(ngModel)]="settings.show_pnl" /> Show P&amp;L</label>
+      <label class="checkbox"><input name="show_trading_activity" type="checkbox" [(ngModel)]="settings.show_trading_activity" /> Show trading activity</label>
+      <label class="checkbox"><input name="show_news_calendar" type="checkbox" [(ngModel)]="settings.show_news_calendar" /> Show news calendar</label>
+    </div></section>
+
+    <section class="settings-card"><h2>AURA</h2><div class="field-grid">
+      <label class="checkbox"><input name="aura_enabled" type="checkbox" [(ngModel)]="settings.aura_enabled" /> Enable AURA</label>
+      <label><span>Travel duration (ms)</span><input name="aura_travel_duration_ms" type="number" [(ngModel)]="settings.aura_travel_duration_ms" /></label>
+      <label><span>Delay range (ms)</span><input name="aura_min_delay_ms" type="number" [(ngModel)]="settings.aura_min_delay_ms" /></label>
+      <label><span>Maximum delay (ms)</span><input name="aura_max_delay_ms" type="number" [(ngModel)]="settings.aura_max_delay_ms" /></label>
+      <label><span>Trail length (%)</span><input name="aura_trail_length_percent" type="number" [(ngModel)]="settings.aura_trail_length_percent" /></label>
+      <label><span>Stroke width</span><input name="aura_stroke_width" type="number" [(ngModel)]="settings.aura_stroke_width" /></label>
+      <label><span>Head radius</span><input name="aura_head_radius" type="number" [(ngModel)]="settings.aura_head_radius" /></label>
+      <label><span>Bloom intensity</span><input name="aura_bloom_intensity" type="number" step=".1" [(ngModel)]="settings.aura_bloom_intensity" /></label>
+      <label><span>Fade duration (ms)</span><input name="aura_fade_duration_ms" type="number" [(ngModel)]="settings.aura_fade_duration_ms" /></label>
+      <label><span>Minimum targets</span><input name="aura_min_targets" type="number" [(ngModel)]="settings.aura_min_targets" /></label>
+      <label><span>Maximum targets</span><input name="aura_max_targets" type="number" [(ngModel)]="settings.aura_max_targets" /></label>
+      <label><span>Start color</span><input name="aura_color_start" type="color" [(ngModel)]="settings.aura_color_start" /></label>
+      <label><span>Mid color</span><input name="aura_color_mid" type="color" [(ngModel)]="settings.aura_color_mid" /></label>
+      <label><span>Peak color</span><input name="aura_color_peak" type="color" [(ngModel)]="settings.aura_color_peak" /></label>
+      <label><span>Head color</span><input name="aura_color_head" type="color" [(ngModel)]="settings.aura_color_head" /></label>
+    </div></section>
+
+    <section class="settings-card"><h2>Notifications</h2><div class="field-grid">
+      <label class="checkbox"><input name="notifications_enabled" type="checkbox" [(ngModel)]="settings.notifications_enabled" /> Notifications enabled</label>
+      <label class="checkbox"><input name="daily_goal_notification" type="checkbox" [(ngModel)]="settings.daily_goal_notification" /> Daily goal notification</label>
+      <label class="checkbox"><input name="goal_notification_sound" type="checkbox" [(ngModel)]="settings.goal_notification_sound" /> Goal notification sound</label>
+      <label><span>Notification volume</span><input name="notification_volume" type="range" min="0" max="1" step=".05" [(ngModel)]="settings.notification_volume" /></label>
+    </div></section>
+    <button class="primary-button mobile-save" type="submit" [disabled]="saving">Save settings</button>
+  </form>
+</main>
+<ng-template #loadingState><div class="loading">Loading settings…</div></ng-template>

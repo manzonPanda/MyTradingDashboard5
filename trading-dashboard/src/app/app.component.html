@@ -1,10 +1,12 @@
 <div class="app-container">
-  <router-outlet />
-
-  <!-- Footer Section -->
-  <footer class="app-footer">
-    <div class="footer-content">
-      <p class="copyright-text">© 2025 Jake James Manzon. All rights reserved.</p>
-    </div>
-  </footer>
+  <app-auth *ngIf="!auth.loading() && !auth.user()" />
+  <ng-container *ngIf="!auth.loading() && auth.user()">
+    <router-outlet />
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p class="copyright-text">© 2025 Jake James Manzon. All rights reserved.</p>
+      </div>
+    </footer>
+  </ng-container>
+  <p class="auth-loading" *ngIf="auth.loading()">Loading your workspace…</p>
 </div>

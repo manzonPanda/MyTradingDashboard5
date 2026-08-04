@@ -30,6 +30,51 @@ export interface RoiTransaction {
   accounts?: { name: string } | null;
 }
 
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  started_trading_date: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserSettings {
+  user_id: string;
+  per_trade_target_percent: number;
+  sound_notifications_threshold: number;
+  daily_target_percent: number;
+  weekly_r_target: number;
+  default_chart_mode: 'daily' | 'trades';
+  trading_day_reset_time: string;
+  default_account_id: string | null;
+  show_account_balance: boolean;
+  show_pnl: boolean;
+  show_trading_activity: boolean;
+  show_news_calendar: boolean;
+  aura_enabled: boolean;
+  aura_travel_duration_ms: number;
+  aura_min_delay_ms: number;
+  aura_max_delay_ms: number;
+  aura_trail_length_percent: number;
+  aura_stroke_width: number;
+  aura_head_radius: number;
+  aura_bloom_intensity: number;
+  aura_fade_duration_ms: number;
+  aura_color_start: string;
+  aura_color_mid: string;
+  aura_color_peak: string;
+  aura_color_head: string;
+  aura_min_targets: number;
+  aura_max_targets: number;
+  notifications_enabled: boolean;
+  daily_goal_notification: boolean;
+  goal_notification_sound: boolean;
+  notification_volume: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface AuraEnergySettings {
   id: string;
   enabled: boolean;
@@ -96,6 +141,30 @@ export class SupabaseService {
 
   get client(): SupabaseClient {
     return this.supabase;
+  }
+
+  async getProfile(userId: string): Promise<Profile | null> {
+    const { data, error } = await this.supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    if (error) throw new Error(`Profile loading failed: ${error.message}`);
+    return data as Profile | null;
+  }
+
+  async updateProfile(userId: string, updates: Pick<Profile, 'display_name' | 'avatar_url' | 'started_trading_date'>): Promise<Profile> {
+    const { data, error } = await this.supabase.from('profiles').upsert({ id: userId, ...updates }).select('*').single();
+    if (error) throw new Error(`Profile update failed: ${error.message}`);
+    return data as Profile;
+  }
+
+  async getUserSettings(userId: string): Promise<UserSettings | null> {
+    const { data, error } = await this.supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle();
+    if (error) throw new Error(`Settings loading failed: ${error.message}`);
+    return data as UserSettings | null;
+  }
+
+  async updateUserSettings(userId: string, updates: Partial<Omit<UserSettings, 'user_id' | 'created_at' | 'updated_at'>>): Promise<UserSettings> {
+    const { data, error } = await this.supabase.from('user_settings').upsert({ user_id: userId, ...updates }).select('*').single();
+    if (error) throw new Error(`Settings update failed: ${error.message}`);
+    return data as UserSettings;
   }
 
   async getAuraEnergySettings(): Promise<AuraEnergySettings | null> {

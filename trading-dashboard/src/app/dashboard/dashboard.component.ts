@@ -39,7 +39,8 @@ import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { TradeService } from '../services/trade.service';
-import { Account, RoiTransaction, SupabaseService, Trade } from '../services/supabase.service';
+import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { AuthService } from '../services/auth.service';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -257,6 +258,10 @@ export class DashboardComponent implements AfterViewInit {
       this.closeDashboardNavigation();
     }
   }
+  openProfileSettings(): void {
+    void this.router.navigateByUrl('/settings');
+  }
+
   // Account Size Calculator
   accountSizeInput: number = 0;
   selectedAccountSize: number | null = null; // For account card selection
@@ -1086,7 +1091,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
+    private tradeService: TradeService, private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
       this.isDashboardNavigationOpen = false;
@@ -1744,8 +1749,11 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
-      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey);
+      const userId = this.auth.user()?.id;
+      const savedSettings = userId ? await this.supabaseService.getUserSettings(userId) : null;
+      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey) || savedSettings?.default_account_id;
       this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
+      if (savedSettings) this.applyPersistedUserSettings(savedSettings);
       if (this.selectedAccount) {
         localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
       } else {
@@ -1765,6 +1773,33 @@ mt5AccountInfo: AccountSettings = {
   private inferAccountSize(account: Account | null): number {
     const sizeMatch = account?.name.match(/(\d+(?:\.\d+)?)\s*k\b/i);
     return sizeMatch ? Number(sizeMatch[1]) * 1000 : 0;
+  }
+
+  private applyPersistedUserSettings(settings: UserSettings): void {
+    this.isDailyChart = settings.default_chart_mode === 'daily';
+    this.liveTradeSoundSettings = {
+      enabled: settings.notifications_enabled && settings.goal_notification_sound,
+      alertThreshold: settings.sound_notifications_threshold,
+      highAlertThreshold: Math.max(settings.sound_notifications_threshold, settings.sound_notifications_threshold + 0.6),
+      volume: settings.notification_volume
+    };
+    this.auraEnergy.updateConfig({
+      enabled: settings.aura_enabled,
+      travelDurationMs: settings.aura_travel_duration_ms,
+      minDelayMs: settings.aura_min_delay_ms,
+      maxDelayMs: settings.aura_max_delay_ms,
+      trailLengthPercent: settings.aura_trail_length_percent,
+      strokeWidth: settings.aura_stroke_width,
+      headRadius: settings.aura_head_radius,
+      bloomIntensity: settings.aura_bloom_intensity,
+      fadeDurationMs: settings.aura_fade_duration_ms,
+      colorStart: settings.aura_color_start,
+      colorMid: settings.aura_color_mid,
+      colorPeak: settings.aura_color_peak,
+      colorHead: settings.aura_color_head,
+      minTargets: settings.aura_min_targets,
+      maxTargets: settings.aura_max_targets
+    });
   }
 
   private applySelectedAccountSettings(): void {
@@ -1990,12 +2025,7 @@ mt5AccountInfo: AccountSettings = {
       this.generateTradingChartData();
     }, 1000);
 
-    try {
-      this.auraConfig = await this.auraEnergy.loadConfig();
-    } catch (error) {
-      console.error('Unable to load AURA energy settings:', error);
-    }
-
+    this.auraConfig = this.auraEnergy.getConfig();
     this.auraEnergy.start();
     this.cdr.markForCheck();
   }

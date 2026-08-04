@@ -13,7 +13,7 @@ create table if not exists public.user_settings (
   sound_notifications_threshold numeric(8,4) not null default 2.8,
   daily_target_percent numeric(8,4) not null default 2,
   weekly_r_target numeric(8,4) not null default 5,
-  default_chart_mode text not null default 'balance' check (default_chart_mode in ('balance', 'pnl')),
+  default_chart_mode text not null default 'trades' check (default_chart_mode in ('daily', 'trades')),
   trading_day_reset_time time not null default '17:00:00',
   default_account_id uuid,
   show_account_balance boolean not null default true,

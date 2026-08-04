@@ -1,0 +1,26 @@
+<main class="auth-page">
+  <section class="auth-card">
+    <div class="auth-brand">A.U.R.A.</div>
+    <p class="eyebrow">Trading dashboard</p>
+    <h1>{{ isSignUp ? 'Create your account' : 'Welcome back' }}</h1>
+    <p class="auth-copy">{{ isSignUp ? 'Start building a clearer trading routine.' : 'Sign in to continue to your workspace.' }}</p>
+
+    <form (ngSubmit)="submit()" #authForm="ngForm">
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" [(ngModel)]="email" required autocomplete="email" />
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" name="password" [(ngModel)]="password" required minlength="6" autocomplete="current-password" />
+      </label>
+      <p class="auth-message" *ngIf="message" role="status">{{ message }}</p>
+      <button class="primary-button" type="submit" [disabled]="submitting || authForm.invalid">
+        {{ submitting ? 'Please wait…' : (isSignUp ? 'Sign up' : 'Sign in') }}
+      </button>
+    </form>
+    <button class="text-button" type="button" (click)="toggleMode()">
+      {{ isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
+    </button>
+  </section>
+</main>
