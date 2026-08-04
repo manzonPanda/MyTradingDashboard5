@@ -562,27 +562,11 @@ export class SupabaseService {
   }
 
   async getTradeScreenshotUrl(ticket: number | string): Promise<string | null> {
-    const { data: screenshot, error } = await this.supabase
-      .from('trade_screenshots')
-      .select('storage_path')
-      .eq('ticket', String(ticket))
-      .maybeSingle();
-    if (error || !screenshot?.storage_path) {
-      console.warn('Trade screenshot metadata unavailable:', { ticket, error, screenshot });
-      return null;
-    }
-
-    const { data, error: signedUrlError } = await this.supabase.storage
-      .from('trade-screenshots')
-      .createSignedUrl(screenshot.storage_path, 86400);
-    if (signedUrlError) {
-      console.warn('Trade screenshot signed URL failed:', { ticket, storagePath: screenshot.storage_path, error: signedUrlError });
-      return null;
-    }
-    return data?.signedUrl ?? null;
+    const urls = await this.getTradeScreenshotUrls([ticket]);
+    return urls[String(ticket)]?.[0] ?? null;
   }
 
-  async getTradeScreenshotUrls(tickets: Array<number | string>): Promise<Record<string, string>> {
+  async getTradeScreenshotUrls(tickets: Array<number | string>): Promise<Record<string, string[]>> {
     if (!tickets.length) return {};
 
     const { data, error } = await this.supabase
@@ -591,7 +575,7 @@ export class SupabaseService {
       .in('ticket', tickets.map(ticket => String(ticket)));
     if (error) throw new Error(`Trade screenshot loading failed: ${error.message}`);
 
-    const urls: Record<string, string> = {};
+    const urls: Record<string, string[]> = {};
     for (const screenshot of data ?? []) {
       if (screenshot.ticket === null || !screenshot.storage_path) continue;
       const { data: signedFile, error: signedError } = await this.supabase.storage
@@ -601,9 +585,29 @@ export class SupabaseService {
         console.warn('Trade screenshot signed URL failed:', { ticket: screenshot.ticket, storagePath: screenshot.storage_path, error: signedError });
         continue;
       }
-      urls[String(screenshot.ticket)] = signedFile.signedUrl;
+      (urls[String(screenshot.ticket)] ??= []).push(signedFile.signedUrl);
     }
     return urls;
+  }
+
+  async uploadTradeScreenshot(ticket: number | string, file: File, symbol?: string): Promise<string> {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+    const storagePath = `${String(ticket)}/${crypto.randomUUID()}-${safeName}`;
+    const { error: uploadError } = await this.supabase.storage
+      .from('trade-screenshots')
+      .upload(storagePath, file, { contentType: file.type || undefined, upsert: false });
+    if (uploadError) throw new Error(`Screenshot upload failed: ${uploadError.message}`);
+
+    const { error: metadataError } = await this.supabase
+      .from('trade_screenshots')
+      .insert({ ticket: String(ticket), symbol: symbol || null, storage_path: storagePath });
+    if (metadataError) throw new Error(`Screenshot metadata save failed: ${metadataError.message}`);
+
+    const { data, error: signedUrlError } = await this.supabase.storage
+      .from('trade-screenshots')
+      .createSignedUrl(storagePath, 86400);
+    if (signedUrlError || !data?.signedUrl) throw new Error(`Screenshot URL creation failed: ${signedUrlError?.message || 'unknown error'}`);
+    return data.signedUrl;
   }
 
   async uploadFile(file: File, path: string): Promise<string | null> {

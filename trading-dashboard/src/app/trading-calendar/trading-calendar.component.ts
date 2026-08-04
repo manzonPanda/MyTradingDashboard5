@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStra
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { SupabaseService } from '../services/supabase.service';
 
 interface Table {
   openDate: string;
@@ -24,6 +25,7 @@ interface Table {
   rrr?: string;
   mt5status?: string;
   screenshotUrl?: string;
+  screenshotUrls?: string[];
 }
 
 interface CalendarDay {
@@ -210,15 +212,23 @@ interface WeekSummary {
                   <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
                 </div>
               </div>
-              <div class="day-trade-screenshot" *ngIf="trade.screenshotUrl; else noScreenshot">
-                <img [src]="trade.screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot'" loading="lazy">
-              </div>
-              <ng-template #noScreenshot>
-                <div class="day-trade-screenshot day-trade-screenshot-empty">
-                  <mat-icon aria-hidden="true">image_not_supported</mat-icon>
-                  <span>No screenshot</span>
+              <div class="day-trade-media">
+                <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else noScreenshot">
+                  <img *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index" [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
                 </div>
-              </ng-template>
+                <ng-template #noScreenshot>
+                  <div class="day-trade-screenshot day-trade-screenshot-empty">
+                    <mat-icon aria-hidden="true">image_not_supported</mat-icon>
+                    <span>No screenshot yet</span>
+                  </div>
+                </ng-template>
+                <label class="trade-screenshot-upload" [class.is-uploading]="isUploadingScreenshots(trade)">
+                  <input type="file" accept="image/*" multiple [disabled]="isUploadingScreenshots(trade)" (change)="uploadTradeScreenshots(trade, $event)">
+                  <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
+                  <span>{{ isUploadingScreenshots(trade) ? 'Uploading...' : 'Add screenshots' }}</span>
+                </label>
+                <span class="trade-screenshot-upload-error" *ngIf="getScreenshotUploadError(trade)">{{ getScreenshotUploadError(trade) }}</span>
+              </div>
             </article>
           </div>
           <ng-template #noDayTrades>
@@ -243,9 +253,13 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   weekSummaries: WeekSummary[] = [];
   firstTradeDate: Date | null = null;
   selectedDay: CalendarDay | null = null;
+  private readonly uploadingScreenshotTickets = new Set<string>();
+  private readonly screenshotUploadErrors = new Map<string, string>();
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  constructor(private readonly supabaseService: SupabaseService) {}
 
   ngOnInit() {
     this.currentDate = this.viewDate || new Date();
@@ -439,6 +453,38 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   closeDayModal(): void {
     this.selectedDay = null;
+  }
+
+  isUploadingScreenshots(trade: Table): boolean {
+    return this.uploadingScreenshotTickets.has(String(trade.position));
+  }
+
+  getScreenshotUploadError(trade: Table): string {
+    return this.screenshotUploadErrors.get(String(trade.position)) || '';
+  }
+
+  async uploadTradeScreenshots(trade: Table, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files || []);
+    input.value = '';
+    if (!files.length || !trade.position) return;
+
+    const ticket = String(trade.position);
+    this.uploadingScreenshotTickets.add(ticket);
+    this.screenshotUploadErrors.delete(ticket);
+
+    try {
+      const uploadedUrls = await Promise.all(files.map(file =>
+        this.supabaseService.uploadTradeScreenshot(trade.position, file, trade.symbol)
+      ));
+      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...uploadedUrls])];
+      trade.screenshotUrl = trade.screenshotUrls[0];
+      this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
+    } catch (error) {
+      this.screenshotUploadErrors.set(ticket, error instanceof Error ? error.message : 'Unable to upload screenshots.');
+    } finally {
+      this.uploadingScreenshotTickets.delete(ticket);
+    }
   }
 
   getDayAriaLabel(day: CalendarDay): string {

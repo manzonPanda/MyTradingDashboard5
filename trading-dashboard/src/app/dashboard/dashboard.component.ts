@@ -100,6 +100,7 @@ interface Table {
   mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
   mae?: string; // Maximum Adverse Excursion - tracks lowest unrealized profit
   screenshotUrl?: string;
+  screenshotUrls?: string[];
 }
 
 interface NotionPerformanceData {
@@ -6112,7 +6113,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: (trade.mfe ?? 0).toString(),
       mae: (trade.mae ?? 0).toString(),
-      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id)
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id),
+      screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
@@ -6122,11 +6124,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         mt5Trades.map(trade => trade.position)
       );
       for (const trade of mt5Trades) {
-        const screenshotUrl = screenshotUrls[String(trade.position)] || trade.screenshotUrl;
-        if (screenshotUrl) {
-          trade.screenshotUrl = screenshotUrl;
-          this.cacheTradeScreenshot(trade.position, screenshotUrl);
-        }
+        const savedScreenshotUrls = screenshotUrls[String(trade.position)] || [];
+        trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...savedScreenshotUrls])];
+        trade.screenshotUrl = trade.screenshotUrls[0] || trade.screenshotUrl;
+        if (trade.screenshotUrl) this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
       }
     } catch (error) {
       console.warn('Unable to load saved trade screenshots:', error);
@@ -6309,12 +6310,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
-      if (!screenshotUrl) continue;
+      const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
+      if (!screenshotUrls.length) continue;
 
-      trade.screenshotUrl = screenshotUrl;
+      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
+      trade.screenshotUrl = trade.screenshotUrls[0];
       this.screenshotLoadErrors.delete(String(trade.position));
-      this.cacheTradeScreenshot(trade.position, screenshotUrl);
+      this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
       this.mt5LiveTrades = [...this.mt5LiveTrades];
       this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
         String(recentTrade.position) === String(trade.position) ? trade : recentTrade
@@ -6421,7 +6423,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
       mae: String(Math.min(extremes.mae, Number(trade.mae) || 0)),
-      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.ticket)
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.ticket),
+      screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
     };
 
     if (newTrade.screenshotUrl) {
