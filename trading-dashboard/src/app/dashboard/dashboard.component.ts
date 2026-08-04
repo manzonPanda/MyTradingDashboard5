@@ -6308,6 +6308,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
         String(recentTrade.position) === String(trade.position) ? trade : recentTrade
       );
+      this.updateTableData();
       this.cdr.markForCheck();
     }
 
