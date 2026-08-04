@@ -1,4 +1,8 @@
 from flask import Flask, jsonify, request
+import eventlet
+
+eventlet.monkey_patch()
+
 from flask_cors import CORS
 from flask_socketio import SocketIO
 import MetaTrader5 as mt5
@@ -13,7 +17,6 @@ import win32con
 import win32process
 from dotenv import load_dotenv
 import time
-import eventlet
 from datetime import datetime, timedelta, timezone
 from dateutil import tz
 from collections import defaultdict
@@ -23,9 +26,6 @@ from zoneinfo import ZoneInfo
 from math import isclose
 import numpy as np
 from threading import Timer
-import eventlet
-
-eventlet.monkey_patch()  # <- important for eventlet
 load_dotenv()
 
 app = Flask(__name__)
