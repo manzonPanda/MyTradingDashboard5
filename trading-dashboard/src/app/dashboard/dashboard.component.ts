@@ -262,6 +262,11 @@ export class DashboardComponent implements AfterViewInit {
     void this.router.navigateByUrl('/settings');
   }
 
+  async signOutFromDashboard(): Promise<void> {
+    await this.auth.signOut();
+    await this.router.navigateByUrl('/');
+  }
+
   // Account Size Calculator
   accountSizeInput: number = 0;
   selectedAccountSize: number | null = null; // For account card selection
@@ -1088,6 +1093,12 @@ mt5AccountInfo: AccountSettings = {
 
 
   isDarkTheme = false;
+  profileDisplayName = 'Trader';
+  profileAvatarUrl = '';
+
+  get profileInitials(): string {
+    return this.profileDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map(name => name[0]).join('').toUpperCase() || 'T';
+  }
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
@@ -1749,8 +1760,13 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
-      const userId = this.auth.user()?.id;
-      const savedSettings = userId ? await this.supabaseService.getUserSettings(userId) : null;
+      const user = this.auth.user();
+      const userId = user?.id;
+      const [savedSettings, profile] = userId
+        ? await Promise.all([this.supabaseService.getUserSettings(userId), this.supabaseService.getProfile(userId)])
+        : [null, null];
+      this.profileDisplayName = profile?.display_name?.trim() || user?.user_metadata?.['display_name'] || user?.email?.split('@')[0] || 'Trader';
+      this.profileAvatarUrl = profile?.avatar_url?.trim() || user?.user_metadata?.['avatar_url'] || '';
       const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey) || savedSettings?.default_account_id;
       this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
       if (savedSettings) this.applyPersistedUserSettings(savedSettings);

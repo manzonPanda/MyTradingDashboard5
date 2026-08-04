@@ -60,11 +60,16 @@
         <mat-icon>workspace_premium</mat-icon>
         <span><strong>Certificates</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Profile settings" (click)="openProfileSettings()">
-        <mat-icon>settings</mat-icon>
-        <span><strong>Profile settings</strong></span>
-      </button>
     </nav>
+
+    <section class="navigation-profile-card" aria-label="Signed-in profile">
+      <button type="button" class="navigation-profile-main" title="Open profile settings" (click)="openProfileSettings()">
+        <img *ngIf="profileAvatarUrl" class="navigation-profile-avatar" [src]="profileAvatarUrl" alt="" />
+        <span *ngIf="!profileAvatarUrl" class="navigation-profile-avatar navigation-profile-initials">{{ profileInitials }}</span>
+        <span class="navigation-profile-copy"><strong>{{ profileDisplayName }}</strong><small>Basic Member</small></span>
+      </button>
+      <button type="button" class="navigation-profile-signout" title="Sign out" aria-label="Sign out" (click)="signOutFromDashboard()"><mat-icon>logout</mat-icon></button>
+    </section>
 
     <section class="navigation-live-panel" aria-label="Experience and connections">
       <div class="navigation-timeline-card" data-aura-target>

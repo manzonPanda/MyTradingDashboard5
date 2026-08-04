@@ -10676,6 +10676,71 @@ table.simple-table {
   display: none;
 }
 
+.navigation-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding: 0.55rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(67, 56, 202, 0.28);
+}
+
+.navigation-profile-main {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navigation-profile-avatar {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.navigation-profile-initials {
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.navigation-profile-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.navigation-profile-copy strong,
+.navigation-profile-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navigation-profile-copy strong { font-size: 0.72rem; }
+.navigation-profile-copy small { color: rgba(255, 255, 255, 0.72); font-size: 0.62rem; }
+.navigation-profile-signout { display: grid; width: 1.7rem; height: 1.7rem; place-items: center; padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; }
+.navigation-profile-signout mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+
+.dashboard-navigation:not(.is-expanded) .navigation-profile-card { justify-content: center; padding: 0.45rem; }
+.dashboard-navigation:not(.is-expanded) .navigation-profile-copy,
+.dashboard-navigation:not(.is-expanded) .navigation-profile-signout { display: none; }
+
 .navigation-footer {
   display: flex;
   align-items: flex-start;
