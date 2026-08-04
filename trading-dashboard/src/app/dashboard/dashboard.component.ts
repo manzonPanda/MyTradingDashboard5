@@ -1717,7 +1717,8 @@ mt5AccountInfo: AccountSettings = {
   private async loadRoiTransactions(): Promise<void> {
     this.isLoadingRoi = true;
     try {
-      this.roiTransactions = await this.supabaseService.getRoiTransactions();
+      const userId = this.auth.user()?.id;
+      this.roiTransactions = userId ? await this.supabaseService.getRoiTransactions(userId) : [];
     } catch (error) {
       console.error('Unable to load ROI transactions:', error);
       this.snackBar.open('Unable to load ROI transactions from Supabase.', 'Dismiss', { duration: 6000 });
@@ -1731,6 +1732,8 @@ mt5AccountInfo: AccountSettings = {
     if (!this.roiForm.amount || this.roiForm.amount <= 0) return;
     this.isSavingRoi = true;
     try {
+      const userId = this.auth.user()?.id;
+      if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
       const savedTransaction = await this.supabaseService.createRoiTransaction({
         transaction_type: this.roiForm.transaction_type,
         transaction_date: this.roiForm.transaction_date,
@@ -1738,7 +1741,7 @@ mt5AccountInfo: AccountSettings = {
         note: this.roiForm.note.trim() || null,
         image_url: this.roiForm.image_url.trim() || null,
         account_id: this.roiForm.account_id || null
-      });
+      }, userId);
       this.roiTransactions = [savedTransaction, ...this.roiTransactions];
       this.roiPage = 1;
       this.roiForm = {

@@ -25,6 +25,7 @@ export interface RoiTransaction {
   note?: string | null;
   image_url?: string | null;
   account_id?: string | null;
+  user_id?: string | null;
   created_at?: string;
   updated_at?: string;
   accounts?: { name: string } | null;
@@ -245,19 +246,20 @@ export class SupabaseService {
     if (error) throw new Error(`Account deletion failed: ${error.message}`);
   }
 
-  async getRoiTransactions(): Promise<RoiTransaction[]> {
+  async getRoiTransactions(userId: string): Promise<RoiTransaction[]> {
     const { data, error } = await this.supabase
       .from('roi_transactions')
       .select('*, accounts(name)')
+      .eq('user_id', userId)
       .order('transaction_date', { ascending: false });
     if (error) throw new Error(`ROI transaction loading failed: ${error.message}`);
     return (data as RoiTransaction[]) || [];
   }
 
-  async createRoiTransaction(transaction: Omit<RoiTransaction, 'id' | 'created_at' | 'updated_at' | 'accounts'>): Promise<RoiTransaction> {
+  async createRoiTransaction(transaction: Omit<RoiTransaction, 'id' | 'created_at' | 'updated_at' | 'accounts' | 'user_id'>, userId: string): Promise<RoiTransaction> {
     const { data, error } = await this.supabase
       .from('roi_transactions')
-      .insert(transaction)
+      .insert({ ...transaction, user_id: userId })
       .select('*, accounts(name)')
       .single();
     if (error) throw new Error(`ROI transaction creation failed: ${error.message}`);
