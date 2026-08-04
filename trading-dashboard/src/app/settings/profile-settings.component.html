@@ -1,15 +1,23 @@
 <div class="settings-shell" *ngIf="!loading; else loadingState">
-  <aside class="settings-sidebar" aria-label="Main navigation">
-    <div class="settings-brand"><span class="settings-brand-icon">✦</span><span>A.U.R.A.</span></div>
-    <nav class="settings-navigation">
-      <button type="button" (click)="navigateTo('/')"><span>⌂</span>Dashboard</button>
-      <button type="button" (click)="navigateTo('/accounts')"><span>▦</span>Accounts</button>
-      <button type="button" (click)="navigateTo('/active-account')"><span>◈</span>Trades</button>
-      <button type="button" (click)="navigateTo('/trading-history')"><span>◷</span>Trading journey</button>
-      <button type="button" (click)="navigateTo('/roi')"><span>↗</span>ROI</button>
-      <button type="button" (click)="navigateTo('/certificates')"><span>◇</span>Certificates</button>
-      <button type="button" class="is-active"><span>⚙</span>Profile settings</button>
+  <aside class="dashboard-navigation is-expanded settings-dashboard-navigation" aria-label="Dashboard sections">
+    <div class="navigation-brand">
+      <div class="navigation-brand-icon"><mat-icon>candlestick_chart</mat-icon></div>
+      <div class="navigation-brand-copy"><strong class="navigation-brand-name" aria-label="A.U.R.A">A<span class="navigation-brand-dot">.</span>U<span class="navigation-brand-dot">.</span>R<span class="navigation-brand-dot">.</span>A</strong></div>
+    </div>
+    <nav class="navigation-links" aria-label="Main menu">
+      <button class="navigation-link" type="button" title="Main Dashboard" (click)="navigateTo('/')"><mat-icon>dashboard</mat-icon><span><strong>Dashboard</strong></span></button>
+      <button class="navigation-link" type="button" title="Accounts" (click)="navigateTo('/accounts')"><mat-icon>account_balance</mat-icon><span><strong>Accounts</strong></span></button>
+      <button class="navigation-link" type="button" title="Risk Calculator" (click)="navigateTo('/')"><mat-icon>calculate</mat-icon><span><strong>Risk Calculator</strong></span></button>
+      <button class="navigation-link" type="button" title="Trades" (click)="navigateTo('/active-account')"><mat-icon>account_balance_wallet</mat-icon><span><strong>Trades</strong></span></button>
+      <button class="navigation-link" type="button" title="Trading journey" (click)="navigateTo('/trading-history')"><mat-icon>history</mat-icon><span><strong>Trading journey</strong></span></button>
+      <button class="navigation-link" type="button" title="ROI" (click)="navigateTo('/roi')"><mat-icon>insights</mat-icon><span><strong>ROI</strong></span></button>
+      <button class="navigation-link" type="button" title="Certificates" (click)="navigateTo('/certificates')"><mat-icon>workspace_premium</mat-icon><span><strong>Certificates</strong></span></button>
+      <button class="navigation-link is-active" type="button" title="Profile settings"><mat-icon>settings</mat-icon><span><strong>Profile settings</strong></span></button>
     </nav>
+    <section class="navigation-live-panel" aria-label="Experience and connections">
+      <div class="navigation-timeline-card"><div class="navigation-card-label"><mat-icon>auto_awesome</mat-icon><span>Experience</span></div></div>
+      <div class="navigation-connections-card"><div class="navigation-card-label"><mat-icon>hub</mat-icon><span>Connected services</span></div></div>
+    </section>
   </aside>
   <main class="settings-page">
   <header class="settings-header">
