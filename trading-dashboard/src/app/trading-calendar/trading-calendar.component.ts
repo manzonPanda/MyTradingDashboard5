@@ -20,6 +20,10 @@ interface Table {
   swap: string;
   profit: string;
   netProfit: string;
+  riskPerTrade?: string;
+  rrr?: string;
+  mt5status?: string;
+  screenshotUrl?: string;
 }
 
 interface CalendarDay {
@@ -93,7 +97,13 @@ interface WeekSummary {
                 'weekday-profit': isWeekday(day.date) && day.pnl > 0,
                 'weekday-loss': isWeekday(day.date) && day.pnl < 0,
                 'weekend': !isWeekday(day.date)
-              }">
+              }"
+              role="button"
+              tabindex="0"
+              [attr.aria-label]="getDayAriaLabel(day)"
+              (click)="openDayModal(day)"
+              (keydown.enter)="openDayModal(day)"
+              (keydown.space)="$event.preventDefault(); openDayModal(day)">
               <div class="new-account-badge" *ngIf="isFirstTradeDay(day.date)">
                 <span class="badge-star">★</span>
                 <span class="badge-label">New Account</span>
@@ -149,6 +159,77 @@ interface WeekSummary {
           </div>
         </div>
       </div>
+
+      <div class="day-trades-modal" *ngIf="selectedDay" role="dialog" aria-modal="true" [attr.aria-label]="'Trades for ' + (selectedDay.date | date: 'MMMM d, y')" (click)="$event.stopPropagation()">
+        <div class="day-trades-modal-backdrop" (click)="closeDayModal()"></div>
+        <section class="day-trades-modal-panel">
+          <header class="day-trades-modal-header">
+            <div>
+              <span class="day-trades-modal-eyebrow">Trading journal</span>
+              <h2>{{ selectedDay.date | date: 'EEEE, MMMM d' }}</h2>
+              <p>{{ selectedDay.tradeCount }} {{ selectedDay.tradeCount === 1 ? 'trade' : 'trades' }} captured on this day</p>
+            </div>
+            <button type="button" class="day-trades-modal-close" aria-label="Close trades for selected day" (click)="closeDayModal()">
+              <mat-icon aria-hidden="true">close</mat-icon>
+            </button>
+          </header>
+
+          <div class="day-trades-summary-strip">
+            <div class="day-trades-summary-item">
+              <span class="summary-item-label">Day P&amp;L</span>
+              <strong [ngClass]="getDayPnLClass(selectedDay.pnl)">{{ formatCurrency(selectedDay.pnl) }}</strong>
+            </div>
+            <div class="day-trades-summary-item">
+              <span class="summary-item-label">Win rate</span>
+              <strong>{{ selectedDay.winRate.toFixed(0) }}%</strong>
+            </div>
+            <div class="day-trades-summary-item">
+              <span class="summary-item-label">Wins / losses</span>
+              <strong>{{ selectedDay.winCount }} / {{ selectedDay.lossCount }}</strong>
+            </div>
+          </div>
+
+          <div class="day-trades-modal-body" *ngIf="selectedDay.trades.length > 0; else noDayTrades">
+            <article class="day-trade-card" *ngFor="let trade of selectedDay.trades; trackBy: trackByTrade">
+              <div class="day-trade-card-main">
+                <div class="day-trade-heading">
+                  <div>
+                    <span class="day-trade-symbol">{{ trade.symbol || 'Unnamed trade' }}</span>
+                    <span class="day-trade-direction" [ngClass]="(trade.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell'">{{ trade.type || 'Trade' }}</span>
+                  </div>
+                  <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">{{ formatCurrency(getTradePnL(trade)) }}</strong>
+                </div>
+                <div class="day-trade-details">
+                  <span><mat-icon aria-hidden="true">schedule</mat-icon>{{ formatTradeTime(trade.openDate) }}<ng-container *ngIf="trade.closeDate && trade.closeDate !== '-'"> → {{ formatTradeTime(trade.closeDate) }}</ng-container></span>
+                  <span><mat-icon aria-hidden="true">confirmation_number</mat-icon>#{{ trade.position || '—' }}</span>
+                  <span *ngIf="trade.volume"><mat-icon aria-hidden="true">layers</mat-icon>{{ trade.volume }} lots</span>
+                </div>
+                <div class="day-trade-metrics">
+                  <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
+                  <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
+                  <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
+                </div>
+              </div>
+              <div class="day-trade-screenshot" *ngIf="trade.screenshotUrl; else noScreenshot">
+                <img [src]="trade.screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot'" loading="lazy">
+              </div>
+              <ng-template #noScreenshot>
+                <div class="day-trade-screenshot day-trade-screenshot-empty">
+                  <mat-icon aria-hidden="true">image_not_supported</mat-icon>
+                  <span>No screenshot</span>
+                </div>
+              </ng-template>
+            </article>
+          </div>
+          <ng-template #noDayTrades>
+            <div class="day-trades-empty-state">
+              <mat-icon aria-hidden="true">event_busy</mat-icon>
+              <h3>No trades recorded</h3>
+              <p>This day is ready for your next journal entry.</p>
+            </div>
+          </ng-template>
+        </section>
+      </div>
     </div>
   `,
   styleUrls: ['./trading-calendar.component.scss']
@@ -161,6 +242,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   calendarDays: CalendarDay[] = [];
   weekSummaries: WeekSummary[] = [];
   firstTradeDate: Date | null = null;
+  selectedDay: CalendarDay | null = null;
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -349,6 +431,35 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return date.getFullYear() === today.getFullYear() &&
            date.getMonth() === today.getMonth() &&
            date.getDate() === today.getDate();
+  }
+
+  openDayModal(day: CalendarDay): void {
+    this.selectedDay = day;
+  }
+
+  closeDayModal(): void {
+    this.selectedDay = null;
+  }
+
+  getDayAriaLabel(day: CalendarDay): string {
+    return `${day.date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}, ${day.tradeCount} ${day.tradeCount === 1 ? 'trade' : 'trades'}`;
+  }
+
+  trackByTrade(index: number, trade: Table): string | number {
+    return trade.position || index;
+  }
+
+  getTradePnL(trade: Table): number {
+    return parseFloat(trade.netProfit || trade.profit || '0') || 0;
+  }
+
+  getNumericValue(value: string | number | undefined): number {
+    return parseFloat(String(value || '0')) || 0;
+  }
+
+  formatTradeTime(value: string): string {
+    const date = this.parseTradeDate(value);
+    return date ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : value || '—';
   }
 
   previousMonth() {
