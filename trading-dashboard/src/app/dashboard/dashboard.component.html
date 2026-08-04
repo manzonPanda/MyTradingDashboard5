@@ -62,14 +62,6 @@
       </button>
     </nav>
 
-    <section class="navigation-profile-card" aria-label="Signed-in profile">
-      <button type="button" class="navigation-profile-main" title="Open profile settings" (click)="openProfileSettings()">
-        <img *ngIf="profileAvatarUrl" class="navigation-profile-avatar" [src]="profileAvatarUrl" alt="" />
-        <span *ngIf="!profileAvatarUrl" class="navigation-profile-avatar navigation-profile-initials">{{ profileInitials }}</span>
-        <span class="navigation-profile-copy"><strong>{{ profileDisplayName }}</strong><small>Basic Member</small></span>
-      </button>
-      <button type="button" class="navigation-profile-signout" title="Sign out" aria-label="Sign out" (click)="signOutFromDashboard()"><mat-icon>logout</mat-icon></button>
-    </section>
 
     <section class="navigation-live-panel" aria-label="Experience and connections">
       <div class="navigation-timeline-card" data-aura-target>
@@ -134,6 +126,15 @@
         <span><strong>{{ isDarkTheme ? 'Light' : 'Dark' }}</strong></span>
       </button>
     </div>
+
+    <section class="navigation-profile-card" aria-label="Signed-in profile">
+      <button type="button" class="navigation-profile-main" title="Open profile settings" (click)="openProfileSettings()">
+        <img *ngIf="profileAvatarUrl" class="navigation-profile-avatar" [src]="profileAvatarUrl" alt="" />
+        <span *ngIf="!profileAvatarUrl" class="navigation-profile-avatar navigation-profile-initials">{{ profileInitials }}</span>
+        <span class="navigation-profile-copy"><strong>{{ profileDisplayName }}</strong><small>Basic Member</small></span>
+      </button>
+      <button type="button" class="navigation-profile-signout" title="Sign out" aria-label="Sign out" (click)="signOutFromDashboard()"><mat-icon>logout</mat-icon></button>
+    </section>
   </aside>
 
   <!-- Header Section -->
@@ -2448,4 +2449,8 @@
     </section>
   </div>
 
+  <div *ngIf="isProfileSettingsOpen" class="profile-settings-overlay" role="dialog" aria-modal="true" aria-label="Profile settings">
+    <button type="button" class="profile-settings-overlay-close" aria-label="Close profile settings" (click)="closeProfileSettings()"><mat-icon>close</mat-icon></button>
+    <app-profile-settings (closed)="closeProfileSettings()"></app-profile-settings>
+  </div>
 </div>

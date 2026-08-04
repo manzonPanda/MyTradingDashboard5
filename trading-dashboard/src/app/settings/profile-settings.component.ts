@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { Account, Profile, SupabaseService, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 
@@ -18,8 +17,8 @@ const defaults: Omit<UserSettings, 'user_id'> = {
 };
 
 @Component({
-  selector: 'app-profile-settings', standalone: true, imports: [CommonModule, FormsModule, MatIconModule],
-  templateUrl: './profile-settings.component.html', styleUrls: ['./profile-settings.component.scss', '../dashboard/dashboard.component.scss']
+  selector: 'app-profile-settings', standalone: true, imports: [CommonModule, FormsModule],
+  templateUrl: './profile-settings.component.html', styleUrls: ['./profile-settings.component.scss']
 })
 export class ProfileSettingsComponent implements OnInit {
   profile: Pick<Profile, 'display_name' | 'avatar_url' | 'started_trading_date'> = { display_name: '', avatar_url: '', started_trading_date: null };
@@ -28,6 +27,7 @@ export class ProfileSettingsComponent implements OnInit {
   loading = true;
   saving = false;
   message = '';
+  @Output() closed = new EventEmitter<void>();
 
   constructor(private readonly supabase: SupabaseService, readonly auth: AuthService, private readonly router: Router) {}
 
@@ -66,6 +66,7 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   async backToDashboard(): Promise<void> {
+    this.closed.emit();
     await this.router.navigateByUrl('/');
   }
 

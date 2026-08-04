@@ -10676,11 +10676,47 @@ table.simple-table {
   display: none;
 }
 
+.profile-settings-overlay {
+  position: fixed;
+  z-index: 1100;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 14rem;
+  overflow: auto;
+  background: var(--tf-bg-primary, #f8fafc);
+}
+
+.dashboard-navigation:not(.is-expanded) ~ .profile-settings-overlay {
+  left: 4.75rem;
+}
+
+.profile-settings-overlay-close {
+  position: fixed;
+  z-index: 1302;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--tf-border-primary, #c4b5fd);
+  border-radius: 50%;
+  background: var(--tf-bg-secondary, #fff);
+  color: var(--tf-text-primary, #5b21b6);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(76, 29, 149, 0.12);
+}
+
+@media (max-width: 768px) {
+  .profile-settings-overlay { left: 0; }
+}
+
 .navigation-profile-card {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  margin-top: auto;
+  margin-top: 0.75rem;
   padding: 0.55rem;
   border-radius: 0.7rem;
   background: linear-gradient(135deg, #4f46e5, #4338ca);

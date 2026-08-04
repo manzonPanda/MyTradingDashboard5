@@ -41,6 +41,7 @@ import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from 
 import { TradeService } from '../services/trade.service';
 import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
+import { ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -161,7 +162,8 @@ interface NotionPerformanceData {
     MatNativeDateModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    BaseChartDirective
+    BaseChartDirective,
+    ProfileSettingsComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
@@ -259,7 +261,11 @@ export class DashboardComponent implements AfterViewInit {
     }
   }
   openProfileSettings(): void {
-    void this.router.navigateByUrl('/settings');
+    this.isProfileSettingsOpen = true;
+  }
+
+  closeProfileSettings(): void {
+    this.isProfileSettingsOpen = false;
   }
 
   async signOutFromDashboard(): Promise<void> {
@@ -1093,6 +1099,7 @@ mt5AccountInfo: AccountSettings = {
 
 
   isDarkTheme = false;
+  isProfileSettingsOpen = false;
   profileDisplayName = 'Trader';
   profileAvatarUrl = '';
 
@@ -1104,6 +1111,7 @@ mt5AccountInfo: AccountSettings = {
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
     private tradeService: TradeService, private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
+    this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
       this.isDashboardNavigationOpen = false;
       this.navigationDisplayMode = 'collapsed';
