@@ -485,6 +485,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
@@ -6288,6 +6289,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
+  hasScreenshotLoadError(ticket: number | string): boolean {
+    return this.screenshotLoadErrors.has(String(ticket));
+  }
+
+  onScreenshotLoadError(ticket: number | string): void {
+    this.screenshotLoadErrors.add(String(ticket));
+    this.cdr.markForCheck();
+  }
+
   private normalizeAccountNumber(value: unknown): string | null {
     const normalized = String(value ?? '').trim();
     return normalized || null;
@@ -6299,7 +6309,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private async hydrateTradeScreenshot(trade: Table): Promise<void> {
-    for (let attempt = 0; attempt < 5 && !trade.screenshotUrl; attempt++) {
+    for (let attempt = 0; attempt < 15 && !trade.screenshotUrl; attempt++) {
       if (attempt > 0) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -6308,6 +6318,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       if (!screenshotUrl) continue;
 
       trade.screenshotUrl = screenshotUrl;
+      this.screenshotLoadErrors.delete(String(trade.position));
       this.cacheTradeScreenshot(trade.position, screenshotUrl);
       this.mt5LiveTrades = [...this.mt5LiveTrades];
       this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
@@ -6315,6 +6326,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       );
       this.cdr.markForCheck();
     }
+
+    this.screenshotLoadErrors.add(String(trade.position));
+    this.cdr.markForCheck();
   }
 
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {

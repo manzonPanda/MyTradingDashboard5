@@ -560,6 +560,17 @@
   border-bottom: 1px solid var(--tf-border-primary);
 }
 
+.screenshot-load-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  padding: 0.75rem;
+  color: var(--tf-text-secondary);
+  border-bottom: 1px solid var(--tf-border-primary);
+  font-size: 0.8rem;
+}
+
 .live-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1.15fr) repeat(2, 0.85fr);

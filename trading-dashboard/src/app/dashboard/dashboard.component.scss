@@ -7298,6 +7298,19 @@ table.simple-table {
           margin-bottom: 0.75rem;
         }
 
+        .screenshot-load-fallback {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 72px;
+          padding: 0.75rem;
+          color: var(--tf-text-secondary);
+          border: 1px dashed var(--tf-border-primary);
+          border-radius: 8px;
+          margin-bottom: 0.75rem;
+          font-size: 0.8rem;
+        }
+
         .emotion-prompt-compact {
           font-size: 0.875rem;
           color: var(--tf-text-secondary);

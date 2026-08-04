@@ -567,12 +567,18 @@ export class SupabaseService {
       .select('storage_path')
       .eq('ticket', String(ticket))
       .maybeSingle();
-    if (error || !screenshot?.storage_path) return null;
+    if (error || !screenshot?.storage_path) {
+      console.warn('Trade screenshot metadata unavailable:', { ticket, error, screenshot });
+      return null;
+    }
 
     const { data, error: signedUrlError } = await this.supabase.storage
       .from('trade-screenshots')
       .createSignedUrl(screenshot.storage_path, 86400);
-    if (signedUrlError) return null;
+    if (signedUrlError) {
+      console.warn('Trade screenshot signed URL failed:', { ticket, storagePath: screenshot.storage_path, error: signedUrlError });
+      return null;
+    }
     return data?.signedUrl ?? null;
   }
 
@@ -591,9 +597,11 @@ export class SupabaseService {
       const { data: signedFile, error: signedError } = await this.supabase.storage
         .from('trade-screenshots')
         .createSignedUrl(screenshot.storage_path, 86400);
-      if (!signedError && signedFile?.signedUrl) {
-        urls[String(screenshot.ticket)] = signedFile.signedUrl;
+      if (signedError || !signedFile?.signedUrl) {
+        console.warn('Trade screenshot signed URL failed:', { ticket: screenshot.ticket, storagePath: screenshot.storage_path, error: signedError });
+        continue;
       }
+      urls[String(screenshot.ticket)] = signedFile.signedUrl;
     }
     return urls;
   }
