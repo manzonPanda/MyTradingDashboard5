@@ -100,6 +100,7 @@ interface Table {
   mt5status:string;// if trade is live(open) or closed in MT5
   mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
   mae?: string; // Maximum Adverse Excursion - tracks lowest unrealized profit
+  screenshotUrl?: string;
 }
 
 interface NotionPerformanceData {
@@ -6311,7 +6312,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
       mt5status: trade.status || '',
       mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
-      mae: String(Math.min(extremes.mae, Number(trade.mae) || 0))
+      mae: String(Math.min(extremes.mae, Number(trade.mae) || 0)),
+      screenshotUrl: trade.screenshot_url || ''
     };
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>

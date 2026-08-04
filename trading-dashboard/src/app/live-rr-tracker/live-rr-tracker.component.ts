@@ -30,6 +30,7 @@ interface Table {
   mt5status: string;
   mfe: string;
   mae?: string;
+  screenshotUrl?: string;
 }
 
 @Component({
@@ -197,6 +198,11 @@ interface Table {
             </div>
 
             <div class="trade-gauge-card">
+              <img
+                *ngIf="trade.screenshotUrl"
+                class="trade-screenshot"
+                [src]="trade.screenshotUrl"
+                [alt]="trade.symbol + ' MT5 screenshot'">
               <div class="trade-gauge-heading">
                 <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
