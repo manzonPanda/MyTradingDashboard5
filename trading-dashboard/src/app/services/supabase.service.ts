@@ -553,6 +553,37 @@ export class SupabaseService {
     return data as Trade;
   }
 
+  async getTradeScreenshotUrl(ticket: number | string, symbol: string): Promise<string | null> {
+    const safeSymbol = symbol.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const { data, error } = await this.supabase.storage
+      .from('trade-screenshots')
+      .createSignedUrl(`${safeSymbol}/${ticket}.png`, 86400);
+    if (error) return null;
+    return data?.signedUrl ?? null;
+  }
+
+  async getTradeScreenshotUrls(tickets: Array<number | string>): Promise<Record<string, string>> {
+    if (!tickets.length) return {};
+
+    const { data, error } = await this.supabase
+      .from('trade_screenshots')
+      .select('ticket, storage_path')
+      .in('ticket', tickets.map(ticket => String(ticket)));
+    if (error) throw new Error(`Trade screenshot loading failed: ${error.message}`);
+
+    const urls: Record<string, string> = {};
+    for (const screenshot of data ?? []) {
+      if (screenshot.ticket === null || !screenshot.storage_path) continue;
+      const { data: signedFile, error: signedError } = await this.supabase.storage
+        .from('trade-screenshots')
+        .createSignedUrl(screenshot.storage_path, 86400);
+      if (!signedError && signedFile?.signedUrl) {
+        urls[String(screenshot.ticket)] = signedFile.signedUrl;
+      }
+    }
+    return urls;
+  }
+
   async uploadFile(file: File, path: string): Promise<string | null> {
     const { error } = await this.supabase.storage
       .from('trade-files')

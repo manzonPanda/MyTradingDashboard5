@@ -478,6 +478,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveTradeSoundSettingsStorageKey = 'trading-dashboard.live-trade-sound-settings';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
+  private readonly tradeScreenshotStorageKey = 'trading-dashboard.trade-screenshots.v1';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
   private readonly gaugeAlertSoundUrl = '/assets/sounds/trade-alert.flac';
   private readonly highGaugeAlertSoundUrl = '/assets/sounds/trade-alert-high.wav';
@@ -6085,12 +6086,37 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
       mt5status: trade.status || '',
       mfe: (trade.mfe ?? 0).toString(),
-      mae: (trade.mae ?? 0).toString()
+      mae: (trade.mae ?? 0).toString(),
+      screenshotUrl: this.getCachedTradeScreenshot(trade.position_id)
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
+    try {
+      const screenshotUrls = await this.supabaseService.getTradeScreenshotUrls(
+        mt5Trades.map(trade => trade.position)
+      );
+      for (const trade of mt5Trades) {
+        const screenshotUrl = screenshotUrls[String(trade.position)] || trade.screenshotUrl;
+        if (screenshotUrl) {
+          trade.screenshotUrl = screenshotUrl;
+          this.cacheTradeScreenshot(trade.position, screenshotUrl);
+        }
+      }
+    } catch (error) {
+      console.warn('Unable to load saved trade screenshots:', error);
+    }
+    await Promise.all(mt5Trades
+      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
+      .map(async trade => {
+        const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position, trade.symbol);
+        if (screenshotUrl) {
+          trade.screenshotUrl = screenshotUrl;
+          this.cacheTradeScreenshot(trade.position, screenshotUrl);
+        }
+      }));
     this.mt5LiveTrades = mt5Trades;
+    this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -6220,6 +6246,39 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   
 
+  private getCachedTradeScreenshot(ticket: number | string): string {
+    try {
+      const cache = JSON.parse(localStorage.getItem(this.tradeScreenshotStorageKey) || '{}');
+      return typeof cache?.[String(ticket)] === 'string' ? cache[String(ticket)] : '';
+    } catch {
+      return '';
+    }
+  }
+
+  private cacheTradeScreenshot(ticket: number | string, screenshotUrl: string): void {
+    try {
+      const cache = JSON.parse(localStorage.getItem(this.tradeScreenshotStorageKey) || '{}');
+      cache[String(ticket)] = screenshotUrl;
+      localStorage.setItem(this.tradeScreenshotStorageKey, JSON.stringify(cache));
+    } catch {
+      return;
+    }
+  }
+
+  private async hydrateTradeScreenshot(trade: Table): Promise<void> {
+    if (trade.screenshotUrl) return;
+    const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position, trade.symbol);
+    if (!screenshotUrl) return;
+
+    trade.screenshotUrl = screenshotUrl;
+    this.cacheTradeScreenshot(trade.position, screenshotUrl);
+    this.mt5LiveTrades = [...this.mt5LiveTrades];
+    this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
+      String(recentTrade.position) === String(trade.position) ? trade : recentTrade
+    );
+    this.cdr.markForCheck();
+  }
+
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
     try {
       localStorage.removeItem(this.legacyLiveExtremesStorageKey);
@@ -6313,8 +6372,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
       mae: String(Math.min(extremes.mae, Number(trade.mae) || 0)),
-      screenshotUrl: trade.screenshot_url || ''
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.ticket)
     };
+
+    if (newTrade.screenshotUrl) {
+      this.cacheTradeScreenshot(newTrade.position, newTrade.screenshotUrl);
+    }
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
       t.position === newTrade.position
@@ -6331,6 +6394,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Track as recently added for visual indication
       this.recentlyAddedTrades.unshift(newTrade);
+      void this.hydrateTradeScreenshot(newTrade);
 
       // Remove from recent list after 5 seconds
       // setTimeout(() => {
@@ -6384,6 +6448,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       this.stopGaugeAlert(String(trade.ticket));
       this.gaugeAlertNotifiedTickets.delete(String(trade.ticket));
       this.mt5OpenPositionIds?.delete(String(trade.ticket));
+      this.recentlyAddedTrades = this.recentlyAddedTrades.filter(
+        recentTrade => String(recentTrade.position) !== String(trade.ticket)
+      );
 
       this.mt5LiveTrades[liveIndex] = closedTrade;
       this.mt5LiveTrades = [...this.mt5LiveTrades];

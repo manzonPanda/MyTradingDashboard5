@@ -950,6 +950,11 @@
 
         <!-- Emotion Selection -->
         <div class="emotion-section-compact" *ngIf="!isTradeEmotionalSubmitted(trade)">
+          <img
+            *ngIf="trade.screenshotUrl"
+            class="emotion-trade-screenshot"
+            [src]="trade.screenshotUrl"
+            [alt]="trade.symbol + ' trade screenshot'">
           <div class="emotion-prompt-compact">How do you feel?</div>
 
           <!-- Quick Emotion Buttons -->
