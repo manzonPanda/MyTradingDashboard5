@@ -6578,11 +6578,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
       this.notifyGaugePercentage(trade);
 
-      // Update live RR from socket data (real-time risk-reward ratio)
-      if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
-        trade.rrr = Number(priceData.live_rr).toFixed(2);
-        console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
-      }
       if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
         trade.riskPerTrade = Math.abs(Number(priceData.sl_value)).toFixed(2);
       }
