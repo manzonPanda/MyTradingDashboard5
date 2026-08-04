@@ -39,7 +39,9 @@ import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { TradeService } from '../services/trade.service';
-import { Account, RoiTransaction, SupabaseService, Trade } from '../services/supabase.service';
+import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { AuthService } from '../services/auth.service';
+import { ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -160,7 +162,8 @@ interface NotionPerformanceData {
     MatNativeDateModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    BaseChartDirective
+    BaseChartDirective,
+    ProfileSettingsComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
@@ -257,6 +260,19 @@ export class DashboardComponent implements AfterViewInit {
       this.closeDashboardNavigation();
     }
   }
+  openProfileSettings(): void {
+    this.isProfileSettingsOpen = true;
+  }
+
+  closeProfileSettings(): void {
+    this.isProfileSettingsOpen = false;
+  }
+
+  async signOutFromDashboard(): Promise<void> {
+    await this.auth.signOut();
+    await this.router.navigateByUrl('/');
+  }
+
   // Account Size Calculator
   accountSizeInput: number = 0;
   selectedAccountSize: number | null = null; // For account card selection
@@ -549,10 +565,10 @@ export class DashboardComponent implements AfterViewInit {
       name: '',
       firm: this.selectedFirm === 'Independent accounts' ? '' : this.selectedFirm ?? '',
       account_number: '',
-      initial_balance: 0,
-      profit_target_percent: 0,
-      max_total_drawdown_percent: 0,
-      daily_loss_limit_percent: 0,
+      initial_balance: null,
+      profit_target_percent: null,
+      max_total_drawdown_percent: null,
+      daily_loss_limit_percent: null,
       start_date: new Date().toISOString().slice(0, 10),
       status: 'active'
     };
@@ -1083,11 +1099,19 @@ mt5AccountInfo: AccountSettings = {
 
 
   isDarkTheme = false;
+  isProfileSettingsOpen = false;
+  profileDisplayName = 'Trader';
+  profileAvatarUrl = '';
+
+  get profileInitials(): string {
+    return this.profileDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map(name => name[0]).join('').toUpperCase() || 'T';
+  }
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private supabaseService: SupabaseService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
+    private tradeService: TradeService, private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
+    this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
       this.isDashboardNavigationOpen = false;
       this.navigationDisplayMode = 'collapsed';
@@ -1693,7 +1717,8 @@ mt5AccountInfo: AccountSettings = {
   private async loadRoiTransactions(): Promise<void> {
     this.isLoadingRoi = true;
     try {
-      this.roiTransactions = await this.supabaseService.getRoiTransactions();
+      const userId = this.auth.user()?.id;
+      this.roiTransactions = userId ? await this.supabaseService.getRoiTransactions(userId) : [];
     } catch (error) {
       console.error('Unable to load ROI transactions:', error);
       this.snackBar.open('Unable to load ROI transactions from Supabase.', 'Dismiss', { duration: 6000 });
@@ -1707,6 +1732,8 @@ mt5AccountInfo: AccountSettings = {
     if (!this.roiForm.amount || this.roiForm.amount <= 0) return;
     this.isSavingRoi = true;
     try {
+      const userId = this.auth.user()?.id;
+      if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
       const savedTransaction = await this.supabaseService.createRoiTransaction({
         transaction_type: this.roiForm.transaction_type,
         transaction_date: this.roiForm.transaction_date,
@@ -1714,7 +1741,7 @@ mt5AccountInfo: AccountSettings = {
         note: this.roiForm.note.trim() || null,
         image_url: this.roiForm.image_url.trim() || null,
         account_id: this.roiForm.account_id || null
-      });
+      }, userId);
       this.roiTransactions = [savedTransaction, ...this.roiTransactions];
       this.roiPage = 1;
       this.roiForm = {
@@ -1744,8 +1771,16 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
-      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey);
+      const user = this.auth.user();
+      const userId = user?.id;
+      const [savedSettings, profile] = userId
+        ? await Promise.all([this.supabaseService.getUserSettings(userId), this.supabaseService.getProfile(userId)])
+        : [null, null];
+      this.profileDisplayName = profile?.display_name?.trim() || user?.user_metadata?.['display_name'] || user?.email?.split('@')[0] || 'Trader';
+      this.profileAvatarUrl = profile?.avatar_url?.trim() || user?.user_metadata?.['avatar_url'] || '';
+      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey) || savedSettings?.default_account_id;
       this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
+      if (savedSettings) this.applyPersistedUserSettings(savedSettings);
       if (this.selectedAccount) {
         localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
       } else {
@@ -1765,6 +1800,33 @@ mt5AccountInfo: AccountSettings = {
   private inferAccountSize(account: Account | null): number {
     const sizeMatch = account?.name.match(/(\d+(?:\.\d+)?)\s*k\b/i);
     return sizeMatch ? Number(sizeMatch[1]) * 1000 : 0;
+  }
+
+  private applyPersistedUserSettings(settings: UserSettings): void {
+    this.isDailyChart = settings.default_chart_mode === 'daily';
+    this.liveTradeSoundSettings = {
+      enabled: settings.notifications_enabled && settings.goal_notification_sound,
+      alertThreshold: settings.sound_notifications_threshold,
+      highAlertThreshold: Math.max(settings.sound_notifications_threshold, settings.sound_notifications_threshold + 0.6),
+      volume: settings.notification_volume
+    };
+    this.auraEnergy.updateConfig({
+      enabled: settings.aura_enabled,
+      travelDurationMs: settings.aura_travel_duration_ms,
+      minDelayMs: settings.aura_min_delay_ms,
+      maxDelayMs: settings.aura_max_delay_ms,
+      trailLengthPercent: settings.aura_trail_length_percent,
+      strokeWidth: settings.aura_stroke_width,
+      headRadius: settings.aura_head_radius,
+      bloomIntensity: settings.aura_bloom_intensity,
+      fadeDurationMs: settings.aura_fade_duration_ms,
+      colorStart: settings.aura_color_start,
+      colorMid: settings.aura_color_mid,
+      colorPeak: settings.aura_color_peak,
+      colorHead: settings.aura_color_head,
+      minTargets: settings.aura_min_targets,
+      maxTargets: settings.aura_max_targets
+    });
   }
 
   private applySelectedAccountSettings(): void {
@@ -1990,12 +2052,7 @@ mt5AccountInfo: AccountSettings = {
       this.generateTradingChartData();
     }, 1000);
 
-    try {
-      this.auraConfig = await this.auraEnergy.loadConfig();
-    } catch (error) {
-      console.error('Unable to load AURA energy settings:', error);
-    }
-
+    this.auraConfig = this.auraEnergy.getConfig();
     this.auraEnergy.start();
     this.cdr.markForCheck();
   }
@@ -6316,8 +6373,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
-      const finalMfe = Number(closedTrade.mfe) || 0;
-      const finalMae = Number(closedTrade.mae) || 0;
+      const closingProfit = Number(trade.profit);
+      const finalMfe = Math.max(Number(closedTrade.mfe) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
+      const finalMae = Math.min(Number(closedTrade.mae) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
+      closedTrade.mfe = String(finalMfe);
+      closedTrade.mae = String(finalMae);
       this.stopGaugeAlert(String(trade.ticket));
       this.gaugeAlertNotifiedTickets.delete(String(trade.ticket));
       this.mt5OpenPositionIds?.delete(String(trade.ticket));
