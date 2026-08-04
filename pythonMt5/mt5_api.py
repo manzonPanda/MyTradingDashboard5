@@ -111,7 +111,7 @@ def upload_trade_screenshot(ticket: int, symbol: str):
         print('⚠️ Screenshot upload skipped: MT5 window has invalid bounds')
         return None
 
-    with mss.mss() as screen:
+    with mss.MSS() as screen:
         image = screen.grab({'left': left, 'top': top, 'width': width, 'height': height})
         image_bytes = mss.tools.to_png(image.rgb, image.size)
 
