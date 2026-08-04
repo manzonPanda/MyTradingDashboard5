@@ -149,7 +149,13 @@ def upload_trade_screenshot(ticket: int, symbol: str):
     )
     signed_response.raise_for_status()
     signed_path = signed_response.json().get('signedURL')
-    return f'{SUPABASE_URL}{signed_path}' if signed_path and signed_path.startswith('/') else signed_path
+    if not signed_path:
+        return None
+    if signed_path.startswith('/storage/v1/'):
+        return f'{SUPABASE_URL}{signed_path}'
+    if signed_path.startswith('/'):
+        return f'{SUPABASE_URL}/storage/v1{signed_path}'
+    return signed_path
 
 def emit_trade_opened(pos, open_time_str, risk_usd):
     screenshot_url = None
