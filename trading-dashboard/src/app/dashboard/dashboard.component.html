@@ -32,31 +32,31 @@
     </div>
 
     <nav class="navigation-links" aria-label="Main menu">
-      <button class="navigation-link" type="button" title="Main Dashboard" [class.is-active]="isMainDashboard" (click)="navigateToWorkspace('dashboard')">
+      <button class="navigation-link" type="button" title="Main Dashboard" [class.is-active]="!isProfileSettingsOpen && isMainDashboard" (click)="navigateToWorkspace('dashboard')">
         <mat-icon>dashboard</mat-icon>
         <span><strong>Dashboard</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Accounts" [class.is-active]="currentWorkspace === 'accounts'" (click)="navigateToWorkspace('accounts')">
+      <button class="navigation-link" type="button" title="Accounts" [class.is-active]="!isProfileSettingsOpen && currentWorkspace === 'accounts'" (click)="navigateToWorkspace('accounts')">
         <mat-icon>account_balance</mat-icon>
         <span><strong>Accounts</strong><small>{{ selectedAccount?.name || 'Choose an account' }}</small></span>
       </button>
-      <button class="navigation-link" type="button" title="Risk Calculator" [class.is-active]="showAccountRiskCalculator" (click)="openAccountRiskCalculator()">
+      <button class="navigation-link" type="button" title="Risk Calculator" [class.is-active]="!isProfileSettingsOpen && showAccountRiskCalculator" (click)="openAccountRiskCalculator()">
         <mat-icon>calculate</mat-icon>
         <span><strong>Risk Calculator</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Trades" [class.is-active]="currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
+      <button class="navigation-link" type="button" title="Trades" [class.is-active]="!isProfileSettingsOpen && currentWorkspace === 'active-account'" (click)="navigateToWorkspace('active-account')">
         <mat-icon>account_balance_wallet</mat-icon>
         <span><strong>Trades</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Trading journey" [class.is-active]="currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
+      <button class="navigation-link" type="button" title="Trading journey" [class.is-active]="!isProfileSettingsOpen && currentWorkspace === 'trading-history'" (click)="navigateToWorkspace('trading-history')">
         <mat-icon>history</mat-icon>
         <span><strong>Trading journey</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="ROI" [class.is-active]="currentWorkspace === 'roi'" (click)="navigateToWorkspace('roi')">
+      <button class="navigation-link" type="button" title="ROI" [class.is-active]="!isProfileSettingsOpen && currentWorkspace === 'roi'" (click)="navigateToWorkspace('roi')">
         <mat-icon>insights</mat-icon>
         <span><strong>ROI</strong></span>
       </button>
-      <button class="navigation-link" type="button" title="Certificates" [class.is-active]="currentWorkspace === 'certificates'" (click)="navigateToWorkspace('certificates')">
+      <button class="navigation-link" type="button" title="Certificates" [class.is-active]="!isProfileSettingsOpen && currentWorkspace === 'certificates'" (click)="navigateToWorkspace('certificates')">
         <mat-icon>workspace_premium</mat-icon>
         <span><strong>Certificates</strong></span>
       </button>

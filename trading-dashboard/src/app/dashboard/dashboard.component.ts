@@ -250,6 +250,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
+    this.closeProfileSettings();
     this.activeWorkspace = workspace;
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
     if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
