@@ -6087,7 +6087,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: (trade.mfe ?? 0).toString(),
       mae: (trade.mae ?? 0).toString(),
-      screenshotUrl: this.getCachedTradeScreenshot(trade.position_id)
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id)
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
@@ -6109,7 +6109,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     await Promise.all(mt5Trades
       .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
       .map(async trade => {
-        const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position, trade.symbol);
+        const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
         if (screenshotUrl) {
           trade.screenshotUrl = screenshotUrl;
           this.cacheTradeScreenshot(trade.position, screenshotUrl);
@@ -6267,7 +6267,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   private async hydrateTradeScreenshot(trade: Table): Promise<void> {
     if (trade.screenshotUrl) return;
-    const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position, trade.symbol);
+    const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
     if (!screenshotUrl) return;
 
     trade.screenshotUrl = screenshotUrl;
