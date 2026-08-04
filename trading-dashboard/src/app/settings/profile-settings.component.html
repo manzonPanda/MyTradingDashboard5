@@ -1,4 +1,17 @@
-<main class="settings-page" *ngIf="!loading; else loadingState">
+<div class="settings-shell" *ngIf="!loading; else loadingState">
+  <aside class="settings-sidebar" aria-label="Main navigation">
+    <div class="settings-brand"><span class="settings-brand-icon">✦</span><span>A.U.R.A.</span></div>
+    <nav class="settings-navigation">
+      <button type="button" (click)="navigateTo('/')"><span>⌂</span>Dashboard</button>
+      <button type="button" (click)="navigateTo('/accounts')"><span>▦</span>Accounts</button>
+      <button type="button" (click)="navigateTo('/active-account')"><span>◈</span>Trades</button>
+      <button type="button" (click)="navigateTo('/trading-history')"><span>◷</span>Trading journey</button>
+      <button type="button" (click)="navigateTo('/roi')"><span>↗</span>ROI</button>
+      <button type="button" (click)="navigateTo('/certificates')"><span>◇</span>Certificates</button>
+      <button type="button" class="is-active"><span>⚙</span>Profile settings</button>
+    </nav>
+  </aside>
+  <main class="settings-page">
   <header class="settings-header">
     <div><p class="eyebrow">A.U.R.A. workspace</p><h1>Profile & settings</h1><p>Personalize your trading targets, dashboard, AURA, and notifications.</p></div>
     <div class="header-actions"><button type="button" class="secondary-button" (click)="backToDashboard()">Back to dashboard</button><button type="button" class="secondary-button" (click)="signOut()">Sign out</button><button type="button" class="primary-button" (click)="save()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save settings' }}</button></div>
@@ -56,4 +69,5 @@
     <button class="primary-button mobile-save" type="submit" [disabled]="saving">Save settings</button>
   </form>
 </main>
+</div>
 <ng-template #loadingState><div class="loading">Loading settings…</div></ng-template>

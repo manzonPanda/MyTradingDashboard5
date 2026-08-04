@@ -60,6 +60,10 @@ export class ProfileSettingsComponent implements OnInit {
     } finally { this.saving = false; }
   }
 
+  async navigateTo(path: string): Promise<void> {
+    await this.router.navigateByUrl(path);
+  }
+
   async backToDashboard(): Promise<void> {
     await this.router.navigateByUrl('/');
   }
