@@ -116,6 +116,7 @@ interface NotionPerformanceData {
   strategy: string; // select
   oneToOneReversal: boolean; // checkbox
   screenshots: string[]; // files
+  screenshotUrls: string[];
   modelForm: string[]; // multi_select
   idealSL: string; // select
   reviewed: boolean; // checkbox
@@ -3917,6 +3918,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           strategy: this.getNotionProperty(properties, 'Strategy', 'select') || '',
           oneToOneReversal: this.getNotionProperty(properties, '1:1 Reversal', 'checkbox') || false,
           screenshots: this.getNotionProperty(properties, 'Screenshots', 'files') || [],
+          screenshotUrls: this.getNotionFileUrls(properties, 'Screenshots'),
           modelForm: this.getNotionProperty(properties, 'Model form', 'multi_select') || [],
           idealSL: this.getNotionProperty(properties, 'Ideal SL', 'select') || '',
           reviewed: this.getNotionProperty(properties, 'Reviewed', 'checkbox') || false,
@@ -3945,6 +3947,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
     }).filter(item => item !== null) as NotionPerformanceData[];
+  }
+
+  private getNotionFileUrls(properties: any, propertyName: string): string[] {
+    const files = properties[propertyName]?.files;
+    if (!Array.isArray(files)) return [];
+
+    return files
+      .map((file: any) => file.type === 'file' ? file.file?.url : file.external?.url)
+      .filter((url: unknown): url is string => typeof url === 'string' && url.length > 0);
   }
 
   private getNotionProperty(properties: any, propertyName: string, type: string): any {

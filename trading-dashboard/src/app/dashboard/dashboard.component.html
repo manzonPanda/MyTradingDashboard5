@@ -2233,11 +2233,18 @@
                 </div>
               </td>
               <td *ngIf="columnVisibility.screenshots" class="col-screenshots">
-                <div class="files-container">
-                  <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
-                    📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
-                  </span>
+                <div class="journal-screenshot-gallery" *ngIf="data.screenshotUrls.length > 0; else screenshotNames">
+                  <a *ngFor="let screenshotUrl of data.screenshotUrls" class="journal-screenshot-link" [href]="screenshotUrl" target="_blank" rel="noopener noreferrer">
+                    <img class="journal-screenshot-preview" [src]="screenshotUrl" [alt]="data.instrument + ' trade screenshot'" loading="lazy">
+                  </a>
                 </div>
+                <ng-template #screenshotNames>
+                  <div class="files-container">
+                    <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
+                      📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
+                    </span>
+                  </div>
+                </ng-template>
               </td>
               <td *ngIf="columnVisibility.outcome" class="col-outcome">
                 <div class="files-container">
