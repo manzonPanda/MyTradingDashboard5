@@ -564,6 +564,8 @@ export class ConfettiService {
 
   private stopCelebration(): void {
     this.isPlaying = false;
+    this.celebrationMusic.pause();
+    this.celebrationMusic.currentTime = 0;
 
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
