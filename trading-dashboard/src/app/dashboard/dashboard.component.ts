@@ -7057,11 +7057,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private playProfitTargetMusic(): void {
-    const music = new Audio('/assets/sounds/profit-target-theme.mp3');
-    music.volume = 1;
-    music.play().catch(error => {
-      console.warn('Could not play profit-target music:', error);
-    });
+    void this.confetti.playCelebrationMusic();
   }
 
   // Helper method to play celebration sound
