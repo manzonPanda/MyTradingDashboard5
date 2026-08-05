@@ -13,7 +13,7 @@ export interface PropFirm {
 export interface Account {
   id: string;
   name: string;
-  firm?: string | null;
+  prop_firm_id?: string | null;
   account_number?: string | null;
   initial_balance?: number | null;
   profit_target_percent?: number | null;
@@ -239,7 +239,7 @@ export class SupabaseService {
   async getAccounts(): Promise<Account[]> {
     const { data, error } = await this.supabase
       .from('accounts')
-      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at')
+      .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at')
       .order('created_at', { ascending: false, nullsFirst: false });
     if (error) throw new Error(`Account loading failed: ${error.message}`);
     return (data as Account[]) || [];
@@ -254,7 +254,7 @@ export class SupabaseService {
       const { data, error } = await this.supabase
         .from('accounts')
         .insert({ ...account, user_id: userId })
-        .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
+        .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
         .abortSignal(controller.signal)
         .single();
       if (error) {
@@ -279,7 +279,7 @@ export class SupabaseService {
       .from('accounts')
       .update(updates)
       .eq('id', id)
-      .select('id, name, firm, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
+      .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
       .single();
     if (error) throw new Error(`Account update failed: ${error.message}`);
     return data as Account;

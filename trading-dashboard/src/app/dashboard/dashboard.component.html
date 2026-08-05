@@ -1320,10 +1320,10 @@
               </label>
               <label class="account-edit-field">
                 <span>Firm</span>
-                <select [(ngModel)]="accountEditForm.firm" name="account-firm">
-                  <option value="">Independent accounts</option>
-                  @for (firmName of firmOptions; track firmName) {
-                    <option [value]="firmName">{{ firmName }}</option>
+                <select [(ngModel)]="accountEditForm.prop_firm_id" name="account-firm">
+                  <option [ngValue]="null">Independent accounts</option>
+                  @for (firm of firmOptions; track firm.id) {
+                    <option [ngValue]="firm.id">{{ firm.name }}</option>
                   }
                 </select>
               </label>

@@ -518,7 +518,7 @@ export class DashboardComponent implements AfterViewInit {
   get firms(): { name: string; accountCount: number }[] {
     const accountCounts = new Map<string, number>();
     for (const account of this.accounts) {
-      const firm = account.firm?.trim() || 'Independent accounts';
+      const firm = this.getFirmName(account);
       accountCounts.set(firm, (accountCounts.get(firm) ?? 0) + 1);
     }
     return Array.from(new Set([
@@ -527,13 +527,17 @@ export class DashboardComponent implements AfterViewInit {
     ])).map(name => ({ name, accountCount: accountCounts.get(name) ?? 0 }));
   }
 
-  get firmOptions(): string[] {
-    return this.firms.map(firm => firm.name);
+  get firmOptions(): PropFirm[] {
+    return this.propFirms;
+  }
+
+  private getFirmName(account: Account): string {
+    return this.propFirms.find(firm => firm.id === account.prop_firm_id)?.name || 'Independent accounts';
   }
 
   get filteredAccounts(): Account[] {
     return this.selectedFirm
-      ? this.accounts.filter(account => (account.firm?.trim() || 'Independent accounts') === this.selectedFirm)
+      ? this.accounts.filter(account => this.getFirmName(account) === this.selectedFirm)
       : [];
   }
 
@@ -592,7 +596,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = null;
     this.accountEditForm = {
       name: '',
-      firm: this.selectedFirm === 'Independent accounts' ? '' : this.selectedFirm ?? '',
+      prop_firm_id: this.propFirms.find(firm => firm.name === this.selectedFirm)?.id || null,
       account_number: '',
       initial_balance: null,
       profit_target_percent: null,
@@ -610,7 +614,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = account.id;
     this.accountEditForm = {
       name: account.name,
-      firm: account.firm ?? '',
+      prop_firm_id: account.prop_firm_id ?? null,
       account_number: account.account_number ?? '',
       initial_balance: account.initial_balance ?? this.inferAccountSize(account),
       profit_target_percent: account.profit_target_percent ?? 0,
@@ -655,7 +659,7 @@ export class DashboardComponent implements AfterViewInit {
         this.selectedAccount = this.accounts[0] ?? null;
         if (this.selectedAccount) {
           localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
-          this.selectedFirm = this.selectedAccount.firm?.trim() || 'Independent accounts';
+          this.selectedFirm = this.getFirmName(this.selectedAccount);
         } else {
           localStorage.removeItem(this.selectedAccountStorageKey);
           this.selectedFirm = null;
@@ -685,7 +689,7 @@ export class DashboardComponent implements AfterViewInit {
     this.isSavingAccount = true;
     const accountData = {
       name: this.accountEditForm.name.trim(),
-      firm: this.accountEditForm.firm?.trim() || null,
+      prop_firm_id: this.accountEditForm.prop_firm_id || null,
       account_number: this.accountEditForm.account_number?.trim() || null,
       initial_balance: Number(this.accountEditForm.initial_balance) || 0,
       profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
@@ -702,7 +706,7 @@ export class DashboardComponent implements AfterViewInit {
         this.accounts = [createdAccount, ...this.accounts];
         this.selectedAccount = createdAccount;
         localStorage.setItem(this.selectedAccountStorageKey, createdAccount.id);
-        this.selectedFirm = createdAccount.firm?.trim() || 'Independent accounts';
+        this.selectedFirm = this.getFirmName(createdAccount);
         this.accountPage = 1;
         this.applySelectedAccountSettings();
         await this.loadMT5Data();
@@ -1918,7 +1922,7 @@ mt5AccountInfo: AccountSettings = {
         localStorage.removeItem(this.selectedAccountStorageKey);
       }
       this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
-      this.selectedFirm = this.selectedAccount?.firm?.trim() || (this.selectedAccount ? 'Independent accounts' : null);
+      this.selectedFirm = this.selectedAccount ? this.getFirmName(this.selectedAccount) : null;
       this.applySelectedAccountSettings();
     } catch (error) {
       console.error('Unable to load Supabase accounts:', error);
