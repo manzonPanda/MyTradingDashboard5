@@ -228,11 +228,18 @@ interface WeekSummary {
                     <span>No screenshot yet</span>
                   </div>
                 </ng-template>
-                <label class="trade-screenshot-upload" [class.is-uploading]="isUploadingScreenshots(trade)">
+                <div
+                  class="trade-screenshot-upload"
+                  [class.is-uploading]="isUploadingScreenshots(trade)"
+                  [class.is-dragging]="isDraggingScreenshots(trade)"
+                  (dragover)="onScreenshotDragOver(trade, $event)"
+                  (dragleave)="onScreenshotDragLeave(trade, $event)"
+                  (drop)="onScreenshotDrop(trade, $event)">
                   <input type="file" accept="image/*" multiple [disabled]="isUploadingScreenshots(trade)" (change)="uploadTradeScreenshots(trade, $event)">
-                  <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
-                  <span>{{ isUploadingScreenshots(trade) ? 'Uploading...' : 'Add screenshots' }}</span>
-                </label>
+                  <mat-icon aria-hidden="true">cloud_upload</mat-icon>
+                  <span>{{ isUploadingScreenshots(trade) ? 'Uploading...' : 'Drop images here or browse' }}</span>
+                  <small>Multiple images supported</small>
+                </div>
                 <span class="trade-screenshot-upload-error" *ngIf="getScreenshotUploadError(trade)">{{ getScreenshotUploadError(trade) }}</span>
               </div>
             </article>
@@ -261,6 +268,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   selectedDay: CalendarDay | null = null;
   private readonly uploadingScreenshotTickets = new Set<string>();
   private readonly screenshotUploadErrors = new Map<string, string>();
+  private readonly draggingScreenshotTickets = new Set<string>();
   private readonly screenshotLoadedTickets = new Set<string>();
   private readonly screenshotLoadingTickets = new Set<string>();
 
@@ -495,6 +503,31 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return this.screenshotLoadingTickets.has(String(trade.position));
   }
 
+  isDraggingScreenshots(trade: Table): boolean {
+    return this.draggingScreenshotTickets.has(String(trade.position));
+  }
+
+  onScreenshotDragOver(trade: Table, event: DragEvent): void {
+    event.preventDefault();
+    if (!this.isUploadingScreenshots(trade)) {
+      this.draggingScreenshotTickets.add(String(trade.position));
+    }
+  }
+
+  onScreenshotDragLeave(trade: Table, event: DragEvent): void {
+    event.preventDefault();
+    this.draggingScreenshotTickets.delete(String(trade.position));
+  }
+
+  onScreenshotDrop(trade: Table, event: DragEvent): void {
+    event.preventDefault();
+    this.draggingScreenshotTickets.delete(String(trade.position));
+    if (this.isUploadingScreenshots(trade)) return;
+
+    const files = Array.from(event.dataTransfer?.files || []).filter(file => file.type.startsWith('image/'));
+    void this.uploadTradeScreenshotFiles(trade, files);
+  }
+
   getScreenshotUploadError(trade: Table): string {
     return this.screenshotUploadErrors.get(String(trade.position)) || '';
   }
@@ -503,6 +536,10 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
     input.value = '';
+    await this.uploadTradeScreenshotFiles(trade, files);
+  }
+
+  private async uploadTradeScreenshotFiles(trade: Table, files: File[]): Promise<void> {
     if (!files.length || !trade.position) return;
 
     const ticket = String(trade.position);
