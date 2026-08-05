@@ -1932,7 +1932,6 @@ mt5AccountInfo: AccountSettings = {
     // Load MT5 data immediately
     try {
       await this.loadMT5Data();
-      console.log('✅ ngOnInit: MT5 data loaded successfully');
     } catch (error) {
       console.error('❌ ngOnInit: Error loading MT5 data:', error);
     }
@@ -1985,21 +1984,12 @@ mt5AccountInfo: AccountSettings = {
 
     socket.on('price_update', (data: any) => {
       if (!this.isActiveMt5Account()) return;
-      console.log("📊 Live price update received:", {
-        symbol: data.symbol,
-        ticket: data.ticket,
-        profit: data.profit,
-        live_rr: data.live_rr,
-        price_current: data.price_current
-      });
-
       // Update the price for existing trade (includes live_rr)
       this.updateMT5TradePrice(data);
 
       // Trigger change detection to display live trading session
       this.cdr.markForCheck();
 
-      // console.log('✅ Live trading session metrics updated. Open trades:', this.mt5LiveTrades.length);
     });
 
     // Start daily limit tracking
@@ -2012,7 +2002,6 @@ mt5AccountInfo: AccountSettings = {
         this.http.get(`${environment.backendUrlNotion}/api/news`)
       );
       this.newsData = Array.isArray(news) ? news : [];
-      console.log("📈 Forex Factory News Data:", this.newsData);
 
       // Ensure in-app UI reminders (sound + modal) are active regardless of FCM
       this.newsReminder.setUiReminderCallback((events: any[], minutesBefore: number) => {
@@ -2091,7 +2080,6 @@ mt5AccountInfo: AccountSettings = {
  
 
     // Simple table - no DataTables initialization needed!
-    console.log('✅ Simple Angular table ready - no DataTables complexity!');
 
     // Generate initial chart data
     this.generateTradingChartData();
@@ -2124,11 +2112,8 @@ mt5AccountInfo: AccountSettings = {
 
   initializeDataTable(): void {
     try {
-      console.log('🚀 Initializing DataTable with', this.tableData.length, 'rows');
-
       // Use Angular DataTables trigger for complex column support
       this.dtTrigger.next(null);
-      console.log('✅ DataTable initialized successfully');
 
     } catch (error) {
       console.error('❌ Error initializing DataTable:', error);
@@ -2137,22 +2122,18 @@ mt5AccountInfo: AccountSettings = {
 
   refreshDataTableWithAngularBinding(): void {
     try {
-      console.log('🔄 Refreshing DataTable with Angular binding for complex columns');
-
       // Force Angular change detection first
       this.cdr.detectChanges();
 
       // For Angular DataTables, we need to destroy and recreate to pick up new data
       setTimeout(() => {
         if ($.fn.dataTable.isDataTable('#myTable')) {
-          console.log('��️ Destroying existing Angular DataTable');
           $('#myTable').DataTable().destroy();
         }
 
         // Trigger recreation with new data
         setTimeout(() => {
           this.dtTrigger.next(null);
-          console.log('✅ DataTable refreshed with Angular binding');
         }, 100);
       }, 50);
 
@@ -2279,7 +2260,6 @@ mt5AccountInfo: AccountSettings = {
   }
   
   totalProfit(events: any[]): number {
-    console.log(events);
     const sum = events
       .filter(event => event.meta?.profit > 0)
       .reduce((acc: number, event: any) => acc + (event.meta?.profit || 0), 0);
@@ -2329,7 +2309,6 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       this.dtTrigger.unsubscribe();
       this.dtTrigger = new Subject();
       this.dtTrigger.next(null)
-      console.log("printing to DT")
     }
   }
 
@@ -2378,7 +2357,6 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       return cells;
     }); 
 
-    console.log(rows)
     // this.tableData = rows;
     this.tableData = rows.map(row => ({
       openDate: row[0],
@@ -2748,8 +2726,6 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           console.error('Start or end row not found');
         }
   
-        // Optional: Show the result in the console for debugging
-        console.log('Filtered data:', this.tableData);
       };
   
       // Read the file as an array buffer
@@ -2768,7 +2744,6 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   // Optional: Implement file upload to a server or Firebase
 onUpload(): void {
-  console.log('Uploading data...', this.tableData);
   const collectionRef = collection(this.firestore, 'trades');
 
   this.showProgressBar = true;
@@ -2810,25 +2785,20 @@ onUpload(): void {
       const tradesRef = collection(this.firestore, 'trades');
       getDocs(tradesRef).then((querySnapshot) => {
         const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
-        console.log("��� Loaded from Firestore:", firestoreTrades.length, "trades");
-
         // Don't overwrite existing tableData, merge with MT5 trades
         if (this.mt5LiveTrades.length > 0) {
-          console.log("🔴 Preserving existing MT5 trades:", this.mt5LiveTrades.length);
           // Keep MT5 trades and add Firestore trades
           this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
         } else {
           this.tableData = firestoreTrades;
         }
 
-        console.log("📊 Final tableData after loadTrades:", this.tableData.length);
         resolve(); // Notify that loading is done
       }).catch((error) => {
         console.warn('���️ Firestore connection issue - operating in offline mode:', error.message);
         // Continue with existing data or empty array
         if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
           this.tableData = [...this.mt5LiveTrades];
-          console.log("📊 Using MT5 data only:", this.tableData.length);
         } else {
           this.tableData = [];
         }
@@ -2884,7 +2854,6 @@ isRowAlreadySelected(row: any): boolean {
     this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
     .subscribe({
       next: async (res:any) => {
-        // console.log(res)
         this.trades = [];
         res.results.map((prop: any) => {
           const d = new Date(prop.properties.Date.date.start);
@@ -2902,13 +2871,11 @@ isRowAlreadySelected(row: any): boolean {
         let completed = 0;
 
         for (const trade of this.trades) {
-          // console.log("trade",trade)
           let relationId
           try {
              relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
             
           } catch (error) {
-            console.log("ERROR patching:",error)
           }
           const body = {
             "payload": {
@@ -2929,9 +2896,7 @@ isRowAlreadySelected(row: any): boolean {
               this.http.patch(`${this.BACKEND_URL_NOTION}/api/patchRelationIdToTrade`, body) //Patching
             );
             if (res) {
-              console.log("Patching successful: "+trade.tradeDate)
             }else{
-              console.log("Patching failed: "+trade.tradeDate)
             }
             completed++;
             this.progressPatching = Math.floor((completed / total) * 100);
@@ -3021,7 +2986,6 @@ isRowAlreadySelected(row: any): boolean {
           } else {
             await this.createRelationId(date); // make this async if needed
           }
-          console.log('done checking:', date);
           completed++;
           this.progressChecking = Math.floor((completed / total) * 100);
           
@@ -3031,9 +2995,6 @@ isRowAlreadySelected(row: any): boolean {
           console.error('Error checking relation for', date, error);
         }
     }
-    console.log('All dates checked');
-   
-    console.log(this.relations)
     const startDate = new Date(this.tableData[0].openDate ?? '')
     const endDate = new Date(this.tableData[this.tableData.length-1].openDate ?? '')
     this.getAllPagesFromDB(startDate,endDate) //ready for Patching.. relationIds to ActivityLog
@@ -3062,7 +3023,6 @@ isRowAlreadySelected(row: any): boolean {
     if (res) {
       // this.relations = []
       this.relations.push({ relationName: dateName, relationId: res.id })
-      console.log("created successful:"+dateName);
     } 
 
   }
@@ -3237,7 +3197,6 @@ isRowAlreadySelected(row: any): boolean {
   }
 
   async compareToNotion(){
-    console.log('🔍 Starting Compare to Notion process...');
     //for progress bar comparing
     const total = this.tableData.length;
     let completed = 0;
@@ -3266,13 +3225,11 @@ isRowAlreadySelected(row: any): boolean {
         );
         if (res.results && res.results.length > 0) {
           // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
-          // console.log("Matched found:",res.results[0].id)
           row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
           row.status = "Matched"
           console.log('✅ Match found for', originalDateStr, '- Status:', row.status);
         }else{
           row.status = "Unmatched"
-          // console.log('No Matched found for: '+isoDate, error);
             const tradesForUnmatched = await this.getTradesUnmatched(isoDate)
             row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
               trade
@@ -3307,7 +3264,6 @@ isRowAlreadySelected(row: any): boolean {
 }
 
   async getTradesUnmatched(isoDate:any): Promise<any>{
-    console.log(isoDate)
     const targetTime = new Date(isoDate); //"2025-07-04T15:37:00+08:00"
     // Subtract 10 minutes
     const from = new Date(targetTime.getTime() - 10 * 60 * 1000);
@@ -3346,9 +3302,7 @@ isRowAlreadySelected(row: any): boolean {
           tradesFoundForUnmatched.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}.${d.getFullYear()} ${hh}:${min}`, 
           tradeId: prop.id })
         });
-        console.log(tradesFoundForUnmatched)
       }else{
-        console.log("Not tradesFoundForUnmatched.")
       }
       return tradesFoundForUnmatched
   }
@@ -3387,7 +3341,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const allMatched = this.tableData.every(item => item.status === 'Matched');
     // const propFirmAccountValue = 5000; //change this in the future to read the excel file
     if (allMatched) {
-      console.log('✅ All trades are matched.');
       for (const trade of this.tableData) {
           const percentPnLTemp = (parseFloat(trade.netProfit) / this.mt5AccountInfo.startingBalance) * 100; // Assuming 5000 is the base value for PnL percentage calculation
           const percentPnL = parseFloat(percentPnLTemp.toFixed(2)); // -0.23
@@ -3410,7 +3363,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
               this.http.patch(`${this.BACKEND_URL_NOTION}/api/updatePropertiesToTrade`, body)
             );
             if (res) {
-              console.log("Updating successful: ",res)
             }
             completed++;
             this.progressPopulating = Math.floor((completed / total) * 100);
@@ -3421,7 +3373,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       }
 
     } else {
-      console.log('❌ Some trades are still unmatched.');
     }
   }
 
@@ -3451,7 +3402,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       );
 
       if (res) {
-        console.log('✅ News reminder notification sent:', title);
       }
     } catch (error) {
       console.error('��� Error sending notification:', error);
@@ -3460,12 +3410,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   async loadNotionPerformanceData(): Promise<void> {
     this.isLoadingNotionData = true;
-    console.log('🔄 Starting to load ALL Notion performance data with pagination...');
-
     try {
       // Check if backend is running first
-      console.log('����� Checking backend availability...');
-
       const backendRunning = await this.isBackendRunning();
 
       if (!backendRunning) {
@@ -3480,8 +3426,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       let startCursor: string | null = null;
       let pageCount = 0;
 
-      console.log('📤 Starting pagination to get ALL entries from your Notion database...');
-      // console.log('📤 Database ID: ef10ac6f79524ea49e4bc0997e0ee704');
 
       while (hasMore) {
         pageCount++;
@@ -3492,35 +3436,19 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           body.start_cursor = startCursor;
         }
 
-        console.log(`���� Fetching page ${pageCount}...`, startCursor ? `(cursor: ${startCursor.substring(0, 20)}...)` : '(first page)');
-
         // Use the proxy endpoint that matches your database ID exactly
         const proxyResponse: any = await firstValueFrom(
           this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
         );
 
-        console.log(`📥 Page ${pageCount} response:`, {
-          results_count: proxyResponse?.results?.length || 0,
-          has_more: proxyResponse?.has_more,
-          next_cursor: proxyResponse?.next_cursor ? `${proxyResponse.next_cursor.substring(0, 20)}...` : null
-        });
-
         if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
           // Add results from this page to our collection
           allResults = allResults.concat(proxyResponse.results);
-          console.log(`✅ Page ${pageCount}: Added ${proxyResponse.results.length} entries. Total so far: ${allResults.length}`);
-
           // Check if there are more pages
           hasMore = proxyResponse.has_more === true;
           startCursor = proxyResponse.next_cursor || null;
 
-          if (hasMore && startCursor) {
-            console.log(`������ More data available, fetching next page...`);
-          } else {
-            console.log(`🏁 Reached end of data. has_more: ${hasMore}, next_cursor: ${startCursor}`);
-          }
         } else {
-          console.log(`📭 Page ${pageCount}: No results found, ending pagination`);
           hasMore = false;
         }
 
@@ -3531,17 +3459,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       }
 
-      console.log(`������ Pagination complete! Retrieved ${allResults.length} total entries from ${pageCount} pages`);
-
       if (allResults.length > 0) {
-        // Show first page structure for debugging
-        console.log('��� First entry structure:', allResults[0]);
-        console.log('📝 Properties available:', Object.keys(allResults[0].properties || {}));
-
         this.notionPerformanceData = this.parseNotionResponse(allResults);
-        console.log('✅ Your complete Notion data loaded and parsed:', this.notionPerformanceData.length, 'records');
-        console.log('✅ Sample parsed record:', this.notionPerformanceData[0]);
-  
+ 
       } else {
         console.warn('⚠��� No results found in your Notion database after pagination');
         this.notionPerformanceData = [];
@@ -3572,7 +3492,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     } finally {
       this.isLoadingNotionData = false;
       this.cdr.markForCheck();
-      console.log('🏁 Finished loading your complete Notion data');
     }
   }
 
@@ -3580,7 +3499,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
-    console.log('🎨 Generating beautiful trading chart data...');
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
     const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
     const chartRange = Math.max(startingBalance * 0.1, 1);
@@ -3681,7 +3599,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // If no trades, show empty chart with starting balance and reference lines
     if (sortedTrades.length === 0) {
-      console.log('📊 No trade data found, showing empty chart...');
       const currentTotalPnL = this.calculateTotalPnL();
       const pnlLineValue = startingBalance + currentTotalPnL;
       const accountSize = this.calculateAccountSize();
@@ -3911,8 +3828,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       ]
     };
 
-    console.log('✨ Beautiful trading chart generated with', labels.length, 'data points!');
-
     // Trigger chart update with animation
     if (this.chart) {
       this.chart.update('active');
@@ -3924,28 +3839,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
-    console.log('�� Parsing your Notion response. Results count:', results?.length || 0);
-
     if (!Array.isArray(results)) {
       console.error('❌ Results is not an array:', results);
       return [];
     }
 
     if (results.length === 0) {
-      console.log('��� No pages found in your Notion database');
       return [];
-    }
-
-    // First, let's see what properties you actually have in your database
-    const firstPage = results[0];
-    if (firstPage && firstPage.properties) {
-      console.log('�� Your Notion database properties:', Object.keys(firstPage.properties));
-
-      // Show the structure of each property type
-      Object.keys(firstPage.properties).forEach(key => {
-        const prop = firstPage.properties[key];
-        console.log(`   - ${key}: ${prop.type}`, prop);
-      });
     }
 
     return results.map((page, index) => {
@@ -4017,11 +3917,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     try {
       const property = properties[propertyName];
       if (!property) {
-        console.log(`🔍 Property "${propertyName}" not found. Available properties:`, Object.keys(properties));
         return null;
       }
 
-      // console.log(`📋 Getting property "${propertyName}" of type "${type}":`, property);
 
       switch (type) {
         case 'select':
@@ -4243,8 +4141,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   async isBackendRunning(): Promise<boolean> {
     try {
       // Try a simple POST request to see if backend endpoint is responding
-      console.log('��� Quick check if backend is responding...');
-
       const quickTestBody = {}; // Empty body as per your specification
 
       await firstValueFrom(
@@ -4253,21 +4149,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         })
       );
 
-      console.log('✅ Backend is responding to POST requests with empty body');
       return true;
 
     } catch (error: any) {
-      console.log('⚠️ Backend quick check failed:', error.status || 'Connection error');
-
       // If it's a 404 with GET, but we're using POST now, so any response means server is up
       if (error.status === 404) {
-        console.log('❌ Backend endpoint not found');
         return false;
       }
 
       // If it's any other error but not connection error, server might be running
       if (error.status && error.status !== 0) {
-        console.log('��️ Backend is running but has issues with the API');
         return true; // Server is running, just has issues
       }
 
@@ -4309,8 +4200,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   async testBackendConnection(): Promise<boolean> {
-    console.log('🔍 Testing backend connection...');
-    console.log('Backend URL:', this.BACKEND_URL_NOTION);
 
     try {
       console.log('Testing POST request to /api/getAllPagesFromDB with empty body...');
@@ -5104,7 +4993,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.tradeEmotionalStates[tradeKey].isExpanded = false;
 
     // TODO: In the future, send to Notion API
-    console.log('💭 Emotional entry recorded for trade:', entry);
 
     // Show confirmation
     alert(`Emotional state "${emotion}" recorded for ${trade.symbol} trade! This will be synced to Notion in the future.`);
@@ -5773,7 +5661,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   getPerformanceHeatmap(): { value: number, class: string, tooltip: string }[] {
     const last30Days: { value: number, class: string, tooltip: string }[] = [];
 
-    // Debug: log table data info
     // console.log('Total trades in tableData:', this.tableData.length);
     if (this.tableData.length > 0) {
       // console.log('First trade date:', this.tableData[0].openDate);
@@ -6120,7 +6007,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const loadVersion = ++this.mt5DataLoadVersion;
     const accountId = this.selectedAccount?.id ?? null;
     this.isLoadingMT5Data = true;
-    console.log('🔄 loadMT5Data started');
     let response: any[] = [];
 
     try {
@@ -6174,8 +6060,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
     } as Table));
 
-    console.log('✅ Mapped trades:', mt5Trades.length);
-    console.log('📊 First trade sample:', mt5Trades[0]);
     this.mt5LiveTrades = mt5Trades;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
@@ -6279,7 +6163,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   
 
   simulateMFEUpdates(ticket: number): void {
-    console.log('📈 Starting MFE simulation for ticket:', ticket);
     let updateCount = 0;
     const maxUpdates = 10;
 
@@ -6295,12 +6178,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         price_current: (1.2500 + Math.random() * 0.01).toFixed(5)
       };
 
-      console.log(`💰 MFE Update ${updateCount}:`, priceUpdateData);
       this.updateMT5TradePrice(priceUpdateData);
 
       if (updateCount >= maxUpdates) {
         clearInterval(interval);
-        console.log('✅ MFE simulation completed');
       }
     }, 1000); // Update every second for demo
   }
@@ -6441,7 +6322,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (!this.isActiveMt5Account()) return;
     const trade = tradeData;
     if (!trade) return;
-    console.log("Open date from MT5:",trade.time_open)
     const extremes = this.getLiveExtremes(trade.ticket);
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
@@ -6478,7 +6358,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     );
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
-      console.log('✅ Adding new trade to mt5LiveTrades...');
       this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
       this.mt5OpenPositionIds?.add(String(newTrade.position));
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
@@ -6513,13 +6392,11 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       });
 
     } else {
-      console.log('⚠️ Trade already exists, skipping duplicate');
     }
   }
 
   // Close MT5 trade when closed
   closeMT5Trade(tradeData: any): void {
-    console.log('🔄 Closing MT5 trade:', tradeData);
     const trade = tradeData;
 
     const liveIndex = this.mt5LiveTrades.findIndex(t =>
@@ -6562,7 +6439,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Update the beautiful chart with closed trade
       this.updateChartWithClosedTrade(closedTrade);
 
-      console.log('✅ MT5 trade closed');
     }
   }
 
@@ -6686,7 +6562,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   updateTableData(): void {
-    console.log('��� updateTableData called');
     console.log('������ Before update - tableData:', this.tableData ? this.tableData.length : 0);
     console.log('���� Before update - mt5LiveTrades:', this.mt5LiveTrades.length);
 
@@ -6698,7 +6573,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ After update - tableData:', this.tableData.length, 'account-scoped trades');
     console.log('📊 Array reference changed:', previousLength !== this.tableData.length ? 'YES' : 'NO');
-    console.log('🎯 Final tableData:', this.tableData);
 
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
@@ -6840,8 +6714,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   addRowDirectlyToDataTable(newTrade: Table): void {
     try {
-      console.log('🎯 Adding row directly to DataTable:', newTrade);
-
       if ($.fn.dataTable.isDataTable('#myTable')) {
         const table = $('#myTable').DataTable();
 
@@ -6867,13 +6739,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
         // Add the row and redraw
         const rowNode = table.row.add(rowData).draw(false);
-        console.log('✅ Row added directly to DataTable');
-
         // Scroll to top to show the new row
         $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
 
-      } else {
-        console.log('⚠️ DataTable not initialized, cannot add row directly');
       }
 
     } catch (error) {
@@ -6883,9 +6751,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   refreshDataTable(): void {
     try {
-      console.log('🔄 Refreshing DataTable with', this.tableData.length, 'rows');
-      console.log('📊 TableData contents:', this.tableData);
-
       // Use Angular binding refresh for complex columns
       this.refreshDataTableWithAngularBinding();
 
@@ -6895,8 +6760,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   forceDataTableRefresh(): void {
-    console.log('💪 Force refreshing DataTable...');
-
     // Method 1: Immediate change detection
     this.cdr.detectChanges();
 
@@ -6908,11 +6771,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   nuclearDataTableRebuild(): void {
     try {
-      console.log('💥 Nuclear DataTable rebuild with', this.tableData.length, 'rows');
-
       // Step 1: Completely destroy existing DataTable
       if ($.fn.dataTable.isDataTable('#myTable')) {
-        console.log('🗑��� Destroying existing DataTable completely');
         $('#myTable').DataTable().destroy();
         $('#myTable').empty(); // Clear all HTML content
       }
@@ -6923,17 +6783,13 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       // Step 3: Wait for DOM cleanup
       setTimeout(() => {
         // Step 4: Manually rebuild table HTML if needed
-        console.log('��� Rebuilding table structure...');
-
         // Step 5: Reinitialize with fresh DataTable
         setTimeout(() => {
-          console.log('🚀 Reinitializing DataTable from scratch');
           this.dtTrigger.next(null);
 
           // Step 6: If still no luck, try direct jQuery DataTable initialization
           setTimeout(() => {
             if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
-              console.log('🔧 Fallback: Direct jQuery DataTable initialization');
               $('#myTable').DataTable(this.dtOptions);
             }
           }, 300);
@@ -6965,12 +6821,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   refreshNewsReminders(): void {
-    console.log('🔄 Refreshing news reminders...');
     this.newsReminder.scheduleAllReminders(this.newsData);
   }
 
   clearAllReminders(): void {
-    console.log('🧹 Clearing all news reminders...');
     this.newsReminder.clearAllReminders();
   }
 
@@ -7052,7 +6906,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
   // Test method to manually trigger confetti (for development/testing)
   testConfettiCelebration(): void {
-    console.log('🧪 Testing confetti celebration manually...');
     // Stop any existing celebration first
     this.confetti.stopCurrentCelebration();
     // Start new celebration
@@ -7069,11 +6922,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (currentPercentageGain >= this.mt5AccountInfo.profitTarget) {
       // Only trigger if we haven't celebrated this target yet
       if (!this.hasCelebratedCurrentTarget) {
-        console.log('🎉 PROFIT TARGET REACHED! Triggering celebration...', {
-          currentGain: currentPercentageGain,
-          target: this.mt5AccountInfo.profitTarget
-        });
-
         // Mark as celebrated to prevent multiple triggers
         this.hasCelebratedCurrentTarget = true;
         this.lastCelebratedTarget = this.mt5AccountInfo.profitTarget;
@@ -7086,7 +6934,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     } else {
       // If we fall below target, stop celebration and reset flag
       if (this.hasCelebratedCurrentTarget) {
-        console.log('📉 Below profit target, stopping celebration...');
         this.confetti.stopCurrentCelebration();
         this.hasCelebratedCurrentTarget = false;
       }
@@ -7179,7 +7026,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           clearInterval(this.activeNotificationSoundInterval);
           this.activeNotificationSoundInterval = null;
         }
-        console.log('🔔 Notification dismissed');
       });
 
       // Also stop sound if notification auto-closes (just in case)
@@ -7190,7 +7036,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         }
       });
 
-      console.log(`🔔 News notification shown with repeating sound: ${title}`);
     } catch (e) {
       console.warn('Failed to show notification:', e);
     }
