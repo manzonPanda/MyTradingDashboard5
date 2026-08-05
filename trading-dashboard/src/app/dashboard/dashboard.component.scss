@@ -10746,6 +10746,23 @@ table.simple-table {
   color: inherit;
   text-align: left;
   cursor: pointer;
+  transition: transform 160ms ease, filter 160ms ease, background-color 160ms ease;
+}
+
+.navigation-profile-main:hover {
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.12);
+  filter: brightness(1.08);
+}
+
+.navigation-profile-main:active {
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.navigation-profile-main:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
 }
 
 .navigation-profile-avatar {
