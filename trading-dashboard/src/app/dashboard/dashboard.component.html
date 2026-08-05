@@ -1115,6 +1115,60 @@
     </section>
   }
 
+  @if (currentWorkspace === 'certificates') {
+    <section class="certificates-workspace" aria-labelledby="certificates-page-title">
+      <header class="certificates-hero">
+        <div class="certificates-hero-copy">
+          <p class="certificates-eyebrow">Proof of progress</p>
+          <h1 id="certificates-page-title">Your prop-firm milestones.</h1>
+          <p>Keep every evaluation pass, funded account, and payout proof in one private portfolio.</p>
+        </div>
+        <div class="certificates-hero-mark" aria-hidden="true"><mat-icon>workspace_premium</mat-icon><span>Built, passed, paid.</span></div>
+      </header>
+
+      <div class="certificates-metrics">
+        <article class="certificate-metric-card"><mat-icon>verified</mat-icon><div><span>Evaluations passed</span><strong>{{ certificates.length }}</strong></div></article>
+        <article class="certificate-metric-card"><mat-icon>account_balance</mat-icon><div><span>Funded firms</span><strong>{{ fundedCertificateCount }}</strong></div></article>
+        <article class="certificate-metric-card"><mat-icon>payments</mat-icon><div><span>Total payouts</span><strong>{{ certificatePayoutTotal | currency:'USD':'symbol':'1.0-0' }}</strong></div></article>
+      </div>
+
+      @if (isLoadingCertificates) {
+        <div class="certificates-loading"><mat-icon>sync</mat-icon><span>Loading your milestones…</span></div>
+      } @else if (certificates.length) {
+        <section class="certificate-portfolio-card" aria-labelledby="certificate-portfolio-title">
+          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Achievement archive</p><h2 id="certificate-portfolio-title">Certificates</h2></div><span>{{ certificates.length }} saved</span></div>
+          <div class="certificate-card-grid">
+            @for (certificate of certificates; track certificate.id) {
+              <article class="certificate-card" [class.is-funded]="certificate.status === 'funded'">
+                <div class="certificate-card-top"><span class="certificate-badge"><mat-icon>{{ certificate.status === 'funded' ? 'workspace_premium' : 'verified' }}</mat-icon>{{ certificate.status }}</span><span>{{ formatRoiDate(certificate.passed_date) }}</span></div>
+                @if (certificate.file_path?.startsWith('http')) {
+                  <img class="certificate-preview" [src]="certificate.file_path" [alt]="certificate.firm_name + ' certificate'">
+                } @else {
+                  <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
+                }
+                <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
+                <h3>{{ certificate.firm_name }}</h3>
+                <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
+                @if (certificate.account_size) { <strong class="certificate-size">{{ certificate.account_size | currency:'USD':'symbol':'1.0-0' }} account</strong> }
+                @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
+                @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
+              </article>
+            }
+          </div>
+        </section>
+
+        <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
+          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
+          @if (certificatePayouts.length) {
+            <div class="payout-list">@for (payout of certificatePayouts; track payout.id) { <article class="payout-row"><span class="payout-icon"><mat-icon>south_west</mat-icon></span><div><strong>{{ payout.firm_name }}</strong><small>{{ formatRoiDate(payout.payout_date) }}{{ payout.notes ? ' · ' + payout.notes : '' }}</small></div><strong class="payout-amount">+{{ payout.amount | currency:'USD':'symbol':'1.0-0' }}</strong></article> }</div>
+          } @else { <div class="certificates-inline-empty"><mat-icon>payments</mat-icon><span>Your first payout will appear here when it is recorded.</span></div> }
+        </section>
+      } @else {
+        <section class="certificates-empty-state"><div class="certificate-empty-icon"><mat-icon>workspace_premium</mat-icon></div><p class="certificates-eyebrow">Your archive is ready</p><h2>Add your first certificate</h2><p>Once the certificates and payouts tables are added in Supabase, your three evaluation passes can live here as a polished, private portfolio.</p><div class="certificate-setup-steps"><span><b>01</b> Add certificate metadata</span><span><b>02</b> Upload the proof file</span><span><b>03</b> Track future payouts</span></div></section>
+      }
+    </section>
+  }
+
   <section id="accounts" class="accounts-section" *ngIf="currentWorkspace === 'accounts'">
     <div class="accounts-hero">
       <div>
@@ -1266,7 +1320,12 @@
               </label>
               <label class="account-edit-field">
                 <span>Firm</span>
-                <input type="text" [(ngModel)]="accountEditForm.firm" placeholder="Prop firm" />
+                <select [(ngModel)]="accountEditForm.firm" name="account-firm">
+                  <option value="">Independent accounts</option>
+                  @for (firmName of firmOptions; track firmName) {
+                    <option [value]="firmName">{{ firmName }}</option>
+                  }
+                </select>
               </label>
               <label class="account-edit-field">
                 <span>Account number</span>

@@ -38,7 +38,7 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
-import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { Account, Certificate, Payout, PropFirm, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
@@ -190,6 +190,9 @@ export class DashboardComponent implements AfterViewInit {
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
   roiTransactions: RoiTransaction[] = [];
+  certificates: Certificate[] = [];
+  certificatePayouts: Payout[] = [];
+  isLoadingCertificates = false;
   isLoadingRoi = false;
   isSavingRoi = false;
   isRoiEntryModalOpen = false;
@@ -259,6 +262,9 @@ export class DashboardComponent implements AfterViewInit {
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
     if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
       void this.loadRoiTransactions();
+    }
+    if (workspace === 'certificates' && !this.certificates.length && !this.isLoadingCertificates) {
+      void this.loadCertificates();
     }
 
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
@@ -477,6 +483,12 @@ export class DashboardComponent implements AfterViewInit {
   mt5ImportedTrades: Table[] = [];
   mt5SyncAccountId = '';
   accounts: Account[] = [];
+  propFirms: PropFirm[] = [
+    { id: 'the5ers', name: 'The5ers' },
+    { id: 'ftmo', name: 'FTMO' },
+    { id: 'funding-pips', name: 'Funding Pips' },
+    { id: 'funded-next', name: 'FundedNext' }
+  ];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
@@ -509,7 +521,14 @@ export class DashboardComponent implements AfterViewInit {
       const firm = account.firm?.trim() || 'Independent accounts';
       accountCounts.set(firm, (accountCounts.get(firm) ?? 0) + 1);
     }
-    return Array.from(accountCounts, ([name, accountCount]) => ({ name, accountCount }));
+    return Array.from(new Set([
+      ...this.propFirms.map(firm => firm.name),
+      ...accountCounts.keys()
+    ])).map(name => ({ name, accountCount: accountCounts.get(name) ?? 0 }));
+  }
+
+  get firmOptions(): string[] {
+    return this.firms.map(firm => firm.name);
   }
 
   get filteredAccounts(): Account[] {
@@ -1154,9 +1173,7 @@ mt5AccountInfo: AccountSettings = {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
     this.saveLiveTradeDisplayPreferences();
-    for (const trade of this.mt5LiveTrades) {
-      this.notifyGaugePercentage(trade);
-    }
+    this.stopAllGaugeAlerts();
     this.cdr.markForCheck();
   }
 
@@ -1753,6 +1770,70 @@ mt5AccountInfo: AccountSettings = {
     return this.roiExpenses ? (this.roiNetReturn / this.roiExpenses) * 100 : 0;
   }
 
+  get certificatePayoutTotal(): number {
+    return this.certificatePayouts.reduce((total, payout) => total + Number(payout.amount || 0), 0);
+  }
+
+  get fundedCertificateCount(): number {
+    return this.certificates.filter(certificate => certificate.status === 'funded').length;
+  }
+
+  private async loadCertificates(): Promise<void> {
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+    this.isLoadingCertificates = true;
+    const suppliedCertificates: Omit<Certificate, 'id' | 'user_id' | 'created_at' | 'payouts'>[] = [
+      {
+        firm_name: 'The5ers',
+        program_name: 'High Stakes, 5K',
+        account_size: 5000,
+        certificate_type: 'funded',
+        passed_date: '2025-12-05',
+        status: 'funded',
+        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2F2990b1ef616d488e88223d5a351f910e?format=webp&width=800&height=1200'
+      },
+      {
+        firm_name: 'The5ers',
+        program_name: 'Officially Funded Trader',
+        account_size: 5000,
+        certificate_type: 'funded',
+        passed_date: '2026-08-05',
+        status: 'funded',
+        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ff90a7a3bd99a4854b46f578e37964ba2?format=webp&width=800&height=1200'
+      },
+      {
+        firm_name: 'The5ers',
+        program_name: 'High Stakes, 2.5K',
+        account_size: 2500,
+        certificate_type: 'funded',
+        passed_date: '2026-07-10',
+        status: 'funded',
+        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ffe4cf7a481b8401ba22af1e43207ac27?format=webp&width=800&height=1200'
+      }
+    ];
+
+    try {
+      [this.certificates, this.certificatePayouts] = await Promise.all([
+        this.supabaseService.getCertificates(userId),
+        this.supabaseService.getPayouts(userId)
+      ]);
+      if (!this.certificates.length) {
+        for (const certificate of suppliedCertificates) {
+          await this.supabaseService.createCertificate(certificate);
+        }
+        this.certificates = await this.supabaseService.getCertificates(userId);
+      }
+    } catch (error) {
+      console.error('Unable to load certificates:', error);
+      this.certificates = suppliedCertificates.map((certificate, index) => ({ ...certificate, id: `supplied-certificate-${index}` }));
+      this.certificatePayouts = [];
+      this.snackBar.open('Showing your certificates locally. Create the Supabase tables to save them permanently.', 'Dismiss', { duration: 7000 });
+    } finally {
+      this.isLoadingCertificates = false;
+      this.cdr.markForCheck();
+    }
+  }
+
   private async loadRoiTransactions(): Promise<void> {
     this.isLoadingRoi = true;
     try {
@@ -1810,6 +1891,17 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
+      try {
+        this.propFirms = await this.supabaseService.getPropFirms();
+      } catch (error) {
+        console.warn('Prop firm directory unavailable; using account firm names.', error);
+        this.propFirms = [
+          { id: 'the5ers', name: 'The5ers' },
+          { id: 'ftmo', name: 'FTMO' },
+          { id: 'funding-pips', name: 'Funding Pips' },
+          { id: 'funded-next', name: 'FundedNext' }
+        ];
+      }
       const user = this.auth.user();
       const userId = user?.id;
       const [savedSettings, profile] = userId
@@ -1928,6 +2020,7 @@ mt5AccountInfo: AccountSettings = {
     this.setupClickOutsideListener();
     await this.loadAccounts();
     if (this.currentWorkspace === 'roi') await this.loadRoiTransactions();
+    if (this.currentWorkspace === 'certificates') await this.loadCertificates();
 
     // Load MT5 data immediately
     try {
@@ -3376,11 +3469,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  async getMt5API(){
-    const res: any = await firstValueFrom(
-      this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
-    );
-    return res;
+  async getMt5API(): Promise<any[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<any[]>(`${this.BACKEND_URL_MT5}/api/history`)
+      );
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      console.warn('MT5 history unavailable; using Supabase trade history.', error);
+      return [];
+    }
   }
 
   async sendNotif(token: string, title: string, body: string): Promise<void> {
@@ -6014,13 +6112,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.getSupabaseTrades(),
         this.getMt5API()
       ]);
-      this.mt5OpenPositionIds = new Set(
-        this.isActiveMt5Account()
-          ? (mt5History || [])
-              .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
-              .map((trade: any) => String(trade.position_id))
-          : []
-      );
+      this.mt5OpenPositionIds = mt5History.length > 0
+        ? new Set(
+            this.isActiveMt5Account()
+              ? mt5History
+                  .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
+                  .map((trade: any) => String(trade.position_id))
+              : []
+          )
+        : null;
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
@@ -6491,6 +6591,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       sound.currentTime = 0;
       soundMap.delete(ticket);
     }
+  }
+
+  private stopAllGaugeAlerts(): void {
+    const tickets = new Set([
+      ...this.activeGaugeAlertLevels.keys(),
+      ...this.gaugeAlertSounds.keys(),
+      ...this.highGaugeAlertSounds.keys()
+    ]);
+    tickets.forEach(ticket => this.stopGaugeAlert(ticket));
   }
 
   updateMT5TradePrice(priceData: any): void {
