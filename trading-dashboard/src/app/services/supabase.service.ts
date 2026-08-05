@@ -43,7 +43,7 @@ export interface RoiTransaction {
 export interface Certificate {
   id: string;
   user_id?: string;
-  firm_name: string;
+  prop_firm_id?: string | null;
   program_name?: string | null;
   account_size?: number | null;
   certificate_type: 'evaluation' | 'funded' | 'other';
@@ -312,6 +312,30 @@ export class SupabaseService {
       .single();
     if (error) throw new Error(`Certificate creation failed: ${error.message}`);
     return data as Certificate;
+  }
+
+  async updateCertificate(id: string, updates: Omit<Partial<Certificate>, 'id' | 'user_id' | 'created_at' | 'payouts'>): Promise<Certificate> {
+    const userId = await this.getAuthenticatedUserId();
+    const { data, error } = await this.supabase
+      .from('certificates')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select('*')
+      .single();
+    if (error) throw new Error(`Certificate update failed: ${error.message}`);
+    return data as Certificate;
+  }
+
+  async createPayout(payout: Omit<Payout, 'id' | 'user_id' | 'created_at'>): Promise<Payout> {
+    const userId = await this.getAuthenticatedUserId();
+    const { data, error } = await this.supabase
+      .from('payouts')
+      .insert({ ...payout, user_id: userId })
+      .select('*')
+      .single();
+    if (error) throw new Error(`Payout creation failed: ${error.message}`);
+    return data as Payout;
   }
 
   async uploadCertificateFile(file: File, certificateId: string): Promise<string> {

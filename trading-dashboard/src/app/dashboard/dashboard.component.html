@@ -1123,7 +1123,13 @@
           <h1 id="certificates-page-title">Your prop-firm milestones.</h1>
           <p>Keep every evaluation pass, funded account, and payout proof in one private portfolio.</p>
         </div>
-        <div class="certificates-hero-mark" aria-hidden="true"><mat-icon>workspace_premium</mat-icon><span>Built, passed, paid.</span></div>
+        <div class="certificates-hero-media">
+          <img class="certificates-hero-image" src="https://cdn.builder.io/api/v1/image/assets%2F1c25d1fefb6a4ce2beefe8b7692ae37%2F863e94059e1f4385885ff6246414d0ae?format=webp&width=800&height=1200" alt="Certificate portfolio preview">
+          <div class="certificates-hero-actions">
+            <button class="certificate-action-button" type="button" (click)="openPayoutCreator()" [disabled]="!certificates.length"><mat-icon>payments</mat-icon><span>Record payout</span></button>
+            <button class="certificate-action-button is-primary" type="button" (click)="openCertificateCreator()"><mat-icon>add</mat-icon><span>Add certificate</span></button>
+          </div>
+        </div>
       </header>
 
       <div class="certificates-metrics">
@@ -1142,12 +1148,13 @@
               <article class="certificate-card" [class.is-funded]="certificate.status === 'funded'">
                 <div class="certificate-card-top"><span class="certificate-badge"><mat-icon>{{ certificate.status === 'funded' ? 'workspace_premium' : 'verified' }}</mat-icon>{{ certificate.status }}</span><span>{{ formatRoiDate(certificate.passed_date) }}</span></div>
                 @if (certificate.file_path?.startsWith('http')) {
-                  <img class="certificate-preview" [src]="certificate.file_path" [alt]="certificate.firm_name + ' certificate'">
+                  <img class="certificate-preview" [src]="certificate.file_path" [alt]="getCertificateFirmName(certificate) + ' certificate'">
                 } @else {
                   <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
                 }
                 <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
-                <h3>{{ certificate.firm_name }}</h3>
+                <h3>{{ getCertificateFirmName(certificate) }}</h3>
+                <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
                 <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
                 @if (certificate.account_size) { <strong class="certificate-size">{{ certificate.account_size | currency:'USD':'symbol':'1.0-0' }} account</strong> }
                 @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
@@ -1158,13 +1165,45 @@
         </section>
 
         <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
-          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
+          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><div class="certificate-heading-actions"><span>{{ certificatePayouts.length }} recorded</span><button class="certificate-inline-action" type="button" (click)="openPayoutCreator()" [disabled]="!certificates.length">Add payout</button></div></div>
           @if (certificatePayouts.length) {
             <div class="payout-list">@for (payout of certificatePayouts; track payout.id) { <article class="payout-row"><span class="payout-icon"><mat-icon>south_west</mat-icon></span><div><strong>{{ payout.firm_name }}</strong><small>{{ formatRoiDate(payout.payout_date) }}{{ payout.notes ? ' · ' + payout.notes : '' }}</small></div><strong class="payout-amount">+{{ payout.amount | currency:'USD':'symbol':'1.0-0' }}</strong></article> }</div>
           } @else { <div class="certificates-inline-empty"><mat-icon>payments</mat-icon><span>Your first payout will appear here when it is recorded.</span></div> }
         </section>
       } @else {
-        <section class="certificates-empty-state"><div class="certificate-empty-icon"><mat-icon>workspace_premium</mat-icon></div><p class="certificates-eyebrow">Your archive is ready</p><h2>Add your first certificate</h2><p>Once the certificates and payouts tables are added in Supabase, your three evaluation passes can live here as a polished, private portfolio.</p><div class="certificate-setup-steps"><span><b>01</b> Add certificate metadata</span><span><b>02</b> Upload the proof file</span><span><b>03</b> Track future payouts</span></div></section>
+        <section class="certificates-empty-state"><div class="certificate-empty-icon"><mat-icon>workspace_premium</mat-icon></div><p class="certificates-eyebrow">Your archive is ready</p><h2>Add your first certificate</h2><p>Upload a certificate to start your private portfolio.</p><button class="certificate-action-button is-primary" type="button" (click)="openCertificateCreator()"><mat-icon>add</mat-icon><span>Add certificate</span></button></section>
+      }
+
+      @if (isCertificateModalOpen) {
+        <div class="certificate-modal-backdrop" role="presentation" (click)="closeCertificateModal()">
+          <section class="certificate-modal" role="dialog" aria-modal="true" aria-labelledby="certificate-modal-title" (click)="$event.stopPropagation()">
+            <div class="certificate-modal-heading"><div><p class="certificates-eyebrow">Certificate archive</p><h2 id="certificate-modal-title">{{ editingCertificateId ? 'Edit certificate' : 'Add certificate' }}</h2></div><button type="button" class="certificate-modal-close" aria-label="Close certificate dialog" (click)="closeCertificateModal()"><mat-icon>close</mat-icon></button></div>
+            <form class="certificate-form" (ngSubmit)="saveCertificate()">
+              <label><span>Prop firm</span><select name="certificate-firm" [(ngModel)]="certificateForm.prop_firm_id"><option [ngValue]="null">Independent certificate</option>@for (firm of propFirms; track firm.id) { <option [ngValue]="firm.id">{{ firm.name }}</option> }</select></label>
+              <label><span>Program</span><input name="certificate-program" type="text" [(ngModel)]="certificateForm.program_name" placeholder="e.g. High Stakes"></label>
+              <div class="certificate-form-row"><label><span>Type</span><select name="certificate-type" [(ngModel)]="certificateForm.certificate_type"><option value="evaluation">Evaluation</option><option value="funded">Funded</option><option value="other">Other</option></select></label><label><span>Status</span><select name="certificate-status" [(ngModel)]="certificateForm.status"><option value="passed">Passed</option><option value="funded">Funded</option><option value="expired">Expired</option></select></label></div>
+              <div class="certificate-form-row"><label><span>Passed date</span><input name="certificate-date" type="date" required [(ngModel)]="certificateForm.passed_date"></label><label><span>Account size</span><input name="certificate-size" type="number" min="0" step="0.01" [(ngModel)]="certificateForm.account_size"></label></div>
+              <label><span>Certificate file</span><input name="certificate-file" type="file" accept="image/*,.pdf" (change)="onCertificateFileSelected($event)"><small>Choose a new file to replace the current proof.</small></label>
+              <label><span>Notes</span><textarea name="certificate-notes" rows="3" [(ngModel)]="certificateForm.notes" placeholder="Optional context"></textarea></label>
+              <button class="certificate-save-button" type="submit" [disabled]="isSavingCertificate"><mat-icon>{{ isSavingCertificate ? 'sync' : 'save' }}</mat-icon>{{ isSavingCertificate ? 'Saving…' : 'Save certificate' }}</button>
+            </form>
+          </section>
+        </div>
+      }
+
+      @if (isPayoutModalOpen) {
+        <div class="certificate-modal-backdrop" role="presentation" (click)="closePayoutModal()">
+          <section class="certificate-modal" role="dialog" aria-modal="true" aria-labelledby="payout-modal-title" (click)="$event.stopPropagation()">
+            <div class="certificate-modal-heading"><div><p class="certificates-eyebrow">Realized return</p><h2 id="payout-modal-title">Record payout</h2></div><button type="button" class="certificate-modal-close" aria-label="Close payout dialog" (click)="closePayoutModal()"><mat-icon>close</mat-icon></button></div>
+            <form class="certificate-form" (ngSubmit)="savePayout()">
+              <label><span>Certificate</span><select name="payout-certificate" required [(ngModel)]="payoutForm.certificate_id">@for (certificate of certificates; track certificate.id) { <option [value]="certificate.id">{{ getCertificateFirmName(certificate) }} · {{ certificate.program_name || 'Certificate' }}</option> }</select></label>
+              <div class="certificate-form-row"><label><span>Amount</span><input name="payout-amount" type="number" min="0.01" step="0.01" required [(ngModel)]="payoutForm.amount"></label><label><span>Date</span><input name="payout-date" type="date" required [(ngModel)]="payoutForm.payout_date"></label></div>
+              <label><span>Notes</span><input name="payout-notes" type="text" [(ngModel)]="payoutForm.notes" placeholder="e.g. First payout"></label>
+              <label><span>Proof URL <em>optional</em></span><input name="payout-proof" type="url" [(ngModel)]="payoutForm.proof_url" placeholder="https://"></label>
+              <button class="certificate-save-button" type="submit" [disabled]="isSavingPayout || !payoutForm.amount"><mat-icon>{{ isSavingPayout ? 'sync' : 'payments' }}</mat-icon>{{ isSavingPayout ? 'Saving…' : 'Save payout' }}</button>
+            </form>
+          </section>
+        </div>
       }
     </section>
   }

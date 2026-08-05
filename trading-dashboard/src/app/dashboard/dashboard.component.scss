@@ -12843,13 +12843,15 @@ table.simple-table {
 }
 
 .certificates-hero {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
   align-items: center;
-  justify-content: space-between;
   gap: 2rem;
   padding: clamp(1.5rem, 4vw, 3rem);
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.13), var(--tf-bg-card) 60%);
 }
+.certificates-hero-media { display: grid; grid-template-columns: minmax(7rem, 9rem) 1fr; align-items: center; gap: 1rem; }
+.certificates-hero-image { display: block; width: 100%; max-height: 14rem; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 16px; object-fit: cover; object-position: top; box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18); }
 
 .certificates-eyebrow {
   margin: 0 0 0.45rem;
@@ -12872,6 +12874,25 @@ table.simple-table {
 .certificates-hero-mark { display: grid; place-items: center; gap: 0.5rem; min-width: 10rem; color: var(--tf-accent-primary); text-align: center; }
 .certificates-hero-mark mat-icon { width: 4rem; height: 4rem; font-size: 4rem; }
 .certificates-hero-mark span { color: var(--tf-text-muted); font-size: 0.75rem; font-weight: 700; }
+.certificates-hero-actions, .certificate-heading-actions { display: flex; align-items: center; gap: 0.65rem; }
+.certificate-action-button, .certificate-inline-action, .certificate-edit-button, .certificate-save-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid var(--tf-border-primary); border-radius: 10px; padding: 0.65rem 0.85rem; background: var(--tf-bg-secondary); color: var(--tf-text-primary); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.certificate-action-button.is-primary, .certificate-save-button { border-color: transparent; background: var(--tf-accent-primary); color: #fff; }
+.certificate-action-button:disabled, .certificate-inline-action:disabled { opacity: 0.45; cursor: not-allowed; }
+.certificate-edit-button { position: relative; z-index: 1; margin-top: 0.8rem; padding: 0.4rem 0.6rem; font-size: 0.7rem; }
+.certificate-inline-action { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
+.certificate-action-button mat-icon, .certificate-edit-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+.certificate-modal-backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(8, 12, 24, 0.72); }
+.certificate-modal { width: min(100%, 34rem); max-height: min(90vh, 48rem); overflow: auto; padding: 1.4rem; border: 1px solid var(--tf-border-primary); border-radius: 20px; background: var(--tf-bg-card); box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.3); }
+.certificate-modal-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.certificate-modal-heading h2 { margin: 0; color: var(--tf-text-primary); }
+.certificate-modal-close { display: grid; place-items: center; border: 0; background: transparent; color: var(--tf-text-muted); cursor: pointer; }
+.certificate-form { display: grid; gap: 0.9rem; }
+.certificate-form label { display: grid; gap: 0.35rem; color: var(--tf-text-secondary); font-size: 0.78rem; font-weight: 700; }
+.certificate-form input, .certificate-form select, .certificate-form textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--tf-border-primary); border-radius: 9px; padding: 0.7rem; background: var(--tf-bg-secondary); color: var(--tf-text-primary); font: inherit; }
+.certificate-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+.certificate-form small { color: var(--tf-text-muted); font-weight: 400; }
+.certificate-form em { color: var(--tf-text-muted); font-style: normal; font-weight: 400; }
+.certificate-save-button { width: 100%; margin-top: 0.3rem; }
 
 .certificates-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 1.25rem 0; overflow: hidden; }
 .certificate-metric-card { display: flex; align-items: center; gap: 1rem; padding: 1.35rem 1.5rem; background: var(--tf-bg-card); }
@@ -12919,7 +12940,8 @@ table.simple-table {
 @keyframes certificates-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 700px) {
-  .certificates-hero { align-items: flex-start; flex-direction: column; }
-  .certificates-hero-mark { display: none; }
+  .certificates-hero { grid-template-columns: 1fr; align-items: flex-start; }
+  .certificates-hero-media { grid-template-columns: 1fr; width: 100%; }
+  .certificates-hero-image { max-height: 16rem; }
   .certificates-metrics { grid-template-columns: 1fr; }
 }

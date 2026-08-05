@@ -193,6 +193,28 @@ export class DashboardComponent implements AfterViewInit {
   certificates: Certificate[] = [];
   certificatePayouts: Payout[] = [];
   isLoadingCertificates = false;
+  isCertificateModalOpen = false;
+  isPayoutModalOpen = false;
+  isSavingCertificate = false;
+  isSavingPayout = false;
+  editingCertificateId: string | null = null;
+  certificateFile: File | null = null;
+  certificateForm: { prop_firm_id: string | null; program_name: string; account_size: number | null; certificate_type: Certificate['certificate_type']; passed_date: string; status: Certificate['status']; notes: string } = {
+    prop_firm_id: null,
+    program_name: '',
+    account_size: null,
+    certificate_type: 'evaluation',
+    passed_date: new Date().toISOString().slice(0, 10),
+    status: 'passed',
+    notes: ''
+  };
+  payoutForm: { certificate_id: string; amount: number | null; payout_date: string; notes: string; proof_url: string } = {
+    certificate_id: '',
+    amount: null,
+    payout_date: new Date().toISOString().slice(0, 10),
+    notes: '',
+    proof_url: ''
+  };
   isLoadingRoi = false;
   isSavingRoi = false;
   isRoiEntryModalOpen = false;
@@ -1782,13 +1804,97 @@ mt5AccountInfo: AccountSettings = {
     return this.certificates.filter(certificate => certificate.status === 'funded').length;
   }
 
+  openCertificateCreator(): void {
+    this.editingCertificateId = null;
+    this.certificateFile = null;
+    this.certificateForm = { prop_firm_id: null, program_name: '', account_size: null, certificate_type: 'evaluation', passed_date: new Date().toISOString().slice(0, 10), status: 'passed', notes: '' };
+    this.isCertificateModalOpen = true;
+  }
+
+  editCertificate(certificate: Certificate): void {
+    this.editingCertificateId = certificate.id;
+    this.certificateFile = null;
+    this.certificateForm = { prop_firm_id: certificate.prop_firm_id ?? null, program_name: certificate.program_name ?? '', account_size: certificate.account_size ?? null, certificate_type: certificate.certificate_type, passed_date: certificate.passed_date, status: certificate.status, notes: certificate.notes ?? '' };
+    this.isCertificateModalOpen = true;
+  }
+
+  closeCertificateModal(): void {
+    if (!this.isSavingCertificate) this.isCertificateModalOpen = false;
+  }
+
+  onCertificateFileSelected(event: Event): void {
+    this.certificateFile = (event.target as HTMLInputElement).files?.[0] ?? null;
+  }
+
+  async saveCertificate(): Promise<void> {
+    if (this.isSavingCertificate || !this.certificateForm.passed_date) return;
+    this.isSavingCertificate = true;
+    try {
+      const updates = { ...this.certificateForm, program_name: this.certificateForm.program_name.trim() || null, notes: this.certificateForm.notes.trim() || null };
+      const saved = this.editingCertificateId
+        ? await this.supabaseService.updateCertificate(this.editingCertificateId, updates)
+        : await this.supabaseService.createCertificate(updates);
+      if (this.certificateFile) await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id);
+      this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...saved } : item) : [saved, ...this.certificates];
+      this.isCertificateModalOpen = false;
+      this.snackBar.open(this.editingCertificateId ? 'Certificate updated.' : 'Certificate added.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to save certificate:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to save certificate.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isSavingCertificate = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  openPayoutCreator(): void {
+    this.payoutForm = { certificate_id: this.certificates[0]?.id ?? '', amount: null, payout_date: new Date().toISOString().slice(0, 10), notes: '', proof_url: '' };
+    this.isPayoutModalOpen = true;
+  }
+
+  closePayoutModal(): void {
+    if (!this.isSavingPayout) this.isPayoutModalOpen = false;
+  }
+
+  async savePayout(): Promise<void> {
+    const certificate = this.certificates.find(item => item.id === this.payoutForm.certificate_id);
+    if (this.isSavingPayout || !certificate || !this.payoutForm.amount) return;
+    this.isSavingPayout = true;
+    try {
+      const payout = await this.supabaseService.createPayout({ certificate_id: certificate.id, firm_name: this.getCertificateFirmName(certificate), amount: this.payoutForm.amount, payout_date: this.payoutForm.payout_date, notes: this.payoutForm.notes.trim() || null, proof_url: this.payoutForm.proof_url.trim() || null });
+      this.certificatePayouts = [payout, ...this.certificatePayouts];
+      this.isPayoutModalOpen = false;
+      this.snackBar.open('Payout recorded.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to save payout:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to save payout.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isSavingPayout = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  getCertificateFirmName(certificate: Certificate): string {
+    return this.propFirms.find(firm => firm.id === certificate.prop_firm_id)?.name || 'Independent certificate';
+  }
+
+  private getPropFirmIdByName(name: string): string | null {
+    const id = this.propFirms.find(firm => firm.name === name)?.id;
+    return id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ? id : null;
+  }
+
   private async loadCertificates(): Promise<void> {
     const userId = this.auth.user()?.id;
     if (!userId) return;
     this.isLoadingCertificates = true;
+    try {
+      this.propFirms = await this.supabaseService.getPropFirms();
+    } catch (error) {
+      console.warn('Prop firm directory unavailable for certificates.', error);
+    }
     const suppliedCertificates: Omit<Certificate, 'id' | 'user_id' | 'created_at' | 'payouts'>[] = [
       {
-        firm_name: 'The5ers',
+        prop_firm_id: this.getPropFirmIdByName('The5ers'),
         program_name: 'High Stakes, 5K',
         account_size: 5000,
         certificate_type: 'funded',
@@ -1797,7 +1903,7 @@ mt5AccountInfo: AccountSettings = {
         file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2F2990b1ef616d488e88223d5a351f910e?format=webp&width=800&height=1200'
       },
       {
-        firm_name: 'The5ers',
+        prop_firm_id: this.getPropFirmIdByName('The5ers'),
         program_name: 'Officially Funded Trader',
         account_size: 5000,
         certificate_type: 'funded',
@@ -1806,7 +1912,7 @@ mt5AccountInfo: AccountSettings = {
         file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ff90a7a3bd99a4854b46f578e37964ba2?format=webp&width=800&height=1200'
       },
       {
-        firm_name: 'The5ers',
+        prop_firm_id: this.getPropFirmIdByName('The5ers'),
         program_name: 'High Stakes, 2.5K',
         account_size: 2500,
         certificate_type: 'funded',
