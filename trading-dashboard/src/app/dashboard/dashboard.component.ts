@@ -3376,11 +3376,16 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  async getMt5API(){
-    const res: any = await firstValueFrom(
-      this.http.get(`${this.BACKEND_URL_MT5}/api/history`)
-    );
-    return res;
+  async getMt5API(): Promise<any[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<any[]>(`${this.BACKEND_URL_MT5}/api/history`)
+      );
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      console.warn('MT5 history unavailable; using Supabase trade history.', error);
+      return [];
+    }
   }
 
   async sendNotif(token: string, title: string, body: string): Promise<void> {
@@ -6014,13 +6019,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         this.getSupabaseTrades(),
         this.getMt5API()
       ]);
-      this.mt5OpenPositionIds = new Set(
-        this.isActiveMt5Account()
-          ? (mt5History || [])
-              .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
-              .map((trade: any) => String(trade.position_id))
-          : []
-      );
+      this.mt5OpenPositionIds = mt5History.length > 0
+        ? new Set(
+            this.isActiveMt5Account()
+              ? mt5History
+                  .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
+                  .map((trade: any) => String(trade.position_id))
+              : []
+          )
+        : null;
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {

@@ -1185,7 +1185,6 @@ table.simple-table {
 
         &.current {
           border-color: rgba(16, 185, 129, 0.5);
-          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 8px 25px rgba(16, 185, 129, 0.15);
           transform: scale(1.02);
         }
 
@@ -1201,21 +1200,13 @@ table.simple-table {
         &.current:has(.current-day-with-news) {
           background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.03));
           border-color: rgba(239, 68, 68, 0.5);
-          box-shadow:
-            0 0 0 2px rgba(239, 68, 68, 0.4),
-            0 0 20px rgba(239, 68, 68, 0.3),
-            0 0 40px rgba(239, 68, 68, 0.15);
-          animation: current-day-red-card-glow 2s ease-in-out infinite;
+          box-shadow: none;
         }
 
         &.current:has(.current-day-no-news) {
           background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(34, 197, 94, 0.03));
           border-color: rgba(16, 185, 129, 0.5);
-          box-shadow:
-            0 0 0 2px rgba(16, 185, 129, 0.4),
-            0 0 20px rgba(16, 185, 129, 0.3),
-            0 0 40px rgba(16, 185, 129, 0.15);
-          animation: current-day-green-card-glow 2s ease-in-out infinite;
+          box-shadow: none;
         }
 
         .enhanced-day-header {
@@ -1248,8 +1239,6 @@ table.simple-table {
 
             &.status-active {
               background: #16A34A;
-              box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
-              animation: pulse-dot 2s infinite;
             }
 
             &.status-inactive {
@@ -1271,7 +1260,6 @@ table.simple-table {
 
             .day-dot {
               background: #ef4444 !important;
-              box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
             }
           }
 
@@ -1281,7 +1269,6 @@ table.simple-table {
 
             .day-dot {
               background: #16A34A !important;
-              box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
             }
           }
 
