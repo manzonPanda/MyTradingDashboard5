@@ -35,9 +35,9 @@ export const DEFAULT_AURA_ENERGY_CONFIG: AuraEnergyConfig = {
   minDelayMs: 2000,
   maxDelayMs: 5000,
   trailLengthPercent: 8,
-  strokeWidth: 6,
-  headRadius: 9,
-  bloomIntensity: 4.5,
+  strokeWidth: 3,
+  headRadius: 7,
+  bloomIntensity: 3.5,
   fadeDurationMs: 180,
   colorStart: '#7C3AED',
   colorMid: '#A78BFA',
@@ -273,9 +273,9 @@ export class AuraEnergyService {
       <svg class="aura-energy-svg" focusable="false" preserveAspectRatio="none">
         <defs>
           <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="${colorStart}" stop-opacity="0" />
-            <stop offset="50%" stop-color="${colorMid}" stop-opacity="0.35" />
-            <stop offset="82%" stop-color="${colorPeak}" stop-opacity="0.9" />
+            <stop offset="0%" stop-color="${colorStart}" stop-opacity="0.2" />
+            <stop offset="50%" stop-color="${colorMid}" stop-opacity="0.65" />
+            <stop offset="82%" stop-color="${colorPeak}" stop-opacity="0.95" />
             <stop offset="100%" stop-color="${colorHead}" />
           </linearGradient>
           <filter id="aura-energy-bloom" x="-100%" y="-100%" width="300%" height="300%">
@@ -316,9 +316,9 @@ export class AuraEnergyService {
     return `
         <defs>
           <linearGradient id="aura-energy-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="${colorStart}" stop-opacity="0" />
-            <stop offset="50%" stop-color="${colorMid}" stop-opacity="0.35" />
-            <stop offset="82%" stop-color="${colorPeak}" stop-opacity="0.9" />
+            <stop offset="0%" stop-color="${colorStart}" stop-opacity="0.2" />
+            <stop offset="50%" stop-color="${colorMid}" stop-opacity="0.65" />
+            <stop offset="82%" stop-color="${colorPeak}" stop-opacity="0.95" />
             <stop offset="100%" stop-color="${colorHead}" />
           </linearGradient>
           <filter id="aura-energy-bloom" x="-100%" y="-100%" width="300%" height="300%">

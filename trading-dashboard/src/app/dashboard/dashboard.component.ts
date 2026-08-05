@@ -1154,9 +1154,7 @@ mt5AccountInfo: AccountSettings = {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
     this.saveLiveTradeDisplayPreferences();
-    for (const trade of this.mt5LiveTrades) {
-      this.notifyGaugePercentage(trade);
-    }
+    this.stopAllGaugeAlerts();
     this.cdr.markForCheck();
   }
 
@@ -6498,6 +6496,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       sound.currentTime = 0;
       soundMap.delete(ticket);
     }
+  }
+
+  private stopAllGaugeAlerts(): void {
+    const tickets = new Set([
+      ...this.activeGaugeAlertLevels.keys(),
+      ...this.gaugeAlertSounds.keys(),
+      ...this.highGaugeAlertSounds.keys()
+    ]);
+    tickets.forEach(ticket => this.stopGaugeAlert(ticket));
   }
 
   updateMT5TradePrice(priceData: any): void {
