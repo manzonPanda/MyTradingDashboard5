@@ -44,10 +44,7 @@ export interface Certificate {
   id: string;
   user_id?: string;
   account_id?: string | null;
-  prop_firm_id?: string | null;
   program_name?: string | null;
-  account_size?: number | null;
-  certificate_type: 'evaluation' | 'funded' | 'other';
   passed_date: string;
   status: 'passed' | 'funded' | 'expired';
   file_path?: string | null;

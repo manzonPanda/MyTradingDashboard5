@@ -1141,7 +1141,6 @@
                 <div class="certificate-card-top"><span class="certificate-badge"><mat-icon>{{ certificate.status === 'funded' ? 'workspace_premium' : 'verified' }}</mat-icon>{{ certificate.status }}</span><span>{{ formatRoiDate(certificate.passed_date) }}</span></div>
                 <div class="certificate-card-columns">
                   <div class="certificate-card-details">
-                    <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
                     <h3>{{ getCertificateFirmName(certificate) }}</h3>
                     <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
                     <p class="certificate-account-context">{{ getCertificateAccountPhase(certificate) }} · {{ getCertificateAccount(certificate)?.name || 'Independent account' }}</p>
@@ -1179,15 +1178,19 @@
             <div class="certificate-modal-heading"><div><p class="certificates-eyebrow">Certificate archive</p><h2 id="certificate-modal-title">{{ editingCertificateId ? 'Edit certificate' : 'Add certificate' }}</h2></div><button type="button" class="certificate-modal-close" aria-label="Close certificate dialog" (click)="closeCertificateModal()"><mat-icon>close</mat-icon></button></div>
             <form class="certificate-form" (ngSubmit)="saveCertificate()">
               <label><span>Trading account</span><select name="certificate-account" required [(ngModel)]="certificateForm.account_id"><option [ngValue]="null">Select an account</option>@for (account of accounts; track account.id) { <option [ngValue]="account.id">{{ account.name }}</option> }</select></label>
-              @if (certificateForm.account_id) {
-                @if (getAccountById(certificateForm.account_id); as selectedAccount) {
-                  <div class="certificate-account-summary"><span>{{ getFirmNameForAccount(selectedAccount) }}</span><span>{{ selectedAccount.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span><span>{{ selectedAccount.phase === 'phase2' ? 'Phase 2' : selectedAccount.phase === 'funded' ? 'Funded' : 'Phase 1' }}</span></div>
-                }
-              }
               <label><span>Program</span><input name="certificate-program" type="text" [(ngModel)]="certificateForm.program_name" placeholder="e.g. High Stakes"></label>
               <label><span>Status</span><select name="certificate-status" [(ngModel)]="certificateForm.status"><option value="passed">Passed</option><option value="funded">Funded</option><option value="expired">Expired</option></select></label>
               <label><span>Passed date</span><input name="certificate-date" type="date" required [(ngModel)]="certificateForm.passed_date"></label>
-              <label><span>Certificate file</span><input name="certificate-file" type="file" accept="image/*,.pdf" (change)="onCertificateFileSelected($event)"><small>Choose a new file to replace the current proof.</small></label>
+              <div class="certificate-upload-group">
+                <span class="certificate-field-label">Certificate file</span>
+                <label class="certificate-upload-field" for="certificate-file-input">
+                  <input id="certificate-file-input" name="certificate-file" type="file" accept="image/*,.pdf" (change)="onCertificateFileSelected($event)">
+                  <mat-icon>cloud_upload</mat-icon>
+                  <span class="certificate-upload-copy"><strong>{{ certificateFile?.name || 'Choose an image or PDF' }}</strong><small>{{ certificateFile ? 'Ready to upload with this certificate' : 'Click to browse your device' }}</small></span>
+                  <span class="certificate-upload-button">Browse</span>
+                </label>
+                <small class="certificate-upload-help">Accepted formats: JPG, PNG, WEBP, or PDF.</small>
+              </div>
               <label><span>Notes</span><textarea name="certificate-notes" rows="3" [(ngModel)]="certificateForm.notes" placeholder="Optional context"></textarea></label>
               <button class="certificate-save-button" type="submit" [disabled]="isSavingCertificate"><mat-icon>{{ isSavingCertificate ? 'sync' : 'save' }}</mat-icon>{{ isSavingCertificate ? 'Saving…' : 'Save certificate' }}</button>
             </form>

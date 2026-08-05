@@ -1828,8 +1828,7 @@ mt5AccountInfo: AccountSettings = {
     if (this.isSavingCertificate || !this.certificateForm.account_id || !this.certificateForm.passed_date) return;
     this.isSavingCertificate = true;
     try {
-      const existingCertificate = this.certificates.find(certificate => certificate.id === this.editingCertificateId);
-      const updates = { ...this.certificateForm, certificate_type: existingCertificate?.certificate_type ?? 'evaluation' as const, program_name: this.certificateForm.program_name.trim() || null, notes: this.certificateForm.notes.trim() || null };
+      const updates = { ...this.certificateForm, program_name: this.certificateForm.program_name.trim() || null, notes: this.certificateForm.notes.trim() || null };
       const saved = this.editingCertificateId
         ? await this.supabaseService.updateCertificate(this.editingCertificateId, updates)
         : await this.supabaseService.createCertificate(updates);
@@ -1891,17 +1890,12 @@ mt5AccountInfo: AccountSettings = {
   }
 
   getCertificateAccountSize(certificate: Certificate): number | null {
-    return this.getCertificateAccount(certificate)?.initial_balance ?? certificate.account_size ?? null;
+    return this.getCertificateAccount(certificate)?.initial_balance ?? null;
   }
 
   getCertificateAccountPhase(certificate: Certificate): string {
     const phase = this.getCertificateAccount(certificate)?.phase;
     return phase === 'phase2' ? 'Phase 2' : phase === 'funded' ? 'Funded' : phase === 'phase1' ? 'Phase 1' : '—';
-  }
-
-  private getPropFirmIdByName(name: string): string | null {
-    const id = this.propFirms.find(firm => firm.name === name)?.id;
-    return id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ? id : null;
   }
 
   private async loadCertificates(): Promise<void> {
@@ -1915,28 +1909,25 @@ mt5AccountInfo: AccountSettings = {
     }
     const suppliedCertificates: Omit<Certificate, 'id' | 'user_id' | 'created_at' | 'payouts'>[] = [
       {
-        prop_firm_id: this.getPropFirmIdByName('The5ers'),
+
+        account_id: this.accounts[0]?.id,
         program_name: 'High Stakes, 5K',
-        account_size: 5000,
-        certificate_type: 'funded',
         passed_date: '2025-12-05',
         status: 'funded',
         file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2F2990b1ef616d488e88223d5a351f910e?format=webp&width=800&height=1200'
       },
       {
-        prop_firm_id: this.getPropFirmIdByName('The5ers'),
+
+        account_id: this.accounts[0]?.id,
         program_name: 'Officially Funded Trader',
-        account_size: 5000,
-        certificate_type: 'funded',
         passed_date: '2026-08-05',
         status: 'funded',
         file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ff90a7a3bd99a4854b46f578e37964ba2?format=webp&width=800&height=1200'
       },
       {
-        prop_firm_id: this.getPropFirmIdByName('The5ers'),
+
+        account_id: this.accounts[0]?.id,
         program_name: 'High Stakes, 2.5K',
-        account_size: 2500,
-        certificate_type: 'funded',
         passed_date: '2026-07-10',
         status: 'funded',
         file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ffe4cf7a481b8401ba22af1e43207ac27?format=webp&width=800&height=1200'

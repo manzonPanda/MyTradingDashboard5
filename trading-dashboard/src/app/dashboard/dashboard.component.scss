@@ -12892,6 +12892,17 @@ table.simple-table {
 .certificate-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
 .certificate-form small { color: var(--tf-text-muted); font-weight: 400; }
 .certificate-form em { color: var(--tf-text-muted); font-style: normal; font-weight: 400; }
+.certificate-upload-group { display: grid; gap: 0.4rem; }
+.certificate-field-label { color: var(--tf-text-secondary); font-size: 0.78rem; font-weight: 700; }
+.certificate-upload-field { display: flex !important; flex-direction: row; align-items: center; gap: 0.75rem !important; min-height: 4.6rem; padding: 0.75rem; border: 1px dashed rgba(124, 58, 237, 0.65); border-radius: 12px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), var(--tf-bg-secondary)); cursor: pointer; }
+.certificate-upload-field:hover { border-color: var(--tf-accent-primary); background: rgba(124, 58, 237, 0.15); }
+.certificate-upload-field > mat-icon { flex: 0 0 auto; color: var(--tf-accent-primary); }
+.certificate-upload-field input { display: none; }
+.certificate-upload-copy { display: grid; flex: 1; min-width: 0; gap: 0.2rem; }
+.certificate-upload-copy strong { overflow: hidden; color: var(--tf-text-primary); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.certificate-upload-copy small { font-size: 0.68rem; }
+.certificate-upload-button { flex: 0 0 auto; border-radius: 8px; padding: 0.45rem 0.65rem; background: var(--tf-accent-primary); color: #fff; font-size: 0.7rem; font-weight: 800; }
+.certificate-upload-help { font-size: 0.68rem; }
 .certificate-save-button { width: 100%; margin-top: 0.3rem; }
 
 .certificates-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 1.25rem 0; overflow: hidden; }
