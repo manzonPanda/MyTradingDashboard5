@@ -199,10 +199,9 @@ export class DashboardComponent implements AfterViewInit {
   isSavingPayout = false;
   editingCertificateId: string | null = null;
   certificateFile: File | null = null;
-  certificateForm: { prop_firm_id: string | null; program_name: string; account_size: number | null; certificate_type: Certificate['certificate_type']; passed_date: string; status: Certificate['status']; notes: string } = {
-    prop_firm_id: null,
+  certificateForm: { account_id: string | null; program_name: string; certificate_type: Certificate['certificate_type']; passed_date: string; status: Certificate['status']; notes: string } = {
+    account_id: null,
     program_name: '',
-    account_size: null,
     certificate_type: 'evaluation',
     passed_date: new Date().toISOString().slice(0, 10),
     status: 'passed',
@@ -1807,14 +1806,14 @@ mt5AccountInfo: AccountSettings = {
   openCertificateCreator(): void {
     this.editingCertificateId = null;
     this.certificateFile = null;
-    this.certificateForm = { prop_firm_id: null, program_name: '', account_size: null, certificate_type: 'evaluation', passed_date: new Date().toISOString().slice(0, 10), status: 'passed', notes: '' };
+    this.certificateForm = { account_id: this.accounts[0]?.id ?? null, program_name: '', certificate_type: 'evaluation', passed_date: new Date().toISOString().slice(0, 10), status: 'passed', notes: '' };
     this.isCertificateModalOpen = true;
   }
 
   editCertificate(certificate: Certificate): void {
     this.editingCertificateId = certificate.id;
     this.certificateFile = null;
-    this.certificateForm = { prop_firm_id: certificate.prop_firm_id ?? null, program_name: certificate.program_name ?? '', account_size: certificate.account_size ?? null, certificate_type: certificate.certificate_type, passed_date: certificate.passed_date, status: certificate.status, notes: certificate.notes ?? '' };
+    this.certificateForm = { account_id: certificate.account_id ?? null, program_name: certificate.program_name ?? '', certificate_type: certificate.certificate_type, passed_date: certificate.passed_date, status: certificate.status, notes: certificate.notes ?? '' };
     this.isCertificateModalOpen = true;
   }
 
@@ -1827,7 +1826,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
   async saveCertificate(): Promise<void> {
-    if (this.isSavingCertificate || !this.certificateForm.passed_date) return;
+    if (this.isSavingCertificate || !this.certificateForm.account_id || !this.certificateForm.passed_date) return;
     this.isSavingCertificate = true;
     try {
       const updates = { ...this.certificateForm, program_name: this.certificateForm.program_name.trim() || null, notes: this.certificateForm.notes.trim() || null };
@@ -1874,8 +1873,30 @@ mt5AccountInfo: AccountSettings = {
     }
   }
 
+  getCertificateAccount(certificate: Certificate): Account | null {
+    return this.accounts.find(account => account.id === certificate.account_id) ?? null;
+  }
+
+  getAccountById(accountId: string | null): Account | null {
+    return accountId ? this.accounts.find(account => account.id === accountId) ?? null : null;
+  }
+
+  getFirmNameForAccount(account: Account): string {
+    return this.propFirms.find(firm => firm.id === account.prop_firm_id)?.name || 'Independent firm';
+  }
+
   getCertificateFirmName(certificate: Certificate): string {
-    return this.propFirms.find(firm => firm.id === certificate.prop_firm_id)?.name || 'Independent certificate';
+    const account = this.getCertificateAccount(certificate);
+    return account ? this.getFirmNameForAccount(account) : 'Independent certificate';
+  }
+
+  getCertificateAccountSize(certificate: Certificate): number | null {
+    return this.getCertificateAccount(certificate)?.initial_balance ?? certificate.account_size ?? null;
+  }
+
+  getCertificateAccountPhase(certificate: Certificate): string {
+    const phase = this.getCertificateAccount(certificate)?.phase;
+    return phase === 'phase2' ? 'Phase 2' : phase === 'funded' ? 'Funded' : phase === 'phase1' ? 'Phase 1' : '—';
   }
 
   private getPropFirmIdByName(name: string): string | null {

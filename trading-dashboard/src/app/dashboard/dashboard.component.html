@@ -1150,7 +1150,8 @@
                     <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
                     <h3>{{ getCertificateFirmName(certificate) }}</h3>
                     <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
-                    @if (certificate.account_size) { <strong class="certificate-size">{{ certificate.account_size | currency:'USD':'symbol':'1.0-0' }} account</strong> }
+                    <p class="certificate-account-context">{{ getCertificateAccountPhase(certificate) }} · {{ getCertificateAccount(certificate)?.name || 'Independent account' }}</p>
+                    @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }} account</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
                     <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
                     @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
@@ -1183,10 +1184,15 @@
           <section class="certificate-modal" role="dialog" aria-modal="true" aria-labelledby="certificate-modal-title" (click)="$event.stopPropagation()">
             <div class="certificate-modal-heading"><div><p class="certificates-eyebrow">Certificate archive</p><h2 id="certificate-modal-title">{{ editingCertificateId ? 'Edit certificate' : 'Add certificate' }}</h2></div><button type="button" class="certificate-modal-close" aria-label="Close certificate dialog" (click)="closeCertificateModal()"><mat-icon>close</mat-icon></button></div>
             <form class="certificate-form" (ngSubmit)="saveCertificate()">
-              <label><span>Prop firm</span><select name="certificate-firm" [(ngModel)]="certificateForm.prop_firm_id"><option [ngValue]="null">Independent certificate</option>@for (firm of propFirms; track firm.id) { <option [ngValue]="firm.id">{{ firm.name }}</option> }</select></label>
+              <label><span>Trading account</span><select name="certificate-account" required [(ngModel)]="certificateForm.account_id"><option [ngValue]="null">Select an account</option>@for (account of accounts; track account.id) { <option [ngValue]="account.id">{{ account.name }}</option> }</select></label>
+              @if (certificateForm.account_id) {
+                @if (getAccountById(certificateForm.account_id); as selectedAccount) {
+                  <div class="certificate-account-summary"><span>{{ getFirmNameForAccount(selectedAccount) }}</span><span>{{ selectedAccount.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span><span>{{ selectedAccount.phase === 'phase2' ? 'Phase 2' : selectedAccount.phase === 'funded' ? 'Funded' : 'Phase 1' }}</span></div>
+                }
+              }
               <label><span>Program</span><input name="certificate-program" type="text" [(ngModel)]="certificateForm.program_name" placeholder="e.g. High Stakes"></label>
               <div class="certificate-form-row"><label><span>Type</span><select name="certificate-type" [(ngModel)]="certificateForm.certificate_type"><option value="evaluation">Evaluation</option><option value="funded">Funded</option><option value="other">Other</option></select></label><label><span>Status</span><select name="certificate-status" [(ngModel)]="certificateForm.status"><option value="passed">Passed</option><option value="funded">Funded</option><option value="expired">Expired</option></select></label></div>
-              <div class="certificate-form-row"><label><span>Passed date</span><input name="certificate-date" type="date" required [(ngModel)]="certificateForm.passed_date"></label><label><span>Account size</span><input name="certificate-size" type="number" min="0" step="0.01" [(ngModel)]="certificateForm.account_size"></label></div>
+              <label><span>Passed date</span><input name="certificate-date" type="date" required [(ngModel)]="certificateForm.passed_date"></label>
               <label><span>Certificate file</span><input name="certificate-file" type="file" accept="image/*,.pdf" (change)="onCertificateFileSelected($event)"><small>Choose a new file to replace the current proof.</small></label>
               <label><span>Notes</span><textarea name="certificate-notes" rows="3" [(ngModel)]="certificateForm.notes" placeholder="Optional context"></textarea></label>
               <button class="certificate-save-button" type="submit" [disabled]="isSavingCertificate"><mat-icon>{{ isSavingCertificate ? 'sync' : 'save' }}</mat-icon>{{ isSavingCertificate ? 'Saving…' : 'Save certificate' }}</button>
