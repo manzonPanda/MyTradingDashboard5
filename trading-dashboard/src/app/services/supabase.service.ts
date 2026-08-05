@@ -2,6 +2,14 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
+export interface PropFirm {
+  id: string;
+  name: string;
+  logo_url?: string | null;
+  website_url?: string | null;
+  created_at?: string;
+}
+
 export interface Account {
   id: string;
   name: string;
@@ -217,6 +225,15 @@ export class SupabaseService {
       .single();
     if (error) throw new Error(`AURA energy settings update failed: ${error.message}`);
     return data as AuraEnergySettings;
+  }
+
+  async getPropFirms(): Promise<PropFirm[]> {
+    const { data, error } = await this.supabase
+      .from('prop_firms')
+      .select('id, name, logo_url, website_url, created_at')
+      .order('name', { ascending: true });
+    if (error) throw new Error(`Prop firm loading failed: ${error.message}`);
+    return (data as PropFirm[]) || [];
   }
 
   async getAccounts(): Promise<Account[]> {

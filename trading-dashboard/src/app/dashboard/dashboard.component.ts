@@ -38,7 +38,7 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
-import { Account, Certificate, Payout, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { Account, Certificate, Payout, PropFirm, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
@@ -483,6 +483,12 @@ export class DashboardComponent implements AfterViewInit {
   mt5ImportedTrades: Table[] = [];
   mt5SyncAccountId = '';
   accounts: Account[] = [];
+  propFirms: PropFirm[] = [
+    { id: 'the5ers', name: 'The5ers' },
+    { id: 'ftmo', name: 'FTMO' },
+    { id: 'funding-pips', name: 'Funding Pips' },
+    { id: 'funded-next', name: 'FundedNext' }
+  ];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
@@ -515,7 +521,14 @@ export class DashboardComponent implements AfterViewInit {
       const firm = account.firm?.trim() || 'Independent accounts';
       accountCounts.set(firm, (accountCounts.get(firm) ?? 0) + 1);
     }
-    return Array.from(accountCounts, ([name, accountCount]) => ({ name, accountCount }));
+    return Array.from(new Set([
+      ...this.propFirms.map(firm => firm.name),
+      ...accountCounts.keys()
+    ])).map(name => ({ name, accountCount: accountCounts.get(name) ?? 0 }));
+  }
+
+  get firmOptions(): string[] {
+    return this.firms.map(firm => firm.name);
   }
 
   get filteredAccounts(): Account[] {
@@ -1878,6 +1891,17 @@ mt5AccountInfo: AccountSettings = {
     this.isLoadingAccounts = true;
     try {
       this.accounts = await this.supabaseService.getAccounts();
+      try {
+        this.propFirms = await this.supabaseService.getPropFirms();
+      } catch (error) {
+        console.warn('Prop firm directory unavailable; using account firm names.', error);
+        this.propFirms = [
+          { id: 'the5ers', name: 'The5ers' },
+          { id: 'ftmo', name: 'FTMO' },
+          { id: 'funding-pips', name: 'Funding Pips' },
+          { id: 'funded-next', name: 'FundedNext' }
+        ];
+      }
       const user = this.auth.user();
       const userId = user?.id;
       const [savedSettings, profile] = userId

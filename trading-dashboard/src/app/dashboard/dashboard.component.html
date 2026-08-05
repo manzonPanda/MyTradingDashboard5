@@ -1320,7 +1320,12 @@
               </label>
               <label class="account-edit-field">
                 <span>Firm</span>
-                <input type="text" [(ngModel)]="accountEditForm.firm" placeholder="Prop firm" />
+                <select [(ngModel)]="accountEditForm.firm" name="account-firm">
+                  <option value="">Independent accounts</option>
+                  @for (firmName of firmOptions; track firmName) {
+                    <option [value]="firmName">{{ firmName }}</option>
+                  }
+                </select>
               </label>
               <label class="account-edit-field">
                 <span>Account number</span>
