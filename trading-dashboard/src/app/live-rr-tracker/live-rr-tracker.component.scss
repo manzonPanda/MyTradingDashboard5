@@ -468,6 +468,16 @@
   background: linear-gradient(90deg, var(--tf-bg-secondary) 0%, var(--tf-bg-tertiary) 100%);
 }
 
+.live-header .live-trades-maximize-button {
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -50%);
+
+  &:hover, &:focus-visible {
+    transform: translate(50%, calc(-50% - 1px));
+  }
+}
+
 .header-title {
   display: flex;
   align-items: center;

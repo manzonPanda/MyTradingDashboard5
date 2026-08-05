@@ -104,15 +104,15 @@ interface Table {
 
       <!-- Live Trading Display - When Trades Are Open -->
       <div *ngIf="hasLiveTrades" class="live-trading-container" [class.is-maximized]="isMaximized">
-        <button
-          type="button"
-          class="live-trades-maximize-button"
-          [attr.aria-label]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
-          [attr.title]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
-          (click)="toggleMaximize()">
-          <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
-        </button>
         <div class="live-header">
+          <button
+            type="button"
+            class="live-trades-maximize-button"
+            [attr.aria-label]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+            [attr.title]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+            (click)="toggleMaximize()">
+            <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+          </button>
           <div class="header-title">
             <mat-icon class="live-icon">fiber_manual_record</mat-icon>
             <h3>Trades</h3>
