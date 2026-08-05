@@ -1141,7 +1141,11 @@
             @for (certificate of certificates; track certificate.id) {
               <article class="certificate-card" [class.is-funded]="certificate.status === 'funded'">
                 <div class="certificate-card-top"><span class="certificate-badge"><mat-icon>{{ certificate.status === 'funded' ? 'workspace_premium' : 'verified' }}</mat-icon>{{ certificate.status }}</span><span>{{ formatRoiDate(certificate.passed_date) }}</span></div>
-                <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
+                @if (certificate.file_path?.startsWith('http')) {
+                  <img class="certificate-preview" [src]="certificate.file_path" [alt]="certificate.firm_name + ' certificate'">
+                } @else {
+                  <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
+                }
                 <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
                 <h3>{{ certificate.firm_name }}</h3>
                 <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>

@@ -1769,16 +1769,52 @@ mt5AccountInfo: AccountSettings = {
     const userId = this.auth.user()?.id;
     if (!userId) return;
     this.isLoadingCertificates = true;
+    const suppliedCertificates: Omit<Certificate, 'id' | 'user_id' | 'created_at' | 'payouts'>[] = [
+      {
+        firm_name: 'The5ers',
+        program_name: 'High Stakes, 5K',
+        account_size: 5000,
+        certificate_type: 'funded',
+        passed_date: '2025-12-05',
+        status: 'funded',
+        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2F2990b1ef616d488e88223d5a351f910e?format=webp&width=800&height=1200'
+      },
+      {
+        firm_name: 'The5ers',
+        program_name: 'Officially Funded Trader',
+        account_size: 5000,
+        certificate_type: 'funded',
+        passed_date: '2026-08-05',
+        status: 'funded',
+        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ff90a7a3bd99a4854b46f578e37964ba2?format=webp&width=800&height=1200'
+      },
+      {
+        firm_name: 'The5ers',
+        program_name: 'High Stakes, 2.5K',
+        account_size: 2500,
+        certificate_type: 'funded',
+        passed_date: '2026-07-10',
+        status: 'funded',
+        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ffe4cf7a481b8401ba22af1e43207ac27?format=webp&width=800&height=1200'
+      }
+    ];
+
     try {
       [this.certificates, this.certificatePayouts] = await Promise.all([
         this.supabaseService.getCertificates(userId),
         this.supabaseService.getPayouts(userId)
       ]);
+      if (!this.certificates.length) {
+        for (const certificate of suppliedCertificates) {
+          await this.supabaseService.createCertificate(certificate);
+        }
+        this.certificates = await this.supabaseService.getCertificates(userId);
+      }
     } catch (error) {
       console.error('Unable to load certificates:', error);
-      this.certificates = [];
+      this.certificates = suppliedCertificates.map((certificate, index) => ({ ...certificate, id: `supplied-certificate-${index}` }));
       this.certificatePayouts = [];
-      this.snackBar.open('Add the certificates and payouts tables in Supabase to enable this page.', 'Dismiss', { duration: 6000 });
+      this.snackBar.open('Showing your certificates locally. Create the Supabase tables to save them permanently.', 'Dismiss', { duration: 7000 });
     } finally {
       this.isLoadingCertificates = false;
       this.cdr.markForCheck();
