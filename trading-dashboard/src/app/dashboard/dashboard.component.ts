@@ -253,6 +253,7 @@ export class DashboardComponent implements AfterViewInit {
 
   navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
     this.closeProfileSettings();
+    this.closeAccountRiskCalculator();
     this.activeWorkspace = workspace;
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
     if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
@@ -337,6 +338,7 @@ export class DashboardComponent implements AfterViewInit {
   closeAccountRiskCalculator(): void {
     this.showAccountRiskCalculator = false;
     this.showAccountSizeDropdown = false;
+    this.cdr.markForCheck();
   }
 
   private setupClickOutsideListener(): void {
