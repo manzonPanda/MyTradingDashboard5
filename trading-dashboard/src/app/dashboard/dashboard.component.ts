@@ -6355,19 +6355,28 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private async loadNewTradeScreenshot(trade: Table): Promise<void> {
-    try {
-      const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
-      if (!screenshotUrls.length) return;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
-      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
-      trade.screenshotUrl = trade.screenshotUrls[0];
-      this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
-      this.screenshotLoadErrors.delete(String(trade.position));
-      this.mt5LiveTrades = [...this.mt5LiveTrades];
-      this.updateTableData();
-      this.cdr.markForCheck();
-    } catch (error) {
-      console.warn('Unable to load screenshot for new trade:', error);
+      try {
+        const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
+        if (!screenshotUrls.length) continue;
+
+        trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
+        trade.screenshotUrl = trade.screenshotUrls[0];
+        this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
+        this.screenshotLoadErrors.delete(String(trade.position));
+        this.mt5LiveTrades = [...this.mt5LiveTrades];
+        this.updateTableData();
+        this.cdr.markForCheck();
+        return;
+      } catch (error) {
+        if (attempt === 14) {
+          console.warn('Unable to load screenshot for new trade:', error);
+        }
+      }
     }
   }
 
