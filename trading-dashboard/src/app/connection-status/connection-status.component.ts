@@ -166,8 +166,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
    reconnectMT5() {
     this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
-        next: (res) => {
-          console.log(res);
+        next: () => {
           this.reconnectRequested.emit();
         },
         error: (err) => console.error(err)

@@ -27,7 +27,6 @@ export class FcmService {
       });
 
       if (token) {
-        console.log('✅ FCM Token:', token);
         // Store token in localStorage for later use
         localStorage.setItem('fcm_token', token);
         return token;
@@ -46,8 +45,6 @@ export class FcmService {
    */
   listen(): void {
     onMessage(this.messaging, (payload) => {
-      console.log('📩 Foreground message received:', payload);
-
       // Optional: Show a notification popup manually
       if (payload.notification) {
         const { title, body, icon } = payload.notification;

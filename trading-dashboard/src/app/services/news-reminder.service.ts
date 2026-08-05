@@ -265,7 +265,6 @@ export class NewsReminderService {
       clearTimeout(timeout.timeoutId);
     });
     this.reminderTimeouts = [];
-    console.log('🧹 Cleared all news reminders');
   }
 
   /**
