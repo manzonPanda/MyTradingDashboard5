@@ -1162,6 +1162,65 @@
   }
 }
 
+.day-trade-screenshot-tile {
+  position: relative;
+  min-height: 88px;
+  overflow: hidden;
+
+  img {
+    transition: filter 0.2s ease;
+  }
+
+  &:hover {
+    img {
+      filter: brightness(0.55);
+    }
+
+    .screenshot-tile-actions {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+}
+
+.screenshot-tile-actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  gap: 0.4rem;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.screenshot-action-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tf-accent-info);
+  }
+
+  mat-icon {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+  }
+}
+
+.screenshot-delete-button:hover {
+  background: var(--tf-negative);
+}
+
 .day-trade-screenshot {
   min-height: 150px;
   background: var(--tf-bg-tertiary);
@@ -1234,6 +1293,40 @@
   color: var(--tf-negative);
   font-size: 0.65rem;
   text-align: center;
+}
+
+.screenshot-lightbox {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  padding: 3rem;
+  place-items: center;
+  background: rgba(2, 6, 23, 0.84);
+
+  img {
+    max-width: min(100%, 1100px);
+    max-height: min(100%, 82vh);
+    object-fit: contain;
+    border-radius: 0.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4);
+  }
+}
+
+.screenshot-lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  cursor: pointer;
 }
 
 .day-trade-screenshot-empty {

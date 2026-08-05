@@ -610,6 +610,33 @@ export class SupabaseService {
     return data.signedUrl;
   }
 
+  async deleteTradeScreenshot(ticket: number | string, signedUrl: string): Promise<void> {
+    const { data: screenshots, error: lookupError } = await this.supabase
+      .from('trade_screenshots')
+      .select('storage_path')
+      .eq('ticket', String(ticket));
+    if (lookupError) throw new Error(`Screenshot lookup failed: ${lookupError.message}`);
+
+    const signedPath = new URL(signedUrl).pathname;
+    const screenshot = (screenshots ?? []).find(row => {
+      const encodedPath = `/storage/v1/object/sign/trade-screenshots/${row.storage_path}`;
+      return signedPath === encodedPath || decodeURIComponent(signedPath) === encodedPath;
+    });
+    if (!screenshot?.storage_path) throw new Error('Screenshot could not be identified.');
+
+    const { error: storageError } = await this.supabase.storage
+      .from('trade-screenshots')
+      .remove([screenshot.storage_path]);
+    if (storageError) throw new Error(`Screenshot deletion failed: ${storageError.message}`);
+
+    const { error: metadataError } = await this.supabase
+      .from('trade_screenshots')
+      .delete()
+      .eq('ticket', String(ticket))
+      .eq('storage_path', screenshot.storage_path);
+    if (metadataError) throw new Error(`Screenshot metadata deletion failed: ${metadataError.message}`);
+  }
+
   async uploadFile(file: File, path: string): Promise<string | null> {
     const { error } = await this.supabase.storage
       .from('trade-files')

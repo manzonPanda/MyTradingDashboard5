@@ -214,7 +214,17 @@ interface WeekSummary {
               </div>
               <div class="day-trade-media">
                 <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else screenshotState">
-                  <img *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index" [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
+                  <div class="day-trade-screenshot-tile" *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index">
+                    <img [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
+                    <div class="screenshot-tile-actions">
+                      <button type="button" class="screenshot-action-button" aria-label="View screenshot" title="View screenshot" (click)="openScreenshot(screenshotUrl)">
+                        <mat-icon aria-hidden="true">visibility</mat-icon>
+                      </button>
+                      <button type="button" class="screenshot-action-button screenshot-delete-button" aria-label="Delete screenshot" title="Delete screenshot" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="deleteScreenshot(trade, screenshotUrl)">
+                        <mat-icon aria-hidden="true">delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <ng-template #screenshotState>
                   <div class="day-trade-screenshot day-trade-screenshot-empty" *ngIf="isLoadingScreenshots(trade); else noScreenshot">
@@ -252,6 +262,12 @@ interface WeekSummary {
             </div>
           </ng-template>
         </section>
+        <div class="screenshot-lightbox" *ngIf="activeScreenshotUrl" role="dialog" aria-modal="true" aria-label="Screenshot preview" (click)="closeScreenshot()">
+          <button type="button" class="screenshot-lightbox-close" aria-label="Close screenshot preview" (click)="closeScreenshot()">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+          <img [src]="activeScreenshotUrl" alt="Trade screenshot enlarged" (click)="$event.stopPropagation()">
+        </div>
       </div>
     </div>
   `,
@@ -268,7 +284,9 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   selectedDay: CalendarDay | null = null;
   private readonly uploadingScreenshotTickets = new Set<string>();
   private readonly screenshotUploadErrors = new Map<string, string>();
+  private readonly deletingScreenshotUrls = new Set<string>();
   private readonly draggingScreenshotTickets = new Set<string>();
+  activeScreenshotUrl: string | null = null;
   private readonly screenshotLoadedTickets = new Set<string>();
   private readonly screenshotLoadingTickets = new Set<string>();
 
@@ -530,6 +548,35 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   getScreenshotUploadError(trade: Table): string {
     return this.screenshotUploadErrors.get(String(trade.position)) || '';
+  }
+
+  isDeletingScreenshot(screenshotUrl: string): boolean {
+    return this.deletingScreenshotUrls.has(screenshotUrl);
+  }
+
+  openScreenshot(screenshotUrl: string): void {
+    this.activeScreenshotUrl = screenshotUrl;
+  }
+
+  closeScreenshot(): void {
+    this.activeScreenshotUrl = null;
+  }
+
+  async deleteScreenshot(trade: Table, screenshotUrl: string): Promise<void> {
+    if (!window.confirm('Delete this screenshot? This action cannot be undone.')) return;
+
+    this.deletingScreenshotUrls.add(screenshotUrl);
+    try {
+      await this.supabaseService.deleteTradeScreenshot(trade.position, screenshotUrl);
+      trade.screenshotUrls = (trade.screenshotUrls || []).filter(url => url !== screenshotUrl);
+      trade.screenshotUrl = trade.screenshotUrls[0];
+      if (this.activeScreenshotUrl === screenshotUrl) this.closeScreenshot();
+      this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
+    } catch (error) {
+      this.screenshotUploadErrors.set(String(trade.position), error instanceof Error ? error.message : 'Unable to delete screenshot.');
+    } finally {
+      this.deletingScreenshotUrls.delete(screenshotUrl);
+    }
   }
 
   async uploadTradeScreenshots(trade: Table, event: Event): Promise<void> {
