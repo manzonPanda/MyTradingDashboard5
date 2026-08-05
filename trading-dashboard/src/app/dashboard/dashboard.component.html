@@ -1146,7 +1146,10 @@
                     <p class="certificate-account-context">{{ getCertificateAccountPhase(certificate) }}</p>
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
-                    <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
+                    <div class="certificate-card-actions">
+                      <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
+                      <button class="certificate-delete-button" type="button" [class.is-confirming]="certificateDeleteConfirmationId === certificate.id" [disabled]="isDeletingCertificate" [attr.aria-label]="certificateDeleteConfirmationId === certificate.id ? 'Confirm certificate deletion' : 'Delete certificate'" [attr.title]="certificateDeleteConfirmationId === certificate.id ? 'Click again to delete' : 'Delete certificate'" (click)="confirmCertificateDeletion(certificate)"><mat-icon>{{ certificateDeleteConfirmationId === certificate.id ? 'check' : 'delete_outline' }}</mat-icon></button>
+                    </div>
                     @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
                   </div>
                   <div class="certificate-card-media">

@@ -196,6 +196,9 @@ export class DashboardComponent implements AfterViewInit {
   isCertificateModalOpen = false;
   isPayoutModalOpen = false;
   isSavingCertificate = false;
+  isDeletingCertificate = false;
+  certificateDeleteConfirmationId: string | null = null;
+  private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
   editingCertificateId: string | null = null;
   certificateFile: File | null = null;
@@ -1818,6 +1821,41 @@ mt5AccountInfo: AccountSettings = {
 
   closeCertificateModal(): void {
     if (!this.isSavingCertificate) this.isCertificateModalOpen = false;
+  }
+
+  cancelCertificateDeletion(): void {
+    this.certificateDeleteConfirmationId = null;
+    if (this.certificateDeleteConfirmationTimer) window.clearTimeout(this.certificateDeleteConfirmationTimer);
+    this.certificateDeleteConfirmationTimer = undefined;
+    this.cdr.markForCheck();
+  }
+
+  @HostListener('document:keydown.escape')
+  cancelCertificateDeletionOnEscape(): void {
+    if (this.certificateDeleteConfirmationId) this.cancelCertificateDeletion();
+  }
+
+  async confirmCertificateDeletion(certificate: Certificate): Promise<void> {
+    if (this.isDeletingCertificate) return;
+    if (this.certificateDeleteConfirmationId !== certificate.id) {
+      this.certificateDeleteConfirmationId = certificate.id;
+      this.certificateDeleteConfirmationTimer = window.setTimeout(() => this.cancelCertificateDeletion(), 4000);
+      this.cdr.markForCheck();
+      return;
+    }
+    this.isDeletingCertificate = true;
+    try {
+      await this.supabaseService.deleteCertificate(certificate.id);
+      this.certificates = this.certificates.filter(item => item.id !== certificate.id);
+      this.cancelCertificateDeletion();
+      this.snackBar.open('Certificate deleted.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to delete certificate:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete certificate.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isDeletingCertificate = false;
+      this.cdr.markForCheck();
+    }
   }
 
   onCertificateFileSelected(event: Event): void {

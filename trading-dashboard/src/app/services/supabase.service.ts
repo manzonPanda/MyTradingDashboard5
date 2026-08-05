@@ -325,6 +325,16 @@ export class SupabaseService {
     return data as Certificate;
   }
 
+  async deleteCertificate(id: string): Promise<void> {
+    const userId = await this.getAuthenticatedUserId();
+    const { error } = await this.supabase
+      .from('certificates')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+    if (error) throw new Error(`Certificate deletion failed: ${error.message}`);
+  }
+
   async createPayout(payout: Omit<Payout, 'id' | 'user_id' | 'created_at'>): Promise<Payout> {
     const userId = await this.getAuthenticatedUserId();
     const { data, error } = await this.supabase
