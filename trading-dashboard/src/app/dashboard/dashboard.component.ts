@@ -38,7 +38,7 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
-import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { Account, Certificate, Payout, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
@@ -190,6 +190,9 @@ export class DashboardComponent implements AfterViewInit {
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
   roiTransactions: RoiTransaction[] = [];
+  certificates: Certificate[] = [];
+  certificatePayouts: Payout[] = [];
+  isLoadingCertificates = false;
   isLoadingRoi = false;
   isSavingRoi = false;
   isRoiEntryModalOpen = false;
@@ -259,6 +262,9 @@ export class DashboardComponent implements AfterViewInit {
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
     if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
       void this.loadRoiTransactions();
+    }
+    if (workspace === 'certificates' && !this.certificates.length && !this.isLoadingCertificates) {
+      void this.loadCertificates();
     }
 
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
@@ -1751,6 +1757,34 @@ mt5AccountInfo: AccountSettings = {
     return this.roiExpenses ? (this.roiNetReturn / this.roiExpenses) * 100 : 0;
   }
 
+  get certificatePayoutTotal(): number {
+    return this.certificatePayouts.reduce((total, payout) => total + Number(payout.amount || 0), 0);
+  }
+
+  get fundedCertificateCount(): number {
+    return this.certificates.filter(certificate => certificate.status === 'funded').length;
+  }
+
+  private async loadCertificates(): Promise<void> {
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+    this.isLoadingCertificates = true;
+    try {
+      [this.certificates, this.certificatePayouts] = await Promise.all([
+        this.supabaseService.getCertificates(userId),
+        this.supabaseService.getPayouts(userId)
+      ]);
+    } catch (error) {
+      console.error('Unable to load certificates:', error);
+      this.certificates = [];
+      this.certificatePayouts = [];
+      this.snackBar.open('Add the certificates and payouts tables in Supabase to enable this page.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isLoadingCertificates = false;
+      this.cdr.markForCheck();
+    }
+  }
+
   private async loadRoiTransactions(): Promise<void> {
     this.isLoadingRoi = true;
     try {
@@ -1926,6 +1960,7 @@ mt5AccountInfo: AccountSettings = {
     this.setupClickOutsideListener();
     await this.loadAccounts();
     if (this.currentWorkspace === 'roi') await this.loadRoiTransactions();
+    if (this.currentWorkspace === 'certificates') await this.loadCertificates();
 
     // Load MT5 data immediately
     try {

@@ -32,6 +32,33 @@ export interface RoiTransaction {
   accounts?: { name: string } | null;
 }
 
+export interface Certificate {
+  id: string;
+  user_id?: string;
+  firm_name: string;
+  program_name?: string | null;
+  account_size?: number | null;
+  certificate_type: 'evaluation' | 'funded' | 'other';
+  passed_date: string;
+  status: 'passed' | 'funded' | 'expired';
+  file_path?: string | null;
+  notes?: string | null;
+  created_at?: string;
+  payouts?: Payout[];
+}
+
+export interface Payout {
+  id: string;
+  certificate_id?: string | null;
+  user_id?: string;
+  firm_name: string;
+  amount: number;
+  payout_date: string;
+  notes?: string | null;
+  proof_url?: string | null;
+  created_at?: string;
+}
+
 export interface Profile {
   id: string;
   display_name: string | null;
@@ -247,6 +274,60 @@ export class SupabaseService {
       .delete()
       .eq('id', id);
     if (error) throw new Error(`Account deletion failed: ${error.message}`);
+  }
+
+  async getCertificates(userId: string): Promise<Certificate[]> {
+    const { data, error } = await this.supabase
+      .from('certificates')
+      .select('*, payouts(*)')
+      .eq('user_id', userId)
+      .order('passed_date', { ascending: false });
+    if (error) throw new Error(`Certificate loading failed: ${error.message}`);
+    return (data as Certificate[]) || [];
+  }
+
+  async createCertificate(certificate: Omit<Certificate, 'id' | 'user_id' | 'created_at' | 'payouts'>): Promise<Certificate> {
+    const userId = await this.getAuthenticatedUserId();
+    const { data, error } = await this.supabase
+      .from('certificates')
+      .insert({ ...certificate, user_id: userId })
+      .select('*')
+      .single();
+    if (error) throw new Error(`Certificate creation failed: ${error.message}`);
+    return data as Certificate;
+  }
+
+  async uploadCertificateFile(file: File, certificateId: string): Promise<string> {
+    const userId = await this.getAuthenticatedUserId();
+    const filePath = `${userId}/${certificateId}-${Date.now()}-${file.name}`;
+    const { error: uploadError } = await this.supabase.storage
+      .from('certificates')
+      .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
+    if (uploadError) throw new Error(`Certificate upload failed: ${uploadError.message}`);
+
+    const { error: updateError } = await this.supabase
+      .from('certificates')
+      .update({ file_path: filePath })
+      .eq('id', certificateId)
+      .eq('user_id', userId);
+    if (updateError) throw new Error(`Certificate file update failed: ${updateError.message}`);
+    return filePath;
+  }
+
+  async getCertificateFileUrl(filePath: string): Promise<string | null> {
+    const { data, error } = await this.supabase.storage.from('certificates').createSignedUrl(filePath, 3600);
+    if (error) return null;
+    return data.signedUrl;
+  }
+
+  async getPayouts(userId: string): Promise<Payout[]> {
+    const { data, error } = await this.supabase
+      .from('payouts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('payout_date', { ascending: false });
+    if (error) throw new Error(`Payout loading failed: ${error.message}`);
+    return (data as Payout[]) || [];
   }
 
   async getRoiTransactions(userId: string): Promise<RoiTransaction[]> {
