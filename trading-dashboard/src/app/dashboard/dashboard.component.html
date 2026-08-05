@@ -1177,6 +1177,7 @@
                   <th scope="col">Account</th>
                   <th scope="col">Account number</th>
                   <th scope="col">Balance</th>
+                  <th scope="col">Stage</th>
                   <th scope="col">Status</th>
                   <th scope="col">Risk limits</th>
                   <th scope="col" class="accounts-table-actions-heading">Actions</th>
@@ -1196,6 +1197,7 @@
                     </td>
                     <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
                     <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
+                    <td data-label="Stage"><span class="account-phase" [class]="'account-phase phase-' + (account.phase || 'phase1')"><mat-icon>{{ account.phase === 'funded' ? 'workspace_premium' : 'trending_up' }}</mat-icon>{{ account.phase === 'funded' ? 'Funded' : account.phase === 'phase2' ? 'Phase 2' : 'Phase 1' }}</span></td>
                     <td data-label="Status"><span class="account-status" [class]="'account-status status-' + (account.status || 'active').toLowerCase()">{{ account.status || 'Active' }}</span></td>
                     <td data-label="Risk limits">
                       <div class="account-risk-summary">
@@ -1246,15 +1248,14 @@
       </div>
 
       @if (editingAccountId || isCreatingAccount) {
-        <div class="account-modal-backdrop" role="presentation" (click)="cancelAccountEdit()">
-          <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title" (click)="$event.stopPropagation()">
+        <div class="account-modal-backdrop" role="presentation">
+          <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title">
             <div class="account-edit-heading">
               <div>
                 <p class="account-edit-kicker">{{ isCreatingAccount ? 'New trading account' : 'Account settings' }}</p>
                 <h3 id="account-edit-title">{{ isCreatingAccount ? 'Add an account' : 'Edit account details' }}</h3>
                 <p class="account-edit-subtitle">{{ isCreatingAccount ? 'Add the account details you use to track performance and risk.' : 'Keep your trading limits and account identity in sync.' }}</p>
               </div>
-              <button type="button" class="account-modal-close" aria-label="Close account editor" (click)="cancelAccountEdit()"><mat-icon>close</mat-icon></button>
             </div>
             <div class="account-edit-fields">
               <label class="account-edit-field account-edit-field-wide">
@@ -1276,6 +1277,14 @@
               <label class="account-edit-field">
                 <span>Start date</span>
                 <input type="date" [(ngModel)]="accountEditForm.start_date" />
+              </label>
+              <label class="account-edit-field">
+                <span>Stage</span>
+                <select [(ngModel)]="accountEditForm.phase">
+                  <option value="phase1">Phase 1</option>
+                  <option value="phase2">Phase 2</option>
+                  <option value="funded">Funded</option>
+                </select>
               </label>
               <label class="account-edit-field">
                 <span>Status</span>

@@ -11355,6 +11355,38 @@ table.simple-table {
   color: var(--tf-text-primary);
 }
 
+.account-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+
+  mat-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  &.phase-phase1 {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+  }
+
+  &.phase-phase2 {
+    background: rgba(124, 58, 237, 0.12);
+    color: #7c3aed;
+  }
+
+  &.phase-funded {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+}
+
 .account-status {
   display: inline-flex;
   padding: 0.35rem 0.6rem;

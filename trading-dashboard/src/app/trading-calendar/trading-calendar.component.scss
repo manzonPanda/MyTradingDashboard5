@@ -1162,6 +1162,111 @@
   }
 }
 
+.day-trade-screenshot-tile {
+  position: relative;
+  min-height: 88px;
+  overflow: hidden;
+
+  img {
+    transition: filter 0.2s ease;
+  }
+
+  &:hover {
+    img {
+      filter: brightness(0.55);
+    }
+
+    .screenshot-tile-actions {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+}
+
+.screenshot-tile-actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  gap: 0.4rem;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.screenshot-action-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tf-accent-info);
+  }
+
+  mat-icon {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+  }
+}
+
+.screenshot-delete-button:hover {
+  background: var(--tf-negative);
+}
+
+.screenshot-delete-confirmation {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+.screenshot-confirmation-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.screenshot-confirm-button,
+.screenshot-cancel-button {
+  padding: 0.25rem 0.45rem;
+  border: 0;
+  border-radius: 0.25rem;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.screenshot-confirm-button {
+  background: var(--tf-negative);
+}
+
+.screenshot-cancel-button {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.screenshot-confirm-button:disabled,
+.screenshot-cancel-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .day-trade-screenshot {
   min-height: 150px;
   background: var(--tf-bg-tertiary);
@@ -1180,14 +1285,22 @@
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  min-height: 34px;
-  padding: 0.45rem 0.6rem;
+  min-height: 58px;
+  padding: 0.55rem 0.6rem;
   border-top: 1px solid var(--tf-border-primary);
   color: var(--tf-accent-info);
   cursor: pointer;
   font-size: 0.68rem;
   font-weight: 700;
   transition: background 0.2s ease, color 0.2s ease;
+
+  small {
+    flex-basis: 100%;
+    color: var(--tf-text-muted);
+    font-size: 0.58rem;
+    font-weight: 500;
+    text-align: center;
+  }
 
   input {
     position: absolute;
@@ -1207,6 +1320,13 @@
     opacity: 0.65;
   }
 
+  &.is-dragging {
+    background: rgba(59, 130, 246, 0.16);
+    outline: 2px dashed var(--tf-accent-info);
+    outline-offset: -3px;
+    color: var(--tf-text-primary);
+  }
+
   mat-icon {
     width: 16px;
     height: 16px;
@@ -1221,6 +1341,40 @@
   text-align: center;
 }
 
+.screenshot-lightbox {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  padding: 3rem;
+  place-items: center;
+  background: rgba(2, 6, 23, 0.84);
+
+  img {
+    max-width: min(100%, 1100px);
+    max-height: min(100%, 82vh);
+    object-fit: contain;
+    border-radius: 0.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4);
+  }
+}
+
+.screenshot-lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  cursor: pointer;
+}
+
 .day-trade-screenshot-empty {
   display: flex;
   flex-direction: column;
@@ -1232,6 +1386,21 @@
 
   mat-icon {
     opacity: 0.7;
+  }
+}
+
+.screenshot-loading-spinner {
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid var(--tf-border-primary);
+  border-top-color: var(--tf-accent-info);
+  border-radius: 50%;
+  animation: screenshot-spinner 0.8s linear infinite;
+}
+
+@keyframes screenshot-spinner {
+  to {
+    transform: rotate(360deg);
   }
 }
 

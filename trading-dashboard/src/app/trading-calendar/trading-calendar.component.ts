@@ -213,20 +213,50 @@ interface WeekSummary {
                 </div>
               </div>
               <div class="day-trade-media">
-                <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else noScreenshot">
-                  <img *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index" [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
+                <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else screenshotState">
+                  <div class="day-trade-screenshot-tile" *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index">
+                    <img [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
+                    <div class="screenshot-tile-actions">
+                      <button type="button" class="screenshot-action-button" aria-label="View screenshot" title="View screenshot" (click)="openScreenshot(screenshotUrl)">
+                        <mat-icon aria-hidden="true">visibility</mat-icon>
+                      </button>
+                      <button type="button" class="screenshot-action-button screenshot-delete-button" aria-label="Delete screenshot" title="Delete screenshot" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="requestDeleteScreenshot(screenshotUrl)">
+                        <mat-icon aria-hidden="true">delete</mat-icon>
+                      </button>
+                    </div>
+                    <div class="screenshot-delete-confirmation" *ngIf="confirmingDeleteUrl === screenshotUrl">
+                      <strong>Confirm delete?</strong>
+                      <div class="screenshot-confirmation-actions">
+                        <button type="button" class="screenshot-confirm-button" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="deleteScreenshot(trade, screenshotUrl)">Delete</button>
+                        <button type="button" class="screenshot-cancel-button" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="cancelDeleteScreenshot()">Cancel</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                <ng-template #screenshotState>
+                  <div class="day-trade-screenshot day-trade-screenshot-empty" *ngIf="isLoadingScreenshots(trade); else noScreenshot">
+                    <span class="screenshot-loading-spinner" aria-hidden="true"></span>
+                    <span>Loading screenshots...</span>
+                  </div>
+                </ng-template>
                 <ng-template #noScreenshot>
                   <div class="day-trade-screenshot day-trade-screenshot-empty">
                     <mat-icon aria-hidden="true">image_not_supported</mat-icon>
                     <span>No screenshot yet</span>
                   </div>
                 </ng-template>
-                <label class="trade-screenshot-upload" [class.is-uploading]="isUploadingScreenshots(trade)">
+                <div
+                  class="trade-screenshot-upload"
+                  [class.is-uploading]="isUploadingScreenshots(trade)"
+                  [class.is-dragging]="isDraggingScreenshots(trade)"
+                  (dragover)="onScreenshotDragOver(trade, $event)"
+                  (dragleave)="onScreenshotDragLeave(trade, $event)"
+                  (drop)="onScreenshotDrop(trade, $event)">
                   <input type="file" accept="image/*" multiple [disabled]="isUploadingScreenshots(trade)" (change)="uploadTradeScreenshots(trade, $event)">
-                  <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
-                  <span>{{ isUploadingScreenshots(trade) ? 'Uploading...' : 'Add screenshots' }}</span>
-                </label>
+                  <mat-icon aria-hidden="true">cloud_upload</mat-icon>
+                  <span>{{ isUploadingScreenshots(trade) ? 'Uploading...' : 'Drop images here or browse' }}</span>
+                  <small>Multiple images supported</small>
+                </div>
                 <span class="trade-screenshot-upload-error" *ngIf="getScreenshotUploadError(trade)">{{ getScreenshotUploadError(trade) }}</span>
               </div>
             </article>
@@ -239,6 +269,12 @@ interface WeekSummary {
             </div>
           </ng-template>
         </section>
+        <div class="screenshot-lightbox" *ngIf="activeScreenshotUrl" role="dialog" aria-modal="true" aria-label="Screenshot preview" (click)="closeScreenshot()">
+          <button type="button" class="screenshot-lightbox-close" aria-label="Close screenshot preview" (click)="closeScreenshot()">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+          <img [src]="activeScreenshotUrl" alt="Trade screenshot enlarged" (click)="$event.stopPropagation()">
+        </div>
       </div>
     </div>
   `,
@@ -255,6 +291,12 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   selectedDay: CalendarDay | null = null;
   private readonly uploadingScreenshotTickets = new Set<string>();
   private readonly screenshotUploadErrors = new Map<string, string>();
+  private readonly deletingScreenshotUrls = new Set<string>();
+  private readonly draggingScreenshotTickets = new Set<string>();
+  activeScreenshotUrl: string | null = null;
+  confirmingDeleteUrl: string | null = null;
+  private readonly screenshotLoadedTickets = new Set<string>();
+  private readonly screenshotLoadingTickets = new Set<string>();
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -273,6 +315,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         this.currentDate = new Date(changes['viewDate'].currentValue);
       }
       this.firstTradeDate = this.getFirstTradeDate();
+      this.screenshotLoadedTickets.clear();
       this.generateCalendar();
     }
   }
@@ -447,8 +490,31 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
            date.getDate() === today.getDate();
   }
 
-  openDayModal(day: CalendarDay): void {
+  async openDayModal(day: CalendarDay): Promise<void> {
     this.selectedDay = day;
+
+    const tickets = day.trades
+      .map(trade => String(trade.position))
+      .filter(ticket => ticket && !this.screenshotLoadedTickets.has(ticket) && !this.screenshotLoadingTickets.has(ticket));
+    if (!tickets.length) return;
+
+    tickets.forEach(ticket => this.screenshotLoadingTickets.add(ticket));
+    try {
+      const screenshotUrls = await this.supabaseService.getTradeScreenshotUrls(tickets);
+      for (const trade of day.trades) {
+        const urls = screenshotUrls[String(trade.position)] || [];
+        if (urls.length) {
+          trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...urls])];
+          trade.screenshotUrl = trade.screenshotUrls[0];
+        }
+        this.screenshotLoadedTickets.add(String(trade.position));
+      }
+      this.selectedDay = { ...day, trades: [...day.trades] };
+    } catch (error) {
+      console.warn('Unable to load screenshots for selected day:', error);
+    } finally {
+      tickets.forEach(ticket => this.screenshotLoadingTickets.delete(ticket));
+    }
   }
 
   closeDayModal(): void {
@@ -459,14 +525,83 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return this.uploadingScreenshotTickets.has(String(trade.position));
   }
 
+  isLoadingScreenshots(trade: Table): boolean {
+    return this.screenshotLoadingTickets.has(String(trade.position));
+  }
+
+  isDraggingScreenshots(trade: Table): boolean {
+    return this.draggingScreenshotTickets.has(String(trade.position));
+  }
+
+  onScreenshotDragOver(trade: Table, event: DragEvent): void {
+    event.preventDefault();
+    if (!this.isUploadingScreenshots(trade)) {
+      this.draggingScreenshotTickets.add(String(trade.position));
+    }
+  }
+
+  onScreenshotDragLeave(trade: Table, event: DragEvent): void {
+    event.preventDefault();
+    this.draggingScreenshotTickets.delete(String(trade.position));
+  }
+
+  onScreenshotDrop(trade: Table, event: DragEvent): void {
+    event.preventDefault();
+    this.draggingScreenshotTickets.delete(String(trade.position));
+    if (this.isUploadingScreenshots(trade)) return;
+
+    const files = Array.from(event.dataTransfer?.files || []).filter(file => file.type.startsWith('image/'));
+    void this.uploadTradeScreenshotFiles(trade, files);
+  }
+
   getScreenshotUploadError(trade: Table): string {
     return this.screenshotUploadErrors.get(String(trade.position)) || '';
+  }
+
+  isDeletingScreenshot(screenshotUrl: string): boolean {
+    return this.deletingScreenshotUrls.has(screenshotUrl);
+  }
+
+  openScreenshot(screenshotUrl: string): void {
+    this.activeScreenshotUrl = screenshotUrl;
+  }
+
+  closeScreenshot(): void {
+    this.activeScreenshotUrl = null;
+  }
+
+  requestDeleteScreenshot(screenshotUrl: string): void {
+    this.confirmingDeleteUrl = screenshotUrl;
+  }
+
+  cancelDeleteScreenshot(): void {
+    this.confirmingDeleteUrl = null;
+  }
+
+  async deleteScreenshot(trade: Table, screenshotUrl: string): Promise<void> {
+    this.deletingScreenshotUrls.add(screenshotUrl);
+    try {
+      await this.supabaseService.deleteTradeScreenshot(trade.position, screenshotUrl);
+      trade.screenshotUrls = (trade.screenshotUrls || []).filter(url => url !== screenshotUrl);
+      trade.screenshotUrl = trade.screenshotUrls[0];
+      if (this.activeScreenshotUrl === screenshotUrl) this.closeScreenshot();
+      if (this.confirmingDeleteUrl === screenshotUrl) this.cancelDeleteScreenshot();
+      this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
+    } catch (error) {
+      this.screenshotUploadErrors.set(String(trade.position), error instanceof Error ? error.message : 'Unable to delete screenshot.');
+    } finally {
+      this.deletingScreenshotUrls.delete(screenshotUrl);
+    }
   }
 
   async uploadTradeScreenshots(trade: Table, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
     input.value = '';
+    await this.uploadTradeScreenshotFiles(trade, files);
+  }
+
+  private async uploadTradeScreenshotFiles(trade: Table, files: File[]): Promise<void> {
     if (!files.length || !trade.position) return;
 
     const ticket = String(trade.position);

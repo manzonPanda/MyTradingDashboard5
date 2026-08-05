@@ -253,6 +253,7 @@ export class DashboardComponent implements AfterViewInit {
 
   navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
     this.closeProfileSettings();
+    this.closeAccountRiskCalculator();
     this.activeWorkspace = workspace;
     this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
     if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
@@ -337,6 +338,7 @@ export class DashboardComponent implements AfterViewInit {
   closeAccountRiskCalculator(): void {
     this.showAccountRiskCalculator = false;
     this.showAccountSizeDropdown = false;
+    this.cdr.markForCheck();
   }
 
   private setupClickOutsideListener(): void {
@@ -575,7 +577,8 @@ export class DashboardComponent implements AfterViewInit {
       max_total_drawdown_percent: null,
       daily_loss_limit_percent: null,
       start_date: new Date().toISOString().slice(0, 10),
-      status: 'active'
+      status: 'active',
+      phase: 'phase1'
     };
     this.cdr.markForCheck();
   }
@@ -592,7 +595,8 @@ export class DashboardComponent implements AfterViewInit {
       max_total_drawdown_percent: account.max_total_drawdown_percent ?? 0,
       daily_loss_limit_percent: account.daily_loss_limit_percent ?? 0,
       start_date: account.start_date ?? '',
-      status: account.status ?? 'active'
+      status: account.status ?? 'active',
+      phase: account.phase ?? 'phase1'
     };
     this.cdr.markForCheck();
   }
@@ -643,10 +647,10 @@ export class DashboardComponent implements AfterViewInit {
         this.accountPage = 1;
       }
       this.accountPendingDeletion = null;
-      this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000 });
+      this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right', panelClass: ['account-notification', 'notification-success'] });
     } catch (error) {
       console.error('Unable to delete account:', error);
-      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete account.', 'Dismiss', { duration: 5000 });
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete account.', 'Dismiss', { duration: 5000, verticalPosition: 'top', horizontalPosition: 'right', panelClass: ['account-notification', 'notification-error'] });
     } finally {
       this.isDeletingAccount = false;
       this.cdr.markForCheck();
@@ -666,7 +670,8 @@ export class DashboardComponent implements AfterViewInit {
       max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
       daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
       start_date: this.accountEditForm.start_date || null,
-      status: this.accountEditForm.status || 'active'
+      status: this.accountEditForm.status || 'active',
+      phase: this.accountEditForm.phase || 'phase1'
     };
 
     try {
@@ -680,7 +685,7 @@ export class DashboardComponent implements AfterViewInit {
         this.applySelectedAccountSettings();
         await this.loadMT5Data();
         this.cancelAccountEdit();
-        this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000 });
+        this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right', panelClass: ['account-notification', 'notification-success'] });
       } else if (this.editingAccountId) {
         const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, accountData);
         this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
@@ -689,11 +694,11 @@ export class DashboardComponent implements AfterViewInit {
           this.applySelectedAccountSettings();
         }
         this.cancelAccountEdit();
-        this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right', panelClass: ['account-notification', 'notification-success'] });
       }
     } catch (error) {
       console.error(`Unable to ${this.isCreatingAccount ? 'create' : 'update'} account:`, error);
-      this.snackBar.open(error instanceof Error ? error.message : `Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000 });
+      this.snackBar.open(error instanceof Error ? error.message : `Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000, verticalPosition: 'top', horizontalPosition: 'right', panelClass: ['account-notification', 'notification-error'] });
     } finally {
       this.isSavingAccount = false;
       this.cdr.markForCheck();
@@ -2023,7 +2028,7 @@ mt5AccountInfo: AccountSettings = {
       processing: true,
       responsive: true,
       keys: true,
-      order: [[1, 'desc']], // Sort by date descending by default
+      order: [[1, 'asc']], // Sort by date ascending by default
       columnDefs: [
         { targets: [2, 3, 5, 6, 7, 8, 9, 10], className: 'text-center' }, // Center align numeric columns
         { targets: [2, 5, 6, 7, 8, 9, 10], type: 'num' } // Specify numeric sorting
@@ -6006,7 +6011,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const { created, updated } = await this.supabaseService.syncMt5Trades(trades, this.selectedAccount.name);
 
       this.snackBar.open(`MT5 sync complete: ${created} created, ${updated} updated.`, 'Dismiss', {
-        duration: 4000
+        duration: 4000,
+        verticalPosition: 'top',
+        horizontalPosition: 'right',
+        panelClass: ['account-notification', 'notification-success']
       });
     } catch (error) {
       console.error('Failed to sync MT5 trades to Supabase:', error);
@@ -6119,24 +6127,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
-    try {
-      const screenshotUrls = await this.supabaseService.getTradeScreenshotUrls(
-        mt5Trades.map(trade => trade.position)
-      );
-      for (const trade of mt5Trades) {
-        const savedScreenshotUrls = screenshotUrls[String(trade.position)] || [];
-        trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...savedScreenshotUrls])];
-        trade.screenshotUrl = trade.screenshotUrls[0] || trade.screenshotUrl;
-        if (trade.screenshotUrl) this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
-      }
-    } catch (error) {
-      console.warn('Unable to load saved trade screenshots:', error);
-    }
     this.mt5LiveTrades = mt5Trades;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
-    void Promise.all(mt5Trades
-      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
-      .map(trade => this.hydrateTradeScreenshot(trade)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -6304,31 +6296,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return Boolean(selectedAccountNumber && this.mt5AccountLogin && selectedAccountNumber === this.mt5AccountLogin);
   }
 
-  private async hydrateTradeScreenshot(trade: Table): Promise<void> {
-    for (let attempt = 0; attempt < 15 && !trade.screenshotUrl; attempt++) {
-      if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
-      if (!screenshotUrls.length) continue;
-
-      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
-      trade.screenshotUrl = trade.screenshotUrls[0];
-      this.screenshotLoadErrors.delete(String(trade.position));
-      this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
-      this.mt5LiveTrades = [...this.mt5LiveTrades];
-      this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
-        String(recentTrade.position) === String(trade.position) ? trade : recentTrade
-      );
-      this.updateTableData();
-      this.cdr.markForCheck();
-    }
-
-    this.screenshotLoadErrors.add(String(trade.position));
-    this.cdr.markForCheck();
-  }
-
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
     try {
       localStorage.removeItem(this.legacyLiveExtremesStorageKey);
@@ -6395,6 +6362,32 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     await this.supabaseService.saveTradeForAccount(tradeForSupabase, this.selectedAccount.id);
   }
 
+  private async loadNewTradeScreenshot(trade: Table): Promise<void> {
+    for (let attempt = 0; attempt < 15; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      try {
+        const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
+        if (!screenshotUrls.length) continue;
+
+        trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
+        trade.screenshotUrl = trade.screenshotUrls[0];
+        this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
+        this.screenshotLoadErrors.delete(String(trade.position));
+        this.mt5LiveTrades = [...this.mt5LiveTrades];
+        this.updateTableData();
+        this.cdr.markForCheck();
+        return;
+      } catch (error) {
+        if (attempt === 14) {
+          console.warn('Unable to load screenshot for new trade:', error);
+        }
+      }
+    }
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     if (!this.isActiveMt5Account()) return;
     const trade = tradeData;
@@ -6446,7 +6439,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Track as recently added for visual indication
       this.recentlyAddedTrades.unshift(newTrade);
-      void this.hydrateTradeScreenshot(newTrade);
+      void this.loadNewTradeScreenshot(newTrade);
 
       // Remove from recent list after 5 seconds
       // setTimeout(() => {
