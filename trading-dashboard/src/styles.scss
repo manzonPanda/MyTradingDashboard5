@@ -518,6 +518,95 @@ body.dark-theme {
   }
 }
 
+// Account action notification styling
+.account-notification {
+  width: min(370px, calc(100vw - 32px)) !important;
+  margin: 16px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #e2e8f0 !important;
+  border-left: 3px solid #64748b !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #334155 !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
+  animation: accountNotificationIn 180ms ease-out !important;
+
+  .mdc-snackbar__surface {
+    min-width: 0 !important;
+    padding: 0 !important;
+    border-radius: inherit !important;
+    background: transparent !important;
+  }
+
+  .mdc-snackbar__label {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 56px;
+    padding: 0.8rem 0.9rem !important;
+    color: inherit !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .mdc-snackbar__label::before {
+    width: 0.55rem;
+    height: 0.55rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: #64748b;
+    content: '';
+  }
+
+  .mat-mdc-button {
+    align-self: center;
+    min-width: auto !important;
+    margin: 0 0.6rem 0 0 !important;
+    border-radius: 0.45rem !important;
+    color: #64748b !important;
+    font-size: 0.66rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  &.notification-success {
+    border-left-color: #10b981 !important;
+
+    .mdc-snackbar__label::before {
+      background: #10b981;
+    }
+  }
+
+  &.notification-error {
+    border-left-color: #ef4444 !important;
+
+    .mdc-snackbar__label::before {
+      background: #ef4444;
+    }
+  }
+}
+
+body.dark-theme .account-notification {
+  border-color: #334155 !important;
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+@keyframes accountNotificationIn {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, -10px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 // Pulsing animation for news notification
 @keyframes newsNotificationPulse {
   0% {
