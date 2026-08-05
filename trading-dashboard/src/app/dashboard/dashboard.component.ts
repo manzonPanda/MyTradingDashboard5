@@ -199,10 +199,9 @@ export class DashboardComponent implements AfterViewInit {
   isSavingPayout = false;
   editingCertificateId: string | null = null;
   certificateFile: File | null = null;
-  certificateForm: { account_id: string | null; program_name: string; certificate_type: Certificate['certificate_type']; passed_date: string; status: Certificate['status']; notes: string } = {
+  certificateForm: { account_id: string | null; program_name: string; passed_date: string; status: Certificate['status']; notes: string } = {
     account_id: null,
     program_name: '',
-    certificate_type: 'evaluation',
     passed_date: new Date().toISOString().slice(0, 10),
     status: 'passed',
     notes: ''
@@ -1806,14 +1805,14 @@ mt5AccountInfo: AccountSettings = {
   openCertificateCreator(): void {
     this.editingCertificateId = null;
     this.certificateFile = null;
-    this.certificateForm = { account_id: this.accounts[0]?.id ?? null, program_name: '', certificate_type: 'evaluation', passed_date: new Date().toISOString().slice(0, 10), status: 'passed', notes: '' };
+    this.certificateForm = { account_id: this.accounts[0]?.id ?? null, program_name: '', passed_date: new Date().toISOString().slice(0, 10), status: 'passed', notes: '' };
     this.isCertificateModalOpen = true;
   }
 
   editCertificate(certificate: Certificate): void {
     this.editingCertificateId = certificate.id;
     this.certificateFile = null;
-    this.certificateForm = { account_id: certificate.account_id ?? null, program_name: certificate.program_name ?? '', certificate_type: certificate.certificate_type, passed_date: certificate.passed_date, status: certificate.status, notes: certificate.notes ?? '' };
+    this.certificateForm = { account_id: certificate.account_id ?? null, program_name: certificate.program_name ?? '', passed_date: certificate.passed_date, status: certificate.status, notes: certificate.notes ?? '' };
     this.isCertificateModalOpen = true;
   }
 
@@ -1829,7 +1828,8 @@ mt5AccountInfo: AccountSettings = {
     if (this.isSavingCertificate || !this.certificateForm.account_id || !this.certificateForm.passed_date) return;
     this.isSavingCertificate = true;
     try {
-      const updates = { ...this.certificateForm, program_name: this.certificateForm.program_name.trim() || null, notes: this.certificateForm.notes.trim() || null };
+      const existingCertificate = this.certificates.find(certificate => certificate.id === this.editingCertificateId);
+      const updates = { ...this.certificateForm, certificate_type: existingCertificate?.certificate_type ?? 'evaluation' as const, program_name: this.certificateForm.program_name.trim() || null, notes: this.certificateForm.notes.trim() || null };
       const saved = this.editingCertificateId
         ? await this.supabaseService.updateCertificate(this.editingCertificateId, updates)
         : await this.supabaseService.createCertificate(updates);

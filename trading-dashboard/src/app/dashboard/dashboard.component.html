@@ -1191,7 +1191,7 @@
                 }
               }
               <label><span>Program</span><input name="certificate-program" type="text" [(ngModel)]="certificateForm.program_name" placeholder="e.g. High Stakes"></label>
-              <div class="certificate-form-row"><label><span>Type</span><select name="certificate-type" [(ngModel)]="certificateForm.certificate_type"><option value="evaluation">Evaluation</option><option value="funded">Funded</option><option value="other">Other</option></select></label><label><span>Status</span><select name="certificate-status" [(ngModel)]="certificateForm.status"><option value="passed">Passed</option><option value="funded">Funded</option><option value="expired">Expired</option></select></label></div>
+              <label><span>Status</span><select name="certificate-status" [(ngModel)]="certificateForm.status"><option value="passed">Passed</option><option value="funded">Funded</option><option value="expired">Expired</option></select></label>
               <label><span>Passed date</span><input name="certificate-date" type="date" required [(ngModel)]="certificateForm.passed_date"></label>
               <label><span>Certificate file</span><input name="certificate-file" type="file" accept="image/*,.pdf" (change)="onCertificateFileSelected($event)"><small>Choose a new file to replace the current proof.</small></label>
               <label><span>Notes</span><textarea name="certificate-notes" rows="3" [(ngModel)]="certificateForm.notes" placeholder="Optional context"></textarea></label>
