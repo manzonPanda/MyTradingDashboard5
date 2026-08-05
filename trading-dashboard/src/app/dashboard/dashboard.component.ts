@@ -647,10 +647,10 @@ export class DashboardComponent implements AfterViewInit {
         this.accountPage = 1;
       }
       this.accountPendingDeletion = null;
-      this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000 });
+      this.snackBar.open(`${account.name} deleted.`, 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right' });
     } catch (error) {
       console.error('Unable to delete account:', error);
-      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete account.', 'Dismiss', { duration: 5000 });
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete account.', 'Dismiss', { duration: 5000, verticalPosition: 'top', horizontalPosition: 'right' });
     } finally {
       this.isDeletingAccount = false;
       this.cdr.markForCheck();
@@ -685,7 +685,7 @@ export class DashboardComponent implements AfterViewInit {
         this.applySelectedAccountSettings();
         await this.loadMT5Data();
         this.cancelAccountEdit();
-        this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000 });
+        this.snackBar.open(`${createdAccount.name} added and set active.`, 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right' });
       } else if (this.editingAccountId) {
         const updatedAccount = await this.supabaseService.updateAccount(this.editingAccountId, accountData);
         this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
@@ -694,11 +694,11 @@ export class DashboardComponent implements AfterViewInit {
           this.applySelectedAccountSettings();
         }
         this.cancelAccountEdit();
-        this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right' });
       }
     } catch (error) {
       console.error(`Unable to ${this.isCreatingAccount ? 'create' : 'update'} account:`, error);
-      this.snackBar.open(error instanceof Error ? error.message : `Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000 });
+      this.snackBar.open(error instanceof Error ? error.message : `Unable to ${this.isCreatingAccount ? 'add' : 'save'} account.`, 'Dismiss', { duration: 5000, verticalPosition: 'top', horizontalPosition: 'right' });
     } finally {
       this.isSavingAccount = false;
       this.cdr.markForCheck();
@@ -6011,7 +6011,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       const { created, updated } = await this.supabaseService.syncMt5Trades(trades, this.selectedAccount.name);
 
       this.snackBar.open(`MT5 sync complete: ${created} created, ${updated} updated.`, 'Dismiss', {
-        duration: 4000
+        duration: 4000,
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
       });
     } catch (error) {
       console.error('Failed to sync MT5 trades to Supabase:', error);
