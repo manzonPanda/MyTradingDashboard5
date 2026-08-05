@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStra
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { SupabaseService } from '../services/supabase.service';
 
 interface Table {
   openDate: string;
@@ -20,6 +21,11 @@ interface Table {
   swap: string;
   profit: string;
   netProfit: string;
+  riskPerTrade?: string;
+  rrr?: string;
+  mt5status?: string;
+  screenshotUrl?: string;
+  screenshotUrls?: string[];
 }
 
 interface CalendarDay {
@@ -93,7 +99,13 @@ interface WeekSummary {
                 'weekday-profit': isWeekday(day.date) && day.pnl > 0,
                 'weekday-loss': isWeekday(day.date) && day.pnl < 0,
                 'weekend': !isWeekday(day.date)
-              }">
+              }"
+              role="button"
+              tabindex="0"
+              [attr.aria-label]="getDayAriaLabel(day)"
+              (click)="openDayModal(day)"
+              (keydown.enter)="openDayModal(day)"
+              (keydown.space)="$event.preventDefault(); openDayModal(day)">
               <div class="new-account-badge" *ngIf="isFirstTradeDay(day.date)">
                 <span class="badge-star">★</span>
                 <span class="badge-label">New Account</span>
@@ -149,6 +161,85 @@ interface WeekSummary {
           </div>
         </div>
       </div>
+
+      <div class="day-trades-modal" *ngIf="selectedDay" role="dialog" aria-modal="true" [attr.aria-label]="'Trades for ' + (selectedDay.date | date: 'MMMM d, y')" (click)="$event.stopPropagation()">
+        <div class="day-trades-modal-backdrop" (click)="closeDayModal()"></div>
+        <section class="day-trades-modal-panel">
+          <header class="day-trades-modal-header">
+            <div>
+              <span class="day-trades-modal-eyebrow">Trading journal</span>
+              <h2>{{ selectedDay.date | date: 'EEEE, MMMM d' }}</h2>
+              <p>{{ selectedDay.tradeCount }} {{ selectedDay.tradeCount === 1 ? 'trade' : 'trades' }} captured on this day</p>
+            </div>
+            <button type="button" class="day-trades-modal-close" aria-label="Close trades for selected day" (click)="closeDayModal()">
+              <mat-icon aria-hidden="true">close</mat-icon>
+            </button>
+          </header>
+
+          <div class="day-trades-summary-strip">
+            <div class="day-trades-summary-item">
+              <span class="summary-item-label">Day P&amp;L</span>
+              <strong [ngClass]="getDayPnLClass(selectedDay.pnl)">{{ formatCurrency(selectedDay.pnl) }}</strong>
+            </div>
+            <div class="day-trades-summary-item">
+              <span class="summary-item-label">Win rate</span>
+              <strong>{{ selectedDay.winRate.toFixed(0) }}%</strong>
+            </div>
+            <div class="day-trades-summary-item">
+              <span class="summary-item-label">Wins / losses</span>
+              <strong>{{ selectedDay.winCount }} / {{ selectedDay.lossCount }}</strong>
+            </div>
+          </div>
+
+          <div class="day-trades-modal-body" *ngIf="selectedDay.trades.length > 0; else noDayTrades">
+            <article class="day-trade-card" *ngFor="let trade of selectedDay.trades; trackBy: trackByTrade">
+              <div class="day-trade-card-main">
+                <div class="day-trade-heading">
+                  <div>
+                    <span class="day-trade-symbol">{{ trade.symbol || 'Unnamed trade' }}</span>
+                    <span class="day-trade-direction" [ngClass]="(trade.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell'">{{ trade.type || 'Trade' }}</span>
+                  </div>
+                  <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">{{ formatCurrency(getTradePnL(trade)) }}</strong>
+                </div>
+                <div class="day-trade-details">
+                  <span><mat-icon aria-hidden="true">schedule</mat-icon>{{ formatTradeTime(trade.openDate) }}<ng-container *ngIf="trade.closeDate && trade.closeDate !== '-'"> → {{ formatTradeTime(trade.closeDate) }}</ng-container></span>
+                  <span><mat-icon aria-hidden="true">confirmation_number</mat-icon>#{{ trade.position || '—' }}</span>
+                  <span *ngIf="trade.volume"><mat-icon aria-hidden="true">layers</mat-icon>{{ trade.volume }} lots</span>
+                </div>
+                <div class="day-trade-metrics">
+                  <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
+                  <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
+                  <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
+                </div>
+              </div>
+              <div class="day-trade-media">
+                <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else noScreenshot">
+                  <img *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index" [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
+                </div>
+                <ng-template #noScreenshot>
+                  <div class="day-trade-screenshot day-trade-screenshot-empty">
+                    <mat-icon aria-hidden="true">image_not_supported</mat-icon>
+                    <span>No screenshot yet</span>
+                  </div>
+                </ng-template>
+                <label class="trade-screenshot-upload" [class.is-uploading]="isUploadingScreenshots(trade)">
+                  <input type="file" accept="image/*" multiple [disabled]="isUploadingScreenshots(trade)" (change)="uploadTradeScreenshots(trade, $event)">
+                  <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
+                  <span>{{ isUploadingScreenshots(trade) ? 'Uploading...' : 'Add screenshots' }}</span>
+                </label>
+                <span class="trade-screenshot-upload-error" *ngIf="getScreenshotUploadError(trade)">{{ getScreenshotUploadError(trade) }}</span>
+              </div>
+            </article>
+          </div>
+          <ng-template #noDayTrades>
+            <div class="day-trades-empty-state">
+              <mat-icon aria-hidden="true">event_busy</mat-icon>
+              <h3>No trades recorded</h3>
+              <p>This day is ready for your next journal entry.</p>
+            </div>
+          </ng-template>
+        </section>
+      </div>
     </div>
   `,
   styleUrls: ['./trading-calendar.component.scss']
@@ -161,9 +252,14 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   calendarDays: CalendarDay[] = [];
   weekSummaries: WeekSummary[] = [];
   firstTradeDate: Date | null = null;
+  selectedDay: CalendarDay | null = null;
+  private readonly uploadingScreenshotTickets = new Set<string>();
+  private readonly screenshotUploadErrors = new Map<string, string>();
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  constructor(private readonly supabaseService: SupabaseService) {}
 
   ngOnInit() {
     this.currentDate = this.viewDate || new Date();
@@ -349,6 +445,67 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return date.getFullYear() === today.getFullYear() &&
            date.getMonth() === today.getMonth() &&
            date.getDate() === today.getDate();
+  }
+
+  openDayModal(day: CalendarDay): void {
+    this.selectedDay = day;
+  }
+
+  closeDayModal(): void {
+    this.selectedDay = null;
+  }
+
+  isUploadingScreenshots(trade: Table): boolean {
+    return this.uploadingScreenshotTickets.has(String(trade.position));
+  }
+
+  getScreenshotUploadError(trade: Table): string {
+    return this.screenshotUploadErrors.get(String(trade.position)) || '';
+  }
+
+  async uploadTradeScreenshots(trade: Table, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files || []);
+    input.value = '';
+    if (!files.length || !trade.position) return;
+
+    const ticket = String(trade.position);
+    this.uploadingScreenshotTickets.add(ticket);
+    this.screenshotUploadErrors.delete(ticket);
+
+    try {
+      const uploadedUrls = await Promise.all(files.map(file =>
+        this.supabaseService.uploadTradeScreenshot(trade.position, file, trade.symbol)
+      ));
+      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...uploadedUrls])];
+      trade.screenshotUrl = trade.screenshotUrls[0];
+      this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
+    } catch (error) {
+      this.screenshotUploadErrors.set(ticket, error instanceof Error ? error.message : 'Unable to upload screenshots.');
+    } finally {
+      this.uploadingScreenshotTickets.delete(ticket);
+    }
+  }
+
+  getDayAriaLabel(day: CalendarDay): string {
+    return `${day.date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}, ${day.tradeCount} ${day.tradeCount === 1 ? 'trade' : 'trades'}`;
+  }
+
+  trackByTrade(index: number, trade: Table): string | number {
+    return trade.position || index;
+  }
+
+  getTradePnL(trade: Table): number {
+    return parseFloat(trade.netProfit || trade.profit || '0') || 0;
+  }
+
+  getNumericValue(value: string | number | undefined): number {
+    return parseFloat(String(value || '0')) || 0;
+  }
+
+  formatTradeTime(value: string): string {
+    const date = this.parseTradeDate(value);
+    return date ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : value || '—';
   }
 
   previousMonth() {

@@ -38,7 +38,6 @@ import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
-import { TradeService } from '../services/trade.service';
 import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { ProfileSettingsComponent } from '../settings/profile-settings.component';
@@ -101,6 +100,7 @@ interface Table {
   mfe: string; // Maximum Favorable Excursion - tracks highest unrealized profit
   mae?: string; // Maximum Adverse Excursion - tracks lowest unrealized profit
   screenshotUrl?: string;
+  screenshotUrls?: string[];
 }
 
 interface NotionPerformanceData {
@@ -117,6 +117,7 @@ interface NotionPerformanceData {
   strategy: string; // select
   oneToOneReversal: boolean; // checkbox
   screenshots: string[]; // files
+  screenshotUrls: string[];
   modelForm: string[]; // multi_select
   idealSL: string; // select
   reviewed: boolean; // checkbox
@@ -1117,7 +1118,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private tradeService: TradeService, private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
+    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
@@ -1284,12 +1285,8 @@ mt5AccountInfo: AccountSettings = {
     };
   }
 
-  startReconnect() {
-    this.http.post(`${this.BACKEND_URL_MT5}/api/start-reconnect`, {})
-      .subscribe({
-        next: (res) => console.log(res),
-        error: (err) => console.error(err)
-      });
+  startReconnect(): void {
+    void this.loadMT5Data();
   }
   
   private getPhilippinesNow(): Date {
@@ -1947,17 +1944,6 @@ mt5AccountInfo: AccountSettings = {
 
       // Trigger change detection to display live trading session
       this.cdr.markForCheck();
-
-      if (Number(data.live_rr) >= 5){//close trade if reached 5R
-        this.tradeService.closeTrade(data.ticket).subscribe({
-          next: (res) => {
-            console.log('Trade closed:', data.ticket, res);
-          },
-          error: (err) => {
-            console.error('Close failed:', err);
-          }
-        });
-      }
 
       // console.log('✅ Live trading session metrics updated. Open trades:', this.mt5LiveTrades.length);
     });
@@ -3933,6 +3919,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
           strategy: this.getNotionProperty(properties, 'Strategy', 'select') || '',
           oneToOneReversal: this.getNotionProperty(properties, '1:1 Reversal', 'checkbox') || false,
           screenshots: this.getNotionProperty(properties, 'Screenshots', 'files') || [],
+          screenshotUrls: this.getNotionFileUrls(properties, 'Screenshots'),
           modelForm: this.getNotionProperty(properties, 'Model form', 'multi_select') || [],
           idealSL: this.getNotionProperty(properties, 'Ideal SL', 'select') || '',
           reviewed: this.getNotionProperty(properties, 'Reviewed', 'checkbox') || false,
@@ -3961,6 +3948,15 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         return null;
       }
     }).filter(item => item !== null) as NotionPerformanceData[];
+  }
+
+  private getNotionFileUrls(properties: any, propertyName: string): string[] {
+    const files = properties[propertyName]?.files;
+    if (!Array.isArray(files)) return [];
+
+    return files
+      .map((file: any) => file.type === 'file' ? file.file?.url : file.external?.url)
+      .filter((url: unknown): url is string => typeof url === 'string' && url.length > 0);
   }
 
   private getNotionProperty(properties: any, propertyName: string, type: string): any {
@@ -6117,7 +6113,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: (trade.mfe ?? 0).toString(),
       mae: (trade.mae ?? 0).toString(),
-      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id)
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id),
+      screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
     } as Table));
 
     console.log('✅ Mapped trades:', mt5Trades.length);
@@ -6127,11 +6124,10 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         mt5Trades.map(trade => trade.position)
       );
       for (const trade of mt5Trades) {
-        const screenshotUrl = screenshotUrls[String(trade.position)] || trade.screenshotUrl;
-        if (screenshotUrl) {
-          trade.screenshotUrl = screenshotUrl;
-          this.cacheTradeScreenshot(trade.position, screenshotUrl);
-        }
+        const savedScreenshotUrls = screenshotUrls[String(trade.position)] || [];
+        trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...savedScreenshotUrls])];
+        trade.screenshotUrl = trade.screenshotUrls[0] || trade.screenshotUrl;
+        if (trade.screenshotUrl) this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
       }
     } catch (error) {
       console.warn('Unable to load saved trade screenshots:', error);
@@ -6314,16 +6310,18 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      const screenshotUrl = await this.supabaseService.getTradeScreenshotUrl(trade.position);
-      if (!screenshotUrl) continue;
+      const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
+      if (!screenshotUrls.length) continue;
 
-      trade.screenshotUrl = screenshotUrl;
+      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
+      trade.screenshotUrl = trade.screenshotUrls[0];
       this.screenshotLoadErrors.delete(String(trade.position));
-      this.cacheTradeScreenshot(trade.position, screenshotUrl);
+      this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
       this.mt5LiveTrades = [...this.mt5LiveTrades];
       this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
         String(recentTrade.position) === String(trade.position) ? trade : recentTrade
       );
+      this.updateTableData();
       this.cdr.markForCheck();
     }
 
@@ -6425,7 +6423,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       mt5status: trade.status || '',
       mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
       mae: String(Math.min(extremes.mae, Number(trade.mae) || 0)),
-      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.ticket)
+      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.ticket),
+      screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
     };
 
     if (newTrade.screenshotUrl) {
@@ -6594,11 +6593,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
       this.notifyGaugePercentage(trade);
 
-      // Update live RR from socket data (real-time risk-reward ratio)
-      if (priceData.live_rr !== undefined && priceData.live_rr !== null) {
-        trade.rrr = Number(priceData.live_rr).toFixed(2);
-        console.log(`📊 Updated ${trade.symbol} live RR: ${trade.rrr}R`);
-      }
       if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
         trade.riskPerTrade = Math.abs(Number(priceData.sl_value)).toFixed(2);
       }

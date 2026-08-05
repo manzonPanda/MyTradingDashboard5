@@ -511,11 +511,11 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getTradeR(trade: Table): number {
-    const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
-    if (Number.isFinite(reportedR)) return reportedR;
-
     const risk = parseFloat(trade.riskPerTrade || '0') || 0;
-    return risk > 0 ? this.getTradeProfit(trade) / risk : 0;
+    if (risk > 0) return this.getTradeProfit(trade) / risk;
+
+    const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
+    return Number.isFinite(reportedR) ? reportedR : 0;
   }
 
   getTradeGaugeColor(trade: Table): string {

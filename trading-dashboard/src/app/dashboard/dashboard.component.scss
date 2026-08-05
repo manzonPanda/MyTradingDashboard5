@@ -12775,3 +12775,33 @@ table.simple-table {
     grid-template-columns: 1fr;
   }
 }
+
+.journal-screenshot-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 150px;
+}
+
+.journal-screenshot-link {
+  display: block;
+  overflow: hidden;
+  width: 72px;
+  height: 54px;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 8px;
+  background: var(--tf-bg-tertiary);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--tf-accent-info);
+    transform: translateY(-2px);
+  }
+}
+
+.journal-screenshot-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

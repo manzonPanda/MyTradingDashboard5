@@ -76,7 +76,7 @@
           <mat-icon>hub</mat-icon>
           <span>Connected services</span>
         </div>
-        <app-connection-status></app-connection-status>
+        <app-connection-status (reconnectRequested)="startReconnect()"></app-connection-status>
       </div>
     </section>
 
@@ -1190,7 +1190,7 @@
                         <span class="account-row-icon"><mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'account_balance_wallet' }}</mat-icon></span>
                         <span class="account-row-details">
                           <strong>{{ account.name }}</strong>
-                          <small>{{ selectedAccount?.id === account.id ? 'Dashboard active' : isMostRecentAccount(account) ? 'Most recent' : '' }}</small>
+                          <small>{{ selectedAccount?.id === account.id ? 'Active Account' : isMostRecentAccount(account) ? 'Most recent' : '' }}</small>
                         </span>
                       </div>
                     </td>
@@ -1207,7 +1207,7 @@
                     <td data-label="Actions" class="accounts-table-actions">
                       <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
                         <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
-                        <span>{{ selectedAccount?.id === account.id ? 'Dashboard active' : 'Set active' }}</span>
+                        <span>{{ selectedAccount?.id === account.id ? 'Active Account' : 'Preview' }}</span>
                       </button>
                       <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
                       <button type="button" class="account-table-delete" aria-label="Delete account" title="Delete account" [disabled]="isDeletingAccount" (click)="requestAccountDeletion(account)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
@@ -2233,11 +2233,18 @@
                 </div>
               </td>
               <td *ngIf="columnVisibility.screenshots" class="col-screenshots">
-                <div class="files-container">
-                  <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
-                    📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
-                  </span>
+                <div class="journal-screenshot-gallery" *ngIf="data.screenshotUrls.length > 0; else screenshotNames">
+                  <a *ngFor="let screenshotUrl of data.screenshotUrls" class="journal-screenshot-link" [href]="screenshotUrl" target="_blank" rel="noopener noreferrer">
+                    <img class="journal-screenshot-preview" [src]="screenshotUrl" [alt]="data.instrument + ' trade screenshot'" loading="lazy">
+                  </a>
                 </div>
+                <ng-template #screenshotNames>
+                  <div class="files-container">
+                    <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
+                      📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
+                    </span>
+                  </div>
+                </ng-template>
               </td>
               <td *ngIf="columnVisibility.outcome" class="col-outcome">
                 <div class="files-container">
