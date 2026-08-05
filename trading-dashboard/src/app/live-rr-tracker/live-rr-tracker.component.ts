@@ -198,15 +198,6 @@ interface Table {
             </div>
 
             <div class="trade-gauge-card">
-              <img
-                *ngIf="trade.screenshotUrl && !hasScreenshotLoadError(trade.position)"
-                class="trade-screenshot"
-                [src]="trade.screenshotUrl"
-                [alt]="trade.symbol + ' MT5 screenshot'"
-                (error)="onScreenshotLoadError(trade.position)">
-              <div *ngIf="hasScreenshotLoadError(trade.position)" class="screenshot-load-fallback">
-                Screenshot unavailable
-              </div>
               <div class="trade-gauge-heading">
                 <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
@@ -259,7 +250,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   gaugePercentDraft = '4';
   soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
-  private readonly screenshotLoadErrors = new Set<string>();
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
 
@@ -292,15 +282,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['tableData'] || changes['accountSize']) {
       this.calculateLiveMetrics();
     }
-  }
-
-  hasScreenshotLoadError(ticket: number | string): boolean {
-    return this.screenshotLoadErrors.has(String(ticket));
-  }
-
-  onScreenshotLoadError(ticket: number | string): void {
-    this.screenshotLoadErrors.add(String(ticket));
-    this.cdr.markForCheck();
   }
 
   calculateLiveMetrics(): void {
