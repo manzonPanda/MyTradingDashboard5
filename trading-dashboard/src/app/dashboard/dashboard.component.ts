@@ -40,7 +40,7 @@ import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
-import { ProfileSettingsComponent } from '../settings/profile-settings.component';
+import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -185,6 +185,7 @@ export class DashboardComponent implements AfterViewInit {
   isLiveTradeSoundSettingsOpen = false;
   liveTradeSoundSettings: LiveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
   liveTradeSoundSettingsDraft: LiveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
+  liveTradeGaugePercentMax = 4;
   readonly auraConfigDefaults = DEFAULT_AURA_ENERGY_CONFIG;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
@@ -480,6 +481,7 @@ export class DashboardComponent implements AfterViewInit {
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveTradeSoundSettingsStorageKey = 'trading-dashboard.live-trade-sound-settings';
+  private readonly liveTradeDisplayPreferencesStorageKey = 'trading-dashboard.live-trade-display-preferences';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly tradeScreenshotStorageKey = 'trading-dashboard.trade-screenshots.v1';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
@@ -488,6 +490,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly activeGaugeAlertLevels = new Map<string, 'normal' | 'high'>();
   private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
@@ -1150,10 +1153,35 @@ mt5AccountInfo: AccountSettings = {
   onLiveTradeSoundSettingsChange(settings: LiveTradeSoundSettingsModel): void {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
+    this.saveLiveTradeDisplayPreferences();
     for (const trade of this.mt5LiveTrades) {
       this.notifyGaugePercentage(trade);
     }
     this.cdr.markForCheck();
+  }
+
+  onLiveTradeDisplayPreferencesChange(preferences: LiveTradeDisplayPreferences): void {
+    this.liveTradeGaugePercentMax = preferences.positiveGaugePercentMax;
+    this.onLiveTradeSoundSettingsChange({
+      enabled: preferences.soundEnabled,
+      alertThreshold: preferences.soundThreshold,
+      highAlertThreshold: preferences.highPrioritySoundThreshold,
+      volume: this.liveTradeSoundSettings.volume
+    });
+  }
+
+  onLiveTradeGaugePercentMaxChange(value: number): void {
+    this.liveTradeGaugePercentMax = value;
+    this.saveLiveTradeDisplayPreferences();
+  }
+
+  private saveLiveTradeDisplayPreferences(): void {
+    this.document.defaultView?.localStorage.setItem(this.liveTradeDisplayPreferencesStorageKey, JSON.stringify({
+      positiveGaugePercentMax: this.liveTradeGaugePercentMax,
+      soundEnabled: this.liveTradeSoundSettings.enabled,
+      soundThreshold: this.liveTradeSoundSettings.alertThreshold,
+      highPrioritySoundThreshold: this.liveTradeSoundSettings.highAlertThreshold
+    }));
   }
 
   saveLiveTradeSoundSettings(): void {
@@ -1165,6 +1193,7 @@ mt5AccountInfo: AccountSettings = {
 
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
+    this.saveLiveTradeDisplayPreferences();
     for (const trade of this.mt5LiveTrades) {
       this.notifyGaugePercentage(trade);
     }
@@ -1808,6 +1837,15 @@ mt5AccountInfo: AccountSettings = {
     }
   }
 
+  private loadLiveTradeDisplayPreferences(): Partial<LiveTradeDisplayPreferences> {
+    try {
+      const saved = this.document.defaultView?.localStorage.getItem(this.liveTradeDisplayPreferencesStorageKey);
+      return saved ? JSON.parse(saved) as Partial<LiveTradeDisplayPreferences> : {};
+    } catch {
+      return {};
+    }
+  }
+
   private inferAccountSize(account: Account | null): number {
     const sizeMatch = account?.name.match(/(\d+(?:\.\d+)?)\s*k\b/i);
     return sizeMatch ? Number(sizeMatch[1]) * 1000 : 0;
@@ -1815,10 +1853,21 @@ mt5AccountInfo: AccountSettings = {
 
   private applyPersistedUserSettings(settings: UserSettings): void {
     this.isDailyChart = settings.default_chart_mode === 'daily';
+    const savedDisplayPreferences = this.loadLiveTradeDisplayPreferences();
+    const alertThreshold = Number.isFinite(Number(savedDisplayPreferences.soundThreshold))
+      ? Number(savedDisplayPreferences.soundThreshold)
+      : settings.sound_notifications_threshold;
+    const savedHighAlertThreshold = Number(savedDisplayPreferences.highPrioritySoundThreshold);
+    const highAlertThreshold = Number.isFinite(savedHighAlertThreshold)
+      && savedHighAlertThreshold > alertThreshold
+      ? savedHighAlertThreshold
+      : Math.max(alertThreshold, alertThreshold + 0.6);
     this.liveTradeSoundSettings = {
-      enabled: settings.notifications_enabled && settings.goal_notification_sound,
-      alertThreshold: settings.sound_notifications_threshold,
-      highAlertThreshold: Math.max(settings.sound_notifications_threshold, settings.sound_notifications_threshold + 0.6),
+      enabled: typeof savedDisplayPreferences.soundEnabled === 'boolean'
+        ? savedDisplayPreferences.soundEnabled
+        : settings.notifications_enabled && settings.goal_notification_sound,
+      alertThreshold,
+      highAlertThreshold,
       volume: settings.notification_volume
     };
     this.auraEnergy.updateConfig({
@@ -6525,31 +6574,31 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const { enabled, alertThreshold, highAlertThreshold, volume } = this.liveTradeSoundSettings;
     const isInAlertRange = enabled && Number.isFinite(gaugePercentage) && gaugePercentage >= alertThreshold && gaugePercentage < highAlertThreshold;
     const isAboveHighAlertRange = enabled && Number.isFinite(gaugePercentage) && gaugePercentage >= highAlertThreshold;
+    const nextAlertLevel: 'normal' | 'high' | null = isAboveHighAlertRange
+      ? 'high'
+      : isInAlertRange
+        ? 'normal'
+        : null;
 
-    if (!isInAlertRange && !isAboveHighAlertRange) {
+    if (!nextAlertLevel) {
       this.stopGaugeAlert(ticket);
       return;
     }
 
-    const soundMap = isAboveHighAlertRange ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
-    const inactiveSoundMap = isAboveHighAlertRange ? this.gaugeAlertSounds : this.highGaugeAlertSounds;
-    const inactiveSound = inactiveSoundMap.get(ticket);
-    if (inactiveSound) {
-      inactiveSound.pause();
-      inactiveSound.currentTime = 0;
-      inactiveSoundMap.delete(ticket);
-    }
+    const currentAlertLevel = this.activeGaugeAlertLevels.get(ticket);
+    if (currentAlertLevel === nextAlertLevel) return;
 
-    if (!soundMap.has(ticket)) {
-      const sound = new Audio(isAboveHighAlertRange ? this.highGaugeAlertSoundUrl : this.gaugeAlertSoundUrl);
-      sound.loop = true;
-      sound.volume = volume;
-      soundMap.set(ticket, sound);
-      sound.play().catch(error => {
-        this.stopGaugeAlert(ticket);
-        console.warn('Unable to play gauge percentage alert sound:', error);
-      });
-    }
+    this.stopGaugeAlert(ticket);
+    const soundMap = nextAlertLevel === 'high' ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
+    const sound = new Audio(nextAlertLevel === 'high' ? this.highGaugeAlertSoundUrl : this.gaugeAlertSoundUrl);
+    sound.loop = true;
+    sound.volume = volume;
+    soundMap.set(ticket, sound);
+    this.activeGaugeAlertLevels.set(ticket, nextAlertLevel);
+    sound.play().catch(error => {
+      this.stopGaugeAlert(ticket);
+      console.warn('Unable to play gauge percentage alert sound:', error);
+    });
 
     if (!this.gaugeAlertNotifiedTickets.has(ticket)) {
       this.gaugeAlertNotifiedTickets.add(ticket);
@@ -6558,6 +6607,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private stopGaugeAlert(ticket: string): void {
+    this.activeGaugeAlertLevels.delete(ticket);
     for (const soundMap of [this.gaugeAlertSounds, this.highGaugeAlertSounds]) {
       const sound = soundMap.get(ticket);
       if (!sound) continue;

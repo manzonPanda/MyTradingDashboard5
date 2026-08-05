@@ -3,6 +3,42 @@
   position: relative;
 }
 
+.live-trades-maximize-button {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.65rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 0.5rem;
+  color: var(--tf-text-secondary);
+  background: color-mix(in srgb, var(--tf-bg-secondary) 90%, transparent);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+
+  &:hover, &:focus-visible {
+    color: var(--tf-text-primary);
+    background: var(--tf-bg-tertiary);
+    transform: translateY(-1px);
+  }
+
+  mat-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 1.1rem;
+  }
+}
+
+.live-trades-maximize-button:focus-visible {
+  outline: 2px solid var(--tf-positive);
+  outline-offset: 2px;
+}
+
 // ============================================
 // EMPTY STATE STYLES
 // ============================================
@@ -371,12 +407,43 @@
 // ============================================
 
 .live-trading-container {
+  position: relative;
   background: linear-gradient(135deg, var(--tf-bg-card) 0%, var(--tf-bg-secondary) 100%);
   border: 1px solid var(--tf-border-primary);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   animation: live-trading-enter 0.5s ease-out;
+}
+
+.live-trading-container.is-maximized,
+.empty-state-container.is-maximized {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  width: auto;
+  min-height: 100dvh;
+  padding: clamp(0.75rem, 2vw, 2rem);
+  border: 0;
+  border-radius: 0;
+  overflow: auto;
+  background: var(--tf-bg-primary);
+  box-shadow: none;
+}
+
+.live-trading-container.is-maximized {
+  display: flex;
+  flex-direction: column;
+}
+
+.live-trading-container.is-maximized .open-trade-metrics-list {
+  flex: 1;
+  align-content: start;
+}
+
+.empty-state-container.is-maximized {
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes live-trading-enter {
@@ -399,6 +466,16 @@
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--tf-border-primary);
   background: linear-gradient(90deg, var(--tf-bg-secondary) 0%, var(--tf-bg-tertiary) 100%);
+}
+
+.live-header .live-trades-maximize-button {
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -50%);
+
+  &:hover, &:focus-visible {
+    transform: translate(50%, calc(-50% - 1px));
+  }
 }
 
 .header-title {
@@ -1218,6 +1295,91 @@
 
 // Responsive Design
 @media (max-width: 768px) {
+  .live-trades-maximize-button {
+    top: 0.45rem;
+    right: 0.45rem;
+  }
+
+  .live-trading-container.is-maximized {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: 100dvh;
+    height: 100dvw;
+    min-height: 0;
+    padding: 0.5rem;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center;
+  }
+
+  .live-trading-container.is-maximized .open-trade-metrics-list {
+    width: auto;
+    height: 100%;
+    margin: 0;
+    padding: 1rem;
+  }
+
+  .live-trading-container.is-maximized .trade-metrics-grid {
+    min-height: 100%;
+    grid-template-columns: repeat(3, 1.15fr) repeat(2, 0.85fr);
+    grid-template-rows: 1fr auto;
+    gap: 1rem;
+  }
+
+  .live-trading-container.is-maximized .trade-metric-card {
+    display: flex;
+    min-height: 10rem;
+    padding: 1rem;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .live-trading-container.is-maximized .metric-label {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: clamp(0.75rem, 2.2vw, 1rem);
+  }
+
+  .live-trading-container.is-maximized .metric-label mat-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 1.25rem;
+  }
+
+  .live-trading-container.is-maximized .metric-value {
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+  }
+
+  .live-trading-container.is-maximized .trade-extremes-summary {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+  }
+
+  .live-trading-container.is-maximized .trade-gauge-card {
+    min-height: 10rem;
+  }
+
+  .live-trading-container.is-maximized .trade-gauge {
+    flex-basis: min(100%, 11rem);
+  }
+
+  .live-trading-container.is-maximized .trade-gauge-percent {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+  }
+
+  .live-trading-container.is-maximized .trade-r-card { grid-column: 1; grid-row: 1; }
+  .live-trading-container.is-maximized .trade-risk-card { grid-column: 2; grid-row: 1; }
+  .live-trading-container.is-maximized .trade-pnl-card { grid-column: 3; grid-row: 1; }
+  .live-trading-container.is-maximized .trade-extremes-summary { grid-column: 1 / span 3; grid-row: 2; }
+  .live-trading-container.is-maximized .trade-metrics-grid > .trade-gauge-card {
+    grid-column: 4 / span 2;
+    grid-row: 1 / span 2;
+    width: min(100%, 11rem);
+  }
+
+  .empty-state-container.is-maximized {
+    padding: 0.5rem;
+  }
+
   .empty-state-container {
     padding: 2rem 1.5rem;
     min-height: 350px;

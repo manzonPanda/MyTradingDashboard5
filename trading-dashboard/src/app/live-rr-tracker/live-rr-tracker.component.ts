@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,7 +40,15 @@ interface Table {
   template: `
     <div class="live-rr-tracker-container">
       <!-- Empty State - No Live Trades -->
-      <div *ngIf="!hasLiveTrades" class="empty-state-container">
+      <div *ngIf="!hasLiveTrades" class="empty-state-container" [class.is-maximized]="isMaximized">
+        <button
+          type="button"
+          class="live-trades-maximize-button"
+          [attr.aria-label]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+          [attr.title]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+          (click)="toggleMaximize()">
+          <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+        </button>
         <div class="empty-state-content">
           <!-- Decorative Animation Background -->
           <div class="animated-bg">
@@ -95,21 +103,21 @@ interface Table {
       </div>
 
       <!-- Live Trading Display - When Trades Are Open -->
-      <div *ngIf="hasLiveTrades" class="live-trading-container">
+      <div *ngIf="hasLiveTrades" class="live-trading-container" [class.is-maximized]="isMaximized">
         <div class="live-header">
+          <button
+            type="button"
+            class="live-trades-maximize-button"
+            [attr.aria-label]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+            [attr.title]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+            (click)="toggleMaximize()">
+            <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+          </button>
           <div class="header-title">
             <mat-icon class="live-icon">fiber_manual_record</mat-icon>
             <h3>Trades</h3>
           </div>
           <div class="header-meta">
-            <button
-              type="button"
-              class="gauge-settings-button"
-              aria-label="Open gauge settings"
-              title="Gauge settings"
-              (click)="openGaugeSettings()">
-              <mat-icon>settings</mat-icon>
-            </button>
             <button
               type="button"
               class="close-all-button"
@@ -228,8 +236,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
+  @Input() positiveGaugePercentMax = 4;
   @Input() liveTradeSoundSettings: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   @Output() liveTradeSoundSettingsChange = new EventEmitter<LiveTradeSoundSettings>();
+  @Output() gaugePercentMaxChange = new EventEmitter<number>();
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
@@ -246,12 +256,13 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   isClosingAll = false;
   isCloseAllArmed = false;
   closeAllStatus = '';
-  positiveGaugePercentMax = 4;
   gaugePercentDraft = '4';
+  isMaximized = false;
   soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
+  private previousBodyOverflow = '';
 
   constructor(
     private readonly cdr: ChangeDetectorRef,
@@ -271,9 +282,38 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
     if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
+    this.setBodyScrollLocked(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMaximizedView(): void {
+    if (this.isMaximized) {
+      this.isMaximized = false;
+      this.setBodyScrollLocked(false);
+    }
+  }
+
+  toggleMaximize(): void {
+    this.isMaximized = !this.isMaximized;
+    this.setBodyScrollLocked(this.isMaximized);
+    this.cdr.markForCheck();
+  }
+
+  private setBodyScrollLocked(locked: boolean): void {
+    if (locked) {
+      this.previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = this.previousBodyOverflow;
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    if (changes['positiveGaugePercentMax']) {
+      const max = this.positiveGaugePercentMax;
+      if (Number.isFinite(max) && max >= .1 && max <= 100) this.gaugePercentDraft = String(max);
+    }
+
     if (changes['mt5LiveTrades']) {
       this.calculateLiveMetrics();
     }
@@ -370,6 +410,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     this.positiveGaugePercentMax = nextMax;
     this.gaugePercentDraft = String(nextMax);
     localStorage.setItem('live-trade-gauge-max-percent', String(nextMax));
+    this.gaugePercentMaxChange.emit(nextMax);
     this.isGaugeSettingsOpen = false;
   }
 

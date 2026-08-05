@@ -19,7 +19,18 @@
       <label><span>Weekly R target</span><input name="weekly_r_target" type="number" step=".1" [(ngModel)]="settings.weekly_r_target" /></label>
       <label><span>Default chart mode</span><select name="default_chart_mode" [(ngModel)]="settings.default_chart_mode"><option value="trades">Trades</option><option value="daily">Daily</option></select></label>
       <label><span>Trading day reset time</span><input name="trading_day_reset_time" type="time" [(ngModel)]="settings.trading_day_reset_time" /></label>
-    </div></section>
+    </div>
+      <div class="live-trade-preferences">
+        <div class="live-trade-preferences-heading"><div><h3>Trades display</h3><p>Configure the live P&amp;L gauge and its sound alerts.</p></div></div>
+        <div class="field-grid">
+          <label><span>Maximum positive gauge (%)</span><input name="positive_gauge_percent_max" type="number" min=".1" max="100" step=".1" [(ngModel)]="liveTradeDisplayPreferences.positiveGaugePercentMax" /></label>
+          <label class="checkbox"><input name="live_trade_sound_enabled" type="checkbox" [(ngModel)]="liveTradeDisplayPreferences.soundEnabled" /> Enable sound alerts</label>
+          <label><span>Sound notification threshold (%)</span><input name="live_trade_sound_threshold" type="number" min="0" step=".1" [disabled]="!liveTradeDisplayPreferences.soundEnabled" [(ngModel)]="liveTradeDisplayPreferences.soundThreshold" /></label>
+          <label><span>High-priority sound threshold (%)</span><input name="live_trade_high_priority_sound_threshold" type="number" min="0" step=".1" [disabled]="!liveTradeDisplayPreferences.soundEnabled" [(ngModel)]="liveTradeDisplayPreferences.highPrioritySoundThreshold" /></label>
+        </div>
+        <p class="live-trade-preferences-help">Negative trades keep their existing counter-clockwise scale.</p>
+      </div>
+    </section>
 
     <section class="settings-card"><h2>Dashboard</h2><div class="field-grid">
       <label><span>Default account</span><select name="default_account_id" [(ngModel)]="settings.default_account_id"><option [ngValue]="null">No default account</option><option *ngFor="let account of accounts" [ngValue]="account.id">{{ account.name }}</option></select></label>
