@@ -628,12 +628,16 @@ export class SupabaseService {
       .remove([screenshot.storage_path]);
     if (storageError) throw new Error(`Screenshot deletion failed: ${storageError.message}`);
 
-    const { error: metadataError } = await this.supabase
+    const { data: deletedRows, error: metadataError } = await this.supabase
       .from('trade_screenshots')
       .delete()
       .eq('ticket', String(ticket))
-      .eq('storage_path', screenshot.storage_path);
+      .eq('storage_path', screenshot.storage_path)
+      .select('id');
     if (metadataError) throw new Error(`Screenshot metadata deletion failed: ${metadataError.message}`);
+    if (!deletedRows?.length) {
+      throw new Error('Screenshot was not deleted. Apply the screenshot DELETE policies in Supabase.');
+    }
   }
 
   async uploadFile(file: File, path: string): Promise<string | null> {
