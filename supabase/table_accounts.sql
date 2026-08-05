@@ -1,7 +1,7 @@
 create table public.accounts (
   id uuid not null default gen_random_uuid (),
   name text not null,
-  firm text null,
+  prop_firm_id uuid null,
   account_number text null,
   initial_balance numeric null,
   profit_target_percent numeric null,
@@ -16,6 +16,7 @@ create table public.accounts (
   phase text not null default 'phase1'::text,
   constraint accounts_pkey primary key (id),
   constraint accounts_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE,
+  constraint accounts_prop_firm_id_fkey foreign KEY (prop_firm_id) references public.prop_firms (id) on delete set null,
   constraint accounts_phase_check check (
     (
       phase = any (
