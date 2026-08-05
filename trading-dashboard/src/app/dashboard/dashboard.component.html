@@ -1130,12 +1130,6 @@
         </div>
       </header>
 
-      <div class="certificates-metrics">
-        <article class="certificate-metric-card"><mat-icon>verified</mat-icon><div><span>Evaluations passed</span><strong>{{ certificates.length }}</strong></div></article>
-        <article class="certificate-metric-card"><mat-icon>account_balance</mat-icon><div><span>Funded firms</span><strong>{{ fundedCertificateCount }}</strong></div></article>
-        <article class="certificate-metric-card"><mat-icon>payments</mat-icon><div><span>Total payouts</span><strong>{{ certificatePayoutTotal | currency:'USD':'symbol':'1.0-0' }}</strong></div></article>
-      </div>
-
       @if (isLoadingCertificates) {
         <div class="certificates-loading"><mat-icon>sync</mat-icon><span>Loading your milestones…</span></div>
       } @else if (certificates.length) {
