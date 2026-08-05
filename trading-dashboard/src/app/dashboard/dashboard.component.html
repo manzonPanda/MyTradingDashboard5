@@ -1124,9 +1124,8 @@
           <p>Keep every evaluation pass, funded account, and payout proof in one private portfolio.</p>
         </div>
         <div class="certificates-hero-media">
-          <img class="certificates-hero-image" src="https://cdn.builder.io/api/v1/image/assets%2F1c25d1fefb6a4ce2beefe8b7692ae37%2F863e94059e1f4385885ff6246414d0ae?format=webp&width=800&height=1200" alt="Certificate portfolio preview">
+          <img class="certificates-hero-image" src="https://cdn.builder.io/api/v1/image/assets%2F1c25d1fefb6a4ce2beefe8b7692ae37%2Fe0c5f9eea61348789c78c756e15d08ef?format=webp&width=800&height=1200" alt="Certificate">
           <div class="certificates-hero-actions">
-            <button class="certificate-action-button" type="button" (click)="openPayoutCreator()" [disabled]="!certificates.length"><mat-icon>payments</mat-icon><span>Record payout</span></button>
             <button class="certificate-action-button is-primary" type="button" (click)="openCertificateCreator()"><mat-icon>add</mat-icon><span>Add certificate</span></button>
           </div>
         </div>
@@ -1147,25 +1146,31 @@
             @for (certificate of certificates; track certificate.id) {
               <article class="certificate-card" [class.is-funded]="certificate.status === 'funded'">
                 <div class="certificate-card-top"><span class="certificate-badge"><mat-icon>{{ certificate.status === 'funded' ? 'workspace_premium' : 'verified' }}</mat-icon>{{ certificate.status }}</span><span>{{ formatRoiDate(certificate.passed_date) }}</span></div>
-                @if (certificate.file_path?.startsWith('http')) {
-                  <img class="certificate-preview" [src]="certificate.file_path" [alt]="getCertificateFirmName(certificate) + ' certificate'">
-                } @else {
-                  <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
-                }
-                <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
-                <h3>{{ getCertificateFirmName(certificate) }}</h3>
-                <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
-                <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
-                @if (certificate.account_size) { <strong class="certificate-size">{{ certificate.account_size | currency:'USD':'symbol':'1.0-0' }} account</strong> }
-                @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
-                @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
+                <div class="certificate-card-columns">
+                  <div class="certificate-card-details">
+                    <p class="certificate-type">{{ certificate.certificate_type === 'evaluation' ? 'Evaluation passed' : certificate.certificate_type }}</p>
+                    <h3>{{ getCertificateFirmName(certificate) }}</h3>
+                    <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
+                    @if (certificate.account_size) { <strong class="certificate-size">{{ certificate.account_size | currency:'USD':'symbol':'1.0-0' }} account</strong> }
+                    @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
+                    <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
+                    @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
+                  </div>
+                  <div class="certificate-card-media">
+                    @if (certificate.file_path?.startsWith('http')) {
+                      <img class="certificate-preview" [src]="certificate.file_path" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                    } @else {
+                      <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
+                    }
+                  </div>
+                </div>
               </article>
             }
           </div>
         </section>
 
         <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
-          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><div class="certificate-heading-actions"><span>{{ certificatePayouts.length }} recorded</span><button class="certificate-inline-action" type="button" (click)="openPayoutCreator()" [disabled]="!certificates.length">Add payout</button></div></div>
+          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
           @if (certificatePayouts.length) {
             <div class="payout-list">@for (payout of certificatePayouts; track payout.id) { <article class="payout-row"><span class="payout-icon"><mat-icon>south_west</mat-icon></span><div><strong>{{ payout.firm_name }}</strong><small>{{ formatRoiDate(payout.payout_date) }}{{ payout.notes ? ' · ' + payout.notes : '' }}</small></div><strong class="payout-amount">+{{ payout.amount | currency:'USD':'symbol':'1.0-0' }}</strong></article> }</div>
           } @else { <div class="certificates-inline-empty"><mat-icon>payments</mat-icon><span>Your first payout will appear here when it is recorded.</span></div> }

@@ -12850,8 +12850,8 @@ table.simple-table {
   padding: clamp(1.5rem, 4vw, 3rem);
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.13), var(--tf-bg-card) 60%);
 }
-.certificates-hero-media { display: grid; grid-template-columns: minmax(7rem, 9rem) 1fr; align-items: center; gap: 1rem; }
-.certificates-hero-image { display: block; width: 100%; max-height: 14rem; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 16px; object-fit: cover; object-position: top; box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18); }
+.certificates-hero-media { display: grid; grid-template-columns: 1fr; align-items: center; gap: 1rem; }
+.certificates-hero-image { display: block; width: 100%; max-height: 18rem; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 16px; object-fit: cover; object-position: top; box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18); }
 
 .certificates-eyebrow {
   margin: 0 0 0.45rem;
@@ -12909,11 +12909,15 @@ table.simple-table {
 .certificate-card::after { position: absolute; right: -2rem; bottom: -3rem; width: 9rem; height: 9rem; border-radius: 50%; background: rgba(124, 58, 237, 0.08); content: ''; }
 .certificate-card.is-funded { border-color: rgba(16, 185, 129, 0.45); }
 .certificate-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; color: var(--tf-text-muted); font-size: 0.72rem; }
+.certificate-card-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(5rem, 7rem); align-items: center; gap: 1rem; min-height: 13rem; }
+.certificate-card-details { position: relative; z-index: 1; }
+.certificate-card-media { display: grid; place-items: center; position: relative; z-index: 1; }
 .certificate-badge { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--tf-accent-primary); font-weight: 800; text-transform: capitalize; }
 .certificate-badge mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-seal { display: grid; place-items: center; width: 3.4rem; height: 3.4rem; margin: 1.2rem 0 0.9rem; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 50%; color: var(--tf-accent-primary); }
 .certificate-seal mat-icon { font-size: 1.7rem; }
-.certificate-preview { display: block; width: 4.2rem; height: 4.2rem; margin: 1rem 0 0.8rem; border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; object-fit: cover; object-position: top; }
+.certificate-preview { display: block; width: 100%; max-width: 7rem; height: 10rem; margin: 0; border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; object-fit: cover; object-position: top; }
+.certificate-card-media .certificate-seal { margin: 0; }
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
 .certificate-program, .certificate-notes { margin: 0.2rem 0; color: var(--tf-text-secondary); font-size: 0.82rem; }
@@ -12944,4 +12948,6 @@ table.simple-table {
   .certificates-hero-media { grid-template-columns: 1fr; width: 100%; }
   .certificates-hero-image { max-height: 16rem; }
   .certificates-metrics { grid-template-columns: 1fr; }
+  .certificate-card-columns { grid-template-columns: minmax(0, 1fr) 6rem; gap: 0.6rem; }
+  .certificate-preview { height: 8rem; }
 }
