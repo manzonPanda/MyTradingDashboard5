@@ -2023,7 +2023,7 @@ mt5AccountInfo: AccountSettings = {
       processing: true,
       responsive: true,
       keys: true,
-      order: [[1, 'desc']], // Sort by date descending by default
+      order: [[1, 'asc']], // Sort by date ascending by default
       columnDefs: [
         { targets: [2, 3, 5, 6, 7, 8, 9, 10], className: 'text-center' }, // Center align numeric columns
         { targets: [2, 5, 6, 7, 8, 9, 10], type: 'num' } // Specify numeric sorting
