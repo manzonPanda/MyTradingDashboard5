@@ -104,14 +104,6 @@ interface Table {
           <div class="header-meta">
             <button
               type="button"
-              class="gauge-settings-button"
-              aria-label="Open gauge settings"
-              title="Gauge settings"
-              (click)="openGaugeSettings()">
-              <mat-icon>settings</mat-icon>
-            </button>
-            <button
-              type="button"
               class="close-all-button"
               [disabled]="isClosingAll"
               (click)="closeAllTrades()">
@@ -228,8 +220,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
+  @Input() positiveGaugePercentMax = 4;
   @Input() liveTradeSoundSettings: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   @Output() liveTradeSoundSettingsChange = new EventEmitter<LiveTradeSoundSettings>();
+  @Output() gaugePercentMaxChange = new EventEmitter<number>();
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
@@ -246,7 +240,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   isClosingAll = false;
   isCloseAllArmed = false;
   closeAllStatus = '';
-  positiveGaugePercentMax = 4;
   gaugePercentDraft = '4';
   soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
@@ -274,6 +267,11 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    if (changes['positiveGaugePercentMax']) {
+      const max = this.positiveGaugePercentMax;
+      if (Number.isFinite(max) && max >= .1 && max <= 100) this.gaugePercentDraft = String(max);
+    }
+
     if (changes['mt5LiveTrades']) {
       this.calculateLiveMetrics();
     }
@@ -370,6 +368,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     this.positiveGaugePercentMax = nextMax;
     this.gaugePercentDraft = String(nextMax);
     localStorage.setItem('live-trade-gauge-max-percent', String(nextMax));
+    this.gaugePercentMaxChange.emit(nextMax);
     this.isGaugeSettingsOpen = false;
   }
 

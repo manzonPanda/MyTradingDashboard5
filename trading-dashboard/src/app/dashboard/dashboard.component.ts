@@ -40,7 +40,7 @@ import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { Account, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
-import { ProfileSettingsComponent } from '../settings/profile-settings.component';
+import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
 
 
@@ -185,6 +185,7 @@ export class DashboardComponent implements AfterViewInit {
   isLiveTradeSoundSettingsOpen = false;
   liveTradeSoundSettings: LiveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
   liveTradeSoundSettingsDraft: LiveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
+  liveTradeGaugePercentMax = 4;
   readonly auraConfigDefaults = DEFAULT_AURA_ENERGY_CONFIG;
   navigationDisplayMode: 'expanded' | 'collapsed' | 'hover' = 'expanded';
   private activeWorkspace = 'dashboard';
@@ -480,6 +481,7 @@ export class DashboardComponent implements AfterViewInit {
   selectedFirm: string | null = null;
   private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveTradeSoundSettingsStorageKey = 'trading-dashboard.live-trade-sound-settings';
+  private readonly liveTradeDisplayPreferencesStorageKey = 'trading-dashboard.live-trade-display-preferences';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly tradeScreenshotStorageKey = 'trading-dashboard.trade-screenshots.v1';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
@@ -1150,10 +1152,35 @@ mt5AccountInfo: AccountSettings = {
   onLiveTradeSoundSettingsChange(settings: LiveTradeSoundSettingsModel): void {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
+    this.saveLiveTradeDisplayPreferences();
     for (const trade of this.mt5LiveTrades) {
       this.notifyGaugePercentage(trade);
     }
     this.cdr.markForCheck();
+  }
+
+  onLiveTradeDisplayPreferencesChange(preferences: LiveTradeDisplayPreferences): void {
+    this.liveTradeGaugePercentMax = preferences.positiveGaugePercentMax;
+    this.onLiveTradeSoundSettingsChange({
+      enabled: preferences.soundEnabled,
+      alertThreshold: preferences.soundThreshold,
+      highAlertThreshold: preferences.highPrioritySoundThreshold,
+      volume: this.liveTradeSoundSettings.volume
+    });
+  }
+
+  onLiveTradeGaugePercentMaxChange(value: number): void {
+    this.liveTradeGaugePercentMax = value;
+    this.saveLiveTradeDisplayPreferences();
+  }
+
+  private saveLiveTradeDisplayPreferences(): void {
+    this.document.defaultView?.localStorage.setItem(this.liveTradeDisplayPreferencesStorageKey, JSON.stringify({
+      positiveGaugePercentMax: this.liveTradeGaugePercentMax,
+      soundEnabled: this.liveTradeSoundSettings.enabled,
+      soundThreshold: this.liveTradeSoundSettings.alertThreshold,
+      highPrioritySoundThreshold: this.liveTradeSoundSettings.highAlertThreshold
+    }));
   }
 
   saveLiveTradeSoundSettings(): void {
@@ -1165,6 +1192,7 @@ mt5AccountInfo: AccountSettings = {
 
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
+    this.saveLiveTradeDisplayPreferences();
     for (const trade of this.mt5LiveTrades) {
       this.notifyGaugePercentage(trade);
     }
