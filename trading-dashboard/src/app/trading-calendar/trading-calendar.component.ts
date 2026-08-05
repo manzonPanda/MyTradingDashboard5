@@ -213,9 +213,15 @@ interface WeekSummary {
                 </div>
               </div>
               <div class="day-trade-media">
-                <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else noScreenshot">
+                <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else screenshotState">
                   <img *ngFor="let screenshotUrl of trade.screenshotUrls; let screenshotIndex = index" [src]="screenshotUrl" [alt]="(trade.symbol || 'Trade') + ' screenshot ' + (screenshotIndex + 1)" loading="lazy">
                 </div>
+                <ng-template #screenshotState>
+                  <div class="day-trade-screenshot day-trade-screenshot-empty" *ngIf="isLoadingScreenshots(trade); else noScreenshot">
+                    <span class="screenshot-loading-spinner" aria-hidden="true"></span>
+                    <span>Loading screenshots...</span>
+                  </div>
+                </ng-template>
                 <ng-template #noScreenshot>
                   <div class="day-trade-screenshot day-trade-screenshot-empty">
                     <mat-icon aria-hidden="true">image_not_supported</mat-icon>
@@ -255,6 +261,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   selectedDay: CalendarDay | null = null;
   private readonly uploadingScreenshotTickets = new Set<string>();
   private readonly screenshotUploadErrors = new Map<string, string>();
+  private readonly screenshotLoadedTickets = new Set<string>();
+  private readonly screenshotLoadingTickets = new Set<string>();
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -273,6 +281,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         this.currentDate = new Date(changes['viewDate'].currentValue);
       }
       this.firstTradeDate = this.getFirstTradeDate();
+      this.screenshotLoadedTickets.clear();
       this.generateCalendar();
     }
   }
@@ -447,8 +456,31 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
            date.getDate() === today.getDate();
   }
 
-  openDayModal(day: CalendarDay): void {
+  async openDayModal(day: CalendarDay): Promise<void> {
     this.selectedDay = day;
+
+    const tickets = day.trades
+      .map(trade => String(trade.position))
+      .filter(ticket => ticket && !this.screenshotLoadedTickets.has(ticket) && !this.screenshotLoadingTickets.has(ticket));
+    if (!tickets.length) return;
+
+    tickets.forEach(ticket => this.screenshotLoadingTickets.add(ticket));
+    try {
+      const screenshotUrls = await this.supabaseService.getTradeScreenshotUrls(tickets);
+      for (const trade of day.trades) {
+        const urls = screenshotUrls[String(trade.position)] || [];
+        if (urls.length) {
+          trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...urls])];
+          trade.screenshotUrl = trade.screenshotUrls[0];
+        }
+        this.screenshotLoadedTickets.add(String(trade.position));
+      }
+      this.selectedDay = { ...day, trades: [...day.trades] };
+    } catch (error) {
+      console.warn('Unable to load screenshots for selected day:', error);
+    } finally {
+      tickets.forEach(ticket => this.screenshotLoadingTickets.delete(ticket));
+    }
   }
 
   closeDayModal(): void {
@@ -457,6 +489,10 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   isUploadingScreenshots(trade: Table): boolean {
     return this.uploadingScreenshotTickets.has(String(trade.position));
+  }
+
+  isLoadingScreenshots(trade: Table): boolean {
+    return this.screenshotLoadingTickets.has(String(trade.position));
   }
 
   getScreenshotUploadError(trade: Table): string {

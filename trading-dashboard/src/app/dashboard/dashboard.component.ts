@@ -6119,24 +6119,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     console.log('✅ Mapped trades:', mt5Trades.length);
     console.log('📊 First trade sample:', mt5Trades[0]);
-    try {
-      const screenshotUrls = await this.supabaseService.getTradeScreenshotUrls(
-        mt5Trades.map(trade => trade.position)
-      );
-      for (const trade of mt5Trades) {
-        const savedScreenshotUrls = screenshotUrls[String(trade.position)] || [];
-        trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...savedScreenshotUrls])];
-        trade.screenshotUrl = trade.screenshotUrls[0] || trade.screenshotUrl;
-        if (trade.screenshotUrl) this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
-      }
-    } catch (error) {
-      console.warn('Unable to load saved trade screenshots:', error);
-    }
     this.mt5LiveTrades = mt5Trades;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
-    void Promise.all(mt5Trades
-      .filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !trade.screenshotUrl)
-      .map(trade => this.hydrateTradeScreenshot(trade)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -6304,31 +6288,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return Boolean(selectedAccountNumber && this.mt5AccountLogin && selectedAccountNumber === this.mt5AccountLogin);
   }
 
-  private async hydrateTradeScreenshot(trade: Table): Promise<void> {
-    for (let attempt = 0; attempt < 15 && !trade.screenshotUrl; attempt++) {
-      if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
-      if (!screenshotUrls.length) continue;
-
-      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
-      trade.screenshotUrl = trade.screenshotUrls[0];
-      this.screenshotLoadErrors.delete(String(trade.position));
-      this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
-      this.mt5LiveTrades = [...this.mt5LiveTrades];
-      this.recentlyAddedTrades = this.recentlyAddedTrades.map(recentTrade =>
-        String(recentTrade.position) === String(trade.position) ? trade : recentTrade
-      );
-      this.updateTableData();
-      this.cdr.markForCheck();
-    }
-
-    this.screenshotLoadErrors.add(String(trade.position));
-    this.cdr.markForCheck();
-  }
-
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
     try {
       localStorage.removeItem(this.legacyLiveExtremesStorageKey);
@@ -6395,6 +6354,23 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     await this.supabaseService.saveTradeForAccount(tradeForSupabase, this.selectedAccount.id);
   }
 
+  private async loadNewTradeScreenshot(trade: Table): Promise<void> {
+    try {
+      const screenshotUrls = (await this.supabaseService.getTradeScreenshotUrls([trade.position]))[String(trade.position)] || [];
+      if (!screenshotUrls.length) return;
+
+      trade.screenshotUrls = [...new Set([...(trade.screenshotUrls || []), ...screenshotUrls])];
+      trade.screenshotUrl = trade.screenshotUrls[0];
+      this.cacheTradeScreenshot(trade.position, trade.screenshotUrl);
+      this.screenshotLoadErrors.delete(String(trade.position));
+      this.mt5LiveTrades = [...this.mt5LiveTrades];
+      this.updateTableData();
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.warn('Unable to load screenshot for new trade:', error);
+    }
+  }
+
   addMT5LiveTrade(tradeData: any): void {
     if (!this.isActiveMt5Account()) return;
     const trade = tradeData;
@@ -6446,7 +6422,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
       // Track as recently added for visual indication
       this.recentlyAddedTrades.unshift(newTrade);
-      void this.hydrateTradeScreenshot(newTrade);
+      void this.loadNewTradeScreenshot(newTrade);
 
       // Remove from recent list after 5 seconds
       // setTimeout(() => {

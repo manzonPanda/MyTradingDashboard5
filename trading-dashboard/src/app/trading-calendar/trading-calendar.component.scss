@@ -1235,6 +1235,21 @@
   }
 }
 
+.screenshot-loading-spinner {
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid var(--tf-border-primary);
+  border-top-color: var(--tf-accent-info);
+  border-radius: 50%;
+  animation: screenshot-spinner 0.8s linear infinite;
+}
+
+@keyframes screenshot-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .day-trades-empty-state {
   display: grid;
   justify-items: center;
