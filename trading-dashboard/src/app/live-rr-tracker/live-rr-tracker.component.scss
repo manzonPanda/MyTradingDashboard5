@@ -1314,12 +1314,56 @@
 
   .live-trading-container.is-maximized .open-trade-metrics-list {
     width: auto;
+    height: 100%;
     margin: 0;
+    padding: 1rem;
   }
 
   .live-trading-container.is-maximized .trade-metrics-grid {
+    min-height: 100%;
     grid-template-columns: repeat(3, 1.15fr) repeat(2, 0.85fr);
-    grid-template-rows: auto auto;
+    grid-template-rows: 1fr auto;
+    gap: 1rem;
+  }
+
+  .live-trading-container.is-maximized .trade-metric-card {
+    display: flex;
+    min-height: 10rem;
+    padding: 1rem;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .live-trading-container.is-maximized .metric-label {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: clamp(0.75rem, 2.2vw, 1rem);
+  }
+
+  .live-trading-container.is-maximized .metric-label mat-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 1.25rem;
+  }
+
+  .live-trading-container.is-maximized .metric-value {
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+  }
+
+  .live-trading-container.is-maximized .trade-extremes-summary {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+  }
+
+  .live-trading-container.is-maximized .trade-gauge-card {
+    min-height: 10rem;
+  }
+
+  .live-trading-container.is-maximized .trade-gauge {
+    flex-basis: min(100%, 11rem);
+  }
+
+  .live-trading-container.is-maximized .trade-gauge-percent {
+    font-size: clamp(2rem, 5vw, 3.25rem);
   }
 
   .live-trading-container.is-maximized .trade-r-card { grid-column: 1; grid-row: 1; }
@@ -1329,7 +1373,7 @@
   .live-trading-container.is-maximized .trade-metrics-grid > .trade-gauge-card {
     grid-column: 4 / span 2;
     grid-row: 1 / span 2;
-    width: min(100%, 132px);
+    width: min(100%, 11rem);
   }
 
   .empty-state-container.is-maximized {
