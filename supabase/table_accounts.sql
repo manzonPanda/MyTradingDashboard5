@@ -9,12 +9,18 @@ create table public.accounts (
   daily_loss_limit_percent numeric null,
   start_date timestamp with time zone null,
   status text null default 'active'::text,
-  phase text not null default 'phase1'::text,
   notes text null,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   user_id uuid null,
+  phase text not null default 'phase1'::text,
   constraint accounts_pkey primary key (id),
-  constraint accounts_phase_check check ((phase = any (array['phase1'::text, 'phase2'::text, 'funded'::text]))),
-  constraint accounts_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE
+  constraint accounts_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE,
+  constraint accounts_phase_check check (
+    (
+      phase = any (
+        array['phase1'::text, 'phase2'::text, 'funded'::text]
+      )
+    )
+  )
 ) TABLESPACE pg_default;
