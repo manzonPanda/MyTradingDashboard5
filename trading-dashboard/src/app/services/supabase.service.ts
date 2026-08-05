@@ -617,11 +617,10 @@ export class SupabaseService {
       .eq('ticket', String(ticket));
     if (lookupError) throw new Error(`Screenshot lookup failed: ${lookupError.message}`);
 
-    const signedPath = new URL(signedUrl).pathname;
-    const screenshot = (screenshots ?? []).find(row => {
-      const encodedPath = `/storage/v1/object/sign/trade-screenshots/${row.storage_path}`;
-      return signedPath === encodedPath || decodeURIComponent(signedPath) === encodedPath;
-    });
+    const signedPath = decodeURIComponent(new URL(signedUrl).pathname);
+    const pathPrefix = '/storage/v1/object/sign/trade-screenshots/';
+    const storagePath = signedPath.startsWith(pathPrefix) ? signedPath.slice(pathPrefix.length) : '';
+    const screenshot = (screenshots ?? []).find(row => row.storage_path === storagePath);
     if (!screenshot?.storage_path) throw new Error('Screenshot could not be identified.');
 
     const { error: storageError } = await this.supabase.storage
