@@ -116,7 +116,7 @@ def upload_trade_screenshot(ticket: int, symbol: str):
         image_bytes = mss.tools.to_png(image.rgb, image.size)
 
     safe_symbol = ''.join(character if character.isalnum() or character in ('-', '_') else '_' for character in symbol)
-    storage_path = f'{safe_symbol}/{ticket}.png'
+    storage_path = f'{ticket}/{safe_symbol}.png'
     headers = {
         'Authorization': f'Bearer {SUPABASE_SERVICE_ROLE_KEY}',
         'apikey': SUPABASE_SERVICE_ROLE_KEY,

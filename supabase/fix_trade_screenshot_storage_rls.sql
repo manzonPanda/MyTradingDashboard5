@@ -42,7 +42,15 @@ for select
 to authenticated
 using (
   bucket_id = 'trade-screenshots'
-  and public.user_owns_trade_ticket(split_part(name, '/', 1))
+  and (
+    public.user_owns_trade_ticket(split_part(name, '/', 1))
+    or exists (
+      select 1
+      from public.trade_screenshots s
+      where s.storage_path = name
+        and public.user_owns_trade_ticket(s.ticket)
+    )
+  )
 );
 
 create policy "Users can upload own screenshot files"
@@ -51,5 +59,13 @@ for insert
 to authenticated
 with check (
   bucket_id = 'trade-screenshots'
-  and public.user_owns_trade_ticket(split_part(name, '/', 1))
+  and (
+    public.user_owns_trade_ticket(split_part(name, '/', 1))
+    or exists (
+      select 1
+      from public.trade_screenshots s
+      where s.storage_path = name
+        and public.user_owns_trade_ticket(s.ticket)
+    )
+  )
 );
