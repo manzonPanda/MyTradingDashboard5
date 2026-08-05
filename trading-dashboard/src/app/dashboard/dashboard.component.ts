@@ -1836,6 +1836,15 @@ mt5AccountInfo: AccountSettings = {
     }
   }
 
+  private loadLiveTradeDisplayPreferences(): Partial<LiveTradeDisplayPreferences> {
+    try {
+      const saved = this.document.defaultView?.localStorage.getItem(this.liveTradeDisplayPreferencesStorageKey);
+      return saved ? JSON.parse(saved) as Partial<LiveTradeDisplayPreferences> : {};
+    } catch {
+      return {};
+    }
+  }
+
   private inferAccountSize(account: Account | null): number {
     const sizeMatch = account?.name.match(/(\d+(?:\.\d+)?)\s*k\b/i);
     return sizeMatch ? Number(sizeMatch[1]) * 1000 : 0;
@@ -1843,10 +1852,21 @@ mt5AccountInfo: AccountSettings = {
 
   private applyPersistedUserSettings(settings: UserSettings): void {
     this.isDailyChart = settings.default_chart_mode === 'daily';
+    const savedDisplayPreferences = this.loadLiveTradeDisplayPreferences();
+    const alertThreshold = Number.isFinite(Number(savedDisplayPreferences.soundThreshold))
+      ? Number(savedDisplayPreferences.soundThreshold)
+      : settings.sound_notifications_threshold;
+    const savedHighAlertThreshold = Number(savedDisplayPreferences.highPrioritySoundThreshold);
+    const highAlertThreshold = Number.isFinite(savedHighAlertThreshold)
+      && savedHighAlertThreshold > alertThreshold
+      ? savedHighAlertThreshold
+      : Math.max(alertThreshold, alertThreshold + 0.6);
     this.liveTradeSoundSettings = {
-      enabled: settings.notifications_enabled && settings.goal_notification_sound,
-      alertThreshold: settings.sound_notifications_threshold,
-      highAlertThreshold: Math.max(settings.sound_notifications_threshold, settings.sound_notifications_threshold + 0.6),
+      enabled: typeof savedDisplayPreferences.soundEnabled === 'boolean'
+        ? savedDisplayPreferences.soundEnabled
+        : settings.notifications_enabled && settings.goal_notification_sound,
+      alertThreshold,
+      highAlertThreshold,
       volume: settings.notification_volume
     };
     this.auraEnergy.updateConfig({
