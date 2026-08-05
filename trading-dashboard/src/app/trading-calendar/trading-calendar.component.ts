@@ -220,9 +220,16 @@ interface WeekSummary {
                       <button type="button" class="screenshot-action-button" aria-label="View screenshot" title="View screenshot" (click)="openScreenshot(screenshotUrl)">
                         <mat-icon aria-hidden="true">visibility</mat-icon>
                       </button>
-                      <button type="button" class="screenshot-action-button screenshot-delete-button" aria-label="Delete screenshot" title="Delete screenshot" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="deleteScreenshot(trade, screenshotUrl)">
+                      <button type="button" class="screenshot-action-button screenshot-delete-button" aria-label="Delete screenshot" title="Delete screenshot" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="requestDeleteScreenshot(screenshotUrl)">
                         <mat-icon aria-hidden="true">delete</mat-icon>
                       </button>
+                    </div>
+                    <div class="screenshot-delete-confirmation" *ngIf="confirmingDeleteUrl === screenshotUrl">
+                      <strong>Confirm delete?</strong>
+                      <div class="screenshot-confirmation-actions">
+                        <button type="button" class="screenshot-confirm-button" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="deleteScreenshot(trade, screenshotUrl)">Delete</button>
+                        <button type="button" class="screenshot-cancel-button" [disabled]="isDeletingScreenshot(screenshotUrl)" (click)="cancelDeleteScreenshot()">Cancel</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -287,6 +294,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   private readonly deletingScreenshotUrls = new Set<string>();
   private readonly draggingScreenshotTickets = new Set<string>();
   activeScreenshotUrl: string | null = null;
+  confirmingDeleteUrl: string | null = null;
   private readonly screenshotLoadedTickets = new Set<string>();
   private readonly screenshotLoadingTickets = new Set<string>();
 
@@ -562,15 +570,22 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     this.activeScreenshotUrl = null;
   }
 
-  async deleteScreenshot(trade: Table, screenshotUrl: string): Promise<void> {
-    if (!window.confirm('Delete this screenshot? This action cannot be undone.')) return;
+  requestDeleteScreenshot(screenshotUrl: string): void {
+    this.confirmingDeleteUrl = screenshotUrl;
+  }
 
+  cancelDeleteScreenshot(): void {
+    this.confirmingDeleteUrl = null;
+  }
+
+  async deleteScreenshot(trade: Table, screenshotUrl: string): Promise<void> {
     this.deletingScreenshotUrls.add(screenshotUrl);
     try {
       await this.supabaseService.deleteTradeScreenshot(trade.position, screenshotUrl);
       trade.screenshotUrls = (trade.screenshotUrls || []).filter(url => url !== screenshotUrl);
       trade.screenshotUrl = trade.screenshotUrls[0];
       if (this.activeScreenshotUrl === screenshotUrl) this.closeScreenshot();
+      if (this.confirmingDeleteUrl === screenshotUrl) this.cancelDeleteScreenshot();
       this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
     } catch (error) {
       this.screenshotUploadErrors.set(String(trade.position), error instanceof Error ? error.message : 'Unable to delete screenshot.');

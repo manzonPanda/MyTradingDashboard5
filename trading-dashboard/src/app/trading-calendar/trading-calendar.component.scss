@@ -1221,6 +1221,52 @@
   background: var(--tf-negative);
 }
 
+.screenshot-delete-confirmation {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+.screenshot-confirmation-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.screenshot-confirm-button,
+.screenshot-cancel-button {
+  padding: 0.25rem 0.45rem;
+  border: 0;
+  border-radius: 0.25rem;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.screenshot-confirm-button {
+  background: var(--tf-negative);
+}
+
+.screenshot-cancel-button {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.screenshot-confirm-button:disabled,
+.screenshot-cancel-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .day-trade-screenshot {
   min-height: 150px;
   background: var(--tf-bg-tertiary);
