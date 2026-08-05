@@ -575,7 +575,8 @@ export class DashboardComponent implements AfterViewInit {
       max_total_drawdown_percent: null,
       daily_loss_limit_percent: null,
       start_date: new Date().toISOString().slice(0, 10),
-      status: 'active'
+      status: 'active',
+      phase: 'phase1'
     };
     this.cdr.markForCheck();
   }
@@ -592,7 +593,8 @@ export class DashboardComponent implements AfterViewInit {
       max_total_drawdown_percent: account.max_total_drawdown_percent ?? 0,
       daily_loss_limit_percent: account.daily_loss_limit_percent ?? 0,
       start_date: account.start_date ?? '',
-      status: account.status ?? 'active'
+      status: account.status ?? 'active',
+      phase: account.phase ?? 'phase1'
     };
     this.cdr.markForCheck();
   }
@@ -666,7 +668,8 @@ export class DashboardComponent implements AfterViewInit {
       max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
       daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
       start_date: this.accountEditForm.start_date || null,
-      status: this.accountEditForm.status || 'active'
+      status: this.accountEditForm.status || 'active',
+      phase: this.accountEditForm.phase || 'phase1'
     };
 
     try {
