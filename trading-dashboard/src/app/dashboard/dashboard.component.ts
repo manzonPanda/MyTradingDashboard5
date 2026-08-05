@@ -490,6 +490,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly activeGaugeAlertLevels = new Map<string, 'normal' | 'high'>();
   private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
   editingAccountId: string | null = null;
@@ -6573,31 +6574,31 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const { enabled, alertThreshold, highAlertThreshold, volume } = this.liveTradeSoundSettings;
     const isInAlertRange = enabled && Number.isFinite(gaugePercentage) && gaugePercentage >= alertThreshold && gaugePercentage < highAlertThreshold;
     const isAboveHighAlertRange = enabled && Number.isFinite(gaugePercentage) && gaugePercentage >= highAlertThreshold;
+    const nextAlertLevel: 'normal' | 'high' | null = isAboveHighAlertRange
+      ? 'high'
+      : isInAlertRange
+        ? 'normal'
+        : null;
 
-    if (!isInAlertRange && !isAboveHighAlertRange) {
+    if (!nextAlertLevel) {
       this.stopGaugeAlert(ticket);
       return;
     }
 
-    const soundMap = isAboveHighAlertRange ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
-    const inactiveSoundMap = isAboveHighAlertRange ? this.gaugeAlertSounds : this.highGaugeAlertSounds;
-    const inactiveSound = inactiveSoundMap.get(ticket);
-    if (inactiveSound) {
-      inactiveSound.pause();
-      inactiveSound.currentTime = 0;
-      inactiveSoundMap.delete(ticket);
-    }
+    const currentAlertLevel = this.activeGaugeAlertLevels.get(ticket);
+    if (currentAlertLevel === nextAlertLevel) return;
 
-    if (!soundMap.has(ticket)) {
-      const sound = new Audio(isAboveHighAlertRange ? this.highGaugeAlertSoundUrl : this.gaugeAlertSoundUrl);
-      sound.loop = true;
-      sound.volume = volume;
-      soundMap.set(ticket, sound);
-      sound.play().catch(error => {
-        this.stopGaugeAlert(ticket);
-        console.warn('Unable to play gauge percentage alert sound:', error);
-      });
-    }
+    this.stopGaugeAlert(ticket);
+    const soundMap = nextAlertLevel === 'high' ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
+    const sound = new Audio(nextAlertLevel === 'high' ? this.highGaugeAlertSoundUrl : this.gaugeAlertSoundUrl);
+    sound.loop = true;
+    sound.volume = volume;
+    soundMap.set(ticket, sound);
+    this.activeGaugeAlertLevels.set(ticket, nextAlertLevel);
+    sound.play().catch(error => {
+      this.stopGaugeAlert(ticket);
+      console.warn('Unable to play gauge percentage alert sound:', error);
+    });
 
     if (!this.gaugeAlertNotifiedTickets.has(ticket)) {
       this.gaugeAlertNotifiedTickets.add(ticket);
@@ -6606,6 +6607,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   private stopGaugeAlert(ticket: string): void {
+    this.activeGaugeAlertLevels.delete(ticket);
     for (const soundMap of [this.gaugeAlertSounds, this.highGaugeAlertSounds]) {
       const sound = soundMap.get(ticket);
       if (!sound) continue;
