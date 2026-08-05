@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,7 +40,15 @@ interface Table {
   template: `
     <div class="live-rr-tracker-container">
       <!-- Empty State - No Live Trades -->
-      <div *ngIf="!hasLiveTrades" class="empty-state-container">
+      <div *ngIf="!hasLiveTrades" class="empty-state-container" [class.is-maximized]="isMaximized">
+        <button
+          type="button"
+          class="live-trades-maximize-button"
+          [attr.aria-label]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+          [attr.title]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+          (click)="toggleMaximize()">
+          <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+        </button>
         <div class="empty-state-content">
           <!-- Decorative Animation Background -->
           <div class="animated-bg">
@@ -95,7 +103,15 @@ interface Table {
       </div>
 
       <!-- Live Trading Display - When Trades Are Open -->
-      <div *ngIf="hasLiveTrades" class="live-trading-container">
+      <div *ngIf="hasLiveTrades" class="live-trading-container" [class.is-maximized]="isMaximized">
+        <button
+          type="button"
+          class="live-trades-maximize-button"
+          [attr.aria-label]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+          [attr.title]="isMaximized ? 'Minimize live trades' : 'Maximize live trades'"
+          (click)="toggleMaximize()">
+          <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+        </button>
         <div class="live-header">
           <div class="header-title">
             <mat-icon class="live-icon">fiber_manual_record</mat-icon>
@@ -241,10 +257,12 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   isCloseAllArmed = false;
   closeAllStatus = '';
   gaugePercentDraft = '4';
+  isMaximized = false;
   soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
+  private previousBodyOverflow = '';
 
   constructor(
     private readonly cdr: ChangeDetectorRef,
@@ -264,6 +282,30 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
     if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
+    this.setBodyScrollLocked(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMaximizedView(): void {
+    if (this.isMaximized) {
+      this.isMaximized = false;
+      this.setBodyScrollLocked(false);
+    }
+  }
+
+  toggleMaximize(): void {
+    this.isMaximized = !this.isMaximized;
+    this.setBodyScrollLocked(this.isMaximized);
+    this.cdr.markForCheck();
+  }
+
+  private setBodyScrollLocked(locked: boolean): void {
+    if (locked) {
+      this.previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = this.previousBodyOverflow;
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {

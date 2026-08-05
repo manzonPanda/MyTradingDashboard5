@@ -3,6 +3,42 @@
   position: relative;
 }
 
+.live-trades-maximize-button {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.65rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 0.5rem;
+  color: var(--tf-text-secondary);
+  background: color-mix(in srgb, var(--tf-bg-secondary) 90%, transparent);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+
+  &:hover, &:focus-visible {
+    color: var(--tf-text-primary);
+    background: var(--tf-bg-tertiary);
+    transform: translateY(-1px);
+  }
+
+  mat-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 1.1rem;
+  }
+}
+
+.live-trades-maximize-button:focus-visible {
+  outline: 2px solid var(--tf-positive);
+  outline-offset: 2px;
+}
+
 // ============================================
 // EMPTY STATE STYLES
 // ============================================
@@ -371,12 +407,43 @@
 // ============================================
 
 .live-trading-container {
+  position: relative;
   background: linear-gradient(135deg, var(--tf-bg-card) 0%, var(--tf-bg-secondary) 100%);
   border: 1px solid var(--tf-border-primary);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   animation: live-trading-enter 0.5s ease-out;
+}
+
+.live-trading-container.is-maximized,
+.empty-state-container.is-maximized {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  width: auto;
+  min-height: 100dvh;
+  padding: clamp(0.75rem, 2vw, 2rem);
+  border: 0;
+  border-radius: 0;
+  overflow: auto;
+  background: var(--tf-bg-primary);
+  box-shadow: none;
+}
+
+.live-trading-container.is-maximized {
+  display: flex;
+  flex-direction: column;
+}
+
+.live-trading-container.is-maximized .open-trade-metrics-list {
+  flex: 1;
+  align-content: start;
+}
+
+.empty-state-container.is-maximized {
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes live-trading-enter {
@@ -1218,6 +1285,16 @@
 
 // Responsive Design
 @media (max-width: 768px) {
+  .live-trades-maximize-button {
+    top: 0.45rem;
+    right: 0.45rem;
+  }
+
+  .live-trading-container.is-maximized,
+  .empty-state-container.is-maximized {
+    padding: 0.5rem;
+  }
+
   .empty-state-container {
     padding: 2rem 1.5rem;
     min-height: 350px;
