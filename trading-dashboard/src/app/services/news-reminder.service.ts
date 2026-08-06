@@ -19,7 +19,7 @@ interface ReminderTimeout {
 })
 export class NewsReminderService {
   private reminderTimeouts: ReminderTimeout[] = [];
-  private reminderIntervals = [5, 3, 1]; // minutes before news (5min, 3min, 1min) - sound notifications
+  private reminderIntervals = [30, 3];
   private sendNotificationCallback: ((title: string, body: string) => void) | null = null;
   private uiReminderCallback: ((events: NewsEvent[], minutesBefore: number) => void) | null = null;
 
@@ -232,11 +232,6 @@ export class NewsReminderService {
       if (hours > 23 || minutes > 59) return null;
 
       newsDate.setHours(hours, minutes, 0, 0);
-
-      // If the date is in the past, assume it's for next year
-      if (newsDate < today) {
-        newsDate.setFullYear(currentYear + 1);
-      }
 
       return newsDate;
     } catch (error) {
