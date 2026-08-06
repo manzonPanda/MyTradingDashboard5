@@ -1978,6 +1978,14 @@ mt5AccountInfo: AccountSettings = {
     return accountId ? this.getAccountById(accountId)?.name ?? null : null;
   }
 
+  getPayoutAccountPhase(payout: Payout): string {
+    const certificate = this.certificates.find(item => item.id === payout.certificate_id);
+    if (certificate?.account_id) return this.getCertificateAccountPhase(certificate);
+    const account = this.getAccountById(payout.account_id ?? null);
+    const phase = account?.phase;
+    return phase === 'phase2' ? 'Phase 2' : phase === 'funded' ? 'Funded' : phase === 'phase1' ? 'Phase 1' : '—';
+  }
+
   getCertificateAccountSize(certificate: Certificate): number | null {
     return this.getCertificateAccount(certificate)?.initial_balance ?? null;
   }
