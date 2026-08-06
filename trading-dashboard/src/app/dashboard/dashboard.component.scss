@@ -115,7 +115,7 @@
     }
 
     .target-label {
-      font-size: 0.6rem;
+      font-size: 0.7rem;
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
@@ -166,26 +166,91 @@
     // Total P&L target card styling
     &.total-pnl {
       &::before {
-        background: linear-gradient(90deg, #059669, #16A34A);
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
       }
 
       &:hover {
         transform: translateY(-3px) scale(1.02);
         box-shadow:
-          0 12px 40px rgba(5, 150, 105, 0.2),
-          0 6px 16px rgba(5, 150, 105, 0.15);
+          0 12px 40px rgba(139, 92, 246, 0.2),
+          0 6px 16px rgba(139, 92, 246, 0.15);
 
         .target-icon {
           transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
         }
       }
     }
 
     &.total-pnl .target-icon {
-      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-      color: #059669;
-      border: 2px solid rgba(16, 185, 129, 0.2);
+      background: linear-gradient(135deg, #faf5ff, #ede9fe);
+      color: #7c3aed;
+      border: 2px solid rgba(139, 92, 246, 0.2);
+    }
+
+    &.total-pnl .target-value {
+      color: #7c3aed;
+      text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+    }
+
+    &.account-size {
+      &::before {
+        background: linear-gradient(90deg, #5c66f6, #8b96fa);
+      }
+
+      &:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow:
+          0 12px 40px rgba(102, 92, 246, 0.2),
+          0 6px 16px rgba(102, 92, 246, 0.15);
+
+        .target-icon {
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    &.account-size .target-icon {
+      background: linear-gradient(135deg, #faf5ff, #ede9fe);
+      color: #3d3aed;
+      border: 2px solid rgba(95, 92, 246, 0.2);
+    }
+
+    &.account-size .target-value {
+      color: #463aed;
+      text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+    }
+
+    &.chart-mode-card {
+      overflow: visible;
+      pointer-events: auto;
+
+      &::before {
+        background: linear-gradient(90deg, #06b6d4, #7C3AED);
+      }
+
+      * {
+        pointer-events: auto;
+      }
+
+      .target-icon {
+        background: linear-gradient(135deg, #ecfeff, #dbeafe);
+        color: #0ea5e9;
+        border: 2px solid rgba(124, 58, 237, 0.2);
+      }
+
+      .mode-toggle-group {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        width: 100%;
+      }
+
+      .chart-mode-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.6rem;
+      }
     }
 
     // Win Rate target card styling
@@ -9367,6 +9432,8 @@ table.simple-table {
 }
 
 .trading-chart-container .chart-header .chart-stats,
+.trading-chart-container .chart-header .mt5-account-info,
+.trading-chart-container .chart-header .mt5-account-info .account-targets,
 .trading-chart-container .chart-header .chart-controls,
 .trading-chart-container .chart-header .chart-controls .mt5-account-info,
 .trading-chart-container .chart-header .chart-controls .account-targets {
@@ -9411,7 +9478,7 @@ table.simple-table {
 .trading-chart-container .chart-header .target-label {
   overflow: hidden;
   width: 100%;
-  font-size: 0.5rem;
+  font-size: 0.7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -13045,6 +13112,8 @@ table.simple-table {
 }
 
 .metrics-section .trading-chart-container .chart-header .chart-stats,
+.metrics-section .trading-chart-container .chart-header .mt5-account-info,
+.metrics-section .trading-chart-container .chart-header .mt5-account-info .account-targets,
 .metrics-section .trading-chart-container .chart-header .chart-controls,
 .metrics-section .trading-chart-container .chart-header .chart-controls .mt5-account-info,
 .metrics-section .trading-chart-container .chart-header .chart-controls .account-targets {
@@ -13133,7 +13202,7 @@ table.simple-table {
 
   .metrics-section .trading-chart-container .chart-header .stat-label,
   .metrics-section .trading-chart-container .chart-header .target-label {
-    font-size: 0.45rem;
+    font-size: 0.7rem;
   }
 
   .metrics-section .trading-chart-container .chart-header .stat-value,
