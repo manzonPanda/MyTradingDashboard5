@@ -13,6 +13,11 @@ const fcmAdmin = require("firebase-admin");
 const NOTION_TOKEN = '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'; // 🔐 Replace with your Notion token
 const NOTION_VERSION = '2022-06-28';
 const NEWS_FEED_TIME_ZONE = 'UTC';
+const NEWS_FEED_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.xml';
+const NEWS_FEED_CACHE_TTL_MS = 60 * 1000;
+const NEWS_FEED_STALE_TTL_MS = 10 * 60 * 1000;
+let newsFeedCache = { xml: null, expiresAt: 0, staleUntil: 0 };
+let newsFeedRequest = null;
 
 function getNewsTimeZone(value) {
   if (typeof value !== 'string' || !value) return NEWS_FEED_TIME_ZONE;
@@ -23,6 +28,44 @@ function getNewsTimeZone(value) {
   } catch {
     return NEWS_FEED_TIME_ZONE;
   }
+}
+
+async function getNewsFeedXml() {
+  const now = Date.now();
+  if (newsFeedCache.xml && newsFeedCache.expiresAt > now) {
+    return newsFeedCache.xml;
+  }
+
+  if (newsFeedRequest) {
+    return newsFeedRequest;
+  }
+
+  newsFeedRequest = axios.get(NEWS_FEED_URL, {
+    responseType: 'text',
+    timeout: 15000,
+    headers: {
+      Accept: 'application/xml, text/xml',
+      'User-Agent': 'TradingDashboardNews/1.0'
+    }
+  }).then(response => {
+    const fetchedAt = Date.now();
+    newsFeedCache = {
+      xml: response.data,
+      expiresAt: fetchedAt + NEWS_FEED_CACHE_TTL_MS,
+      staleUntil: fetchedAt + NEWS_FEED_STALE_TTL_MS
+    };
+    return response.data;
+  }).catch(error => {
+    if (newsFeedCache.xml && newsFeedCache.staleUntil > Date.now()) {
+      console.warn('[NEWS] Upstream unavailable; serving cached feed:', error.response?.status || error.message);
+      return newsFeedCache.xml;
+    }
+    throw error;
+  }).finally(() => {
+    newsFeedRequest = null;
+  });
+
+  return newsFeedRequest;
 }
 
 function parseFeedDateTime(rawDate, rawTime) {
@@ -195,12 +238,8 @@ app.post('/api/createNewEntry', async (req, res) => {
 
 app.get('/api/news', async (req, res) => {
   try {
-    const response = await axios.get('https://nfs.faireconomy.media/ff_calendar_thisweek.xml', {
-      responseType: 'text',
-      timeout: 15000,
-      headers: { Accept: 'application/xml, text/xml' }
-    });
-    const $ = cheerio.load(response.data, { xmlMode: true });
+    const feedXml = await getNewsFeedXml();
+    const $ = cheerio.load(feedXml, { xmlMode: true });
     const timeZone = getNewsTimeZone(req.query.timezone);
     const allowedCurrencies = new Set(['EUR', 'USD']);
     const allowedImpacts = new Set(['High', 'Medium']);

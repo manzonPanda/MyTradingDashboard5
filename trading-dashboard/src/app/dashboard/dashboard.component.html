@@ -254,7 +254,13 @@
                 <!-- Empty state -->
                 <div *ngIf="!isLoadingNews() && getNewsForDay(day.day).length === 0"
                      class="no-news">
-                  <div class="no-news-text">No news</div>
+                  <div class="no-news-text">
+                    <span>No news</span>
+                    <mat-icon
+                      class="no-news-reminder-icon"
+                      aria-label="No pending news reminders"
+                      title="No pending news reminders">notifications_none</mat-icon>
+                  </div>
                 </div>
               </div>
             </div>
