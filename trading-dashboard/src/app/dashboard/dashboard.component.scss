@@ -12897,10 +12897,13 @@ table.simple-table {
 .certificate-action-button:disabled, .certificate-inline-action:disabled { opacity: 0.45; cursor: not-allowed; }
 .certificate-card-actions { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.45rem; margin-top: 0.8rem; }
 .certificate-edit-button { position: relative; z-index: 1; padding: 0.4rem 0.6rem; font-size: 0.7rem; }
-.certificate-delete-button { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid rgba(239, 68, 68, 0.38); border-radius: 9px; background: transparent; color: #f87171; cursor: pointer; }
+.certificate-delete-button, .certificate-cancel-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 1.9rem; padding: 0.4rem 0.6rem; border: 1px solid; border-radius: 9px; font: inherit; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
+.certificate-delete-button { border-color: rgba(239, 68, 68, 0.38); background: transparent; color: #f87171; }
 .certificate-delete-button:hover, .certificate-delete-button.is-confirming { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
-.certificate-delete-button:disabled { cursor: wait; opacity: 0.55; }
-.certificate-delete-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+.certificate-cancel-button { border-color: var(--tf-border-primary); background: var(--tf-bg-secondary); color: var(--tf-text-secondary); }
+.certificate-cancel-button:hover { border-color: var(--tf-text-secondary); color: var(--tf-text-primary); }
+.certificate-delete-button:disabled, .certificate-cancel-button:disabled { cursor: wait; opacity: 0.55; }
+.certificate-delete-button mat-icon, .certificate-cancel-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-inline-action { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
 .certificate-action-button mat-icon, .certificate-edit-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-modal-backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(8, 12, 24, 0.72); }
@@ -12954,7 +12957,7 @@ table.simple-table {
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
 .certificate-program, .certificate-notes { margin: 0.2rem 0; color: var(--tf-text-secondary); font-size: 0.82rem; }
-.certificate-phase-badge { display: inline-flex; align-items: center; min-height: 1.4rem; margin: 0.65rem 0 0.15rem; border-radius: 3px; padding: 0.2rem 0.5rem; background: #d9ff38; color: #171717; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.04em; line-height: 1; text-transform: uppercase; }
+.certificate-phase-badge { display: inline-flex; align-items: center; min-height: 1.4rem; margin: 0.65rem 0 0.15rem; border-radius: 3px; padding: 0.2rem 0.5rem; background: var(--tf-accent-primary); color: #fff; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.04em; line-height: 1; text-transform: uppercase; }
 .certificate-size { display: block; margin-top: 0.8rem; font-size: 0.9rem; }
 .certificate-file { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 1rem; color: var(--tf-positive); font-size: 0.74rem; font-weight: 700; }
 .certificate-file mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }

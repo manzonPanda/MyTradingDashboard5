@@ -1147,10 +1147,14 @@
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
                     <div class="certificate-card-actions">
-                      <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
-                      <button class="certificate-delete-button" type="button" [class.is-confirming]="certificateDeleteConfirmationId === certificate.id" [disabled]="isDeletingCertificate" [attr.aria-label]="certificateDeleteConfirmationId === certificate.id ? 'Confirm certificate deletion' : 'Delete certificate'" [attr.title]="certificateDeleteConfirmationId === certificate.id ? 'Click again to delete' : 'Delete certificate'" (click)="confirmCertificateDeletion(certificate)"><mat-icon>{{ certificateDeleteConfirmationId === certificate.id ? 'check' : 'delete_outline' }}</mat-icon></button>
+                      <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                      @if (certificateDeleteConfirmationId === certificate.id) {
+                        <button class="certificate-delete-button is-confirming" type="button" [disabled]="isDeletingCertificate" aria-label="Confirm certificate deletion" title="Confirm certificate deletion" (click)="confirmCertificateDeletion(certificate)"><mat-icon>check</mat-icon><span>Confirm</span></button>
+                        <button class="certificate-cancel-button" type="button" [disabled]="isDeletingCertificate" aria-label="Cancel certificate deletion" title="Cancel certificate deletion" (click)="cancelCertificateDeletion()"><mat-icon>close</mat-icon><span>Cancel</span></button>
+                      } @else {
+                        <button class="certificate-delete-button" type="button" [disabled]="isDeletingCertificate" aria-label="Delete certificate" title="Delete certificate" (click)="confirmCertificateDeletion(certificate)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
+                      }
                     </div>
-                    @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
                   </div>
                   <div class="certificate-card-media">
                     @if (certificate.file_path?.startsWith('http')) {
