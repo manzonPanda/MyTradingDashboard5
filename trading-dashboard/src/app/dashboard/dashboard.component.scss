@@ -12954,7 +12954,7 @@ table.simple-table {
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
 .certificate-program, .certificate-notes { margin: 0.2rem 0; color: var(--tf-text-secondary); font-size: 0.82rem; }
-.certificate-account-context { display: inline-block; margin: 0.65rem 0 0.15rem; border-left: 3px solid var(--tf-accent-primary); padding-left: 0.55rem; color: var(--tf-accent-primary); font-size: 0.82rem; font-weight: 800; line-height: 1.35; }
+.certificate-phase-badge { display: inline-flex; align-items: center; min-height: 1.4rem; margin: 0.65rem 0 0.15rem; border-radius: 3px; padding: 0.2rem 0.5rem; background: #d9ff38; color: #171717; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.04em; line-height: 1; text-transform: uppercase; }
 .certificate-size { display: block; margin-top: 0.8rem; font-size: 0.9rem; }
 .certificate-file { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 1rem; color: var(--tf-positive); font-size: 0.74rem; font-weight: 700; }
 .certificate-file mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }

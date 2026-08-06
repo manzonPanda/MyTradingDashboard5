@@ -1143,7 +1143,7 @@
                   <div class="certificate-card-details">
                     <h3>{{ getCertificateFirmName(certificate) }}</h3>
                     <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
-                    <p class="certificate-account-context">{{ getCertificateAccountPhase(certificate) }}</p>
+                    <p class="certificate-phase-badge">{{ getCertificateAccountPhase(certificate) }}</p>
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
                     <div class="certificate-card-actions">
