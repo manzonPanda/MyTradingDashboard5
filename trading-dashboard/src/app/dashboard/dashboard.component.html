@@ -2201,10 +2201,6 @@
   <section id="trading-history" class="table-section notion-performance-section" *ngIf="currentWorkspace === 'trading-history'">
     <div class="section-container">
       <div class="table-header">
-        <h2 class="section-title">
-          <mat-icon class="section-icon">psychology</mat-icon>
-          Overall Trading History
-        </h2>
         <div class="table-actions">
           <button class="action-btn refresh-btn" (click)="refreshNotionData()" [disabled]="isLoadingNotionData">
             <mat-icon [class.spinning]="isLoadingNotionData">refresh</mat-icon>
@@ -2261,7 +2257,6 @@
         <div class="load-data-container" *ngIf="showLoadButton">
           <div class="load-data-content">
             <mat-icon class="load-icon">download</mat-icon>
-            <h3>Overall Trading History</h3>
             <p>Click the button below to load your trading history data from Notion.</p>
             <button class="load-data-btn" mat-raised-button color="primary" (click)="loadNotionDataWithButton()">
               <mat-icon>play_arrow</mat-icon>
