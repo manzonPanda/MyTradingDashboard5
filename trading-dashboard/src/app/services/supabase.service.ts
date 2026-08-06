@@ -346,9 +346,11 @@ export class SupabaseService {
     return data as Payout;
   }
 
-  async uploadCertificateFile(file: File, certificateId: string): Promise<string> {
+  async uploadCertificateFile(file: File, certificateId: string, firmName: string): Promise<string> {
     const userId = await this.getAuthenticatedUserId();
-    const filePath = `${userId}/${certificateId}-${Date.now()}-${file.name}`;
+    const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+    const filePath = `${userId}/${firmFolder}/${certificateId}-${Date.now()}-${safeFileName}`;
     const { error: uploadError } = await this.supabase.storage
       .from('certificates')
       .upload(filePath, file, { contentType: file.type || undefined, upsert: false });

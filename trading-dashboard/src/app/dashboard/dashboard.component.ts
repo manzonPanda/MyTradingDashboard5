@@ -1895,7 +1895,7 @@ mt5AccountInfo: AccountSettings = {
       const saved = this.editingCertificateId
         ? await this.supabaseService.updateCertificate(this.editingCertificateId, updates)
         : await this.supabaseService.createCertificate(updates);
-      const uploadedFilePath = this.certificateFile ? await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id) : saved.file_path;
+      const uploadedFilePath = this.certificateFile ? await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id, this.getCertificateFirmName(saved)) : saved.file_path;
       const savedCertificate = { ...saved, file_path: uploadedFilePath };
       this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...savedCertificate } : item) : [savedCertificate, ...this.certificates];
       await this.loadCertificatePreviewUrls(this.certificates);
