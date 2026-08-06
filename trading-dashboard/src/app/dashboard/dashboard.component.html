@@ -1316,12 +1316,14 @@
                       </div>
                     </td>
                     <td data-label="Actions" class="accounts-table-actions">
-                      <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
-                        <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
-                        <span>{{ selectedAccount?.id === account.id ? 'Active Account' : 'Preview' }}</span>
-                      </button>
-                      <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
-                      <button type="button" class="account-table-delete" aria-label="Delete account" title="Delete account" [disabled]="isDeletingAccount" (click)="requestAccountDeletion(account)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
+                      <div class="account-action-buttons">
+                        <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
+                          <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
+                          <span>{{ selectedAccount?.id === account.id ? 'Active Account' : 'Preview' }}</span>
+                        </button>
+                        <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                        <button type="button" class="account-table-delete" aria-label="Delete account" title="Delete account" [disabled]="isDeletingAccount" (click)="requestAccountDeletion(account)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
+                      </div>
                     </td>
                   </tr>
                 }

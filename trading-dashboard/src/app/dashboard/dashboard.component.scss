@@ -11432,6 +11432,13 @@ table.simple-table {
   text-align: right;
 }
 
+.account-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
 .account-set-active,
 .account-table-edit,
 .account-table-delete {
@@ -12263,8 +12270,15 @@ table.simple-table {
     }
 
     .accounts-table-actions {
+      align-items: flex-start;
       justify-content: space-between;
+      gap: 0.65rem;
       text-align: right;
+    }
+
+    .account-action-buttons {
+      flex: 1 1 13rem;
+      min-width: 0;
     }
   }
 
