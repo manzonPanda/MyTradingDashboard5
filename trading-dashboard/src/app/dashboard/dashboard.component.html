@@ -1157,8 +1157,8 @@
                     </div>
                   </div>
                   <div class="certificate-card-media">
-                    @if (certificate.file_path?.startsWith('http')) {
-                      <img class="certificate-preview" [src]="certificate.file_path" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                    @if (getCertificatePreviewUrl(certificate); as previewUrl) {
+                      <img class="certificate-preview" [src]="previewUrl" [alt]="getCertificateFirmName(certificate) + ' certificate'">
                     } @else {
                       <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
                     }

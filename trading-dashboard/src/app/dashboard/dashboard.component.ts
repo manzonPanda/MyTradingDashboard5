@@ -198,6 +198,7 @@ export class DashboardComponent implements AfterViewInit {
   isSavingCertificate = false;
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
+  certificatePreviewUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
   editingCertificateId: string | null = null;
@@ -1870,8 +1871,10 @@ mt5AccountInfo: AccountSettings = {
       const saved = this.editingCertificateId
         ? await this.supabaseService.updateCertificate(this.editingCertificateId, updates)
         : await this.supabaseService.createCertificate(updates);
-      if (this.certificateFile) await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id);
-      this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...saved } : item) : [saved, ...this.certificates];
+      const uploadedFilePath = this.certificateFile ? await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id) : saved.file_path;
+      const savedCertificate = { ...saved, file_path: uploadedFilePath };
+      this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...savedCertificate } : item) : [savedCertificate, ...this.certificates];
+      await this.loadCertificatePreviewUrls(this.certificates);
       this.isCertificateModalOpen = false;
       this.snackBar.open(this.editingCertificateId ? 'Certificate updated.' : 'Certificate added.', 'Dismiss', { duration: 3000 });
     } catch (error) {
@@ -1936,6 +1939,20 @@ mt5AccountInfo: AccountSettings = {
     return phase === 'phase2' ? 'Phase 2' : phase === 'funded' ? 'Funded' : phase === 'phase1' ? 'Phase 1' : '—';
   }
 
+  getCertificatePreviewUrl(certificate: Certificate): string | null {
+    return certificate.file_path && !certificate.file_path.startsWith('http') ? this.certificatePreviewUrls[certificate.id] ?? null : null;
+  }
+
+  private async loadCertificatePreviewUrls(certificates: Certificate[]): Promise<void> {
+    const previewUrls: Record<string, string> = {};
+    for (const certificate of certificates) {
+      if (!certificate.file_path || certificate.file_path.startsWith('http')) continue;
+      const signedUrl = await this.supabaseService.getCertificateFileUrl(certificate.file_path);
+      if (signedUrl) previewUrls[certificate.id] = signedUrl;
+    }
+    this.certificatePreviewUrls = previewUrls;
+  }
+
   private async loadCertificates(): Promise<void> {
     const userId = this.auth.user()?.id;
     if (!userId) return;
@@ -1952,7 +1969,7 @@ mt5AccountInfo: AccountSettings = {
         program_name: 'High Stakes, 5K',
         passed_date: '2025-12-05',
         status: 'funded',
-        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2F2990b1ef616d488e88223d5a351f910e?format=webp&width=800&height=1200'
+
       },
       {
 
@@ -1960,7 +1977,7 @@ mt5AccountInfo: AccountSettings = {
         program_name: 'Officially Funded Trader',
         passed_date: '2026-08-05',
         status: 'funded',
-        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ff90a7a3bd99a4854b46f578e37964ba2?format=webp&width=800&height=1200'
+
       },
       {
 
@@ -1968,7 +1985,7 @@ mt5AccountInfo: AccountSettings = {
         program_name: 'High Stakes, 2.5K',
         passed_date: '2026-07-10',
         status: 'funded',
-        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ffe4cf7a481b8401ba22af1e43207ac27?format=webp&width=800&height=1200'
+
       }
     ];
 
@@ -1983,9 +2000,11 @@ mt5AccountInfo: AccountSettings = {
         }
         this.certificates = await this.supabaseService.getCertificates(userId);
       }
+      await this.loadCertificatePreviewUrls(this.certificates);
     } catch (error) {
       console.error('Unable to load certificates:', error);
       this.certificates = suppliedCertificates.map((certificate, index) => ({ ...certificate, id: `supplied-certificate-${index}` }));
+      this.certificatePreviewUrls = {};
       this.certificatePayouts = [];
       this.snackBar.open('Showing your certificates locally. Create the Supabase tables to save them permanently.', 'Dismiss', { duration: 7000 });
     } finally {
