@@ -169,6 +169,10 @@
               <!-- Enhanced Day Header -->
               <div class="enhanced-day-header">
                 <span class="day-text">{{ day.label }}</span>
+                <div
+                  *ngIf="day.day === getCurrentDay()"
+                  class="day-dot"
+                  [ngClass]="day.statusClass"></div>
               </div>
 
               <!-- Enhanced News List -->
