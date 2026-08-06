@@ -1,7 +1,6 @@
 create table public.accounts (
   id uuid not null default gen_random_uuid (),
   name text not null,
-  prop_firm_id uuid null,
   account_number text null,
   initial_balance numeric null,
   profit_target_percent numeric null,
@@ -14,9 +13,10 @@ create table public.accounts (
   updated_at timestamp with time zone not null default now(),
   user_id uuid null,
   phase text not null default 'phase1'::text,
+  prop_firm_id uuid null,
   constraint accounts_pkey primary key (id),
+  constraint accounts_prop_firm_id_fkey foreign KEY (prop_firm_id) references prop_firms (id) on delete set null,
   constraint accounts_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE,
-  constraint accounts_prop_firm_id_fkey foreign KEY (prop_firm_id) references public.prop_firms (id) on delete set null,
   constraint accounts_phase_check check (
     (
       phase = any (
@@ -25,3 +25,5 @@ create table public.accounts (
     )
   )
 ) TABLESPACE pg_default;
+
+create index IF not exists accounts_prop_firm_id_idx on public.accounts using btree (prop_firm_id) TABLESPACE pg_default;
