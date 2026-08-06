@@ -12439,7 +12439,17 @@ table.simple-table {
 .roi-type-picker button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; }
 .roi-type-picker mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .roi-field { display: grid; gap: 0.38rem; color: var(--tf-text-secondary); font-size: 0.75rem; font-weight: 700; }
-.roi-field em { color: var(--tf-text-muted); font-style: normal; font-weight: 500; }
+.roi-field em, .roi-receipt-label em { color: var(--tf-text-muted); font-style: normal; font-weight: 500; }
+.roi-receipt-field { display: grid; gap: 0.38rem; }
+.roi-receipt-label { color: var(--tf-text-secondary); font-size: 0.75rem; font-weight: 700; }
+.roi-receipt-upload { display: flex; align-items: center; gap: 0.7rem; min-height: 4.25rem; padding: 0.75rem; border: 1px dashed rgba(139, 92, 246, 0.55); border-radius: 0.7rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), var(--tf-bg-primary)); color: #8b5cf6; cursor: pointer; }
+.roi-receipt-upload:hover { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.13); }
+.roi-receipt-upload > mat-icon { flex: 0 0 auto; }
+.roi-receipt-upload input { display: none; }
+.roi-receipt-copy { display: grid; flex: 1; min-width: 0; gap: 0.2rem; }
+.roi-receipt-copy strong { overflow: hidden; color: var(--tf-text-primary); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.roi-receipt-copy small { color: var(--tf-text-muted); font-size: 0.68rem; font-weight: 500; }
+.roi-receipt-browse { flex: 0 0 auto; padding: 0.45rem 0.65rem; border-radius: 0.5rem; background: #6d28d9; color: #fff; font-size: 0.7rem; font-weight: 800; }
 .roi-field input, .roi-field select { width: 100%; box-sizing: border-box; padding: 0.68rem 0.75rem; border: 1px solid var(--tf-border-primary); border-radius: 0.6rem; background: var(--tf-bg-primary); color: var(--tf-text-primary); font: inherit; outline: 0; }
 .roi-field input:focus, .roi-field select:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12); }
 .roi-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
@@ -12452,7 +12462,7 @@ table.simple-table {
 .roi-save-button[disabled] { cursor: wait; opacity: 0.65; transform: none; }
 
 @media (max-width: 900px) { .roi-content-grid { grid-template-columns: 1fr; } }
-@media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } .roi-transaction-actions { gap: 0.15rem; } .roi-transaction-action { width: 1.7rem; height: 1.7rem; } }
+@media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } .roi-transaction-actions { gap: 0.15rem; } .roi-transaction-action { width: 1.7rem; height: 1.7rem; } .roi-receipt-upload { gap: 0.5rem; } .roi-receipt-browse { padding-inline: 0.5rem; } }
 
 .trade-sound-settings-backdrop { position: fixed; z-index: 1200; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
 .trade-sound-settings-modal { width: min(100%, 34rem); overflow: hidden; border: 1px solid var(--tf-border-primary); border-radius: 1rem; background: var(--tf-bg-card); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35); }

@@ -1109,7 +1109,17 @@
                 <label class="roi-field"><span>Amount</span><div class="roi-amount-input"><span>₱</span><input type="number" name="roi-amount" min="0.01" step="0.01" required [(ngModel)]="roiForm.amount" placeholder="0.00"></div></label>
                 <div class="roi-form-row"><label class="roi-field"><span>Date</span><input type="date" name="roi-date" required [(ngModel)]="roiForm.transaction_date"></label><label class="roi-field"><span>Account</span><select name="roi-account" [(ngModel)]="roiForm.account_id"><option value="">No account</option>@for (account of accounts; track account.id) { <option [value]="account.id">{{ account.name }}</option> }</select></label></div>
                 <label class="roi-field"><span>Note</span><input type="text" name="roi-note" [(ngModel)]="roiForm.note" placeholder="e.g. 100K challenge fee"></label>
-                <label class="roi-field"><span>Receipt image URL <em>optional</em></span><input type="url" name="roi-image-url" [(ngModel)]="roiForm.image_url" placeholder="https://"></label>
+                @if (roiForm.transaction_type === 'payout') {
+                  <div class="roi-receipt-field">
+                    <span class="roi-receipt-label">Receipt image <em>optional</em></span>
+                    <label class="roi-receipt-upload" for="roi-receipt-file">
+                      <input id="roi-receipt-file" name="roi-receipt-file" type="file" accept="image/*" (change)="onRoiReceiptSelected($event)">
+                      <mat-icon>cloud_upload</mat-icon>
+                      <span class="roi-receipt-copy"><strong>{{ roiReceiptFile?.name || (roiForm.image_url ? 'Existing receipt image' : 'Upload receipt image') }}</strong><small>{{ roiReceiptFile ? 'Ready to upload with this payout' : 'PNG, JPG, WEBP, or GIF' }}</small></span>
+                      <span class="roi-receipt-browse">Browse</span>
+                    </label>
+                  </div>
+                }
                 <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : editingRoiTransactionId ? 'save' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : editingRoiTransactionId ? 'Update tracker' : 'Add to tracker' }}</button>
               </form>
             </section>

@@ -225,6 +225,7 @@ export class DashboardComponent implements AfterViewInit {
   roiFilter: 'all' | 'expense' | 'payout' = 'all';
   roiPage = 1;
   readonly roiPageSize = 5;
+  roiReceiptFile: File | null = null;
   roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
     transaction_type: 'expense',
     transaction_date: new Date().toISOString().slice(0, 10),
@@ -1746,6 +1747,7 @@ mt5AccountInfo: AccountSettings = {
 
   openRoiEntryModal(): void {
     this.editingRoiTransactionId = null;
+    this.roiReceiptFile = null;
     this.roiForm = {
       transaction_type: 'expense',
       transaction_date: new Date().toISOString().slice(0, 10),
@@ -1759,6 +1761,7 @@ mt5AccountInfo: AccountSettings = {
 
   editRoiTransaction(transaction: RoiTransaction): void {
     this.editingRoiTransactionId = transaction.id;
+    this.roiReceiptFile = null;
     this.roiForm = {
       transaction_type: transaction.transaction_type,
       transaction_date: transaction.transaction_date,
@@ -1800,6 +1803,11 @@ mt5AccountInfo: AccountSettings = {
 
   setRoiPage(page: number): void {
     this.roiPage = Math.min(Math.max(page, 1), this.roiTotalPages);
+  }
+
+  onRoiReceiptSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.roiReceiptFile = file?.type.startsWith('image/') ? file : null;
   }
 
   get roiExpenses(): number {
@@ -2057,12 +2065,19 @@ mt5AccountInfo: AccountSettings = {
     try {
       const userId = this.auth.user()?.id;
       if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
+      let imageUrl = this.roiForm.image_url.trim() || null;
+      if (this.roiReceiptFile) {
+        const safeFileName = this.roiReceiptFile.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+        const receiptPath = `${userId}/roi-receipts/${Date.now()}-${safeFileName}`;
+        imageUrl = await this.supabaseService.uploadFile(this.roiReceiptFile, receiptPath);
+        if (!imageUrl) throw new Error('Receipt image upload failed.');
+      }
       const transactionData = {
         transaction_type: this.roiForm.transaction_type,
         transaction_date: this.roiForm.transaction_date,
         amount: this.roiForm.amount,
         note: this.roiForm.note.trim() || null,
-        image_url: this.roiForm.image_url.trim() || null,
+        image_url: imageUrl,
         account_id: this.roiForm.account_id || null
       };
       const editingId = this.editingRoiTransactionId;
@@ -2074,6 +2089,7 @@ mt5AccountInfo: AccountSettings = {
         : [savedTransaction, ...this.roiTransactions];
       this.roiPage = editingId ? Math.min(this.roiPage, this.roiTotalPages) : 1;
       this.editingRoiTransactionId = null;
+      this.roiReceiptFile = null;
       this.isRoiEntryModalOpen = false;
       this.snackBar.open(editingId ? 'ROI transaction updated.' : 'ROI transaction saved.', 'Dismiss', { duration: 3000 });
     } catch (error) {
