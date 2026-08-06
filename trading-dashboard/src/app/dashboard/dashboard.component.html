@@ -218,7 +218,14 @@
                       <div class="event-meta">
                         <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
                       </div>
-                      <div class="event-title">{{ getNewsTitle(timeGroup.events[0]) }}</div>
+                      <div class="event-title">
+                        <span>{{ getNewsTitle(timeGroup.events[0]) }}</span>
+                        <mat-icon
+                          *ngIf="!isNewsEnded(timeGroup.events[0])"
+                          class="pending-news-reminder-icon"
+                          aria-label="Upcoming news reminder"
+                          title="Upcoming news reminder">notifications_active</mat-icon>
+                      </div>
                     </div>
                   </div>
 
@@ -245,7 +252,14 @@
                         <div class="event-meta">
                           <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
                         </div>
-                        <div class="event-title">{{ getNewsTitle(event) }}</div>
+                        <div class="event-title">
+                          <span>{{ getNewsTitle(event) }}</span>
+                          <mat-icon
+                            *ngIf="!isNewsEnded(event)"
+                            class="pending-news-reminder-icon"
+                            aria-label="Upcoming news reminder"
+                            title="Upcoming news reminder">notifications_active</mat-icon>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -306,7 +320,14 @@
                       </span>
                     </div>
 
-                    <div class="event-title-full">{{ getNewsTitle(event) }}</div>
+                    <div class="event-title-full">
+                      <span>{{ getNewsTitle(event) }}</span>
+                      <mat-icon
+                        *ngIf="!isNewsEnded(event)"
+                        class="pending-news-reminder-icon"
+                        aria-label="Upcoming news reminder"
+                        title="Upcoming news reminder">notifications_active</mat-icon>
+                    </div>
 
                     <div class="event-date">{{ event.date }}</div>
                   </div>

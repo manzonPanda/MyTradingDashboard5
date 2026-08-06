@@ -12936,6 +12936,34 @@ table.simple-table {
   .certificate-preview { height: 9rem; }
 }
 
+.pending-news-reminder-icon {
+  flex: 0 0 auto;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-left: 0.15rem;
+  color: var(--tf-accent-primary);
+  font-size: 0.9rem;
+  line-height: 0.9rem;
+  animation: pending-news-reminder-pulse 2s ease-in-out infinite;
+}
+
+.dashboard-header .event-title,
+.dashboard-header .event-title-full {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.dashboard-header .event-title > span,
+.dashboard-header .event-title-full > span {
+  min-width: 0;
+}
+
+@keyframes pending-news-reminder-pulse {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
 .news-reminder-toast {
   position: fixed;
   top: 1.25rem;
