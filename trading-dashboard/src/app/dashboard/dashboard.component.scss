@@ -11434,9 +11434,16 @@ table.simple-table {
 
 .account-action-buttons {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
   gap: 0.45rem;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.account-action-buttons::-webkit-scrollbar {
+  display: none;
 }
 
 .account-set-active,
@@ -11454,6 +11461,8 @@ table.simple-table {
   font: inherit;
   font-size: 0.75rem;
   font-weight: 800;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .account-set-active {
@@ -12270,15 +12279,29 @@ table.simple-table {
     }
 
     .accounts-table-actions {
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.65rem;
-      text-align: right;
+      display: block;
+      padding-top: 0.75rem;
+      text-align: left;
+
+      &::before {
+        display: block;
+        margin-bottom: 0.4rem;
+        text-align: left;
+      }
     }
 
     .account-action-buttons {
-      flex: 1 1 13rem;
-      min-width: 0;
+      justify-content: flex-start;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .account-set-active,
+    .account-table-edit,
+    .account-table-delete {
+      gap: 0.25rem;
+      padding: 0.35rem 0.45rem;
+      font-size: 0.68rem;
     }
   }
 
