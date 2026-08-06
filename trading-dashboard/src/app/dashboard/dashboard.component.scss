@@ -2717,7 +2717,7 @@ table.simple-table {
 
     .chart-header {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 0.5rem;
       align-items: stretch;
       padding: 0.2rem;
@@ -9361,7 +9361,7 @@ table.simple-table {
 
 .trading-chart-container .chart-header {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
   align-items: stretch;
 }
@@ -9383,13 +9383,13 @@ table.simple-table {
 
 @media (max-width: 768px) {
   .trading-chart-container .chart-header {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 480px) {
   .trading-chart-container .chart-header {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
