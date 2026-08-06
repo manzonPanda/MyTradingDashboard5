@@ -62,6 +62,7 @@ export interface Payout {
   payout_date: string;
   notes?: string | null;
   proof_url?: string | null;
+  source?: 'certificate' | 'roi';
   created_at?: string;
 }
 
@@ -346,9 +347,11 @@ export class SupabaseService {
     return data as Payout;
   }
 
-  async uploadCertificateFile(file: File, certificateId: string): Promise<string> {
+  async uploadCertificateFile(file: File, certificateId: string, firmName: string): Promise<string> {
     const userId = await this.getAuthenticatedUserId();
-    const filePath = `${userId}/${certificateId}-${Date.now()}-${file.name}`;
+    const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+    const filePath = `${userId}/${firmFolder}/certificates/${Date.now()}-${safeFileName}`;
     const { error: uploadError } = await this.supabase.storage
       .from('certificates')
       .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
@@ -367,6 +370,18 @@ export class SupabaseService {
     const { data, error } = await this.supabase.storage.from('certificates').createSignedUrl(filePath, 3600);
     if (error) return null;
     return data.signedUrl;
+  }
+
+  async uploadRoiPayoutFile(file: File, firmName: string): Promise<string> {
+    const userId = await this.getAuthenticatedUserId();
+    const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+    const filePath = `${userId}/${firmFolder}/payouts/${Date.now()}-${safeFileName}`;
+    const { error } = await this.supabase.storage
+      .from('certificates')
+      .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
+    if (error) throw new Error(`Payout receipt upload failed: ${error.message}`);
+    return filePath;
   }
 
   async getPayouts(userId: string): Promise<Payout[]> {
@@ -397,6 +412,29 @@ export class SupabaseService {
       .single();
     if (error) throw new Error(`ROI transaction creation failed: ${error.message}`);
     return data as RoiTransaction;
+  }
+
+  async updateRoiTransaction(id: string, updates: Omit<Partial<RoiTransaction>, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'accounts'>): Promise<RoiTransaction> {
+    const userId = await this.getAuthenticatedUserId();
+    const { data, error } = await this.supabase
+      .from('roi_transactions')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select('*, accounts(name)')
+      .single();
+    if (error) throw new Error(`ROI transaction update failed: ${error.message}`);
+    return data as RoiTransaction;
+  }
+
+  async deleteRoiTransaction(id: string): Promise<void> {
+    const userId = await this.getAuthenticatedUserId();
+    const { error } = await this.supabase
+      .from('roi_transactions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+    if (error) throw new Error(`ROI transaction deletion failed: ${error.message}`);
   }
 
   async getAllTrades(accountId?: string): Promise<Trade[]> {

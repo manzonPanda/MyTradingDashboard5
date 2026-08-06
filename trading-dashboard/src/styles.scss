@@ -520,35 +520,43 @@ body.dark-theme {
 
 // Account action notification styling
 .account-notification {
+  box-sizing: border-box;
   width: min(370px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
   margin: 16px !important;
   padding: 0 !important;
-  overflow: hidden !important;
-  border: 1px solid #e2e8f0 !important;
-  border-left: 3px solid #64748b !important;
-  border-radius: 10px !important;
-  background: #fff !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
   color: #334155 !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
   animation: accountNotificationIn 180ms ease-out !important;
 
   .mdc-snackbar__surface {
+    display: flex !important;
+    align-items: center;
     min-width: 0 !important;
+    overflow: hidden !important;
     padding: 0 !important;
-    border-radius: inherit !important;
-    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 3px solid #64748b !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
   }
 
   .mdc-snackbar__label {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 0.65rem;
+    min-width: 0;
     min-height: 56px;
     padding: 0.8rem 0.9rem !important;
     color: inherit !important;
     font-size: 0.82rem;
     font-weight: 600;
     line-height: 1.35;
+    overflow-wrap: anywhere;
   }
 
   .mdc-snackbar__label::before {
@@ -570,10 +578,13 @@ body.dark-theme {
     font-weight: 800 !important;
     letter-spacing: 0.03em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   &.notification-success {
-    border-left-color: #10b981 !important;
+    .mdc-snackbar__surface {
+      border-left-color: #10b981 !important;
+    }
 
     .mdc-snackbar__label::before {
       background: #10b981;
@@ -581,7 +592,9 @@ body.dark-theme {
   }
 
   &.notification-error {
-    border-left-color: #ef4444 !important;
+    .mdc-snackbar__surface {
+      border-left-color: #ef4444 !important;
+    }
 
     .mdc-snackbar__label::before {
       background: #ef4444;
@@ -589,10 +602,33 @@ body.dark-theme {
   }
 }
 
+@media (max-width: 480px) {
+  .account-notification {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px !important;
+
+    .mdc-snackbar__label {
+      gap: 0.5rem;
+      min-height: 48px;
+      padding: 0.7rem 0.75rem !important;
+      font-size: 0.78rem;
+    }
+
+    .mat-mdc-button {
+      margin-right: 0.35rem !important;
+      padding-inline: 0.4rem !important;
+    }
+  }
+}
+
 body.dark-theme .account-notification {
+  color: #e2e8f0 !important;
+}
+
+body.dark-theme .account-notification .mdc-snackbar__surface {
   border-color: #334155 !important;
   background: #1e293b !important;
-  color: #e2e8f0 !important;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3) !important;
 }
 

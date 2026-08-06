@@ -11432,6 +11432,20 @@ table.simple-table {
   text-align: right;
 }
 
+.account-action-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.account-action-buttons::-webkit-scrollbar {
+  display: none;
+}
+
 .account-set-active,
 .account-table-edit,
 .account-table-delete {
@@ -11447,6 +11461,8 @@ table.simple-table {
   font: inherit;
   font-size: 0.75rem;
   font-weight: 800;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .account-set-active {
@@ -12263,8 +12279,29 @@ table.simple-table {
     }
 
     .accounts-table-actions {
-      justify-content: space-between;
-      text-align: right;
+      display: block;
+      padding-top: 0.75rem;
+      text-align: left;
+
+      &::before {
+        display: block;
+        margin-bottom: 0.4rem;
+        text-align: left;
+      }
+    }
+
+    .account-action-buttons {
+      justify-content: flex-start;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .account-set-active,
+    .account-table-edit,
+    .account-table-delete {
+      gap: 0.25rem;
+      padding: 0.35rem 0.45rem;
+      font-size: 0.68rem;
     }
   }
 
@@ -12379,6 +12416,13 @@ table.simple-table {
 .roi-transaction-copy small { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 99px; background: var(--tf-bg-tertiary); }
 .roi-transaction-amount { color: #e11d48; font-size: 0.78rem; white-space: nowrap; }
 .roi-transaction-row.is-payout .roi-transaction-amount { color: #059669; }
+.roi-transaction-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 0.25rem; }
+.roi-transaction-action { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; border: 1px solid var(--tf-border-primary); border-radius: 0.45rem; background: var(--tf-bg-secondary); color: var(--tf-text-secondary); cursor: pointer; }
+.roi-transaction-action:hover:not(:disabled) { border-color: rgba(109, 40, 217, 0.35); background: #ede9fe; color: #6d28d9; }
+.roi-transaction-action.is-delete { color: #dc2626; }
+.roi-transaction-action.is-delete:hover:not(:disabled) { border-color: rgba(220, 38, 38, 0.25); background: #fef2f2; color: #b91c1c; }
+.roi-transaction-action:disabled { cursor: wait; opacity: 0.45; }
+.roi-transaction-action mat-icon { width: 0.95rem; height: 0.95rem; font-size: 0.95rem; }
 .roi-loading, .roi-empty-state { display: grid; place-items: center; min-height: 17rem; padding: 2rem; color: var(--tf-text-muted); text-align: center; }
 .roi-loading { grid-auto-flow: column; gap: 0.6rem; }
 .roi-loading mat-icon { animation: mt5-sync-rotation 1s linear infinite; }
@@ -12395,7 +12439,17 @@ table.simple-table {
 .roi-type-picker button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; }
 .roi-type-picker mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .roi-field { display: grid; gap: 0.38rem; color: var(--tf-text-secondary); font-size: 0.75rem; font-weight: 700; }
-.roi-field em { color: var(--tf-text-muted); font-style: normal; font-weight: 500; }
+.roi-field em, .roi-receipt-label em { color: var(--tf-text-muted); font-style: normal; font-weight: 500; }
+.roi-receipt-field { display: grid; gap: 0.38rem; }
+.roi-receipt-label { color: var(--tf-text-secondary); font-size: 0.75rem; font-weight: 700; }
+.roi-receipt-upload { display: flex; align-items: center; gap: 0.7rem; min-height: 4.25rem; padding: 0.75rem; border: 1px dashed rgba(139, 92, 246, 0.55); border-radius: 0.7rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), var(--tf-bg-primary)); color: #8b5cf6; cursor: pointer; }
+.roi-receipt-upload:hover { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.13); }
+.roi-receipt-upload > mat-icon { flex: 0 0 auto; }
+.roi-receipt-upload input { display: none; }
+.roi-receipt-copy { display: grid; flex: 1; min-width: 0; gap: 0.2rem; }
+.roi-receipt-copy strong { overflow: hidden; color: var(--tf-text-primary); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.roi-receipt-copy small { color: var(--tf-text-muted); font-size: 0.68rem; font-weight: 500; }
+.roi-receipt-browse { flex: 0 0 auto; padding: 0.45rem 0.65rem; border-radius: 0.5rem; background: #6d28d9; color: #fff; font-size: 0.7rem; font-weight: 800; }
 .roi-field input, .roi-field select { width: 100%; box-sizing: border-box; padding: 0.68rem 0.75rem; border: 1px solid var(--tf-border-primary); border-radius: 0.6rem; background: var(--tf-bg-primary); color: var(--tf-text-primary); font: inherit; outline: 0; }
 .roi-field input:focus, .roi-field select:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12); }
 .roi-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
@@ -12408,7 +12462,7 @@ table.simple-table {
 .roi-save-button[disabled] { cursor: wait; opacity: 0.65; transform: none; }
 
 @media (max-width: 900px) { .roi-content-grid { grid-template-columns: 1fr; } }
-@media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } }
+@media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } .roi-transaction-actions { gap: 0.15rem; } .roi-transaction-action { width: 1.7rem; height: 1.7rem; } .roi-receipt-upload { gap: 0.5rem; } .roi-receipt-browse { padding-inline: 0.5rem; } }
 
 .trade-sound-settings-backdrop { position: fixed; z-index: 1200; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
 .trade-sound-settings-modal { width: min(100%, 34rem); overflow: hidden; border: 1px solid var(--tf-border-primary); border-radius: 1rem; background: var(--tf-bg-card); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35); }
@@ -12895,12 +12949,16 @@ table.simple-table {
 .certificate-action-button, .certificate-inline-action, .certificate-edit-button, .certificate-save-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid var(--tf-border-primary); border-radius: 10px; padding: 0.65rem 0.85rem; background: var(--tf-bg-secondary); color: var(--tf-text-primary); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .certificate-action-button.is-primary, .certificate-save-button { border-color: transparent; background: var(--tf-accent-primary); color: #fff; }
 .certificate-action-button:disabled, .certificate-inline-action:disabled { opacity: 0.45; cursor: not-allowed; }
-.certificate-card-actions { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.45rem; margin-top: 0.8rem; }
+.certificate-card-actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; max-width: 100%; margin-top: 0.8rem; }
+.certificate-card-actions > button { min-width: 0; white-space: nowrap; }
 .certificate-edit-button { position: relative; z-index: 1; padding: 0.4rem 0.6rem; font-size: 0.7rem; }
-.certificate-delete-button { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid rgba(239, 68, 68, 0.38); border-radius: 9px; background: transparent; color: #f87171; cursor: pointer; }
+.certificate-delete-button, .certificate-cancel-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 1.9rem; padding: 0.4rem 0.6rem; border: 1px solid; border-radius: 9px; font: inherit; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
+.certificate-delete-button { border-color: rgba(239, 68, 68, 0.38); background: transparent; color: #f87171; }
 .certificate-delete-button:hover, .certificate-delete-button.is-confirming { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
-.certificate-delete-button:disabled { cursor: wait; opacity: 0.55; }
-.certificate-delete-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+.certificate-cancel-button { border-color: var(--tf-border-primary); background: var(--tf-bg-secondary); color: var(--tf-text-secondary); }
+.certificate-cancel-button:hover { border-color: var(--tf-text-secondary); color: var(--tf-text-primary); }
+.certificate-delete-button:disabled, .certificate-cancel-button:disabled { cursor: wait; opacity: 0.55; }
+.certificate-delete-button mat-icon, .certificate-cancel-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-inline-action { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
 .certificate-action-button mat-icon, .certificate-edit-button mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-modal-backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(8, 12, 24, 0.72); }
@@ -12954,17 +13012,40 @@ table.simple-table {
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
 .certificate-program, .certificate-notes { margin: 0.2rem 0; color: var(--tf-text-secondary); font-size: 0.82rem; }
-.certificate-account-context { display: inline-block; margin: 0.65rem 0 0.15rem; border-left: 3px solid var(--tf-accent-primary); padding-left: 0.55rem; color: var(--tf-accent-primary); font-size: 0.82rem; font-weight: 800; line-height: 1.35; }
+.certificate-phase-badge { display: inline-flex; align-items: center; min-height: 1.4rem; margin: 0.65rem 0 0.15rem; border-radius: 3px; padding: 0.2rem 0.5rem; background: var(--tf-accent-primary); color: #fff; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.04em; line-height: 1; text-transform: uppercase; }
 .certificate-size { display: block; margin-top: 0.8rem; font-size: 0.9rem; }
 .certificate-file { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 1rem; color: var(--tf-positive); font-size: 0.74rem; font-weight: 700; }
 .certificate-file mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
-.payout-list { display: grid; gap: 0.5rem; }
-.payout-row { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem; border-radius: 12px; background: var(--tf-bg-secondary); }
-.payout-icon { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: var(--tf-positive); }
-.payout-row div { flex: 1; }
-.payout-row strong, .payout-row small { display: block; }
-.payout-row small { margin-top: 0.2rem; color: var(--tf-text-muted); }
-.payout-amount { color: var(--tf-positive); }
+.payout-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.payout-card { display: grid; grid-template-columns: 1fr; align-content: start; gap: 0.85rem; min-height: 100%; padding: 1rem; border: 1px solid var(--tf-border-primary); border-radius: 1rem; background: linear-gradient(145deg, var(--tf-bg-secondary), var(--tf-bg-card)); box-shadow: var(--tf-shadow-sm); }
+.payout-card.is-roi-payout { border-color: rgba(124, 58, 237, 0.28); }
+.payout-card-media { min-width: 0; }
+.payout-proof-link, .payout-proof-placeholder { position: relative; display: grid; width: 100%; height: 10rem; overflow: hidden; place-items: center; border: 1px solid rgba(16, 185, 129, 0.22); border-radius: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), var(--tf-bg-tertiary)); color: var(--tf-positive); }
+.payout-proof-link { cursor: zoom-in; }
+.payout-proof-preview { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.payout-proof-overlay { position: absolute; right: 0.35rem; bottom: 0.35rem; display: grid; width: 1.5rem; height: 1.5rem; place-items: center; border-radius: 0.4rem; background: rgba(15, 23, 42, 0.72); color: #fff; }
+.payout-proof-overlay mat-icon { width: 0.85rem; height: 0.85rem; font-size: 0.85rem; }
+.payout-proof-placeholder mat-icon { width: 1.6rem; height: 1.6rem; font-size: 1.6rem; }
+.payout-card-content { min-width: 0; }
+.payout-card-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.payout-kicker { margin: 0 0 0.2rem; color: var(--tf-accent-primary); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.payout-card h3 { margin: 0; color: var(--tf-text-primary); font-size: 1rem; }
+.payout-amount { color: var(--tf-positive); font-size: 1.05rem; white-space: nowrap; }
+.payout-card-meta { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.55rem; color: var(--tf-text-muted); font-size: 0.68rem; }
+.payout-card-meta span { display: inline-flex; align-items: center; gap: 0.25rem; }
+.payout-card-meta mat-icon { width: 0.85rem; height: 0.85rem; font-size: 0.85rem; }
+.payout-card-notes { margin: 0.6rem 0 0; overflow: hidden; color: var(--tf-text-secondary); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 900px) {
+  .payout-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .payout-list { grid-template-columns: 1fr; }
+  .payout-card { gap: 0.7rem; padding: 0.7rem; }
+  .payout-proof-link, .payout-proof-placeholder { height: 8.5rem; }
+  .payout-card-topline { gap: 0.5rem; }
+  .payout-amount { font-size: 0.88rem; }
+}
 .certificates-empty-state { display: grid; justify-items: center; padding: clamp(2rem, 7vw, 5rem) 1.5rem; text-align: center; }
 .certificate-empty-icon { display: grid; place-items: center; width: 5rem; height: 5rem; margin-bottom: 1.25rem; border-radius: 20px; background: rgba(124, 58, 237, 0.12); color: var(--tf-accent-primary); }
 .certificate-empty-icon mat-icon { font-size: 2.6rem; width: 2.6rem; height: 2.6rem; }

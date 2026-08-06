@@ -198,6 +198,8 @@ export class DashboardComponent implements AfterViewInit {
   isSavingCertificate = false;
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
+  certificatePreviewUrls: Record<string, string> = {};
+  payoutProofUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
   editingCertificateId: string | null = null;
@@ -218,10 +220,13 @@ export class DashboardComponent implements AfterViewInit {
   };
   isLoadingRoi = false;
   isSavingRoi = false;
+  isDeletingRoi = false;
+  editingRoiTransactionId: string | null = null;
   isRoiEntryModalOpen = false;
   roiFilter: 'all' | 'expense' | 'payout' = 'all';
   roiPage = 1;
   readonly roiPageSize = 5;
+  roiReceiptFile: File | null = null;
   roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
     transaction_type: 'expense',
     transaction_date: new Date().toISOString().slice(0, 10),
@@ -1742,11 +1747,35 @@ mt5AccountInfo: AccountSettings = {
   }
 
   openRoiEntryModal(): void {
+    this.editingRoiTransactionId = null;
+    this.roiReceiptFile = null;
+    this.roiForm = {
+      transaction_type: 'expense',
+      transaction_date: new Date().toISOString().slice(0, 10),
+      amount: null,
+      note: '',
+      account_id: '',
+      image_url: ''
+    };
+    this.isRoiEntryModalOpen = true;
+  }
+
+  editRoiTransaction(transaction: RoiTransaction): void {
+    this.editingRoiTransactionId = transaction.id;
+    this.roiReceiptFile = null;
+    this.roiForm = {
+      transaction_type: transaction.transaction_type,
+      transaction_date: transaction.transaction_date,
+      amount: Number(transaction.amount),
+      note: transaction.note ?? '',
+      account_id: transaction.account_id ?? '',
+      image_url: transaction.image_url ?? ''
+    };
     this.isRoiEntryModalOpen = true;
   }
 
   closeRoiEntryModal(): void {
-    if (!this.isSavingRoi) this.isRoiEntryModalOpen = false;
+    if (!this.isSavingRoi && !this.isDeletingRoi) this.isRoiEntryModalOpen = false;
   }
 
   get filteredRoiTransactions(): RoiTransaction[] {
@@ -1775,6 +1804,11 @@ mt5AccountInfo: AccountSettings = {
 
   setRoiPage(page: number): void {
     this.roiPage = Math.min(Math.max(page, 1), this.roiTotalPages);
+  }
+
+  onRoiReceiptSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.roiReceiptFile = file?.type.startsWith('image/') ? file : null;
   }
 
   get roiExpenses(): number {
@@ -1870,8 +1904,13 @@ mt5AccountInfo: AccountSettings = {
       const saved = this.editingCertificateId
         ? await this.supabaseService.updateCertificate(this.editingCertificateId, updates)
         : await this.supabaseService.createCertificate(updates);
-      if (this.certificateFile) await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id);
-      this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...saved } : item) : [saved, ...this.certificates];
+      const uploadedFilePath = this.certificateFile ? await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id, this.getCertificateFirmName(saved)) : saved.file_path;
+      const savedCertificate = { ...saved, file_path: uploadedFilePath };
+      this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...savedCertificate } : item) : [savedCertificate, ...this.certificates];
+      await Promise.all([
+        this.loadCertificatePreviewUrls(this.certificates),
+        this.loadPayoutProofUrls(this.certificatePayouts)
+      ]);
       this.isCertificateModalOpen = false;
       this.snackBar.open(this.editingCertificateId ? 'Certificate updated.' : 'Certificate added.', 'Dismiss', { duration: 3000 });
     } catch (error) {
@@ -1899,6 +1938,7 @@ mt5AccountInfo: AccountSettings = {
     try {
       const payout = await this.supabaseService.createPayout({ certificate_id: certificate.id, firm_name: this.getCertificateFirmName(certificate), amount: this.payoutForm.amount, payout_date: this.payoutForm.payout_date, notes: this.payoutForm.notes.trim() || null, proof_url: this.payoutForm.proof_url.trim() || null });
       this.certificatePayouts = [payout, ...this.certificatePayouts];
+      await this.loadPayoutProofUrls(this.certificatePayouts);
       this.isPayoutModalOpen = false;
       this.snackBar.open('Payout recorded.', 'Dismiss', { duration: 3000 });
     } catch (error) {
@@ -1936,6 +1976,35 @@ mt5AccountInfo: AccountSettings = {
     return phase === 'phase2' ? 'Phase 2' : phase === 'funded' ? 'Funded' : phase === 'phase1' ? 'Phase 1' : '—';
   }
 
+  getCertificatePreviewUrl(certificate: Certificate): string | null {
+    return certificate.file_path && !certificate.file_path.startsWith('http') ? this.certificatePreviewUrls[certificate.id] ?? null : null;
+  }
+
+  private async loadCertificatePreviewUrls(certificates: Certificate[]): Promise<void> {
+    const previewUrls: Record<string, string> = {};
+    for (const certificate of certificates) {
+      if (!certificate.file_path || certificate.file_path.startsWith('http')) continue;
+      const signedUrl = await this.supabaseService.getCertificateFileUrl(certificate.file_path);
+      if (signedUrl) previewUrls[certificate.id] = signedUrl;
+    }
+    this.certificatePreviewUrls = previewUrls;
+  }
+
+  getPayoutProofUrl(payout: Payout): string | null {
+    if (!payout.proof_url) return null;
+    return payout.proof_url.startsWith('http') ? payout.proof_url : this.payoutProofUrls[payout.id] ?? null;
+  }
+
+  private async loadPayoutProofUrls(payouts: Payout[]): Promise<void> {
+    const proofUrls: Record<string, string> = {};
+    for (const payout of payouts) {
+      if (!payout.proof_url || payout.proof_url.startsWith('http')) continue;
+      const signedUrl = await this.supabaseService.getCertificateFileUrl(payout.proof_url);
+      if (signedUrl) proofUrls[payout.id] = signedUrl;
+    }
+    this.payoutProofUrls = proofUrls;
+  }
+
   private async loadCertificates(): Promise<void> {
     const userId = this.auth.user()?.id;
     if (!userId) return;
@@ -1952,7 +2021,7 @@ mt5AccountInfo: AccountSettings = {
         program_name: 'High Stakes, 5K',
         passed_date: '2025-12-05',
         status: 'funded',
-        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2F2990b1ef616d488e88223d5a351f910e?format=webp&width=800&height=1200'
+
       },
       {
 
@@ -1960,7 +2029,7 @@ mt5AccountInfo: AccountSettings = {
         program_name: 'Officially Funded Trader',
         passed_date: '2026-08-05',
         status: 'funded',
-        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ff90a7a3bd99a4854b46f578e37964ba2?format=webp&width=800&height=1200'
+
       },
       {
 
@@ -1968,24 +2037,48 @@ mt5AccountInfo: AccountSettings = {
         program_name: 'High Stakes, 2.5K',
         passed_date: '2026-07-10',
         status: 'funded',
-        file_path: 'https://cdn.builder.io/api/v1/image/assets%2F2fb6b0efa7b44d3691e58b522704fe9f%2Ffe4cf7a481b8401ba22af1e43207ac27?format=webp&width=800&height=1200'
+
       }
     ];
 
     try {
-      [this.certificates, this.certificatePayouts] = await Promise.all([
+      let roiTransactions: RoiTransaction[] = [];
+      [this.certificates, this.certificatePayouts, roiTransactions] = await Promise.all([
         this.supabaseService.getCertificates(userId),
-        this.supabaseService.getPayouts(userId)
+        this.supabaseService.getPayouts(userId),
+        this.supabaseService.getRoiTransactions(userId)
       ]);
+      const roiPayouts: Payout[] = roiTransactions
+        .filter(transaction => transaction.transaction_type === 'payout')
+        .map(transaction => ({
+          id: `roi-payout-${transaction.id}`,
+          certificate_id: null,
+          user_id: userId,
+          firm_name: transaction.accounts?.name || this.getAccountById(transaction.account_id ?? null)?.name || 'ROI payout',
+          amount: Number(transaction.amount),
+          payout_date: transaction.transaction_date,
+          notes: transaction.note,
+          proof_url: transaction.image_url,
+          source: 'roi' as const,
+          created_at: transaction.created_at
+        }));
+      this.certificatePayouts = [...this.certificatePayouts, ...roiPayouts]
+        .sort((left, right) => right.payout_date.localeCompare(left.payout_date));
       if (!this.certificates.length) {
         for (const certificate of suppliedCertificates) {
           await this.supabaseService.createCertificate(certificate);
         }
         this.certificates = await this.supabaseService.getCertificates(userId);
       }
+      await Promise.all([
+        this.loadCertificatePreviewUrls(this.certificates),
+        this.loadPayoutProofUrls(this.certificatePayouts)
+      ]);
     } catch (error) {
       console.error('Unable to load certificates:', error);
       this.certificates = suppliedCertificates.map((certificate, index) => ({ ...certificate, id: `supplied-certificate-${index}` }));
+      this.certificatePreviewUrls = {};
+      this.payoutProofUrls = {};
       this.certificatePayouts = [];
       this.snackBar.open('Showing your certificates locally. Create the Supabase tables to save them permanently.', 'Dismiss', { duration: 7000 });
     } finally {
@@ -2014,31 +2107,54 @@ mt5AccountInfo: AccountSettings = {
     try {
       const userId = this.auth.user()?.id;
       if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
-      const savedTransaction = await this.supabaseService.createRoiTransaction({
+      let imageUrl = this.roiForm.image_url.trim() || null;
+      if (this.roiReceiptFile) {
+        const payoutAccount = this.getAccountById(this.roiForm.account_id);
+        const payoutFirmName = payoutAccount ? this.getFirmNameForAccount(payoutAccount) : 'Independent firm';
+        imageUrl = await this.supabaseService.uploadRoiPayoutFile(this.roiReceiptFile, payoutFirmName);
+      }
+      const transactionData = {
         transaction_type: this.roiForm.transaction_type,
         transaction_date: this.roiForm.transaction_date,
         amount: this.roiForm.amount,
         note: this.roiForm.note.trim() || null,
-        image_url: this.roiForm.image_url.trim() || null,
+        image_url: imageUrl,
         account_id: this.roiForm.account_id || null
-      }, userId);
-      this.roiTransactions = [savedTransaction, ...this.roiTransactions];
-      this.roiPage = 1;
-      this.roiForm = {
-        transaction_type: 'expense',
-        transaction_date: new Date().toISOString().slice(0, 10),
-        amount: null,
-        note: '',
-        account_id: '',
-        image_url: ''
       };
+      const editingId = this.editingRoiTransactionId;
+      const savedTransaction = editingId
+        ? await this.supabaseService.updateRoiTransaction(editingId, transactionData)
+        : await this.supabaseService.createRoiTransaction(transactionData, userId);
+      this.roiTransactions = editingId
+        ? this.roiTransactions.map(transaction => transaction.id === savedTransaction.id ? savedTransaction : transaction)
+        : [savedTransaction, ...this.roiTransactions];
+      this.roiPage = editingId ? Math.min(this.roiPage, this.roiTotalPages) : 1;
+      this.editingRoiTransactionId = null;
+      this.roiReceiptFile = null;
       this.isRoiEntryModalOpen = false;
-      this.snackBar.open('ROI transaction saved.', 'Dismiss', { duration: 3000 });
+      this.snackBar.open(editingId ? 'ROI transaction updated.' : 'ROI transaction saved.', 'Dismiss', { duration: 3000 });
     } catch (error) {
       console.error('Unable to save ROI transaction:', error);
-      this.snackBar.open('Unable to save ROI transaction.', 'Dismiss', { duration: 6000 });
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to save ROI transaction.', 'Dismiss', { duration: 6000 });
     } finally {
       this.isSavingRoi = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async deleteRoiTransaction(transaction: RoiTransaction): Promise<void> {
+    if (this.isDeletingRoi || !window.confirm('Delete this ROI transaction?')) return;
+    this.isDeletingRoi = true;
+    try {
+      await this.supabaseService.deleteRoiTransaction(transaction.id);
+      this.roiTransactions = this.roiTransactions.filter(item => item.id !== transaction.id);
+      this.roiPage = Math.min(this.roiPage, this.roiTotalPages);
+      this.snackBar.open('ROI transaction deleted.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to delete ROI transaction:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete ROI transaction.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isDeletingRoi = false;
       this.cdr.markForCheck();
     }
   }

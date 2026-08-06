@@ -1029,7 +1029,7 @@
           <button class="roi-add-entry-button" type="button" (click)="openRoiEntryModal()"><mat-icon>add</mat-icon><span>Add entry</span></button>
           <div class="roi-net-orb" [class.is-positive]="roiNetReturn >= 0" [class.is-negative]="roiNetReturn < 0">
             <span>Net return</span>
-            <strong>{{ roiNetReturn | currency:'USD':'symbol':'1.0-0' }}</strong>
+            <strong>{{ roiNetReturn | currency:'PHP':'symbol':'1.0-0' }}</strong>
           </div>
         </div>
       </header>
@@ -1037,11 +1037,11 @@
       <div class="roi-metrics">
         <article class="roi-metric-card roi-metric-expense">
           <div class="roi-metric-icon"><mat-icon>shopping_bag</mat-icon></div>
-          <div><span>Challenge spend</span><strong>{{ roiExpenses | currency:'USD':'symbol':'1.0-0' }}</strong><small>Prop firm accounts &amp; fees</small></div>
+          <div><span>Challenge spend</span><strong>{{ roiExpenses | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Prop firm accounts &amp; fees</small></div>
         </article>
         <article class="roi-metric-card roi-metric-payout">
           <div class="roi-metric-icon"><mat-icon>account_balance</mat-icon></div>
-          <div><span>Payouts received</span><strong>{{ roiPayouts | currency:'USD':'symbol':'1.0-0' }}</strong><small>Your realized returns</small></div>
+          <div><span>Payouts received</span><strong>{{ roiPayouts | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Your realized returns</small></div>
         </article>
         <article class="roi-metric-card roi-metric-count">
           <div class="roi-metric-icon"><mat-icon>receipt_long</mat-icon></div>
@@ -1072,7 +1072,11 @@
                     <p>{{ transaction.note || (transaction.transaction_type === 'payout' ? 'Prop firm payout' : 'Prop firm challenge or account') }}</p>
                     @if (transaction.accounts?.name) { <small>{{ transaction.accounts?.name }}</small> }
                   </div>
-                  <strong class="roi-transaction-amount">{{ transaction.transaction_type === 'payout' ? '+' : '-' }}{{ transaction.amount | currency:'USD':'symbol':'1.0-0' }}</strong>
+                  <strong class="roi-transaction-amount">{{ transaction.transaction_type === 'payout' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                  <div class="roi-transaction-actions">
+                    <button class="roi-transaction-action" type="button" aria-label="Edit ROI transaction" title="Edit ROI transaction" (click)="editRoiTransaction(transaction)"><mat-icon>edit</mat-icon></button>
+                    <button class="roi-transaction-action is-delete" type="button" aria-label="Delete ROI transaction" title="Delete ROI transaction" [disabled]="isDeletingRoi" (click)="deleteRoiTransaction(transaction)"><mat-icon>delete_outline</mat-icon></button>
+                  </div>
                 </article>
               }
             </div>
@@ -1094,7 +1098,7 @@
           <div class="roi-modal-backdrop" role="presentation" (click)="closeRoiEntryModal()">
             <section class="roi-entry-modal" role="dialog" aria-modal="true" aria-labelledby="roi-entry-title" (click)="$event.stopPropagation()">
               <div class="roi-card-heading">
-                <div><p class="roi-eyebrow">New entry</p><h2 id="roi-entry-title">Log a movement</h2><p class="roi-modal-subtitle">Capture an expense or payout as it happens.</p></div>
+                <div><p class="roi-eyebrow">{{ editingRoiTransactionId ? 'Edit entry' : 'New entry' }}</p><h2 id="roi-entry-title">{{ editingRoiTransactionId ? 'Update movement' : 'Log a movement' }}</h2><p class="roi-modal-subtitle">{{ editingRoiTransactionId ? 'Keep this capital movement accurate.' : 'Capture an expense or payout as it happens.' }}</p></div>
                 <button class="roi-modal-close" type="button" aria-label="Close new entry dialog" (click)="closeRoiEntryModal()"><mat-icon>close</mat-icon></button>
               </div>
               <form class="roi-entry-form" (ngSubmit)="saveRoiTransaction()">
@@ -1105,8 +1109,18 @@
                 <label class="roi-field"><span>Amount</span><div class="roi-amount-input"><span>₱</span><input type="number" name="roi-amount" min="0.01" step="0.01" required [(ngModel)]="roiForm.amount" placeholder="0.00"></div></label>
                 <div class="roi-form-row"><label class="roi-field"><span>Date</span><input type="date" name="roi-date" required [(ngModel)]="roiForm.transaction_date"></label><label class="roi-field"><span>Account</span><select name="roi-account" [(ngModel)]="roiForm.account_id"><option value="">No account</option>@for (account of accounts; track account.id) { <option [value]="account.id">{{ account.name }}</option> }</select></label></div>
                 <label class="roi-field"><span>Note</span><input type="text" name="roi-note" [(ngModel)]="roiForm.note" placeholder="e.g. 100K challenge fee"></label>
-                <label class="roi-field"><span>Receipt image URL <em>optional</em></span><input type="url" name="roi-image-url" [(ngModel)]="roiForm.image_url" placeholder="https://"></label>
-                <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : 'Add to tracker' }}</button>
+                @if (roiForm.transaction_type === 'payout') {
+                  <div class="roi-receipt-field">
+                    <span class="roi-receipt-label">Receipt image <em>optional</em></span>
+                    <label class="roi-receipt-upload" for="roi-receipt-file">
+                      <input id="roi-receipt-file" name="roi-receipt-file" type="file" accept="image/*" (change)="onRoiReceiptSelected($event)">
+                      <mat-icon>cloud_upload</mat-icon>
+                      <span class="roi-receipt-copy"><strong>{{ roiReceiptFile?.name || (roiForm.image_url ? 'Existing receipt image' : 'Upload receipt image') }}</strong><small>{{ roiReceiptFile ? 'Ready to upload with this payout' : 'PNG, JPG, WEBP, or GIF' }}</small></span>
+                      <span class="roi-receipt-browse">Browse</span>
+                    </label>
+                  </div>
+                }
+                <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : editingRoiTransactionId ? 'save' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : editingRoiTransactionId ? 'Update tracker' : 'Add to tracker' }}</button>
               </form>
             </section>
           </div>
@@ -1143,18 +1157,22 @@
                   <div class="certificate-card-details">
                     <h3>{{ getCertificateFirmName(certificate) }}</h3>
                     <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
-                    <p class="certificate-account-context">{{ getCertificateAccountPhase(certificate) }}</p>
+                    <p class="certificate-phase-badge">{{ getCertificateAccountPhase(certificate) }}</p>
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
                     <div class="certificate-card-actions">
-                      <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit certificate</span></button>
-                      <button class="certificate-delete-button" type="button" [class.is-confirming]="certificateDeleteConfirmationId === certificate.id" [disabled]="isDeletingCertificate" [attr.aria-label]="certificateDeleteConfirmationId === certificate.id ? 'Confirm certificate deletion' : 'Delete certificate'" [attr.title]="certificateDeleteConfirmationId === certificate.id ? 'Click again to delete' : 'Delete certificate'" (click)="confirmCertificateDeletion(certificate)"><mat-icon>{{ certificateDeleteConfirmationId === certificate.id ? 'check' : 'delete_outline' }}</mat-icon></button>
+                      <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                      @if (certificateDeleteConfirmationId === certificate.id) {
+                        <button class="certificate-delete-button is-confirming" type="button" [disabled]="isDeletingCertificate" aria-label="Confirm certificate deletion" title="Confirm certificate deletion" (click)="confirmCertificateDeletion(certificate)"><mat-icon>check</mat-icon><span>Confirm</span></button>
+                        <button class="certificate-cancel-button" type="button" [disabled]="isDeletingCertificate" aria-label="Cancel certificate deletion" title="Cancel certificate deletion" (click)="cancelCertificateDeletion()"><mat-icon>close</mat-icon><span>Cancel</span></button>
+                      } @else {
+                        <button class="certificate-delete-button" type="button" [disabled]="isDeletingCertificate" aria-label="Delete certificate" title="Delete certificate" (click)="confirmCertificateDeletion(certificate)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
+                      }
                     </div>
-                    @if (certificate.file_path) { <span class="certificate-file"><mat-icon>attach_file</mat-icon>Certificate file saved</span> }
                   </div>
                   <div class="certificate-card-media">
-                    @if (certificate.file_path?.startsWith('http')) {
-                      <img class="certificate-preview" [src]="certificate.file_path" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                    @if (getCertificatePreviewUrl(certificate); as previewUrl) {
+                      <img class="certificate-preview" [src]="previewUrl" [alt]="getCertificateFirmName(certificate) + ' certificate'">
                     } @else {
                       <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
                     }
@@ -1168,7 +1186,30 @@
         <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
           <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
           @if (certificatePayouts.length) {
-            <div class="payout-list">@for (payout of certificatePayouts; track payout.id) { <article class="payout-row"><span class="payout-icon"><mat-icon>south_west</mat-icon></span><div><strong>{{ payout.firm_name }}</strong><small>{{ formatRoiDate(payout.payout_date) }}{{ payout.notes ? ' · ' + payout.notes : '' }}</small></div><strong class="payout-amount">+{{ payout.amount | currency:'USD':'symbol':'1.0-0' }}</strong></article> }</div>
+            <div class="payout-list">
+              @for (payout of certificatePayouts; track payout.id) {
+                <article class="payout-card" [class.is-roi-payout]="payout.source === 'roi'">
+                  <div class="payout-card-media">
+                    @if (getPayoutProofUrl(payout); as proofUrl) {
+                      <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
+                        <img class="payout-proof-preview" [src]="proofUrl" [alt]="payout.firm_name + ' payout proof'">
+                        <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
+                      </a>
+                    } @else {
+                      <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
+                    }
+                  </div>
+                  <div class="payout-card-content">
+                    <div class="payout-card-topline">
+                      <div><p class="payout-kicker">{{ payout.source === 'roi' ? 'ROI payout' : 'Certificate payout' }}</p><h3>{{ payout.firm_name }}</h3></div>
+                      <strong class="payout-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                    </div>
+                    <div class="payout-card-meta"><span><mat-icon>event</mat-icon>{{ formatRoiDate(payout.payout_date) }}</span>@if (payout.proof_url) { <span><mat-icon>attach_file</mat-icon>Receipt attached</span> }</div>
+                    @if (payout.notes) { <p class="payout-card-notes">{{ payout.notes }}</p> }
+                  </div>
+                </article>
+              }
+            </div>
           } @else { <div class="certificates-inline-empty"><mat-icon>payments</mat-icon><span>Your first payout will appear here when it is recorded.</span></div> }
         </section>
       } @else {
@@ -1176,7 +1217,7 @@
       }
 
       @if (isCertificateModalOpen) {
-        <div class="certificate-modal-backdrop" role="presentation" (click)="closeCertificateModal()">
+        <div class="certificate-modal-backdrop" role="presentation">
           <section class="certificate-modal" role="dialog" aria-modal="true" aria-labelledby="certificate-modal-title" (click)="$event.stopPropagation()">
             <div class="certificate-modal-heading"><div><p class="certificates-eyebrow">Certificate archive</p><h2 id="certificate-modal-title">{{ editingCertificateId ? 'Edit certificate' : 'Add certificate' }}</h2></div><button type="button" class="certificate-modal-close" aria-label="Close certificate dialog" (click)="closeCertificateModal()"><mat-icon>close</mat-icon></button></div>
             <form class="certificate-form" (ngSubmit)="saveCertificate()">
@@ -1312,12 +1353,14 @@
                       </div>
                     </td>
                     <td data-label="Actions" class="accounts-table-actions">
-                      <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
-                        <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
-                        <span>{{ selectedAccount?.id === account.id ? 'Active Account' : 'Preview' }}</span>
-                      </button>
-                      <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
-                      <button type="button" class="account-table-delete" aria-label="Delete account" title="Delete account" [disabled]="isDeletingAccount" (click)="requestAccountDeletion(account)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
+                      <div class="account-action-buttons">
+                        <button type="button" class="account-set-active" [class.is-active]="selectedAccount?.id === account.id" [disabled]="selectedAccount?.id === account.id" (click)="selectAccount(account)">
+                          <mat-icon>{{ selectedAccount?.id === account.id ? 'check_circle' : 'play_arrow' }}</mat-icon>
+                          <span>{{ selectedAccount?.id === account.id ? 'Active Account' : 'Preview' }}</span>
+                        </button>
+                        <button type="button" class="account-table-edit" aria-label="Edit account" title="Edit account" (click)="editAccount(account)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+                        <button type="button" class="account-table-delete" aria-label="Delete account" title="Delete account" [disabled]="isDeletingAccount" (click)="requestAccountDeletion(account)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
+                      </div>
                     </td>
                   </tr>
                 }
