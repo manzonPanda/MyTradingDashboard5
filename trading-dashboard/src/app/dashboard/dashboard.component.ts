@@ -7266,8 +7266,45 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   }
 
   isNewsEnded(newsEvent: any): boolean {
-    const eventTime = new Date(`${newsEvent?.date} ${newsEvent?.time}`);
-    return !Number.isNaN(eventTime.getTime()) && eventTime < new Date();
+    const eventTime = this.parseNewsEventDateTime(newsEvent);
+    return !eventTime || eventTime <= new Date();
+  }
+
+  private parseNewsEventDateTime(newsEvent: any): Date | null {
+    const dateText = typeof newsEvent?.date === 'string' ? newsEvent.date.trim() : '';
+    const timeText = typeof newsEvent?.time === 'string' ? newsEvent.time.trim() : '';
+    const dateMatch = dateText.match(/^(?:[A-Za-z]{3,9}\s+)?([A-Za-z]{3,9})\s+(\d{1,2})(?:\s+(\d{4}))?$/);
+    const timeMatch = timeText.match(/^(\d{1,2}):(\d{2})(am|pm)?$/i);
+
+    if (!dateMatch || !timeMatch) return null;
+
+    const monthIndex = [
+      'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+      'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+    ].indexOf(dateMatch[1].slice(0, 3).toLowerCase());
+    if (monthIndex < 0) return null;
+
+    let hours = Number(timeMatch[1]);
+    const minutes = Number(timeMatch[2]);
+    const meridiem = timeMatch[3]?.toLowerCase();
+    if (meridiem === 'pm' && hours < 12) hours += 12;
+    if (meridiem === 'am' && hours === 12) hours = 0;
+    if (hours > 23 || minutes > 59) return null;
+
+    const now = new Date();
+    const year = dateMatch[3] ? Number(dateMatch[3]) : now.getFullYear();
+    const eventTime = new Date(year, monthIndex, Number(dateMatch[2]), hours, minutes);
+
+    if (!dateMatch[3]) {
+      const halfYear = 183 * 24 * 60 * 60 * 1000;
+      if (eventTime.getTime() - now.getTime() > halfYear) {
+        eventTime.setFullYear(eventTime.getFullYear() - 1);
+      } else if (now.getTime() - eventTime.getTime() > halfYear) {
+        eventTime.setFullYear(eventTime.getFullYear() + 1);
+      }
+    }
+
+    return Number.isNaN(eventTime.getTime()) ? null : eventTime;
   }
 
   // Trading settings handler methods

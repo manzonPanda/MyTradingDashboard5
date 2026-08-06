@@ -12944,7 +12944,6 @@ table.simple-table {
   color: var(--tf-accent-primary);
   font-size: 0.9rem;
   line-height: 0.9rem;
-  animation: pending-news-reminder-pulse 2s ease-in-out infinite;
 }
 
 .dashboard-header .event-title,
@@ -12957,11 +12956,6 @@ table.simple-table {
 .dashboard-header .event-title > span,
 .dashboard-header .event-title-full > span {
   min-width: 0;
-}
-
-@keyframes pending-news-reminder-pulse {
-  0%, 100% { opacity: 0.65; }
-  50% { opacity: 1; }
 }
 
 .news-reminder-toast {
