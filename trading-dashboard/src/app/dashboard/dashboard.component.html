@@ -1156,7 +1156,7 @@
                 <div class="certificate-card-columns">
                   <div class="certificate-card-details">
                     <h3>{{ getCertificateFirmName(certificate) }}</h3>
-                    <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
+                    <p class="certificate-program">{{ getCertificateAccount(certificate)?.name || 'Account not linked' }}</p>
                     <p class="certificate-phase-badge">{{ getCertificateAccountPhase(certificate) }}</p>
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
@@ -1197,6 +1197,7 @@
                     <div class="certificate-card-details">
                       <h3>{{ getPayoutFirmName(payout) }}</h3>
                       <p class="certificate-program">Payout received</p>
+                      @if (getPayoutAccountName(payout); as accountName) { <p class="payout-account-name">Account · {{ accountName }}</p> }
                       <strong class="payout-certificate-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
                       @if (payout.notes) { <p class="certificate-notes">{{ payout.notes }}</p> }
                     </div>

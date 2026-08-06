@@ -1968,9 +1968,14 @@ mt5AccountInfo: AccountSettings = {
   }
 
   getPayoutFirmName(payout: Payout): string {
-    if (payout.firm_name?.trim()) return payout.firm_name;
     const certificate = this.certificates.find(item => item.id === payout.certificate_id);
-    return certificate ? this.getCertificateFirmName(certificate) : 'Independent firm';
+    if (certificate?.account_id) return this.getCertificateFirmName(certificate);
+    return payout.firm_name?.trim() || 'Independent firm';
+  }
+
+  getPayoutAccountName(payout: Payout): string | null {
+    const accountId = payout.account_id ?? this.certificates.find(item => item.id === payout.certificate_id)?.account_id;
+    return accountId ? this.getAccountById(accountId)?.name ?? null : null;
   }
 
   getCertificateAccountSize(certificate: Certificate): number | null {
@@ -2060,18 +2065,22 @@ mt5AccountInfo: AccountSettings = {
       }));
       const roiPayouts: Payout[] = roiTransactions
         .filter(transaction => transaction.transaction_type === 'payout')
-        .map(transaction => ({
-          id: `roi-payout-${transaction.id}`,
-          certificate_id: null,
-          user_id: userId,
-          firm_name: transaction.accounts?.name || this.getAccountById(transaction.account_id ?? null)?.name || 'ROI payout',
-          amount: Number(transaction.amount),
-          payout_date: transaction.transaction_date,
-          notes: transaction.note,
-          proof_url: transaction.image_url,
-          source: 'roi' as const,
-          created_at: transaction.created_at
-        }));
+        .map(transaction => {
+          const account = this.getAccountById(transaction.account_id ?? null);
+          return {
+            id: `roi-payout-${transaction.id}`,
+            certificate_id: null,
+            account_id: transaction.account_id ?? null,
+            user_id: userId,
+            firm_name: account ? this.getFirmNameForAccount(account) : transaction.accounts?.name || 'Independent firm',
+            amount: Number(transaction.amount),
+            payout_date: transaction.transaction_date,
+            notes: transaction.note,
+            proof_url: transaction.image_url,
+            source: 'roi' as const,
+            created_at: transaction.created_at
+          };
+        });
       this.certificatePayouts = [...this.certificatePayouts, ...roiPayouts]
         .sort((left, right) => right.payout_date.localeCompare(left.payout_date));
       if (!this.certificates.length) {

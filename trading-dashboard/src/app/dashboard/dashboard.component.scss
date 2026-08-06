@@ -13020,6 +13020,7 @@ table.simple-table {
 .payout-certificate-card.is-roi-payout { border-color: rgba(124, 58, 237, 0.45); }
 .payout-badge { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--tf-positive); font-weight: 800; text-transform: capitalize; }
 .payout-badge mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+.payout-account-name { margin: 0.2rem 0; color: var(--tf-text-muted); font-size: 0.72rem; font-weight: 700; }
 .payout-certificate-amount { display: block; margin-top: 0.8rem; color: var(--tf-positive); font-size: 1.05rem; }
 .payout-certificate-media { min-width: 0; }
 .payout-proof-link, .payout-proof-placeholder { position: relative; display: grid; width: 100%; max-width: 11rem; height: 12rem; overflow: hidden; place-items: center; border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 12px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), var(--tf-bg-tertiary)); color: var(--tf-positive); }
