@@ -1188,24 +1188,28 @@
           @if (certificatePayouts.length) {
             <div class="payout-list">
               @for (payout of certificatePayouts; track payout.id) {
-                <article class="payout-card" [class.is-roi-payout]="payout.source === 'roi'">
-                  <div class="payout-card-media">
-                    @if (getPayoutProofUrl(payout); as proofUrl) {
-                      <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
-                        <img class="payout-proof-preview" [src]="proofUrl" [alt]="payout.firm_name + ' payout proof'">
-                        <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
-                      </a>
-                    } @else {
-                      <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
-                    }
+                <article class="certificate-card payout-certificate-card" [class.is-roi-payout]="payout.source === 'roi'">
+                  <div class="certificate-card-top">
+                    <span class="payout-badge"><mat-icon>payments</mat-icon>Payout</span>
+                    <span>{{ formatRoiDate(payout.payout_date) }}</span>
                   </div>
-                  <div class="payout-card-content">
-                    <div class="payout-card-topline">
-                      <div><p class="payout-kicker">{{ payout.source === 'roi' ? 'ROI payout' : 'Certificate payout' }}</p><h3>{{ payout.firm_name }}</h3></div>
-                      <strong class="payout-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                  <div class="certificate-card-columns">
+                    <div class="certificate-card-details">
+                      <h3>{{ payout.firm_name }}</h3>
+                      <p class="certificate-program">Payout received</p>
+                      <strong class="payout-certificate-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                      @if (payout.notes) { <p class="certificate-notes">{{ payout.notes }}</p> }
                     </div>
-                    <div class="payout-card-meta"><span><mat-icon>event</mat-icon>{{ formatRoiDate(payout.payout_date) }}</span>@if (payout.proof_url) { <span><mat-icon>attach_file</mat-icon>Receipt attached</span> }</div>
-                    @if (payout.notes) { <p class="payout-card-notes">{{ payout.notes }}</p> }
+                    <div class="certificate-card-media payout-certificate-media">
+                      @if (getPayoutProofUrl(payout); as proofUrl) {
+                        <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
+                          <img class="payout-proof-preview" [src]="proofUrl" [alt]="payout.firm_name + ' payout proof'">
+                          <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
+                        </a>
+                      } @else {
+                        <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
+                      }
+                    </div>
                   </div>
                 </article>
               }
