@@ -525,22 +525,23 @@ body.dark-theme {
   max-width: calc(100vw - 32px) !important;
   margin: 16px !important;
   padding: 0 !important;
-  overflow: hidden !important;
-  border: 1px solid #e2e8f0 !important;
-  border-left: 3px solid #64748b !important;
-  border-radius: 10px !important;
-  background: #fff !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
   color: #334155 !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
   animation: accountNotificationIn 180ms ease-out !important;
 
   .mdc-snackbar__surface {
     display: flex !important;
     align-items: center;
     min-width: 0 !important;
+    overflow: hidden !important;
     padding: 0 !important;
-    border-radius: inherit !important;
-    background: transparent !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 3px solid #64748b !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
   }
 
   .mdc-snackbar__label {
@@ -581,7 +582,9 @@ body.dark-theme {
   }
 
   &.notification-success {
-    border-left-color: #10b981 !important;
+    .mdc-snackbar__surface {
+      border-left-color: #10b981 !important;
+    }
 
     .mdc-snackbar__label::before {
       background: #10b981;
@@ -589,7 +592,9 @@ body.dark-theme {
   }
 
   &.notification-error {
-    border-left-color: #ef4444 !important;
+    .mdc-snackbar__surface {
+      border-left-color: #ef4444 !important;
+    }
 
     .mdc-snackbar__label::before {
       background: #ef4444;
@@ -618,9 +623,12 @@ body.dark-theme {
 }
 
 body.dark-theme .account-notification {
+  color: #e2e8f0 !important;
+}
+
+body.dark-theme .account-notification .mdc-snackbar__surface {
   border-color: #334155 !important;
   background: #1e293b !important;
-  color: #e2e8f0 !important;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3) !important;
 }
 
