@@ -1163,8 +1163,9 @@
                     <div class="certificate-card-actions">
                       <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit</span></button>
                       @if (certificateDeleteConfirmationId === certificate.id) {
-                        <button class="certificate-delete-button is-confirming" type="button" [disabled]="isDeletingCertificate" aria-label="Confirm certificate deletion" title="Confirm certificate deletion" (click)="confirmCertificateDeletion(certificate)"><mat-icon>check</mat-icon><span>Confirm</span></button>
-                        <button class="certificate-cancel-button" type="button" [disabled]="isDeletingCertificate" aria-label="Cancel certificate deletion" title="Cancel certificate deletion" (click)="cancelCertificateDeletion()"><mat-icon>close</mat-icon><span>Cancel</span></button>
+                        <span class="certificate-delete-confirmation-text">Confirm delete?</span>
+                        <button class="certificate-delete-button is-confirming" type="button" [disabled]="isDeletingCertificate" aria-label="Confirm certificate deletion" title="Confirm certificate deletion" (click)="confirmCertificateDeletion(certificate)"><span>Delete</span></button>
+                        <button class="certificate-cancel-button" type="button" [disabled]="isDeletingCertificate" aria-label="Cancel certificate deletion" title="Cancel certificate deletion" (click)="cancelCertificateDeletion()"><span>Cancel</span></button>
                       } @else {
                         <button class="certificate-delete-button" type="button" [disabled]="isDeletingCertificate" aria-label="Delete certificate" title="Delete certificate" (click)="confirmCertificateDeletion(certificate)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
                       }

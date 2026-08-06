@@ -12954,7 +12954,10 @@ table.simple-table {
 .certificate-edit-button { position: relative; z-index: 1; padding: 0.4rem 0.6rem; font-size: 0.7rem; }
 .certificate-delete-button, .certificate-cancel-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 1.9rem; padding: 0.4rem 0.6rem; border: 1px solid; border-radius: 9px; font: inherit; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
 .certificate-delete-button { border-color: rgba(239, 68, 68, 0.38); background: transparent; color: #f87171; }
-.certificate-delete-button:hover, .certificate-delete-button.is-confirming { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+.certificate-delete-button:hover { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+.certificate-delete-button.is-confirming { border-color: transparent; background: #ef4444; color: #fff; }
+.certificate-delete-button.is-confirming:hover { background: #dc2626; color: #fff; }
+.certificate-delete-confirmation-text { color: var(--tf-text-secondary); font-size: 0.68rem; font-weight: 800; }
 .certificate-cancel-button { border-color: var(--tf-border-primary); background: var(--tf-bg-secondary); color: var(--tf-text-secondary); }
 .certificate-cancel-button:hover { border-color: var(--tf-text-secondary); color: var(--tf-text-primary); }
 .certificate-delete-button:disabled, .certificate-cancel-button:disabled { cursor: wait; opacity: 0.55; }
