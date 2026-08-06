@@ -1197,12 +1197,9 @@ table.simple-table {
             height: 6px;
             border-radius: 50%;
 
-            &.status-active {
-              background: #16A34A;
-            }
-
+            &.status-active,
             &.status-inactive {
-              background: #6b7280;
+              background: linear-gradient(135deg, #16A34A, #7C3AED);
             }
 
             &.status-past {
