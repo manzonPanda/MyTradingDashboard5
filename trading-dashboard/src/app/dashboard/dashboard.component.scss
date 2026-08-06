@@ -13040,6 +13040,40 @@ table.simple-table {
   line-height: 0.9rem;
 }
 
+.metrics-section .trading-chart-container .chart-header {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.metrics-section .trading-chart-container .chart-header .chart-stats,
+.metrics-section .trading-chart-container .chart-header .chart-controls,
+.metrics-section .trading-chart-container .chart-header .chart-controls .mt5-account-info,
+.metrics-section .trading-chart-container .chart-header .chart-controls .account-targets {
+  display: contents;
+}
+
+.metrics-section .trading-chart-container .chart-header .stat-item,
+.metrics-section .trading-chart-container .chart-header .target-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  align-items: center;
+  justify-content: initial;
+  text-align: left;
+}
+
+.metrics-section .trading-chart-container .chart-header .stat-content,
+.metrics-section .trading-chart-container .chart-header .target-content {
+  width: 100%;
+  text-align: left;
+}
+
+.metrics-section .trading-chart-container .chart-header .stat-value-group,
+.metrics-section .trading-chart-container .chart-header .target-value-group {
+  justify-content: flex-start;
+}
+
 .dashboard-header .event-title,
 .dashboard-header .event-title-full {
   display: flex;
