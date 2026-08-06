@@ -1196,7 +1196,7 @@
                   <div class="certificate-card-columns">
                     <div class="certificate-card-details">
                       <h3>{{ getPayoutFirmName(payout) }}</h3>
-                      @if (getPayoutAccountName(payout); as accountName) { <p class="payout-account-name">Account · {{ accountName }}</p> }
+                      @if (getPayoutAccountName(payout); as accountName) { <p class="payout-account-name">{{ accountName }}</p> }
                       <strong class="payout-certificate-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
                       @if (payout.notes) { <p class="certificate-notes">{{ payout.notes }}</p> }
                     </div>
