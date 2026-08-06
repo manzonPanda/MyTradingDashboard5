@@ -1180,7 +1180,7 @@
       }
 
       @if (isCertificateModalOpen) {
-        <div class="certificate-modal-backdrop" role="presentation" (click)="closeCertificateModal()">
+        <div class="certificate-modal-backdrop" role="presentation">
           <section class="certificate-modal" role="dialog" aria-modal="true" aria-labelledby="certificate-modal-title" (click)="$event.stopPropagation()">
             <div class="certificate-modal-heading"><div><p class="certificates-eyebrow">Certificate archive</p><h2 id="certificate-modal-title">{{ editingCertificateId ? 'Edit certificate' : 'Add certificate' }}</h2></div><button type="button" class="certificate-modal-close" aria-label="Close certificate dialog" (click)="closeCertificateModal()"><mat-icon>close</mat-icon></button></div>
             <form class="certificate-form" (ngSubmit)="saveCertificate()">
