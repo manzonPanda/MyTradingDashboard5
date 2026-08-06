@@ -1967,6 +1967,12 @@ mt5AccountInfo: AccountSettings = {
     return account ? this.getFirmNameForAccount(account) : 'Independent certificate';
   }
 
+  getPayoutFirmName(payout: Payout): string {
+    if (payout.firm_name?.trim()) return payout.firm_name;
+    const certificate = this.certificates.find(item => item.id === payout.certificate_id);
+    return certificate ? this.getCertificateFirmName(certificate) : 'Independent firm';
+  }
+
   getCertificateAccountSize(certificate: Certificate): number | null {
     return this.getCertificateAccount(certificate)?.initial_balance ?? null;
   }
@@ -2048,6 +2054,10 @@ mt5AccountInfo: AccountSettings = {
         this.supabaseService.getPayouts(userId),
         this.supabaseService.getRoiTransactions(userId)
       ]);
+      this.certificatePayouts = this.certificatePayouts.map(payout => ({
+        ...payout,
+        firm_name: this.getPayoutFirmName(payout)
+      }));
       const roiPayouts: Payout[] = roiTransactions
         .filter(transaction => transaction.transaction_type === 'payout')
         .map(transaction => ({
