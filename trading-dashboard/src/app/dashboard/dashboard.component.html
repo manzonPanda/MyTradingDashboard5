@@ -140,6 +140,20 @@
     </section>
   </aside>
 
+  <section *ngIf="newsReminderNotice" class="news-reminder-toast" role="alert" aria-live="assertive">
+    <div class="news-reminder-icon" aria-hidden="true">
+      <mat-icon>notifications_active</mat-icon>
+    </div>
+    <div class="news-reminder-copy">
+      <span class="news-reminder-eyebrow">Economic news in {{ newsReminderNotice.minutesBefore }} minutes</span>
+      <strong class="news-reminder-title">{{ newsReminderNotice.title }}</strong>
+      <span class="news-reminder-details">{{ newsReminderNotice.currencies }} · {{ newsReminderNotice.time }}</span>
+    </div>
+    <button type="button" class="news-reminder-dismiss" (click)="dismissNewsReminder()" aria-label="Dismiss news reminder">
+      <mat-icon>close</mat-icon>
+    </button>
+  </section>
+
   <!-- Header Section -->
   <header class="dashboard-header">
     <div class="header-content">

@@ -70,6 +70,13 @@ interface LiveTradeSoundSettings {
   volume: number;
 }
 
+interface NewsReminderNotice {
+  title: string;
+  currencies: string;
+  time: string;
+  minutesBefore: number;
+}
+
 const DEFAULT_LIVE_TRADE_SOUND_SETTINGS: LiveTradeSoundSettings = {
   enabled: true,
   alertThreshold: 2.8,
@@ -528,6 +535,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
   private readonly gaugeAlertSoundUrl = '/assets/sounds/trade-alert.flac';
   private readonly highGaugeAlertSoundUrl = '/assets/sounds/trade-alert-high.wav';
+  private readonly newsReminderSoundUrl = '/assets/sounds/news-alert.wav';
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
@@ -540,6 +548,8 @@ export class DashboardComponent implements AfterViewInit {
   readonly accountPageSize = 5;
   isSavingAccount = false;
   isDeletingAccount = false;
+  newsReminderNotice: NewsReminderNotice | null = null;
+  private newsReminderAudio?: HTMLAudioElement;
   accountEditForm: Partial<Account> = {};
   accountPendingDeletion: Account | null = null;
   isLoadingAccounts = true;
@@ -2555,6 +2565,8 @@ mt5AccountInfo: AccountSettings = {
     if (this.liveExtremesCacheTimer) {
       window.clearTimeout(this.liveExtremesCacheTimer);
     }
+    this.dismissNewsReminder();
+    this.newsReminder.clearAllReminders();
     this.auraEnergy.destroy();
     // Clean up click outside listener
     this.removeClickOutsideListener();
@@ -7345,104 +7357,31 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  private activeNotificationSoundInterval: any = null;
-
-  // Play repeating alert sound for news notification
-  private playAlertSound(): void {
-    try {
-      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioCtx();
-      const beep = (time: number, freq: number, duration: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, time);
-        gain.gain.setValueAtTime(0.001, time);
-        gain.gain.exponentialRampToValueAtTime(0.8, time + 0.01); // Increased from 0.2 to 0.8 (4x louder)
-        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(time);
-        osc.stop(time + duration);
-      };
-      const start = ctx.currentTime + 0.01;
-      beep(start, 880, 0.12);
-      beep(start + 0.2, 660, 0.12);
-    } catch (e) {
-      console.warn('Audio context unavailable for alert sound');
-    }
+  private playNewsReminderSound(): void {
+    this.newsReminderAudio ??= new Audio(this.newsReminderSoundUrl);
+    this.newsReminderAudio.loop = true;
+    this.newsReminderAudio.currentTime = 0;
+    void this.newsReminderAudio.play().catch(() => undefined);
   }
 
-  // Show news notification with dismissible toast and repeating sound
-  private showNewsNotification(title: string, minutesBefore: number): void {
-    try {
-      const message = `📰 ${title}\n⏰ Coming in ${minutesBefore} minute${minutesBefore > 1 ? 's' : ''}`;
-
-      // Stop any existing notification sound
-      if (this.activeNotificationSoundInterval) {
-        clearInterval(this.activeNotificationSoundInterval);
-      }
-
-      // Play initial sound immediately
-      this.playAlertSound();
-
-      // Set up repeating sound every 3 seconds
-      this.activeNotificationSoundInterval = setInterval(() => {
-        this.playAlertSound();
-      }, 3000);
-
-      const snackBarRef = this.snackBar.open(message, 'Dismiss', {
-        duration: 0, // Keep open until user dismisses
-        horizontalPosition: 'center',
-        verticalPosition: 'top',
-        panelClass: ['news-notification-snackbar']
-      });
-
-      // Stop sound when user dismisses notification
-      snackBarRef.onAction().subscribe(() => {
-        if (this.activeNotificationSoundInterval) {
-          clearInterval(this.activeNotificationSoundInterval);
-          this.activeNotificationSoundInterval = null;
-        }
-      });
-
-      // Also stop sound if notification auto-closes (just in case)
-      snackBarRef.afterDismissed().subscribe(() => {
-        if (this.activeNotificationSoundInterval) {
-          clearInterval(this.activeNotificationSoundInterval);
-          this.activeNotificationSoundInterval = null;
-        }
-      });
-
-    } catch (e) {
-      console.warn('Failed to show notification:', e);
-    }
+  dismissNewsReminder(): void {
+    this.newsReminderAudio?.pause();
+    this.newsReminderNotice = null;
+    this.cdr.markForCheck();
   }
 
-  // Open the news modal with the grouped events and show notification
   private handleNewsUiReminder(events: any[], minutesBefore: number): void {
-    try {
-      if (!events || events.length === 0) return;
-      const time = events[0].time || 'Unknown';
-      const currencies = [...new Set(events.map((e: any) => e.currency))];
-      const timeGroup = {
-        time,
-        events,
-        isMultiple: events.length > 1,
-        expanded: true,
-        currencies,
-        dominantCurrency: this.getDominantCurrency(events),
-        id: `reminder-${time}-${Date.now()}`
-      };
-      this.selectedTimeGroup = timeGroup;
-      this.showNewsModal = true;
-      this.cdr.detectChanges();
+    if (!events?.length) return;
 
-      // Show dismissible notification instead of sound
-      const title = events.length > 1 ? `${events.length} News Events` : events[0].event;
-      this.showNewsNotification(title, minutesBefore);
-    } catch (err) {
-      console.warn('Failed to handle UI reminder:', err);
-    }
+    const titles = events.map(event => this.getNewsTitle(event));
+    this.newsReminderNotice = {
+      title: events.length === 1 ? titles[0] : `${events.length} news events: ${titles.join(', ')}`,
+      currencies: [...new Set(events.map(event => event.currency))].join(', '),
+      time: events[0].time || 'Unknown time',
+      minutesBefore
+    };
+    this.playNewsReminderSound();
+    this.cdr.markForCheck();
   }
 
   // Recent Trades PnL tiles helpers
