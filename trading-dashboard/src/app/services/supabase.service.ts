@@ -62,6 +62,7 @@ export interface Payout {
   payout_date: string;
   notes?: string | null;
   proof_url?: string | null;
+  source?: 'certificate' | 'roi';
   created_at?: string;
 }
 

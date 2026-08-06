@@ -13022,6 +13022,7 @@ table.simple-table {
 .payout-row div { flex: 1; }
 .payout-row strong, .payout-row small { display: block; }
 .payout-row small { margin-top: 0.2rem; color: var(--tf-text-muted); }
+.payout-row .payout-source { display: inline-block; margin: 0 0 0 0.35rem; padding: 0.15rem 0.35rem; border-radius: 999px; background: rgba(124, 58, 237, 0.12); color: var(--tf-accent-primary); font-size: 0.58rem; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; }
 .payout-amount { color: var(--tf-positive); }
 .certificates-empty-state { display: grid; justify-items: center; padding: clamp(2rem, 7vw, 5rem) 1.5rem; text-align: center; }
 .certificate-empty-icon { display: grid; place-items: center; width: 5rem; height: 5rem; margin-bottom: 1.25rem; border-radius: 20px; background: rgba(124, 58, 237, 0.12); color: var(--tf-accent-primary); }

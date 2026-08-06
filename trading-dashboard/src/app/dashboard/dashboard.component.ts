@@ -2022,10 +2022,28 @@ mt5AccountInfo: AccountSettings = {
     ];
 
     try {
-      [this.certificates, this.certificatePayouts] = await Promise.all([
+      let roiTransactions: RoiTransaction[] = [];
+      [this.certificates, this.certificatePayouts, roiTransactions] = await Promise.all([
         this.supabaseService.getCertificates(userId),
-        this.supabaseService.getPayouts(userId)
+        this.supabaseService.getPayouts(userId),
+        this.supabaseService.getRoiTransactions(userId)
       ]);
+      const roiPayouts: Payout[] = roiTransactions
+        .filter(transaction => transaction.transaction_type === 'payout')
+        .map(transaction => ({
+          id: `roi-payout-${transaction.id}`,
+          certificate_id: null,
+          user_id: userId,
+          firm_name: transaction.accounts?.name || this.getAccountById(transaction.account_id ?? null)?.name || 'ROI payout',
+          amount: Number(transaction.amount),
+          payout_date: transaction.transaction_date,
+          notes: transaction.note,
+          proof_url: transaction.image_url,
+          source: 'roi' as const,
+          created_at: transaction.created_at
+        }));
+      this.certificatePayouts = [...this.certificatePayouts, ...roiPayouts]
+        .sort((left, right) => right.payout_date.localeCompare(left.payout_date));
       if (!this.certificates.length) {
         for (const certificate of suppliedCertificates) {
           await this.supabaseService.createCertificate(certificate);
