@@ -13076,10 +13076,24 @@ table.simple-table {
 
 .metrics-section .trading-chart-container .chart-header .stat-item,
 .metrics-section .trading-chart-container .chart-header .target-card {
+  grid-template-columns: 1.35rem minmax(0, 1fr);
   min-height: 0;
   height: 100%;
   padding: 0.35rem;
   gap: 0.35rem;
+}
+
+.metrics-section .trading-chart-container .chart-header .stat-icon,
+.metrics-section .trading-chart-container .chart-header .target-icon {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.metrics-section .trading-chart-container .chart-header .stat-content,
+.metrics-section .trading-chart-container .chart-header .target-content {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
 }
 
 .metrics-section .trading-chart-container .chart-header .stat-icon,
@@ -13104,6 +13118,7 @@ table.simple-table {
 
   .metrics-section .trading-chart-container .chart-header .stat-item,
   .metrics-section .trading-chart-container .chart-header .target-card {
+    grid-template-columns: 1.15rem minmax(0, 1fr);
     min-height: 2.75rem;
     height: auto;
     padding: 0.3rem;
