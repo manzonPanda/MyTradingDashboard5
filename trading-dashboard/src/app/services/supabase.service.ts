@@ -399,6 +399,29 @@ export class SupabaseService {
     return data as RoiTransaction;
   }
 
+  async updateRoiTransaction(id: string, updates: Omit<Partial<RoiTransaction>, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'accounts'>): Promise<RoiTransaction> {
+    const userId = await this.getAuthenticatedUserId();
+    const { data, error } = await this.supabase
+      .from('roi_transactions')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select('*, accounts(name)')
+      .single();
+    if (error) throw new Error(`ROI transaction update failed: ${error.message}`);
+    return data as RoiTransaction;
+  }
+
+  async deleteRoiTransaction(id: string): Promise<void> {
+    const userId = await this.getAuthenticatedUserId();
+    const { error } = await this.supabase
+      .from('roi_transactions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+    if (error) throw new Error(`ROI transaction deletion failed: ${error.message}`);
+  }
+
   async getAllTrades(accountId?: string): Promise<Trade[]> {
     let query = this.supabase
       .from('trades')

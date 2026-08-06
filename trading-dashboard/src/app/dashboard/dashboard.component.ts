@@ -219,6 +219,8 @@ export class DashboardComponent implements AfterViewInit {
   };
   isLoadingRoi = false;
   isSavingRoi = false;
+  isDeletingRoi = false;
+  editingRoiTransactionId: string | null = null;
   isRoiEntryModalOpen = false;
   roiFilter: 'all' | 'expense' | 'payout' = 'all';
   roiPage = 1;
@@ -1743,11 +1745,33 @@ mt5AccountInfo: AccountSettings = {
   }
 
   openRoiEntryModal(): void {
+    this.editingRoiTransactionId = null;
+    this.roiForm = {
+      transaction_type: 'expense',
+      transaction_date: new Date().toISOString().slice(0, 10),
+      amount: null,
+      note: '',
+      account_id: '',
+      image_url: ''
+    };
+    this.isRoiEntryModalOpen = true;
+  }
+
+  editRoiTransaction(transaction: RoiTransaction): void {
+    this.editingRoiTransactionId = transaction.id;
+    this.roiForm = {
+      transaction_type: transaction.transaction_type,
+      transaction_date: transaction.transaction_date,
+      amount: Number(transaction.amount),
+      note: transaction.note ?? '',
+      account_id: transaction.account_id ?? '',
+      image_url: transaction.image_url ?? ''
+    };
     this.isRoiEntryModalOpen = true;
   }
 
   closeRoiEntryModal(): void {
-    if (!this.isSavingRoi) this.isRoiEntryModalOpen = false;
+    if (!this.isSavingRoi && !this.isDeletingRoi) this.isRoiEntryModalOpen = false;
   }
 
   get filteredRoiTransactions(): RoiTransaction[] {
@@ -2033,31 +2057,47 @@ mt5AccountInfo: AccountSettings = {
     try {
       const userId = this.auth.user()?.id;
       if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
-      const savedTransaction = await this.supabaseService.createRoiTransaction({
+      const transactionData = {
         transaction_type: this.roiForm.transaction_type,
         transaction_date: this.roiForm.transaction_date,
         amount: this.roiForm.amount,
         note: this.roiForm.note.trim() || null,
         image_url: this.roiForm.image_url.trim() || null,
         account_id: this.roiForm.account_id || null
-      }, userId);
-      this.roiTransactions = [savedTransaction, ...this.roiTransactions];
-      this.roiPage = 1;
-      this.roiForm = {
-        transaction_type: 'expense',
-        transaction_date: new Date().toISOString().slice(0, 10),
-        amount: null,
-        note: '',
-        account_id: '',
-        image_url: ''
       };
+      const editingId = this.editingRoiTransactionId;
+      const savedTransaction = editingId
+        ? await this.supabaseService.updateRoiTransaction(editingId, transactionData)
+        : await this.supabaseService.createRoiTransaction(transactionData, userId);
+      this.roiTransactions = editingId
+        ? this.roiTransactions.map(transaction => transaction.id === savedTransaction.id ? savedTransaction : transaction)
+        : [savedTransaction, ...this.roiTransactions];
+      this.roiPage = editingId ? Math.min(this.roiPage, this.roiTotalPages) : 1;
+      this.editingRoiTransactionId = null;
       this.isRoiEntryModalOpen = false;
-      this.snackBar.open('ROI transaction saved.', 'Dismiss', { duration: 3000 });
+      this.snackBar.open(editingId ? 'ROI transaction updated.' : 'ROI transaction saved.', 'Dismiss', { duration: 3000 });
     } catch (error) {
       console.error('Unable to save ROI transaction:', error);
-      this.snackBar.open('Unable to save ROI transaction.', 'Dismiss', { duration: 6000 });
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to save ROI transaction.', 'Dismiss', { duration: 6000 });
     } finally {
       this.isSavingRoi = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async deleteRoiTransaction(transaction: RoiTransaction): Promise<void> {
+    if (this.isDeletingRoi || !window.confirm('Delete this ROI transaction?')) return;
+    this.isDeletingRoi = true;
+    try {
+      await this.supabaseService.deleteRoiTransaction(transaction.id);
+      this.roiTransactions = this.roiTransactions.filter(item => item.id !== transaction.id);
+      this.roiPage = Math.min(this.roiPage, this.roiTotalPages);
+      this.snackBar.open('ROI transaction deleted.', 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      console.error('Unable to delete ROI transaction:', error);
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete ROI transaction.', 'Dismiss', { duration: 6000 });
+    } finally {
+      this.isDeletingRoi = false;
       this.cdr.markForCheck();
     }
   }

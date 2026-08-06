@@ -1029,7 +1029,7 @@
           <button class="roi-add-entry-button" type="button" (click)="openRoiEntryModal()"><mat-icon>add</mat-icon><span>Add entry</span></button>
           <div class="roi-net-orb" [class.is-positive]="roiNetReturn >= 0" [class.is-negative]="roiNetReturn < 0">
             <span>Net return</span>
-            <strong>{{ roiNetReturn | currency:'USD':'symbol':'1.0-0' }}</strong>
+            <strong>{{ roiNetReturn | currency:'PHP':'symbol':'1.0-0' }}</strong>
           </div>
         </div>
       </header>
@@ -1037,11 +1037,11 @@
       <div class="roi-metrics">
         <article class="roi-metric-card roi-metric-expense">
           <div class="roi-metric-icon"><mat-icon>shopping_bag</mat-icon></div>
-          <div><span>Challenge spend</span><strong>{{ roiExpenses | currency:'USD':'symbol':'1.0-0' }}</strong><small>Prop firm accounts &amp; fees</small></div>
+          <div><span>Challenge spend</span><strong>{{ roiExpenses | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Prop firm accounts &amp; fees</small></div>
         </article>
         <article class="roi-metric-card roi-metric-payout">
           <div class="roi-metric-icon"><mat-icon>account_balance</mat-icon></div>
-          <div><span>Payouts received</span><strong>{{ roiPayouts | currency:'USD':'symbol':'1.0-0' }}</strong><small>Your realized returns</small></div>
+          <div><span>Payouts received</span><strong>{{ roiPayouts | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Your realized returns</small></div>
         </article>
         <article class="roi-metric-card roi-metric-count">
           <div class="roi-metric-icon"><mat-icon>receipt_long</mat-icon></div>
@@ -1072,7 +1072,11 @@
                     <p>{{ transaction.note || (transaction.transaction_type === 'payout' ? 'Prop firm payout' : 'Prop firm challenge or account') }}</p>
                     @if (transaction.accounts?.name) { <small>{{ transaction.accounts?.name }}</small> }
                   </div>
-                  <strong class="roi-transaction-amount">{{ transaction.transaction_type === 'payout' ? '+' : '-' }}{{ transaction.amount | currency:'USD':'symbol':'1.0-0' }}</strong>
+                  <strong class="roi-transaction-amount">{{ transaction.transaction_type === 'payout' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                  <div class="roi-transaction-actions">
+                    <button class="roi-transaction-action" type="button" aria-label="Edit ROI transaction" title="Edit ROI transaction" (click)="editRoiTransaction(transaction)"><mat-icon>edit</mat-icon></button>
+                    <button class="roi-transaction-action is-delete" type="button" aria-label="Delete ROI transaction" title="Delete ROI transaction" [disabled]="isDeletingRoi" (click)="deleteRoiTransaction(transaction)"><mat-icon>delete_outline</mat-icon></button>
+                  </div>
                 </article>
               }
             </div>
@@ -1094,7 +1098,7 @@
           <div class="roi-modal-backdrop" role="presentation" (click)="closeRoiEntryModal()">
             <section class="roi-entry-modal" role="dialog" aria-modal="true" aria-labelledby="roi-entry-title" (click)="$event.stopPropagation()">
               <div class="roi-card-heading">
-                <div><p class="roi-eyebrow">New entry</p><h2 id="roi-entry-title">Log a movement</h2><p class="roi-modal-subtitle">Capture an expense or payout as it happens.</p></div>
+                <div><p class="roi-eyebrow">{{ editingRoiTransactionId ? 'Edit entry' : 'New entry' }}</p><h2 id="roi-entry-title">{{ editingRoiTransactionId ? 'Update movement' : 'Log a movement' }}</h2><p class="roi-modal-subtitle">{{ editingRoiTransactionId ? 'Keep this capital movement accurate.' : 'Capture an expense or payout as it happens.' }}</p></div>
                 <button class="roi-modal-close" type="button" aria-label="Close new entry dialog" (click)="closeRoiEntryModal()"><mat-icon>close</mat-icon></button>
               </div>
               <form class="roi-entry-form" (ngSubmit)="saveRoiTransaction()">
@@ -1106,7 +1110,7 @@
                 <div class="roi-form-row"><label class="roi-field"><span>Date</span><input type="date" name="roi-date" required [(ngModel)]="roiForm.transaction_date"></label><label class="roi-field"><span>Account</span><select name="roi-account" [(ngModel)]="roiForm.account_id"><option value="">No account</option>@for (account of accounts; track account.id) { <option [value]="account.id">{{ account.name }}</option> }</select></label></div>
                 <label class="roi-field"><span>Note</span><input type="text" name="roi-note" [(ngModel)]="roiForm.note" placeholder="e.g. 100K challenge fee"></label>
                 <label class="roi-field"><span>Receipt image URL <em>optional</em></span><input type="url" name="roi-image-url" [(ngModel)]="roiForm.image_url" placeholder="https://"></label>
-                <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : 'Add to tracker' }}</button>
+                <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : editingRoiTransactionId ? 'save' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : editingRoiTransactionId ? 'Update tracker' : 'Add to tracker' }}</button>
               </form>
             </section>
           </div>

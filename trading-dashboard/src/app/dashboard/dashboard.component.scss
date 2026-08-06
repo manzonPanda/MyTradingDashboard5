@@ -12416,6 +12416,13 @@ table.simple-table {
 .roi-transaction-copy small { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 99px; background: var(--tf-bg-tertiary); }
 .roi-transaction-amount { color: #e11d48; font-size: 0.78rem; white-space: nowrap; }
 .roi-transaction-row.is-payout .roi-transaction-amount { color: #059669; }
+.roi-transaction-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 0.25rem; }
+.roi-transaction-action { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; padding: 0; border: 1px solid var(--tf-border-primary); border-radius: 0.45rem; background: var(--tf-bg-secondary); color: var(--tf-text-secondary); cursor: pointer; }
+.roi-transaction-action:hover:not(:disabled) { border-color: rgba(109, 40, 217, 0.35); background: #ede9fe; color: #6d28d9; }
+.roi-transaction-action.is-delete { color: #dc2626; }
+.roi-transaction-action.is-delete:hover:not(:disabled) { border-color: rgba(220, 38, 38, 0.25); background: #fef2f2; color: #b91c1c; }
+.roi-transaction-action:disabled { cursor: wait; opacity: 0.45; }
+.roi-transaction-action mat-icon { width: 0.95rem; height: 0.95rem; font-size: 0.95rem; }
 .roi-loading, .roi-empty-state { display: grid; place-items: center; min-height: 17rem; padding: 2rem; color: var(--tf-text-muted); text-align: center; }
 .roi-loading { grid-auto-flow: column; gap: 0.6rem; }
 .roi-loading mat-icon { animation: mt5-sync-rotation 1s linear infinite; }
@@ -12445,7 +12452,7 @@ table.simple-table {
 .roi-save-button[disabled] { cursor: wait; opacity: 0.65; transform: none; }
 
 @media (max-width: 900px) { .roi-content-grid { grid-template-columns: 1fr; } }
-@media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } }
+@media (max-width: 640px) { .roi-workspace { margin-top: 1rem; padding: 0 1rem 2rem; } .roi-hero { align-items: flex-start; flex-direction: column; padding: 1.5rem; } .roi-hero-actions { width: 100%; align-items: stretch; flex-direction: column-reverse; } .roi-add-entry-button { justify-content: center; } .roi-net-orb { width: 100%; box-sizing: border-box; } .roi-metrics { grid-template-columns: 1fr; } .roi-card-heading { flex-direction: column; } .roi-filter-tabs { width: 100%; } .roi-filter-tabs button { flex: 1; } .roi-transaction-list { padding: 0.45rem 1rem; } .roi-transaction-title { display: grid; gap: 0.2rem; } .roi-transaction-amount { font-size: 0.85rem; } .roi-transaction-actions { gap: 0.15rem; } .roi-transaction-action { width: 1.7rem; height: 1.7rem; } }
 
 .trade-sound-settings-backdrop { position: fixed; z-index: 1200; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
 .trade-sound-settings-modal { width: min(100%, 34rem); overflow: hidden; border: 1px solid var(--tf-border-primary); border-radius: 1rem; background: var(--tf-bg-card); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35); }
