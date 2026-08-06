@@ -199,6 +199,7 @@ export class DashboardComponent implements AfterViewInit {
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
   certificatePreviewUrls: Record<string, string> = {};
+  payoutProofUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
   editingCertificateId: string | null = null;
@@ -1906,7 +1907,10 @@ mt5AccountInfo: AccountSettings = {
       const uploadedFilePath = this.certificateFile ? await this.supabaseService.uploadCertificateFile(this.certificateFile, saved.id, this.getCertificateFirmName(saved)) : saved.file_path;
       const savedCertificate = { ...saved, file_path: uploadedFilePath };
       this.certificates = this.editingCertificateId ? this.certificates.map(item => item.id === saved.id ? { ...item, ...savedCertificate } : item) : [savedCertificate, ...this.certificates];
-      await this.loadCertificatePreviewUrls(this.certificates);
+      await Promise.all([
+        this.loadCertificatePreviewUrls(this.certificates),
+        this.loadPayoutProofUrls(this.certificatePayouts)
+      ]);
       this.isCertificateModalOpen = false;
       this.snackBar.open(this.editingCertificateId ? 'Certificate updated.' : 'Certificate added.', 'Dismiss', { duration: 3000 });
     } catch (error) {
@@ -1934,6 +1938,7 @@ mt5AccountInfo: AccountSettings = {
     try {
       const payout = await this.supabaseService.createPayout({ certificate_id: certificate.id, firm_name: this.getCertificateFirmName(certificate), amount: this.payoutForm.amount, payout_date: this.payoutForm.payout_date, notes: this.payoutForm.notes.trim() || null, proof_url: this.payoutForm.proof_url.trim() || null });
       this.certificatePayouts = [payout, ...this.certificatePayouts];
+      await this.loadPayoutProofUrls(this.certificatePayouts);
       this.isPayoutModalOpen = false;
       this.snackBar.open('Payout recorded.', 'Dismiss', { duration: 3000 });
     } catch (error) {
@@ -1983,6 +1988,21 @@ mt5AccountInfo: AccountSettings = {
       if (signedUrl) previewUrls[certificate.id] = signedUrl;
     }
     this.certificatePreviewUrls = previewUrls;
+  }
+
+  getPayoutProofUrl(payout: Payout): string | null {
+    if (!payout.proof_url) return null;
+    return payout.proof_url.startsWith('http') ? payout.proof_url : this.payoutProofUrls[payout.id] ?? null;
+  }
+
+  private async loadPayoutProofUrls(payouts: Payout[]): Promise<void> {
+    const proofUrls: Record<string, string> = {};
+    for (const payout of payouts) {
+      if (!payout.proof_url || payout.proof_url.startsWith('http')) continue;
+      const signedUrl = await this.supabaseService.getCertificateFileUrl(payout.proof_url);
+      if (signedUrl) proofUrls[payout.id] = signedUrl;
+    }
+    this.payoutProofUrls = proofUrls;
   }
 
   private async loadCertificates(): Promise<void> {
@@ -2050,11 +2070,15 @@ mt5AccountInfo: AccountSettings = {
         }
         this.certificates = await this.supabaseService.getCertificates(userId);
       }
-      await this.loadCertificatePreviewUrls(this.certificates);
+      await Promise.all([
+        this.loadCertificatePreviewUrls(this.certificates),
+        this.loadPayoutProofUrls(this.certificatePayouts)
+      ]);
     } catch (error) {
       console.error('Unable to load certificates:', error);
       this.certificates = suppliedCertificates.map((certificate, index) => ({ ...certificate, id: `supplied-certificate-${index}` }));
       this.certificatePreviewUrls = {};
+      this.payoutProofUrls = {};
       this.certificatePayouts = [];
       this.snackBar.open('Showing your certificates locally. Create the Supabase tables to save them permanently.', 'Dismiss', { duration: 7000 });
     } finally {

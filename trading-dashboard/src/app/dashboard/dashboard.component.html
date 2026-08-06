@@ -1186,7 +1186,30 @@
         <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
           <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
           @if (certificatePayouts.length) {
-            <div class="payout-list">@for (payout of certificatePayouts; track payout.id) { <article class="payout-row"><span class="payout-icon"><mat-icon>south_west</mat-icon></span><div><strong>{{ payout.firm_name }} @if (payout.source === 'roi') { <small class="payout-source">ROI</small> }</strong><small>{{ formatRoiDate(payout.payout_date) }}{{ payout.notes ? ' · ' + payout.notes : '' }}</small></div><strong class="payout-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong></article> }</div>
+            <div class="payout-list">
+              @for (payout of certificatePayouts; track payout.id) {
+                <article class="payout-card" [class.is-roi-payout]="payout.source === 'roi'">
+                  <div class="payout-card-media">
+                    @if (getPayoutProofUrl(payout); as proofUrl) {
+                      <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
+                        <img class="payout-proof-preview" [src]="proofUrl" [alt]="payout.firm_name + ' payout proof'">
+                        <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
+                      </a>
+                    } @else {
+                      <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
+                    }
+                  </div>
+                  <div class="payout-card-content">
+                    <div class="payout-card-topline">
+                      <div><p class="payout-kicker">{{ payout.source === 'roi' ? 'ROI payout' : 'Certificate payout' }}</p><h3>{{ payout.firm_name }}</h3></div>
+                      <strong class="payout-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                    </div>
+                    <div class="payout-card-meta"><span><mat-icon>event</mat-icon>{{ formatRoiDate(payout.payout_date) }}</span>@if (payout.proof_url) { <span><mat-icon>attach_file</mat-icon>Receipt attached</span> }</div>
+                    @if (payout.notes) { <p class="payout-card-notes">{{ payout.notes }}</p> }
+                  </div>
+                </article>
+              }
+            </div>
           } @else { <div class="certificates-inline-empty"><mat-icon>payments</mat-icon><span>Your first payout will appear here when it is recorded.</span></div> }
         </section>
       } @else {
