@@ -12954,7 +12954,10 @@ table.simple-table {
 .certificate-edit-button { position: relative; z-index: 1; padding: 0.4rem 0.6rem; font-size: 0.7rem; }
 .certificate-delete-button, .certificate-cancel-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 1.9rem; padding: 0.4rem 0.6rem; border: 1px solid; border-radius: 9px; font: inherit; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
 .certificate-delete-button { border-color: rgba(239, 68, 68, 0.38); background: transparent; color: #f87171; }
-.certificate-delete-button:hover, .certificate-delete-button.is-confirming { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+.certificate-delete-button:hover { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+.certificate-delete-button.is-confirming { border-color: transparent; background: #ef4444; color: #fff; }
+.certificate-delete-button.is-confirming:hover { background: #dc2626; color: #fff; }
+.certificate-delete-confirmation-text { color: var(--tf-text-secondary); font-size: 0.68rem; font-weight: 800; }
 .certificate-cancel-button { border-color: var(--tf-border-primary); background: var(--tf-bg-secondary); color: var(--tf-text-secondary); }
 .certificate-cancel-button:hover { border-color: var(--tf-text-secondary); color: var(--tf-text-primary); }
 .certificate-delete-button:disabled, .certificate-cancel-button:disabled { cursor: wait; opacity: 0.55; }
@@ -13007,7 +13010,14 @@ table.simple-table {
 .certificate-badge mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-seal { display: grid; place-items: center; width: 3.4rem; height: 3.4rem; margin: 1.2rem 0 0.9rem; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 50%; color: var(--tf-accent-primary); }
 .certificate-seal mat-icon { font-size: 1.7rem; }
-.certificate-preview { display: block; width: 100%; max-width: 11rem; height: 12rem; margin: 0; border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; object-fit: cover; object-position: top; }
+.certificate-preview-button { display: block; width: 100%; max-width: 11rem; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.certificate-preview-button:focus-visible { outline: 2px solid var(--tf-accent-primary); outline-offset: 3px; }
+.certificate-preview { display: block; width: 100%; height: 12rem; margin: 0; border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; object-fit: cover; object-position: top; }
+.certificate-image-viewer-backdrop { position: fixed; z-index: 1001; inset: 0; display: grid; place-items: center; padding: 1.5rem; background: rgba(8, 12, 24, 0.82); }
+.certificate-image-viewer { position: relative; display: grid; width: min(92vw, 70rem); max-height: calc(100dvh - 2rem); box-sizing: border-box; place-items: center; overflow: hidden; padding: 2.75rem 1.5rem 1.5rem; border: 1px solid var(--tf-border-primary); border-radius: 20px; background: var(--tf-bg-card); box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.4); }
+.certificate-expanded-preview { display: block; max-width: 100%; max-height: calc(100dvh - 5rem); border-radius: 12px; object-fit: contain; }
+.certificate-image-viewer-close { position: absolute; top: 0.7rem; right: 0.7rem; z-index: 1; display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid var(--tf-border-primary); border-radius: 50%; background: var(--tf-bg-secondary); color: var(--tf-text-primary); cursor: pointer; }
+.certificate-image-viewer-close:hover { background: var(--tf-bg-tertiary); }
 .certificate-card-media .certificate-seal { margin: 0; }
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
@@ -13017,34 +13027,25 @@ table.simple-table {
 .certificate-file { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 1rem; color: var(--tf-positive); font-size: 0.74rem; font-weight: 700; }
 .certificate-file mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .payout-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-.payout-card { display: grid; grid-template-columns: 1fr; align-content: start; gap: 0.85rem; min-height: 100%; padding: 1rem; border: 1px solid var(--tf-border-primary); border-radius: 1rem; background: linear-gradient(145deg, var(--tf-bg-secondary), var(--tf-bg-card)); box-shadow: var(--tf-shadow-sm); }
-.payout-card.is-roi-payout { border-color: rgba(124, 58, 237, 0.28); }
-.payout-card-media { min-width: 0; }
-.payout-proof-link, .payout-proof-placeholder { position: relative; display: grid; width: 100%; height: 10rem; overflow: hidden; place-items: center; border: 1px solid rgba(16, 185, 129, 0.22); border-radius: 0.75rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), var(--tf-bg-tertiary)); color: var(--tf-positive); }
+.payout-certificate-card.is-roi-payout { border-color: rgba(124, 58, 237, 0.45); }
+.payout-badge { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--tf-positive); font-weight: 800; text-transform: capitalize; }
+.payout-badge mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+.payout-account-name { margin: 0.2rem 0; color: var(--tf-text-muted); font-size: 0.72rem; font-weight: 700; }
+.payout-certificate-amount { display: block; margin-top: 0.8rem; color: var(--tf-positive); font-size: 1.05rem; }
+.payout-certificate-media { min-width: 0; }
+.payout-proof-link, .payout-proof-placeholder { position: relative; display: grid; width: 100%; max-width: 11rem; height: 12rem; overflow: hidden; place-items: center; border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 12px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), var(--tf-bg-tertiary)); color: var(--tf-positive); }
 .payout-proof-link { cursor: zoom-in; }
 .payout-proof-preview { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .payout-proof-overlay { position: absolute; right: 0.35rem; bottom: 0.35rem; display: grid; width: 1.5rem; height: 1.5rem; place-items: center; border-radius: 0.4rem; background: rgba(15, 23, 42, 0.72); color: #fff; }
 .payout-proof-overlay mat-icon { width: 0.85rem; height: 0.85rem; font-size: 0.85rem; }
 .payout-proof-placeholder mat-icon { width: 1.6rem; height: 1.6rem; font-size: 1.6rem; }
-.payout-card-content { min-width: 0; }
-.payout-card-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
-.payout-kicker { margin: 0 0 0.2rem; color: var(--tf-accent-primary); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.payout-card h3 { margin: 0; color: var(--tf-text-primary); font-size: 1rem; }
-.payout-amount { color: var(--tf-positive); font-size: 1.05rem; white-space: nowrap; }
-.payout-card-meta { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.55rem; color: var(--tf-text-muted); font-size: 0.68rem; }
-.payout-card-meta span { display: inline-flex; align-items: center; gap: 0.25rem; }
-.payout-card-meta mat-icon { width: 0.85rem; height: 0.85rem; font-size: 0.85rem; }
-.payout-card-notes { margin: 0.6rem 0 0; overflow: hidden; color: var(--tf-text-secondary); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 900px) {
   .payout-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 520px) {
   .payout-list { grid-template-columns: 1fr; }
-  .payout-card { gap: 0.7rem; padding: 0.7rem; }
   .payout-proof-link, .payout-proof-placeholder { height: 8.5rem; }
-  .payout-card-topline { gap: 0.5rem; }
-  .payout-amount { font-size: 0.88rem; }
 }
 .certificates-empty-state { display: grid; justify-items: center; padding: clamp(2rem, 7vw, 5rem) 1.5rem; text-align: center; }
 .certificate-empty-icon { display: grid; place-items: center; width: 5rem; height: 5rem; margin-bottom: 1.25rem; border-radius: 20px; background: rgba(124, 58, 237, 0.12); color: var(--tf-accent-primary); }

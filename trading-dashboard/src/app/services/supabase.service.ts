@@ -56,6 +56,7 @@ export interface Certificate {
 export interface Payout {
   id: string;
   certificate_id?: string | null;
+  account_id?: string | null;
   user_id?: string;
   firm_name: string;
   amount: number;

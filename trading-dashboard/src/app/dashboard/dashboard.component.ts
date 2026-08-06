@@ -199,6 +199,7 @@ export class DashboardComponent implements AfterViewInit {
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
   certificatePreviewUrls: Record<string, string> = {};
+  certificateImageViewer: { url: string; alt: string } | null = null;
   payoutProofUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
@@ -1867,6 +1868,7 @@ mt5AccountInfo: AccountSettings = {
   @HostListener('document:keydown.escape')
   cancelCertificateDeletionOnEscape(): void {
     if (this.certificateDeleteConfirmationId) this.cancelCertificateDeletion();
+    if (this.certificateImageViewer) this.closeCertificateImageViewer();
   }
 
   async confirmCertificateDeletion(certificate: Certificate): Promise<void> {
@@ -1967,6 +1969,25 @@ mt5AccountInfo: AccountSettings = {
     return account ? this.getFirmNameForAccount(account) : 'Independent certificate';
   }
 
+  getPayoutFirmName(payout: Payout): string {
+    const certificate = this.certificates.find(item => item.id === payout.certificate_id);
+    if (certificate?.account_id) return this.getCertificateFirmName(certificate);
+    return payout.firm_name?.trim() || 'Independent firm';
+  }
+
+  getPayoutAccountName(payout: Payout): string | null {
+    const accountId = payout.account_id ?? this.certificates.find(item => item.id === payout.certificate_id)?.account_id;
+    return accountId ? this.getAccountById(accountId)?.name ?? null : null;
+  }
+
+  getPayoutAccountPhase(payout: Payout): string {
+    const certificate = this.certificates.find(item => item.id === payout.certificate_id);
+    if (certificate?.account_id) return this.getCertificateAccountPhase(certificate);
+    const account = this.getAccountById(payout.account_id ?? null);
+    const phase = account?.phase;
+    return phase === 'phase2' ? 'Phase 2' : phase === 'funded' ? 'Funded' : phase === 'phase1' ? 'Phase 1' : '—';
+  }
+
   getCertificateAccountSize(certificate: Certificate): number | null {
     return this.getCertificateAccount(certificate)?.initial_balance ?? null;
   }
@@ -1978,6 +1999,16 @@ mt5AccountInfo: AccountSettings = {
 
   getCertificatePreviewUrl(certificate: Certificate): string | null {
     return certificate.file_path && !certificate.file_path.startsWith('http') ? this.certificatePreviewUrls[certificate.id] ?? null : null;
+  }
+
+  openCertificateImageViewer(certificate: Certificate): void {
+    const url = this.getCertificatePreviewUrl(certificate);
+    if (!url) return;
+    this.certificateImageViewer = { url, alt: `${this.getCertificateFirmName(certificate)} certificate` };
+  }
+
+  closeCertificateImageViewer(): void {
+    this.certificateImageViewer = null;
   }
 
   private async loadCertificatePreviewUrls(certificates: Certificate[]): Promise<void> {
@@ -2048,20 +2079,28 @@ mt5AccountInfo: AccountSettings = {
         this.supabaseService.getPayouts(userId),
         this.supabaseService.getRoiTransactions(userId)
       ]);
+      this.certificatePayouts = this.certificatePayouts.map(payout => ({
+        ...payout,
+        firm_name: this.getPayoutFirmName(payout)
+      }));
       const roiPayouts: Payout[] = roiTransactions
         .filter(transaction => transaction.transaction_type === 'payout')
-        .map(transaction => ({
-          id: `roi-payout-${transaction.id}`,
-          certificate_id: null,
-          user_id: userId,
-          firm_name: transaction.accounts?.name || this.getAccountById(transaction.account_id ?? null)?.name || 'ROI payout',
-          amount: Number(transaction.amount),
-          payout_date: transaction.transaction_date,
-          notes: transaction.note,
-          proof_url: transaction.image_url,
-          source: 'roi' as const,
-          created_at: transaction.created_at
-        }));
+        .map(transaction => {
+          const account = this.getAccountById(transaction.account_id ?? null);
+          return {
+            id: `roi-payout-${transaction.id}`,
+            certificate_id: null,
+            account_id: transaction.account_id ?? null,
+            user_id: userId,
+            firm_name: account ? this.getFirmNameForAccount(account) : transaction.accounts?.name || 'Independent firm',
+            amount: Number(transaction.amount),
+            payout_date: transaction.transaction_date,
+            notes: transaction.note,
+            proof_url: transaction.image_url,
+            source: 'roi' as const,
+            created_at: transaction.created_at
+          };
+        });
       this.certificatePayouts = [...this.certificatePayouts, ...roiPayouts]
         .sort((left, right) => right.payout_date.localeCompare(left.payout_date));
       if (!this.certificates.length) {

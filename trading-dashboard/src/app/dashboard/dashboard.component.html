@@ -1148,7 +1148,7 @@
         <div class="certificates-loading"><mat-icon>sync</mat-icon><span>Loading your milestones…</span></div>
       } @else if (certificates.length) {
         <section class="certificate-portfolio-card" aria-labelledby="certificate-portfolio-title">
-          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Achievement archive</p><h2 id="certificate-portfolio-title">Certificates</h2></div><span>{{ certificates.length }} saved</span></div>
+          <div class="certificates-section-heading"><div><h2 id="certificate-portfolio-title">Certificates</h2></div><span>{{ certificates.length }} saved</span></div>
           <div class="certificate-card-grid">
             @for (certificate of certificates; track certificate.id) {
               <article class="certificate-card" [class.is-funded]="certificate.status === 'funded'">
@@ -1156,15 +1156,16 @@
                 <div class="certificate-card-columns">
                   <div class="certificate-card-details">
                     <h3>{{ getCertificateFirmName(certificate) }}</h3>
-                    <p class="certificate-program">{{ certificate.program_name || 'Prop-firm milestone' }}</p>
+                    <p class="certificate-program">{{ getCertificateAccount(certificate)?.name || 'Account not linked' }}</p>
                     <p class="certificate-phase-badge">{{ getCertificateAccountPhase(certificate) }}</p>
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
                     @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
                     <div class="certificate-card-actions">
                       <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit</span></button>
                       @if (certificateDeleteConfirmationId === certificate.id) {
-                        <button class="certificate-delete-button is-confirming" type="button" [disabled]="isDeletingCertificate" aria-label="Confirm certificate deletion" title="Confirm certificate deletion" (click)="confirmCertificateDeletion(certificate)"><mat-icon>check</mat-icon><span>Confirm</span></button>
-                        <button class="certificate-cancel-button" type="button" [disabled]="isDeletingCertificate" aria-label="Cancel certificate deletion" title="Cancel certificate deletion" (click)="cancelCertificateDeletion()"><mat-icon>close</mat-icon><span>Cancel</span></button>
+                        <span class="certificate-delete-confirmation-text">Confirm delete?</span>
+                        <button class="certificate-delete-button is-confirming" type="button" [disabled]="isDeletingCertificate" aria-label="Confirm certificate deletion" title="Confirm certificate deletion" (click)="confirmCertificateDeletion(certificate)"><span>Delete</span></button>
+                        <button class="certificate-cancel-button" type="button" [disabled]="isDeletingCertificate" aria-label="Cancel certificate deletion" title="Cancel certificate deletion" (click)="cancelCertificateDeletion()"><span>Cancel</span></button>
                       } @else {
                         <button class="certificate-delete-button" type="button" [disabled]="isDeletingCertificate" aria-label="Delete certificate" title="Delete certificate" (click)="confirmCertificateDeletion(certificate)"><mat-icon>delete_outline</mat-icon><span>Delete</span></button>
                       }
@@ -1172,7 +1173,9 @@
                   </div>
                   <div class="certificate-card-media">
                     @if (getCertificatePreviewUrl(certificate); as previewUrl) {
-                      <img class="certificate-preview" [src]="previewUrl" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                      <button class="certificate-preview-button" type="button" [attr.aria-label]="'Enlarge ' + getCertificateFirmName(certificate) + ' certificate'" (click)="openCertificateImageViewer(certificate)">
+                        <img class="certificate-preview" [src]="previewUrl" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                      </button>
                     } @else {
                       <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
                     }
@@ -1184,28 +1187,33 @@
         </section>
 
         <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
-          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Realized returns</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
+          <div class="certificates-section-heading"><div><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
           @if (certificatePayouts.length) {
             <div class="payout-list">
               @for (payout of certificatePayouts; track payout.id) {
-                <article class="payout-card" [class.is-roi-payout]="payout.source === 'roi'">
-                  <div class="payout-card-media">
-                    @if (getPayoutProofUrl(payout); as proofUrl) {
-                      <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
-                        <img class="payout-proof-preview" [src]="proofUrl" [alt]="payout.firm_name + ' payout proof'">
-                        <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
-                      </a>
-                    } @else {
-                      <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
-                    }
+                <article class="certificate-card payout-certificate-card" [class.is-roi-payout]="payout.source === 'roi'">
+                  <div class="certificate-card-top">
+                    <span class="payout-badge"><mat-icon>payments</mat-icon>Payout</span>
+                    <span>{{ formatRoiDate(payout.payout_date) }}</span>
                   </div>
-                  <div class="payout-card-content">
-                    <div class="payout-card-topline">
-                      <div><p class="payout-kicker">{{ payout.source === 'roi' ? 'ROI payout' : 'Certificate payout' }}</p><h3>{{ payout.firm_name }}</h3></div>
-                      <strong class="payout-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                  <div class="certificate-card-columns">
+                    <div class="certificate-card-details">
+                      <h3>{{ getPayoutFirmName(payout) }}</h3>
+                      @if (getPayoutAccountName(payout); as accountName) { <p class="payout-account-name">{{ accountName }}</p> }
+                      <p class="certificate-phase-badge">{{ getPayoutAccountPhase(payout) }}</p>
+                      <strong class="payout-certificate-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
+                      @if (payout.notes) { <p class="certificate-notes">{{ payout.notes }}</p> }
                     </div>
-                    <div class="payout-card-meta"><span><mat-icon>event</mat-icon>{{ formatRoiDate(payout.payout_date) }}</span>@if (payout.proof_url) { <span><mat-icon>attach_file</mat-icon>Receipt attached</span> }</div>
-                    @if (payout.notes) { <p class="payout-card-notes">{{ payout.notes }}</p> }
+                    <div class="certificate-card-media payout-certificate-media">
+                      @if (getPayoutProofUrl(payout); as proofUrl) {
+                        <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
+                          <img class="payout-proof-preview" [src]="proofUrl" [alt]="getPayoutFirmName(payout) + ' payout proof'">
+                          <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
+                        </a>
+                      } @else {
+                        <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
+                      }
+                    </div>
                   </div>
                 </article>
               }
@@ -1253,6 +1261,15 @@
               <label><span>Proof URL <em>optional</em></span><input name="payout-proof" type="url" [(ngModel)]="payoutForm.proof_url" placeholder="https://"></label>
               <button class="certificate-save-button" type="submit" [disabled]="isSavingPayout || !payoutForm.amount"><mat-icon>{{ isSavingPayout ? 'sync' : 'payments' }}</mat-icon>{{ isSavingPayout ? 'Saving…' : 'Save payout' }}</button>
             </form>
+          </section>
+        </div>
+      }
+
+      @if (certificateImageViewer; as viewer) {
+        <div class="certificate-image-viewer-backdrop" role="presentation" (click)="closeCertificateImageViewer()">
+          <section class="certificate-image-viewer" role="dialog" aria-modal="true" aria-label="Certificate preview" (click)="$event.stopPropagation()">
+            <button class="certificate-image-viewer-close" type="button" aria-label="Close certificate preview" (click)="closeCertificateImageViewer()"><mat-icon>close</mat-icon></button>
+            <img class="certificate-expanded-preview" [src]="viewer.url" [alt]="viewer.alt">
           </section>
         </div>
       }
@@ -1500,371 +1517,11 @@
     }
   </section>
 
-    <!-- Active Account Section -->
-  <section id="active-account" class="table-section" *ngIf="currentWorkspace === 'active-account'">
-    <div class="table-card">
-      <div class="table-header">
-        <h2 class="section-title">Active Account: {{ selectedAccount?.name || 'No account selected' }}
-          <small class="active-account-trade-count">({{ tableData.length }} trades)</small>
-        </h2>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button class="btn-teal" (click)="checkAndCreateRelationId()">
-          <mat-icon>build</mat-icon>
-          Patch Activity Log
-        </button>
-        <button class="btn-orange" (click)="compareToNotion()">
-          <mat-icon>compare_arrows</mat-icon>
-          Compare to Notion
-        </button>
-        <button class="btn-secondary" (click)="populateData()">
-          <mat-icon>data_usage</mat-icon>
-          Populate Data
-        </button>
-      </div>
-
-        <div class="table-filters">
-          <button class="filter-btn" [class.active]="showNotionData" (click)="toggleNotionData()">
-            <mat-icon>{{ showNotionData ? 'visibility' : 'visibility_off' }}</mat-icon>
-            {{ showNotionData ? 'Hide' : 'Show' }} Notion Data
-          </button>
-
-        </div>
-      </div>
-
-      <!-- Simple controls -->
-      <div class="simple-table-controls">
-        <div class="table-info">
-          <span class="table-count">{{ getFilteredTableData().length }} trades total</span>
-          <span class="table-pagination">Showing {{ getDisplayedRows().length }} rows</span>
-        </div>
-        <div class="table-actions">
-          <button class="btn-secondary" (click)="currentPage > 1 ? setPage(currentPage - 1) : null" [disabled]="currentPage <= 1">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <span class="page-info">Page {{ currentPage }} of {{ getTotalPages() }}</span>
-          <button class="btn-secondary" (click)="currentPage < getTotalPages() ? setPage(currentPage + 1) : null" [disabled]="currentPage >= getTotalPages()">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
-          <select class="page-size-select" [(ngModel)]="pageSize" (change)="setPage(1)">
-            <option value="10">10 per page</option>
-            <option value="25">25 per page</option>
-            <option value="50">50 per page</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Simple reliable Angular table -->
-      <div class="simple-table-container">
-        <table class="modern-table simple-table">
-          <thead>
-            <tr>
-              <th class="col-timeline">Trade Timeline</th>
-              <th class="col-notion" [class.hidden]="!showNotionData">Notion Trades</th>
-              <th class="col-status" [class.hidden]="!showNotionData">Status</th>
-              <th class="col-position">
-                <mat-icon style="font-size: 16px; margin-right: 4px; vertical-align: middle;">confirmation_number</mat-icon>
-                Ticket
-              </th>
-              <th class="col-trade-card">Trading Information</th>
-              <th class="col-risk-hub">Risk Management Hub</th>
-              <th class="col-pnl-breakdown">Trade P&L Breakdown</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of getDisplayedRows(); let i = index"
-                [ngClass]="{
-                  'positive-row': isPositiveValue(row.netProfit),
-                  'negative-row': isNegativeValue(row.netProfit),
-                  'new-trade': isNewTrade(row)
-                }">
-              <td class="col-timeline">
-                <div class="timeline-container">
-                  <div class="timeline-entry">
-                    <div class="timeline-label">Open</div>
-                    <div class="timeline-date">{{ formatDate(row.openDate) }}</div>
-                  </div>
-                  <div class="timeline-separator">
-                    <div class="timeline-line"></div>
-                    <div class="timeline-duration">
-                      <mat-icon class="duration-icon">schedule</mat-icon>
-                      <span class="duration-text">{{ calculateHoldTime(row.openDate, row.closeDate) || 'Active' }}</span>
-                    </div>
-                  </div>
-                  <div class="timeline-entry" *ngIf="row.closeDate && row.closeDate !== '-'">
-                    <div class="timeline-label">Close</div>
-                    <div class="timeline-date">{{ formatDate(row.closeDate) }}</div>
-                  </div>
-                  <div class="timeline-entry" *ngIf="!row.closeDate || row.closeDate === '-'">
-                    <div class="timeline-label">Close</div>
-                    <div class="timeline-date" style="position: relative;">
-                      <span>Pending</span>
-                      <div class="live-indicator">
-                        <div class="live-dot"></div>
-                        <span>LIVE</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="timeline-entry active-trade" *ngIf="!row.closeDate || row.closeDate === '-'">
-                    <div class="timeline-label">Active</div>
-                    <div class="timeline-date live-indicator">
-                      <mat-icon class="pulse-icon">fiber_manual_record</mat-icon>
-                      Live Trade
-                    </div>
-                  </div>
-                </div>
-              </td>
-
-              <td class="col-notion" [class.hidden]="!showNotionData">
-                <div class="notion-buttons">
-                  <ng-container *ngFor="let trade of row.tradeNotion">
-                    <button
-                      class="notion-btn"
-                      [ngClass]="{
-                        'selected': selectedTradeId[i] === trade.tradeId,
-                        'matched': !trade.tradeDate && trade.tradeId,
-                        'revert': !trade.tradeDate && !trade.tradeId
-                      }"
-                      (click)="
-                        trade.tradeDate && !selectedTradeId[i]
-                          ? chooseUnmatchedTrade(trade, row, i)
-                          : null
-                      "
-                      [disabled]="
-                        (!trade.tradeDate && trade.tradeId) ||
-                        (selectedTradeId[i] && selectedTradeId[i] !== trade.tradeId)
-                      "
-                    >
-                      <ng-container *ngIf="trade.tradeDate; else showTrade">
-                        {{ trade.tradeDate }}
-                      </ng-container>
-                      <ng-template #showTrade>
-                        <ng-container *ngIf="!trade.tradeId && !trade.tradeDate">
-                          <mat-icon>refresh</mat-icon>
-                        </ng-container>
-                        <ng-container *ngIf="trade.tradeId && !trade.tradeDate">
-                          {{ trade.tradeId }}
-                        </ng-container>
-                      </ng-template>
-                    </button>
-
-                    <button
-                      *ngIf="selectedTradeId[i] === trade.tradeId"
-                      mat-icon-button
-                      class="revert-button"
-                      (click)="revertTradeNotion(row, i)"
-                    >
-                      <mat-icon>refresh</mat-icon>
-                    </button>
-                  </ng-container>
-                </div>
-              </td>
-
-              <td class="col-status" [class.hidden]="!showNotionData">
-                <span class="status-badge" [ngClass]="getStatusClass(row.status)">
-                  {{ row.status }}
-                </span>
-              </td>
-
-              <td class="col-position">
-                <span class="position-badge">
-                  {{ row.position }}
-                </span>
-              </td>
-
-              <td class="col-trade-card">
-                <div class="trade-card-container">
-                  <!-- Symbol Section -->
-                  <div class="symbol-section">
-                    <div class="symbol-icon">
-                      <mat-icon class="currency-icon">currency_exchange</mat-icon>
-                    </div>
-                    <div class="symbol-details">
-                      <div class="symbol-name">{{ row.symbol }}</div>
-                      <div class="symbol-subtitle">Pair</div>
-                    </div>
-                  </div>
-
-                  <!-- Type Badge -->
-                  <div class="type-section">
-                    <div class="type-badge">
-                      <mat-icon class="type-icon" *ngIf="row.type.toLowerCase() === 'buy'">trending_up</mat-icon>
-                      <mat-icon class="type-icon" *ngIf="row.type.toLowerCase() === 'sell'">trending_down</mat-icon>
-                      <span class="type-text">{{ row.type }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Volume Display -->
-                  <div class="volume-section">
-                    <div class="volume-display">
-                      <div class="volume-label">
-                        <mat-icon class="volume-icon">account_balance</mat-icon>
-                        Volume
-                      </div>
-                      <div class="volume-value">{{ row.volume }}</div>
-                    </div>
-                  </div>
-
-                  <!-- Live indicator moved to close section -->
-                </div>
-              </td>
-              <td class="col-risk-hub">
-                <div class="risk-hub-container" [ngClass]="{
-                  'risk-low': getSafeNumber(row.riskPerTrade) <= 50,
-                  'risk-medium': getSafeNumber(row.riskPerTrade) > 50 && getSafeNumber(row.riskPerTrade) <= 100,
-                  'risk-high': getSafeNumber(row.riskPerTrade) > 100
-                }">
-
-                  <!-- Risk Amount -->
-                  <div class="risk-section">
-                    <div class="risk-label">
-                      <mat-icon class="risk-icon">monetization_on</mat-icon>
-                      <span>Risk</span>
-                    </div>
-                    <div class="risk-amount">{{ getSafeNumber(row.riskPerTrade) | currency:'USD':'symbol':'1.0-0' }}</div>
-                    <div class="risk-percentage">{{ getRiskPercentage(row) }}%</div>
-                  </div>
-
-                  <!-- Separator -->
-                  <div class="hub-separator">
-                    <mat-icon>trending_flat</mat-icon>
-                  </div>
-
-                  <!-- RRR Section -->
-                  <div class="rrr-section" [ngClass]="{
-                    'rrr-on-fire': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) >= 3,
-                    'rrr-hot': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) >= 2 && parseFloat(row.rrr.toString().replace('R', '')) < 3,
-                    'rrr-excellent': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) >= 1 && parseFloat(row.rrr.toString().replace('R', '')) < 2,
-                    'rrr-positive': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) > 0 && parseFloat(row.rrr.toString().replace('R', '')) < 1,
-                    'rrr-negative': row.rrr && parseFloat(row.rrr.toString().replace('R', '')) < 0
-                  }">
-                    <div class="rrr-label">
-                      <mat-icon class="rrr-icon">balance</mat-icon>
-                      <span>R:R</span>
-                    </div>
-                    <div class="rrr-value-container">
-                      <div class="rrr-value">{{ row.rrr || 'N/A' }}</div>
-                      <div class="rrr-percentage">{{ getRRRPercentage(row) }}%</div>
-                    </div>
-                  </div>
-
-                  <!-- Separator -->
-                  <div class="hub-separator">
-                    <mat-icon>trending_flat</mat-icon>
-                  </div>
-
-                  <!-- MFE Section -->
-                  <div class="mfe-section">
-                    <div class="mfe-label">
-                      <mat-icon class="mfe-icon">trending_up</mat-icon>
-                      <span>MUR</span>
-                    </div>
-                    <div class="mfe-value-container">
-                      <div class="mfe-value">{{ getSafeNumber(row.mfe) | currency:'USD':'symbol':'1.2-2' }}</div>
-                      <div class="mfe-percentage">{{ getMURPercentage(row) }}%</div>
-                    </div>
-                  </div>
-
-                </div>
-              </td>
-              <!-- <td class="col-price">{{ row.entry }}</td>
-              <td class="col-price">{{ row.sL }}</td>
-              <td class="col-price">{{ row.tP }}</td>
-              <td class="col-price">{{ row.exit }}</td> -->
-              <td class="col-pnl-breakdown">
-                <div class="pnl-container" [ngClass]="{
-                  'pnl-positive': isPositiveValue(row.netProfit),
-                  'pnl-negative': isNegativeValue(row.netProfit),
-                  'pnl-neutral': getSafeNumber(row.netProfit) === 0
-                }">
-                  <!-- Commission -->
-                  <div class="pnl-item commission-item">
-                    <div class="pnl-label">
-                      <mat-icon class="pnl-icon commission-icon">receipt</mat-icon>
-                      <span>Commission</span>
-                    </div>
-                    <div class="pnl-value commission-value">
-                      {{ getSafeNumber(row.commission) | currency:'USD':'symbol':'1.2-2' }}
-                    </div>
-                  </div>
-
-                  <!-- Arrow separator -->
-                  <div class="pnl-separator">
-                    <mat-icon class="separator-icon">trending_flat</mat-icon>
-                  </div>
-
-                  <!-- Gross Profit -->
-                  <div class="pnl-item profit-item" [ngClass]="{
-                    'profit-positive': isPositiveValue(row.profit),
-                    'profit-negative': isNegativeValue(row.profit)
-                  }">
-                    <div class="pnl-label">
-                      <mat-icon class="pnl-icon profit-icon"
-                                [ngClass]="isPositiveValue(row.profit) ? 'positive-icon' : 'negative-icon'">
-                        {{ isPositiveValue(row.profit) ? 'trending_up' : 'trending_down' }}
-                      </mat-icon>
-                      <span>Gross</span>
-                    </div>
-                    <div class="pnl-value gross-value" [ngClass]="{
-                      'positive-amount': isPositiveValue(row.profit),
-                      'negative-amount': isNegativeValue(row.profit)
-                    }">
-                      {{ getSafeNumber(row.profit) | currency:'USD':'symbol':'1.2-2' }}
-                    </div>
-                  </div>
-
-                  <!-- Equals separator -->
-                  <div class="pnl-separator equals-separator">
-                    <mat-icon class="separator-icon equals-icon">drag_handle</mat-icon>
-                  </div>
-
-                  <!-- Net Profit -->
-                  <div class="pnl-item net-item" [ngClass]="{
-                    'net-positive': isPositiveValue(row.netProfit),
-                    'net-negative': isNegativeValue(row.netProfit)
-                  }">
-                    <div class="pnl-label net-label">
-                      <mat-icon class="pnl-icon net-icon"
-                                [ngClass]="isPositiveValue(row.netProfit) ? 'positive-icon' : 'negative-icon'">
-                        {{ isPositiveValue(row.netProfit) ? 'account_balance_wallet' : 'money_off' }}
-                      </mat-icon>
-                      <span>Net P&L</span>
-                    </div>
-                    <div class="pnl-value net-value" [ngClass]="{
-                      'positive-amount': isPositiveValue(row.netProfit),
-                      'negative-amount': isNegativeValue(row.netProfit),
-                      'neutral-amount': getSafeNumber(row.netProfit) === 0
-                    }">
-                      {{ getSafeNumber(row.netProfit) | currency:'USD':'symbol':'1.2-2' }}
-                    </div>
-                    <div class="pnl-percentage">{{ getNetPnLPercentage(row) }}%</div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Empty state -->
-            <tr *ngIf="getDisplayedRows().length === 0">
-              <td colspan="13" class="empty-state">
-                <div class="empty-content">
-                  <mat-icon>timeline</mat-icon>
-                  <h3>No trading data</h3>
-                  <p>Click "Mock: MT5+trade" to add sample trading data.</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
   <section id="mt5-import" class="mt5-import-section" *ngIf="currentWorkspace === 'active-account'">
     <div class="mt5-report-import">
       <div class="mt5-report-import-copy">
         <h2 class="section-title">Import MT5 positions</h2>
-        <span>Upload an exported .xlsx or .xls report to display its trades below the active account table.</span>
+        <span>Upload an exported .xlsx or .xls report to import positions into the selected account.</span>
       </div>
       <label class="mt5-sync-account-field">
         <span>Sync to account</span>
@@ -2192,261 +1849,7 @@
   </section>
 
 
-    <!--  Overall Trading History Section -->
-  <section id="trading-history" class="table-section notion-performance-section" *ngIf="currentWorkspace === 'trading-history'">
-    <div class="section-container">
-      <div class="table-header">
-        <h2 class="section-title">
-          <mat-icon class="section-icon">psychology</mat-icon>
-          Overall Trading History
-        </h2>
-        <div class="table-actions">
-          <button class="action-btn refresh-btn" (click)="refreshNotionData()" [disabled]="isLoadingNotionData">
-            <mat-icon [class.spinning]="isLoadingNotionData">refresh</mat-icon>
-            Refresh Data
-          </button>
-          <button class="action-btn test-btn" (click)="testBackendConnection()">
-            <mat-icon>network_check</mat-icon>
-            Test Backend
-          </button>
-          <button class="action-btn columns-btn" (click)="toggleColumnSelector()">
-            <mat-icon>view_column</mat-icon>
-            {{ showColumnSelector ? 'Hide Columns' : 'Show Columns' }}
-          </button>
-          <button class="action-btn help-btn" (click)="checkBackendInstructions()">
-            <mat-icon>help_outline</mat-icon>
-            Setup Help
-          </button>
-        </div>
-      </div>
-
-      <!-- Column Visibility Controls -->
-      <div class="column-selector" *ngIf="showColumnSelector">
-        <div class="column-selector-header">
-          <h3>Choose Columns to Display</h3>
-          <div class="column-selector-actions">
-            <button class="btn-sm btn-secondary" (click)="showDefaultColumns()">
-              <mat-icon>restore</mat-icon>
-              Default
-            </button>
-            <button class="btn-sm btn-secondary" (click)="hideAllColumns()">
-              <mat-icon>visibility_off</mat-icon>
-              Hide All
-            </button>
-            <button class="btn-sm btn-secondary" (click)="showAllColumns()">
-              <mat-icon>visibility</mat-icon>
-              Show All
-            </button>
-          </div>
-        </div>
-        <div class="column-selector-grid">
-          <div *ngFor="let column of availableColumns" class="column-checkbox">
-            <mat-slide-toggle
-              [checked]="column.visible"
-              (change)="toggleColumnVisibility(column.key)"
-              [color]="'primary'">
-              {{ column.label }}
-            </mat-slide-toggle>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-container notion-table-container">
-        <!-- Load Data Button -->
-        <div class="load-data-container" *ngIf="showLoadButton">
-          <div class="load-data-content">
-            <mat-icon class="load-icon">download</mat-icon>
-            <h3>Overall Trading History</h3>
-            <p>Click the button below to load your trading history data from Notion.</p>
-            <button class="load-data-btn" mat-raised-button color="primary" (click)="loadNotionDataWithButton()">
-              <mat-icon>play_arrow</mat-icon>
-              Load Trading Data
-            </button>
-          </div>
-        </div>
-
-        <div class="loading-overlay" *ngIf="isLoadingNotionData">
-          <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
-          <span class="loading-text">Loading performance data...</span>
-        </div>
-
-        <table class="modern-table notion-performance-table" id="notionTable"  *ngIf="!showLoadButton">
-          <thead>
-            <tr>
-              <th *ngIf="columnVisibility.id" class="col-id">ID</th>
-              <th *ngIf="columnVisibility.action" class="col-action">Action</th>
-              <th *ngIf="columnVisibility.date" class="col-date">Date</th>
-              <th *ngIf="columnVisibility.account" class="col-account">Account</th>
-              <th *ngIf="columnVisibility.status" class="col-status">Status</th>
-              <th *ngIf="columnVisibility.buySell" class="col-buysell">Buy/Sell</th>
-              <th *ngIf="columnVisibility.instrument" class="col-instrument">Instrument</th>
-              <th *ngIf="columnVisibility.strategy" class="col-strategy">Strategy</th>
-              <th *ngIf="columnVisibility.lots" class="col-lots">Lots</th>
-              <th *ngIf="columnVisibility.pips" class="col-pips">Pips</th>
-              <th *ngIf="columnVisibility.pnl" class="col-pnl">PnL</th>
-              <th *ngIf="columnVisibility.percentPnL" class="col-percent">% PnL</th>
-              <th *ngIf="columnVisibility.commission" class="col-commission">Commission</th>
-              <th *ngIf="columnVisibility.swap" class="col-swap">Swap</th>
-              <th *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">Ideal RRR</th>
-              <th *ngIf="columnVisibility.idealSL" class="col-ideal-sl">Ideal SL</th>
-              <th *ngIf="columnVisibility.modelCheck" class="col-model-check">Model✔</th>
-              <th *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">Rules Violated �����</th>
-              <th *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">1:1 Reversal</th>
-              <th *ngIf="columnVisibility.reviewed" class="col-reviewed">Reviewed</th>
-              <th *ngIf="columnVisibility.dailyReflection" class="col-reflection">Daily Reflection</th>
-              <th *ngIf="columnVisibility.weeklyRetrospective" class="col-weekly">Weekly Retrospective</th>
-              <th *ngIf="columnVisibility.modelForm" class="col-model-form">Model Form</th>
-              <th *ngIf="columnVisibility.screenshots" class="col-screenshots">Screenshots</th>
-              <th *ngIf="columnVisibility.outcome" class="col-outcome">Outcome</th>
-              <th *ngIf="columnVisibility.held" class="col-held">Held🕕</th>
-              <th *ngIf="columnVisibility.percentPnLCalc" class="col-percent-calc">%PnL-Calc</th>
-              <th *ngIf="columnVisibility.divergenceValue" class="col-divergence">Divergence Value</th>
-              <th *ngIf="columnVisibility.formula" class="col-formula">Formula</th>
-              <th *ngIf="columnVisibility.emptySelect" class="col-empty">Empty Select</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let data of notionPerformanceData" [ngClass]="{
-              'positive-row': data.pnl > 0,
-              'negative-row': data.pnl < 0,
-              'neutral-row': data.pnl === 0
-            }">
-              <td *ngIf="columnVisibility.id" class="col-id">{{ data.uniqueID }}</td>
-              <td *ngIf="columnVisibility.action" class="col-action">{{ data.action }}</td>
-              <td *ngIf="columnVisibility.date" class="col-date">{{ formatNotionDate(data.date) }}</td>
-              <td *ngIf="columnVisibility.account" class="col-account">
-                <div class="multi-select-container">
-                  <span *ngFor="let account of data.account" class="account-badge">
-                    {{ account }}
-                  </span>
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.status" class="col-status">
-                <span class="status-badge" [ngClass]="getStatusClass(data.status)">
-                  {{ data.status }}
-                </span>
-              </td>
-              <td *ngIf="columnVisibility.buySell" class="col-buysell">
-                <span class="position-badge" >
-                  {{ data.buySell }}
-                </span>
-              </td>
-              <td *ngIf="columnVisibility.instrument" class="col-instrument">{{ data.instrument }}</td>
-              <td *ngIf="columnVisibility.strategy" class="col-strategy">{{ data.strategy }}</td>
-              <td *ngIf="columnVisibility.lots" class="col-lots">{{ data.lots | number:'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.pips" class="col-pips">{{ data.pips | number:'1.0-0' }}</td>
-              <td *ngIf="columnVisibility.pnl" class="col-pnl" [ngClass]="{
-                'positive': data.pnl > 0,
-                'negative': data.pnl < 0,
-                'neutral': data.pnl === 0
-              }">
-                {{ getSafeNumber(data.pnl) | currency:'USD':'symbol':'1.2-2' }}
-              </td>
-              <td *ngIf="columnVisibility.percentPnL" class="col-percent" [ngClass]="{
-                'positive': data.percentPnL > 0,
-                'negative': data.percentPnL < 0,
-                'neutral': data.percentPnL === 0
-              }">
-                {{ data.percentPnL | number:'1.2-2' }}%
-              </td>
-              <td *ngIf="columnVisibility.commission" class="col-commission">{{ getSafeNumber(data.commission) | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.swap" class="col-swap">{{ getSafeNumber(data.swap) | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.idealRRR" class="col-ideal-rrr">{{ data.idealRRR }}</td>
-              <td *ngIf="columnVisibility.idealSL" class="col-ideal-sl">{{ data.idealSL }}</td>
-              <td *ngIf="columnVisibility.modelCheck" class="col-model-check">
-                <div class="multi-select-container">
-                  <span *ngFor="let model of data.modelCheck" class="model-badge">
-                    {{ model }}
-                  </span>
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.rulesViolated" class="col-rules-violated">
-                <div class="multi-select-container">
-                  <span *ngFor="let rule of data.rulesViolated" class="violation-badge">
-                    {{ rule }}
-                  </span>
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.oneToOneReversal" class="col-reversal">
-                <mat-icon [ngClass]="data.oneToOneReversal ? 'positive' : 'neutral'">
-                  {{ data.oneToOneReversal ? 'check_circle' : 'radio_button_unchecked' }}
-                </mat-icon>
-              </td>
-              <td *ngIf="columnVisibility.reviewed" class="col-reviewed">
-                <mat-icon [ngClass]="data.reviewed ? 'positive' : 'neutral'">
-                  {{ data.reviewed ? 'check_circle' : 'radio_button_unchecked' }}
-                </mat-icon>
-              </td>
-              <td *ngIf="columnVisibility.dailyReflection" class="col-reflection">
-                <div class="reflection-content" [title]="data.dailyReflection || ''">
-                  {{ (data.dailyReflection || '') | slice:0:100 }}{{ (data.dailyReflection || '').length > 100 ? '...' : '' }}
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.weeklyRetrospective" class="col-weekly">
-                <div class="retrospective-content" [title]="data.weeklyRetrospective || ''">
-                  {{ (data.weeklyRetrospective || '') | slice:0:100 }}{{ (data.weeklyRetrospective || '').length > 100 ? '...' : '' }}
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.modelForm" class="col-model-form">
-                <div class="multi-select-container">
-                  <span *ngFor="let form of data.modelForm" class="model-badge">
-                    {{ form }}
-                  </span>
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.screenshots" class="col-screenshots">
-                <div class="journal-screenshot-gallery" *ngIf="data.screenshotUrls.length > 0; else screenshotNames">
-                  <a *ngFor="let screenshotUrl of data.screenshotUrls" class="journal-screenshot-link" [href]="screenshotUrl" target="_blank" rel="noopener noreferrer">
-                    <img class="journal-screenshot-preview" [src]="screenshotUrl" [alt]="data.instrument + ' trade screenshot'" loading="lazy">
-                  </a>
-                </div>
-                <ng-template #screenshotNames>
-                  <div class="files-container">
-                    <span *ngFor="let file of data.screenshots" class="file-badge" [title]="file">
-                      📷 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
-                    </span>
-                  </div>
-                </ng-template>
-              </td>
-              <td *ngIf="columnVisibility.outcome" class="col-outcome">
-                <div class="files-container">
-                  <span *ngFor="let file of data.outcome" class="file-badge" [title]="file">
-                    📁 {{ file | slice:0:20 }}{{ file.length > 20 ? '...' : '' }}
-                  </span>
-                </div>
-              </td>
-              <td *ngIf="columnVisibility.held" class="col-held">{{ data.held }}</td>
-              <td *ngIf="columnVisibility.percentPnLCalc" class="col-percent-calc">{{ data.percentPnLCalc }}</td>
-              <td *ngIf="columnVisibility.divergenceValue" class="col-divergence">{{ data.divergenceValue | number:'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.formula" class="col-formula">{{ data.formula | number:'1.2-2' }}</td>
-              <td *ngIf="columnVisibility.emptySelect" class="col-empty">{{ data.emptySelect }}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="empty-state" *ngIf="!isLoadingNotionData && notionPerformanceData.length === 0">
-          <mat-icon class="empty-icon">psychology</mat-icon>
-          <h3>No Performance Data Found</h3>
-          <p>Unable to load data from your Notion database. Make sure:</p>
-          <ul style="text-align: left; max-width: 400px; margin: 1rem auto;">
-            <li>The Notion proxy server is running on localhost:3000</li>
-            <li>Your Notion database ID is correctly configured</li>
-            <li>The database has trading performance data</li>
-          </ul>
-          <div class="empty-actions">
-            <button class="btn-primary" (click)="refreshNotionData()">
-              <mat-icon>refresh</mat-icon>
-              Retry Connection
-            </button>
-            <button class="btn-secondary" (click)="testBackendConnection()">
-              <mat-icon>network_check</mat-icon>
-              Test Backend
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section id="trading-history" class="table-section notion-performance-section" *ngIf="currentWorkspace === 'trading-history'"></section>
 
 
   <!-- AURA Energy Configuration Modal -->
