@@ -2406,8 +2406,9 @@ mt5AccountInfo: AccountSettings = {
     setInterval(() => this.updateResetCountdown(), 1000);
 
     try {
+      const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const news: any = await firstValueFrom(
-        this.http.get(`${environment.backendUrlNotion}/api/news`)
+        this.http.get(`${environment.backendUrlNotion}/api/news?timezone=${encodeURIComponent(browserTimeZone)}`)
       );
       this.newsData = Array.isArray(news) ? news : [];
 
