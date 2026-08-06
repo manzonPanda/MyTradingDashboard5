@@ -12895,7 +12895,8 @@ table.simple-table {
 .certificate-action-button, .certificate-inline-action, .certificate-edit-button, .certificate-save-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid var(--tf-border-primary); border-radius: 10px; padding: 0.65rem 0.85rem; background: var(--tf-bg-secondary); color: var(--tf-text-primary); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .certificate-action-button.is-primary, .certificate-save-button { border-color: transparent; background: var(--tf-accent-primary); color: #fff; }
 .certificate-action-button:disabled, .certificate-inline-action:disabled { opacity: 0.45; cursor: not-allowed; }
-.certificate-card-actions { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.45rem; margin-top: 0.8rem; }
+.certificate-card-actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; max-width: 100%; margin-top: 0.8rem; }
+.certificate-card-actions > button { min-width: 0; white-space: nowrap; }
 .certificate-edit-button { position: relative; z-index: 1; padding: 0.4rem 0.6rem; font-size: 0.7rem; }
 .certificate-delete-button, .certificate-cancel-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 1.9rem; padding: 0.4rem 0.6rem; border: 1px solid; border-radius: 9px; font: inherit; font-size: 0.7rem; font-weight: 800; cursor: pointer; }
 .certificate-delete-button { border-color: rgba(239, 68, 68, 0.38); background: transparent; color: #f87171; }
