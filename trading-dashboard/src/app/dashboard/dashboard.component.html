@@ -1148,7 +1148,7 @@
         <div class="certificates-loading"><mat-icon>sync</mat-icon><span>Loading your milestones…</span></div>
       } @else if (certificates.length) {
         <section class="certificate-portfolio-card" aria-labelledby="certificate-portfolio-title">
-          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Certificates</p><h2 id="certificate-portfolio-title">Certificates</h2></div><span>{{ certificates.length }} saved</span></div>
+          <div class="certificates-section-heading"><div><h2 id="certificate-portfolio-title">Certificates</h2></div><span>{{ certificates.length }} saved</span></div>
           <div class="certificate-card-grid">
             @for (certificate of certificates; track certificate.id) {
               <article class="certificate-card" [class.is-funded]="certificate.status === 'funded'">
@@ -1184,7 +1184,7 @@
         </section>
 
         <section class="payout-portfolio-card" aria-labelledby="payout-portfolio-title">
-          <div class="certificates-section-heading"><div><p class="certificates-eyebrow">Payouts</p><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
+          <div class="certificates-section-heading"><div><h2 id="payout-portfolio-title">Payout history</h2></div><span>{{ certificatePayouts.length }} recorded</span></div>
           @if (certificatePayouts.length) {
             <div class="payout-list">
               @for (payout of certificatePayouts; track payout.id) {
