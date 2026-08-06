@@ -350,7 +350,7 @@ export class SupabaseService {
     const userId = await this.getAuthenticatedUserId();
     const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
     const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
-    const filePath = `${userId}/${firmFolder}/${certificateId}-${Date.now()}-${safeFileName}`;
+    const filePath = `${userId}/${firmFolder}/certificates/${Date.now()}-${safeFileName}`;
     const { error: uploadError } = await this.supabase.storage
       .from('certificates')
       .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
@@ -369,6 +369,18 @@ export class SupabaseService {
     const { data, error } = await this.supabase.storage.from('certificates').createSignedUrl(filePath, 3600);
     if (error) return null;
     return data.signedUrl;
+  }
+
+  async uploadRoiPayoutFile(file: File, firmName: string): Promise<string> {
+    const userId = await this.getAuthenticatedUserId();
+    const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+    const filePath = `${userId}/${firmFolder}/payouts/${Date.now()}-${safeFileName}`;
+    const { error } = await this.supabase.storage
+      .from('certificates')
+      .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
+    if (error) throw new Error(`Payout receipt upload failed: ${error.message}`);
+    return filePath;
   }
 
   async getPayouts(userId: string): Promise<Payout[]> {
