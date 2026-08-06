@@ -199,6 +199,7 @@ export class DashboardComponent implements AfterViewInit {
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
   certificatePreviewUrls: Record<string, string> = {};
+  certificateImageViewer: { url: string; alt: string } | null = null;
   payoutProofUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
@@ -1867,6 +1868,7 @@ mt5AccountInfo: AccountSettings = {
   @HostListener('document:keydown.escape')
   cancelCertificateDeletionOnEscape(): void {
     if (this.certificateDeleteConfirmationId) this.cancelCertificateDeletion();
+    if (this.certificateImageViewer) this.closeCertificateImageViewer();
   }
 
   async confirmCertificateDeletion(certificate: Certificate): Promise<void> {
@@ -1997,6 +1999,16 @@ mt5AccountInfo: AccountSettings = {
 
   getCertificatePreviewUrl(certificate: Certificate): string | null {
     return certificate.file_path && !certificate.file_path.startsWith('http') ? this.certificatePreviewUrls[certificate.id] ?? null : null;
+  }
+
+  openCertificateImageViewer(certificate: Certificate): void {
+    const url = this.getCertificatePreviewUrl(certificate);
+    if (!url) return;
+    this.certificateImageViewer = { url, alt: `${this.getCertificateFirmName(certificate)} certificate` };
+  }
+
+  closeCertificateImageViewer(): void {
+    this.certificateImageViewer = null;
   }
 
   private async loadCertificatePreviewUrls(certificates: Certificate[]): Promise<void> {

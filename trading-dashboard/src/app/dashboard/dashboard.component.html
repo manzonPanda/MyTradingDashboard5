@@ -1173,7 +1173,9 @@
                   </div>
                   <div class="certificate-card-media">
                     @if (getCertificatePreviewUrl(certificate); as previewUrl) {
-                      <img class="certificate-preview" [src]="previewUrl" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                      <button class="certificate-preview-button" type="button" [attr.aria-label]="'Enlarge ' + getCertificateFirmName(certificate) + ' certificate'" (click)="openCertificateImageViewer(certificate)">
+                        <img class="certificate-preview" [src]="previewUrl" [alt]="getCertificateFirmName(certificate) + ' certificate'">
+                      </button>
                     } @else {
                       <div class="certificate-seal"><mat-icon>military_tech</mat-icon></div>
                     }
@@ -1259,6 +1261,15 @@
               <label><span>Proof URL <em>optional</em></span><input name="payout-proof" type="url" [(ngModel)]="payoutForm.proof_url" placeholder="https://"></label>
               <button class="certificate-save-button" type="submit" [disabled]="isSavingPayout || !payoutForm.amount"><mat-icon>{{ isSavingPayout ? 'sync' : 'payments' }}</mat-icon>{{ isSavingPayout ? 'Saving…' : 'Save payout' }}</button>
             </form>
+          </section>
+        </div>
+      }
+
+      @if (certificateImageViewer; as viewer) {
+        <div class="certificate-image-viewer-backdrop" role="presentation" (click)="closeCertificateImageViewer()">
+          <section class="certificate-image-viewer" role="dialog" aria-modal="true" aria-label="Certificate preview" (click)="$event.stopPropagation()">
+            <button class="certificate-image-viewer-close" type="button" aria-label="Close certificate preview" (click)="closeCertificateImageViewer()"><mat-icon>close</mat-icon></button>
+            <img class="certificate-expanded-preview" [src]="viewer.url" [alt]="viewer.alt">
           </section>
         </div>
       }

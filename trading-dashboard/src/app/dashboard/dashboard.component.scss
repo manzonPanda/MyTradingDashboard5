@@ -13010,7 +13010,14 @@ table.simple-table {
 .certificate-badge mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .certificate-seal { display: grid; place-items: center; width: 3.4rem; height: 3.4rem; margin: 1.2rem 0 0.9rem; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 50%; color: var(--tf-accent-primary); }
 .certificate-seal mat-icon { font-size: 1.7rem; }
-.certificate-preview { display: block; width: 100%; max-width: 11rem; height: 12rem; margin: 0; border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; object-fit: cover; object-position: top; }
+.certificate-preview-button { display: block; width: 100%; max-width: 11rem; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.certificate-preview-button:focus-visible { outline: 2px solid var(--tf-accent-primary); outline-offset: 3px; }
+.certificate-preview { display: block; width: 100%; height: 12rem; margin: 0; border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; object-fit: cover; object-position: top; }
+.certificate-image-viewer-backdrop { position: fixed; z-index: 1001; inset: 0; display: grid; place-items: center; padding: 1.5rem; background: rgba(8, 12, 24, 0.82); }
+.certificate-image-viewer { position: relative; display: grid; width: min(92vw, 70rem); height: min(90vh, 52rem); place-items: center; padding: 1.5rem; border: 1px solid var(--tf-border-primary); border-radius: 20px; background: var(--tf-bg-card); box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.4); }
+.certificate-expanded-preview { display: block; max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain; }
+.certificate-image-viewer-close { position: absolute; top: 0.7rem; right: 0.7rem; z-index: 1; display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid var(--tf-border-primary); border-radius: 50%; background: var(--tf-bg-secondary); color: var(--tf-text-primary); cursor: pointer; }
+.certificate-image-viewer-close:hover { background: var(--tf-bg-tertiary); }
 .certificate-card-media .certificate-seal { margin: 0; }
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
