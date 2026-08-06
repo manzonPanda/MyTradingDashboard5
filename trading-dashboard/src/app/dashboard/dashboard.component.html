@@ -169,7 +169,10 @@
               <!-- Enhanced Day Header -->
               <div class="enhanced-day-header">
                 <span class="day-text">{{ day.label }}</span>
-                <div class="day-dot" [ngClass]="day.statusClass"></div>
+                <div
+                  *ngIf="day.day === getCurrentDay()"
+                  class="day-dot"
+                  [ngClass]="day.statusClass"></div>
               </div>
 
               <!-- Enhanced News List -->
@@ -218,7 +221,14 @@
                       <div class="event-meta">
                         <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
                       </div>
-                      <div class="event-title">{{ getNewsTitle(timeGroup.events[0]) }}</div>
+                      <div class="event-title">
+                        <span>{{ getNewsTitle(timeGroup.events[0]) }}</span>
+                        <mat-icon
+                          *ngIf="!isNewsEnded(timeGroup.events[0])"
+                          class="pending-news-reminder-icon"
+                          aria-label="Upcoming news reminder"
+                          title="Upcoming news reminder">notifications_active</mat-icon>
+                      </div>
                     </div>
                   </div>
 
@@ -245,7 +255,14 @@
                         <div class="event-meta">
                           <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
                         </div>
-                        <div class="event-title">{{ getNewsTitle(event) }}</div>
+                        <div class="event-title">
+                          <span>{{ getNewsTitle(event) }}</span>
+                          <mat-icon
+                            *ngIf="!isNewsEnded(event)"
+                            class="pending-news-reminder-icon"
+                            aria-label="Upcoming news reminder"
+                            title="Upcoming news reminder">notifications_active</mat-icon>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -306,7 +323,14 @@
                       </span>
                     </div>
 
-                    <div class="event-title-full">{{ getNewsTitle(event) }}</div>
+                    <div class="event-title-full">
+                      <span>{{ getNewsTitle(event) }}</span>
+                      <mat-icon
+                        *ngIf="!isNewsEnded(event)"
+                        class="pending-news-reminder-icon"
+                        aria-label="Upcoming news reminder"
+                        title="Upcoming news reminder">notifications_active</mat-icon>
+                    </div>
 
                     <div class="event-date">{{ event.date }}</div>
                   </div>
@@ -418,15 +442,6 @@
     <div class="metrics-container">
       <div class="trading-chart-container" data-aura-target>
         <div class="chart-header">
-          <div class="chart-title-section">
-            <div class="chart-title-row">
-              <h3 class="chart-title">
-                <mat-icon class="chart-icon">trending_up</mat-icon>
-                <span class="chart-title-gradient">Jake's Performance</span>
-              </h3>
-            </div>
-            <!-- <button (click)="startReconnect()">Reconnect MT5</button> -->
-          </div>
           <div class="chart-stats">
             <div class="stat-item">
               <div class="stat-icon">
@@ -474,7 +489,8 @@
                 </div>
               </div>
             </div>
-            <div class="chart-controls">
+          </div>
+          <div class="chart-controls">
               <div class="mt5-account-info">
                 <div class="account-targets">
                   <div class="target-card profit-target">
@@ -520,7 +536,6 @@
               <!-- <button class="confetti-test-btn" (click)="testConfettiCelebration()" title="Test Persistent Confetti Celebration 🎉" style="margin-left: 8px; background: linear-gradient(45deg, #FFD700, #FF6B6B, #4ECDC4); border: none; border-radius: 12px; padding: 10px 16px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); transition: all 0.3s ease; font-size: 0.9rem;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 20px rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.4)'">
                 🎉 Test Celebration
               </button> -->
-            </div>
           </div>
         </div>
 
