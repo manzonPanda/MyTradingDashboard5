@@ -6,10 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
-const fs = require('fs');
-const vm = require('vm'); // ✅ Add this
 
 const fcmAdmin = require("firebase-admin");
 
@@ -146,89 +143,48 @@ app.post('/api/createNewEntry', async (req, res) => {
 });
 
 app.get('/api/news', async (req, res) => {
-  let browser;
-
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    const response = await axios.get('https://nfs.faireconomy.media/ff_calendar_thisweek.xml', {
+      responseType: 'text',
+      timeout: 15000,
+      headers: { Accept: 'application/xml, text/xml' }
     });
-
-    const page = await browser.newPage();
-
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0.0.0 Safari/537.36'
-    );
-
-    await page.goto('https://www.forexfactory.com/calendar', { waitUntil: 'domcontentloaded' });
-
-    // Wait for dynamic JS to render content
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 3000)));
-
-    const html = await page.content();
-    fs.writeFileSync('calendar_loaded.html', html); // Optional debug
-
-    const scriptMatch = html.match(/window\.calendarComponentStates\[1\]\s*=\s*({[\s\S]*?});/);
-    if (!scriptMatch) throw new Error('calendarComponentStates[1] not found');
-
-    const codeToRun = `
-      const result = {};
-      window = { calendarComponentStates: {} };
-      window.calendarComponentStates[1] = ${scriptMatch[1]};
-      result.data = window.calendarComponentStates[1];
-      result;
-    `;
-
-    const sandbox = {};
-    const script = new vm.Script(codeToRun);
-    const context = vm.createContext(sandbox);
-    const { data: calendarData } = script.runInContext(context);
-
-    const allowedCurrencies = ['EUR', 'USD', 'GBP'];
-    const allowedImpacts = ['high', 'non-economic'];
+    const $ = cheerio.load(response.data, { xmlMode: true });
+    const allowedCurrencies = new Set(['EUR', 'USD']);
+    const allowedImpacts = new Set(['High', 'Medium']);
     const news = [];
 
-    calendarData.days.forEach(day => {
-      const dateText = day.date.replace(/<[^>]+>/g, '').trim();
+    $('event').each((_, element) => {
+      const readField = (name) => $(element).find(name).first().text().trim();
+      const currency = readField('country');
+      const impact = readField('impact');
+      const rawDate = readField('date');
+      const time = readField('time');
 
-      day.events.forEach(event => {
-        const currency = event.currency;
-        const impact = (event.impactName || '').toLowerCase();
-        const eventName = event.name;
-        const time = event.timeLabel;
+      if (!allowedCurrencies.has(currency) || !allowedImpacts.has(impact) || !rawDate) {
+        return;
+      }
 
-        const isHighOrNonEcon =
-          allowedCurrencies.includes(currency) &&
-          allowedImpacts.includes(impact);
+      const [month, day, year] = rawDate.split('-').map(Number);
+      const eventDate = new Date(Date.UTC(year, month - 1, day));
+      const date = `${eventDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })} ${eventDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' })} ${day}`;
 
-        const isSpecialMediumEvent =
-          impact === 'medium' &&
-          allowedCurrencies.includes(currency) &&
-          eventName.toLowerCase().includes('president') &&
-          eventName.toLowerCase().includes('speaks');
-
-        if (isHighOrNonEcon || isSpecialMediumEvent) {
-          news.push({
-            date: dateText,
-            time,
-            currency,
-            event: eventName,
-            impact
-          });
-        }
+      news.push({
+        date,
+        time: time || '--:--',
+        currency,
+        event: readField('title'),
+        impact
       });
     });
 
     res.json(news);
-
   } catch (err) {
     console.error('[ERROR]', err);
     res.status(500).json({
       error: 'Failed to fetch and parse news',
       details: err.message
     });
-  } finally {
-    if (browser) await browser.close();
   }
 });
 
