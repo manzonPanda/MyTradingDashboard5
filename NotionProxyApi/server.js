@@ -12,6 +12,57 @@ const fcmAdmin = require("firebase-admin");
 
 const NOTION_TOKEN = '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'; // 🔐 Replace with your Notion token
 const NOTION_VERSION = '2022-06-28';
+const NEWS_FEED_TIME_ZONE = 'UTC';
+
+function getNewsTimeZone(value) {
+  if (typeof value !== 'string' || !value) return NEWS_FEED_TIME_ZONE;
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: value }).format();
+    return value;
+  } catch {
+    return NEWS_FEED_TIME_ZONE;
+  }
+}
+
+function parseFeedDateTime(rawDate, rawTime) {
+  const [month, day, year] = rawDate.split('-').map(Number);
+  const timeMatch = rawTime.match(/^(\d{1,2}):(\d{2})(am|pm)?$/i);
+
+  if (!month || !day || !year || !timeMatch) return null;
+
+  let hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2]);
+  const meridiem = timeMatch[3]?.toLowerCase();
+
+  if (meridiem === 'pm' && hours < 12) hours += 12;
+  if (meridiem === 'am' && hours === 12) hours = 0;
+
+  return new Date(Date.UTC(year, month - 1, day, hours, minutes));
+}
+
+function formatNewsDateTime(date, timeZone) {
+  const dateParts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone
+    }).formatToParts(date).map(({ type, value }) => [type, value])
+  );
+  const time = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone
+  }).format(date).replace(/\s/g, '').toLowerCase();
+
+  return {
+    date: `${dateParts.weekday} ${dateParts.month} ${dateParts.day}`,
+    time
+  };
+}
+
 //ef10ac6f79524ea49e4bc0997e0ee704 == DB-TradingJournal
 //5e00bcb25c3d4276b1de54de3576894a == DB-MonthlyLog
 
@@ -150,6 +201,7 @@ app.get('/api/news', async (req, res) => {
       headers: { Accept: 'application/xml, text/xml' }
     });
     const $ = cheerio.load(response.data, { xmlMode: true });
+    const timeZone = getNewsTimeZone(req.query.timezone);
     const allowedCurrencies = new Set(['EUR', 'USD']);
     const allowedImpacts = new Set(['High', 'Medium']);
     const news = [];
@@ -165,13 +217,14 @@ app.get('/api/news', async (req, res) => {
         return;
       }
 
-      const [month, day, year] = rawDate.split('-').map(Number);
-      const eventDate = new Date(Date.UTC(year, month - 1, day));
-      const date = `${eventDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })} ${eventDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' })} ${day}`;
+      const eventDate = parseFeedDateTime(rawDate, time);
+      const formattedDateTime = eventDate
+        ? formatNewsDateTime(eventDate, timeZone)
+        : { date: rawDate, time: time || '--:--' };
 
       news.push({
-        date,
-        time: time || '--:--',
+        date: formattedDateTime.date,
+        time: formattedDateTime.time,
         currency,
         event: readField('title'),
         impact

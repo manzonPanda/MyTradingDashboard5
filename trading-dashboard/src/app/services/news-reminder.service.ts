@@ -216,18 +216,20 @@ export class NewsReminderService {
         }
       }
 
-      // Parse time format "10:30" or "3:45"
       if (!newsEvent.time || newsEvent.time === '--:--') {
         return null;
       }
 
-      const timeParts = newsEvent.time.split(':');
-      if (timeParts.length !== 2) return null;
+      const timeMatch = newsEvent.time.trim().match(/^(\d{1,2}):(\d{2})(am|pm)?$/i);
+      if (!timeMatch) return null;
 
-      const hours = parseInt(timeParts[0]);
-      const minutes = parseInt(timeParts[1]);
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const meridiem = timeMatch[3]?.toLowerCase();
 
-      if (isNaN(hours) || isNaN(minutes)) return null;
+      if (meridiem === 'pm' && hours < 12) hours += 12;
+      if (meridiem === 'am' && hours === 12) hours = 0;
+      if (hours > 23 || minutes > 59) return null;
 
       newsDate.setHours(hours, minutes, 0, 0);
 

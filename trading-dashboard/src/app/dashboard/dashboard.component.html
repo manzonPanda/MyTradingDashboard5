@@ -153,11 +153,7 @@
                  [ngClass]="getDayTabClass(day)">
 
               <!-- Enhanced Day Header -->
-              <div class="enhanced-day-header" [ngClass]="{
-                'current-day': day.day === getCurrentDay(),
-                'current-day-with-news': day.day === getCurrentDay() && currentDayHasNews(),
-                'current-day-no-news': day.day === getCurrentDay() && !currentDayHasNews()
-              }">
+              <div class="enhanced-day-header">
                 <span class="day-text">{{ day.label }}</span>
                 <div class="day-dot" [ngClass]="day.statusClass"></div>
               </div>
@@ -165,7 +161,6 @@
               <!-- Enhanced News List -->
               <div class="enhanced-news-list"
                    [ngClass]="{
-                     'current-day-news': day.day === getCurrentDay(),
                      'empty-news-list': !isLoadingNews() && getNewsForDay(day.day).length === 0
                    }">
                 <!-- Loading State -->
@@ -205,7 +200,7 @@
 
                   <!-- Single Event (when only 1 event at this time) -->
                   <div *ngIf="!timeGroup.isMultiple" class="single-event">
-                    <div class="event-content" [ngClass]="getEnhancedNewsClasses(timeGroup.events[0], day.day)">
+                    <div class="event-content" [ngClass]="getEnhancedNewsClasses(timeGroup.events[0])">
                       <div class="event-meta">
                         <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(timeGroup.events[0])"></span>
                         <!-- Reminder Status Indicator -->
@@ -245,7 +240,7 @@
                          [ngClass]="'events-count-' + timeGroup.events.length">
                       <div class="expanded-event"
                            *ngFor="let event of timeGroup.events; trackBy: trackByNewsIndex"
-                           [ngClass]="getEnhancedNewsClasses(event, day.day)">
+                           [ngClass]="getEnhancedNewsClasses(event)">
                         <div class="event-meta">
                           <span class="impact-dot" [ngClass]="getNewsImpactBadgeClass(event)"></span>
                           <!-- Reminder Status Indicator -->
@@ -270,8 +265,7 @@
 
                 <!-- Empty state -->
                 <div *ngIf="!isLoadingNews() && getNewsForDay(day.day).length === 0"
-                     class="no-news"
-                     [ngClass]="{'current-day-no-news': day.day === getCurrentDay() && !currentDayHasNews()}">
+                     class="no-news">
                   <div class="no-news-text">No news</div>
                 </div>
               </div>
@@ -304,7 +298,7 @@
               <div class="modal-events-list">
                 <div *ngFor="let event of selectedTimeGroup?.events; let i = index"
                      class="modal-event-item"
-                     [ngClass]="getEnhancedNewsClasses(event, getCurrentDay())"
+                     [ngClass]="getEnhancedNewsClasses(event)"
                      [style.animation-delay]="i * 0.1 + 's'">
 
                   <div class="event-number">{{ i + 1 }}</div>
