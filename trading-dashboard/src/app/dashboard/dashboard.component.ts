@@ -659,7 +659,7 @@ export class DashboardComponent implements AfterViewInit {
       profit_target_percent: account.profit_target_percent ?? 0,
       max_total_drawdown_percent: account.max_total_drawdown_percent ?? 0,
       daily_loss_limit_percent: account.daily_loss_limit_percent ?? 0,
-      start_date: account.start_date ?? '',
+      start_date: account.start_date ? account.start_date.slice(0, 10) : '',
       status: account.status ?? 'active',
       phase: account.phase ?? 'phase1'
     };
