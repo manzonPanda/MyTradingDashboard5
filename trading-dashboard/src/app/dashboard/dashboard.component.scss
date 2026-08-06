@@ -1154,7 +1154,7 @@ table.simple-table {
         flex-direction: column;
         min-width: 120px;
         max-width: none;
-        flex: 1;
+        flex: 1 1 0;
         height: 100%;
         background: var(--tf-bg-card);
         border: 1px solid var(--tf-border-primary);
@@ -1162,30 +1162,8 @@ table.simple-table {
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-        // Days with no news - make smaller
-        &:has(.no-news) {
-          flex: 0.3;
-          min-width: 80px;
-        }
-
-        // Target Thursday specifically (4th day column - 0-indexed) for extra space
-        &:nth-child(4) {
-          flex: 4 !important;
-          min-width: 450px !important;
-          max-width: 600px;
-        }
-
-        // Days with multiple time groups - make larger
-        .enhanced-news-list:has(.time-group-container ~ .time-group-container ~ .time-group-container) {
-          & {
-            flex: 2;
-            min-width: 250px;
-          }
-        }
-
         &.current {
-          border-color: rgba(16, 185, 129, 0.5);
-          transform: scale(1.02);
+          flex: 1.25 1 0;
         }
 
         &.past {
@@ -1194,19 +1172,6 @@ table.simple-table {
 
         &.future {
           opacity: 0.85;
-        }
-
-        // Current day card glow effects
-        &.current:has(.current-day-with-news) {
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.03));
-          border-color: rgba(239, 68, 68, 0.5);
-          box-shadow: none;
-        }
-
-        &.current:has(.current-day-no-news) {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(34, 197, 94, 0.03));
-          border-color: rgba(16, 185, 129, 0.5);
-          box-shadow: none;
         }
 
         .enhanced-day-header {
@@ -1218,11 +1183,6 @@ table.simple-table {
           background: var(--tf-bg-secondary);
           border-bottom: 1px solid var(--tf-border-primary);
           position: relative;
-
-          &.current-day {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.08));
-            border-bottom-color: rgba(16, 185, 129, 0.3);
-          }
 
           .day-text {
             font-size: 0.85rem;
@@ -1254,24 +1214,6 @@ table.simple-table {
             }
           }
 
-          &.current-day-with-news {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
-            border-bottom-color: rgba(239, 68, 68, 0.4);
-
-            .day-dot {
-              background: #ef4444 !important;
-            }
-          }
-
-          &.current-day-no-news {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.1));
-            border-bottom-color: rgba(16, 185, 129, 0.4);
-
-            .day-dot {
-              background: #16A34A !important;
-            }
-          }
-
         }
 
         .enhanced-news-list {
@@ -1289,10 +1231,6 @@ table.simple-table {
           overflow-y: auto;
           overflow-x: hidden;
           scrollbar-width: none;
-
-          &.current-day-news {
-            background: linear-gradient(180deg, rgba(16, 185, 129, 0.02), transparent 50%);
-          }
 
           &.empty-news-list {
             overflow: hidden;
@@ -1484,10 +1422,6 @@ table.simple-table {
                   transform: translateY(-1px);
                 }
 
-                &.current-day-item {
-                  background: rgba(16, 185, 129, 0.1);
-                  border: 1px solid rgba(16, 185, 129, 0.2);
-                }
 
                 .event-meta {
                   display: flex;
@@ -1619,11 +1553,6 @@ table.simple-table {
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
                   }
 
-                  &.current-day-item {
-                    background: rgba(16, 185, 129, 0.15);
-                    border: 1px solid rgba(16, 185, 129, 0.3);
-                  }
-
                   .event-meta {
                     .impact-dot {
                       width: 7px;
@@ -1690,25 +1619,6 @@ table.simple-table {
             }
 
 
-            // Special styling for current day with no news
-            &.current-day-no-news {
-              background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
-              border-radius: 8px;
-              margin: 0.5rem;
-              border: 1px dashed rgba(16, 185, 129, 0.3);
-
-              &::before {
-                content: '✨';
-                filter: none;
-                animation: gentle-pulse 3s ease-in-out infinite;
-              }
-
-              .no-news-text {
-                color: var(--tf-positive);
-                font-weight: 600;
-              }
-
-            }
           }
         }
       }
@@ -1725,42 +1635,6 @@ table.simple-table {
         opacity: 0.8;
         transform: scale(1.3);
         box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
-      }
-    }
-
-    @keyframes current-day-red-card-glow {
-      0%, 100% {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.03));
-        box-shadow:
-          0 0 0 2px rgba(239, 68, 68, 0.4),
-          0 0 20px rgba(239, 68, 68, 0.3),
-          0 0 40px rgba(239, 68, 68, 0.15);
-      }
-      50% {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08));
-        box-shadow:
-          0 0 0 3px rgba(239, 68, 68, 0.6),
-          0 0 30px rgba(239, 68, 68, 0.5),
-          0 0 60px rgba(239, 68, 68, 0.25),
-          0 0 90px rgba(239, 68, 68, 0.1);
-      }
-    }
-
-    @keyframes current-day-green-card-glow {
-      0%, 100% {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(34, 197, 94, 0.03));
-        box-shadow:
-          0 0 0 2px rgba(16, 185, 129, 0.4),
-          0 0 20px rgba(16, 185, 129, 0.3),
-          0 0 40px rgba(16, 185, 129, 0.15);
-      }
-      50% {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.08));
-        box-shadow:
-          0 0 0 3px rgba(16, 185, 129, 0.6),
-          0 0 30px rgba(16, 185, 129, 0.5),
-          0 0 60px rgba(16, 185, 129, 0.25),
-          0 0 90px rgba(16, 185, 129, 0.1);
       }
     }
 
@@ -10147,15 +10021,6 @@ table.simple-table {
 
     .trading-week-container .trading-days-grid .day-column {
       min-width: 96px;
-
-      &:has(.no-news) {
-        min-width: 64px;
-      }
-
-      &:nth-child(4) {
-        min-width: 330px !important;
-        max-width: 460px;
-      }
     }
   }
 
@@ -12509,15 +12374,6 @@ table.simple-table {
 
     .trading-week-container .trading-days-grid .day-column {
       min-width: 90px;
-
-      &:has(.no-news) {
-        min-width: 70px;
-      }
-
-      &:nth-child(4) {
-        min-width: 260px !important;
-        max-width: 360px;
-      }
     }
   }
 
@@ -12634,10 +12490,6 @@ table.simple-table {
 
     .trading-week-container .trading-days-grid .day-column {
       min-width: 84px;
-
-      &:nth-child(4) {
-        min-width: 220px !important;
-      }
     }
   }
 
@@ -12722,10 +12574,6 @@ table.simple-table {
 @media (max-width: 480px) {
   .dashboard-header .trading-week-container .trading-days-grid .day-column {
     min-width: 76px;
-
-    &:nth-child(4) {
-      min-width: 190px !important;
-    }
   }
 
   .metrics-section .trading-chart-container .chart-header {
@@ -12759,9 +12607,6 @@ table.simple-table {
 }
 
 @media (max-width: 390px) {
-  .dashboard-header .trading-week-container .trading-days-grid .day-column:nth-child(4) {
-    min-width: 175px !important;
-  }
 
   .metrics-section .trading-chart-container .chart-canvas-wrapper {
     height: clamp(20rem, 110vw, 22rem);
@@ -12816,9 +12661,6 @@ table.simple-table {
     min-width: min(78vw, 18rem);
   }
 
-  .dashboard-header .trading-week-container .trading-days-grid .day-column:nth-child(4) {
-    min-width: min(82vw, 20rem) !important;
-  }
 
   .dashboard-header .event-title,
   .dashboard-header .summary-text,
