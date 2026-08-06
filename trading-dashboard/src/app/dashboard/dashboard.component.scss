@@ -2716,9 +2716,10 @@ table.simple-table {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0.5rem;
+      align-items: stretch;
       padding: 0.2rem;
       position: relative;
       z-index: 20;
@@ -2729,7 +2730,26 @@ table.simple-table {
         transparent 70%
       );
       border-bottom: 1px solid var(--tf-border-primary);
-      position: relative;
+
+      .chart-stats,
+      .chart-controls,
+      .chart-controls .mt5-account-info,
+      .chart-controls .account-targets {
+        display: contents;
+      }
+
+      .chart-stats .stat-item,
+      .chart-controls .target-card {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        box-sizing: border-box;
+      }
+
+      .chart-mode-card {
+        min-width: 0;
+        max-width: none;
+      }
 
       &::before {
         content: '';
@@ -9317,9 +9337,9 @@ table.simple-table {
   // Enhanced chart responsiveness
   @media (max-width: 768px) {
     .chart-header {
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+      padding: 0.75rem;
 
       .chart-stats {
         gap: 1rem;
@@ -9336,6 +9356,40 @@ table.simple-table {
       gap: 1rem;
       align-items: center;
     }
+  }
+}
+
+.trading-chart-container .chart-header {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.trading-chart-container .chart-header .chart-stats,
+.trading-chart-container .chart-header .chart-controls,
+.trading-chart-container .chart-header .chart-controls .mt5-account-info,
+.trading-chart-container .chart-header .chart-controls .account-targets {
+  display: contents;
+}
+
+.trading-chart-container .chart-header .chart-stats .stat-item,
+.trading-chart-container .chart-header .chart-controls .target-card {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .trading-chart-container .chart-header {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .trading-chart-container .chart-header {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
