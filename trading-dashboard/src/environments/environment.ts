@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   // backendUrlNotion: 'http://localhost:3000',
-  backendUrlNotion: 'https://notionproxyapi.onrender.com',
+  backendUrlNotion: 'https://forexnewsapi.onrender.com',
   backendUrlMt5: 'https://mt5-api.jakemt5.host',
   // === Supabase config (replaces Notion) ===
   // Get these from: Supabase Dashboard -> Settings -> API
