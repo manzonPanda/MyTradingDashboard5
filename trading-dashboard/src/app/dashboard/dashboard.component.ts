@@ -5243,7 +5243,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return {
       'high-impact': impact === 'High',
       'medium-impact': impact === 'Medium',
-      'low-impact': impact === 'Low'
+      'low-impact': impact === 'Low',
+      'news-ended': this.isNewsEnded(news)
     };
   }
 
@@ -7252,50 +7253,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.newsReminder.isNewsReminderActive(newsEvent);
   }
 
-  /**
-   * Check if a news event is for the current day
-   */
-  isCurrentDayNews(newsEvent: any): boolean {
-    const today = new Date();
-    const todayDay = today.getDay();
-
-    // Check date string patterns
-    if (newsEvent.date.includes('Today')) {
-      return true;
-    }
-
-    // Parse the date and compare days
-    try {
-      const dateParts = newsEvent.date.trim().split(' ');
-      if (dateParts.length >= 3) {
-        const monthName = dateParts[1];
-        const day = parseInt(dateParts[2]);
-        const monthIndex = this.getMonthIndex(monthName);
-
-        if (monthIndex !== -1) {
-          const newsDate = new Date(today.getFullYear(), monthIndex, day);
-          return newsDate.getDay() === todayDay;
-        }
-      }
-    } catch (error) {
-      console.warn('Error parsing news date:', error);
-    }
-
-    return false;
-  }
-
-  /**
-   * Get month index from month name (helper method)
-   */
-  private getMonthIndex(monthName: string): number {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-
-    return months.findIndex(month =>
-      month.toLowerCase() === monthName.toLowerCase()
-    );
+  isNewsEnded(newsEvent: any): boolean {
+    const eventTime = new Date(`${newsEvent?.date} ${newsEvent?.time}`);
+    return !Number.isNaN(eventTime.getTime()) && eventTime < new Date();
   }
 
   // Trading settings handler methods

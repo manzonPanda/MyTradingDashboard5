@@ -1422,6 +1422,11 @@ table.simple-table {
                   transform: translateY(-1px);
                 }
 
+                &.news-ended {
+                  background: rgba(148, 163, 184, 0.16);
+                  filter: grayscale(1);
+                  opacity: 0.65;
+                }
 
                 .event-meta {
                   display: flex;
@@ -1551,6 +1556,12 @@ table.simple-table {
                     background: rgba(255, 255, 255, 0.95);
                     transform: translateY(-1px) translateX(2px);
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+                  }
+
+                  &.news-ended {
+                    background: rgba(148, 163, 184, 0.16);
+                    filter: grayscale(1);
+                    opacity: 0.65;
                   }
 
                   .event-meta {
@@ -1892,6 +1903,12 @@ table.simple-table {
             &.low-impact {
               border-left: 4px solid var(--tf-neutral);
               background: linear-gradient(90deg, rgba(107, 114, 128, 0.05), transparent 30%);
+            }
+
+            &.news-ended {
+              background: rgba(148, 163, 184, 0.16);
+              filter: grayscale(1);
+              opacity: 0.65;
             }
 
             .event-number {
