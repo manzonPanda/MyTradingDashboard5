@@ -87,6 +87,11 @@ METHOD_RE = re.compile(
     ([A-Za-z_$][A-Za-z0-9_$]*)
     \s*
     \(
+    [^;{}]*
+    \)
+    (?:\s*:\s*[^;{}\n]+)?
+    \s*
+    \{
     """,
     re.MULTILINE | re.VERBOSE,
 )
