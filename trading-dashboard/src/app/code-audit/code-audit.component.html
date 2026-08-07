@@ -18,6 +18,16 @@
         Analyze your Angular project with template-aware usage detection.
       </p>
 
+      @if (report) {
+
+        <div class="scan-meta" aria-label="Scan details">
+          <span class="scan-badge">ANGULAR-AWARE</span>
+          <span>v{{ report.meta.scannerVersion }}</span>
+          <span>Scanned {{ scanDateLabel }}</span>
+        </div>
+
+      }
+
     </div>
 
 
@@ -230,6 +240,44 @@
 
       </article>
 
+
+    </section>
+
+
+    <section class="signal-panel" aria-labelledby="signal-panel-title">
+
+      <div class="signal-panel-heading">
+
+        <div>
+          <span class="panel-kicker">USAGE SIGNALS</span>
+          <h2 id="signal-panel-title">Angular-aware references</h2>
+        </div>
+
+        <span class="signal-panel-note">Detected across TypeScript and templates</span>
+
+      </div>
+
+      <div class="signal-grid">
+
+        <article class="signal-card">
+          <span class="signal-icon">&lt;&gt;</span>
+          <strong>{{ templateReferenceCount }}</strong>
+          <span>template references</span>
+        </article>
+
+        <article class="signal-card">
+          <span class="signal-icon">↪</span>
+          <strong>{{ callbackReferenceCount }}</strong>
+          <span>callback references</span>
+        </article>
+
+        <article class="signal-card">
+          <span class="signal-icon">◎</span>
+          <strong>{{ frameworkManagedFunctionCount }}</strong>
+          <span>framework-managed functions</span>
+        </article>
+
+      </div>
 
     </section>
 
@@ -637,7 +685,7 @@
                   </strong>
 
                   <span class="type-badge">
-                    {{ item.kind }}
+                    {{ functionKindLabel(item.kind) }}
                   </span>
 
                 </div>
@@ -645,6 +693,12 @@
                 <span class="file-path">
                   {{ item.file }}:{{ item.line }}
                 </span>
+
+                @if (item.status === 'used' && functionReferenceContext(item)) {
+                  <span class="reference-summary">
+                    {{ functionReferenceContext(item) }}
+                  </span>
+                }
 
               </div>
 

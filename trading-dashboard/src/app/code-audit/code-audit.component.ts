@@ -233,6 +233,80 @@ export class CodeAuditComponent implements OnInit {
   }
 
 
+  get templateReferenceCount(): number {
+
+    return this.referenceCount(context => context.startsWith('template'));
+
+  }
+
+
+  get callbackReferenceCount(): number {
+
+    return this.referenceCount(context => context === 'callback reference');
+
+  }
+
+
+  get frameworkManagedFunctionCount(): number {
+
+    return this.report?.functions.filter(
+      item => item.kind === 'lifecycle-hook' || item.kind === 'host-listener'
+    ).length ?? 0;
+
+  }
+
+
+  get scanDateLabel(): string {
+
+    if (!this.report) {
+      return '';
+    }
+
+    const date = new Date(this.report.meta.generatedAt);
+
+    return Number.isNaN(date.getTime())
+      ? this.report.meta.generatedAt
+      : date.toLocaleString();
+
+  }
+
+
+  functionKindLabel(kind: CodeAuditFunction['kind']): string {
+
+    const labels: Record<CodeAuditFunction['kind'], string> = {
+      method: 'method',
+      'arrow-function': 'arrow function',
+      function: 'function',
+      'lifecycle-hook': 'lifecycle hook',
+      'host-listener': 'host listener'
+    };
+
+    return labels[kind];
+
+  }
+
+
+  functionReferenceContext(item: CodeAuditFunction): string {
+
+    return item.references[0]?.context ?? '';
+
+  }
+
+
+  private referenceCount(
+    predicate: (context: string) => boolean
+  ): number {
+
+    return this.report?.functions.reduce(
+      (total, item) => total + item.references.filter(
+        reference => reference.context ? predicate(reference.context) : false
+      ).length,
+      0
+    ) ?? 0;
+
+  }
+
+
   get healthLabel(): string {
 
     const score = this.healthScore;
