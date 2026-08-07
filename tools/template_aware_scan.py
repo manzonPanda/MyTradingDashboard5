@@ -2,6 +2,8 @@
 
 import json
 import re
+import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -171,6 +173,67 @@ HOST_LISTENER_RE = re.compile(
 
 
 # ============================================================
+# CLI PROGRESS BAR
+# ============================================================
+
+class ProgressBar:
+    """Simple terminal progress bar."""
+
+    def __init__(self, total, label="", width=40):
+        self.total = max(total, 1)
+        self.label = label
+        self.width = width
+        self.current = 0
+        self.start_time = time.time()
+        self._drawn = False
+
+    def update(self, amount=1):
+        self.current = min(self.current + amount, self.total)
+        self._render()
+
+    def set(self, value):
+        self.current = min(max(value, 0), self.total)
+        self._render()
+
+    def _render(self):
+        pct = self.current / self.total
+        filled = int(self.width * pct)
+        bar = "█" * filled + "░" * (self.width - filled)
+        elapsed = time.time() - self.start_time
+        rate = self.current / elapsed if elapsed > 0 else 0
+        remaining = (self.total - self.current) / rate if rate > 0 else 0
+        line = (
+            f"\r{self.label} [{bar}] "
+            f"{self.current}/{self.total} "
+            f"({pct * 100:.0f}%) "
+            f"{elapsed:.1f}s"
+        )
+        if remaining > 0:
+            line += f" ETA {remaining:.1f}s"
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        self._drawn = True
+
+    def finish(self, message=None):
+        if self._drawn:
+            sys.stdout.write("\n")
+            sys.stdout.flush()
+        if message:
+            print(f"  ✓ {message}")
+
+
+def print_step(message):
+    """Print a section header."""
+    print()
+    print(f"── {message} " + "─" * max(0, 60 - len(message)))
+
+
+def print_ok(message):
+    """Print a success line."""
+    print(f"  ✓ {message}")
+
+
+# ============================================================
 # HELPERS
 # ============================================================
 
@@ -227,6 +290,9 @@ def add_unique(items, item, key):
 # COLLECT FILES
 # ============================================================
 
+START_TIME = time.time()
+
+print_step("Collecting source files")
 all_files = collect_files()
 
 ts_files = [
@@ -244,21 +310,28 @@ style_files = [
     if p.suffix.lower() in STYLE_EXTENSIONS
 ]
 
+print_ok(f"Found {len(all_files)} files "
+         f"({len(ts_files)} TS, {len(html_files)} HTML, {len(style_files)} styles)")
 
-contents = {
-    path: read_file(path)
-    for path in all_files
-}
+print_step("Reading file contents")
+contents = {}
+read_bar = ProgressBar(len(all_files), "Reading files")
+for path in all_files:
+    contents[path] = read_file(path)
+    read_bar.update()
+read_bar.finish(f"Read {len(all_files)} files")
 
 
 # ============================================================
 # FUNCTIONS
 # ============================================================
 
+print_step("Scanning functions")
+
 functions = []
 host_listeners = {}
 
-
+host_bar = ProgressBar(len(ts_files), "Host listeners")
 for path in ts_files:
 
     text = contents[path]
@@ -266,6 +339,9 @@ for path in ts_files:
 
     for match in HOST_LISTENER_RE.finditer(text):
         host_listeners[(rel, match.group("name"), line_number(text, match.start("name")))] = match.group("event")
+
+    host_bar.update()
+host_bar.finish(f"Found {len(host_listeners)} host listeners")
 
 
 def register_function(name, path, line, kind):
@@ -288,6 +364,7 @@ def register_function(name, path, line, kind):
     })
 
 
+scan_bar = ProgressBar(len(ts_files), "Scanning functions")
 for path in ts_files:
 
     text = contents[path]
@@ -323,6 +400,9 @@ for path in ts_files:
             line_number(text, match.start()),
             "function",
         )
+
+    scan_bar.update()
+scan_bar.finish(f"Found {len(functions)} function declarations")
 
 
 unique_functions = []
@@ -446,8 +526,10 @@ def find_function_references(function):
     return references
 
 
+print_step("Analyzing function references")
 function_results = []
 
+ref_bar = ProgressBar(len(unique_functions), "Function references")
 for function in unique_functions:
 
     references = find_function_references(function)
@@ -460,13 +542,19 @@ for function in unique_functions:
         "references": references,
     })
 
+    ref_bar.update()
+ref_bar.finish(f"Analyzed {len(unique_functions)} functions")
+
 
 # ============================================================
 # ANGULAR COMPONENTS
 # ============================================================
 
+print_step("Scanning Angular components")
+
 components = []
 
+comp_scan_bar = ProgressBar(len(ts_files), "Component selectors")
 for path in ts_files:
 
     text = contents[path]
@@ -487,9 +575,13 @@ for path in ts_files:
             ),
         })
 
+    comp_scan_bar.update()
+comp_scan_bar.finish(f"Found {len(components)} component selectors")
+
 
 component_results = []
 
+comp_ref_bar = ProgressBar(len(components), "Component references")
 for component in components:
 
     selector = component["selector"]
@@ -531,13 +623,19 @@ for component in components:
         "references": references,
     })
 
+    comp_ref_bar.update()
+comp_ref_bar.finish(f"Analyzed {len(components)} components")
+
 
 # ============================================================
 # CSS / SCSS
 # ============================================================
 
+print_step("Scanning CSS / SCSS selectors")
+
 css_selectors = []
 
+css_bar = ProgressBar(len(style_files), "CSS selectors")
 for path in style_files:
 
     text = contents[path]
@@ -569,6 +667,9 @@ for path in style_files:
                 match.start()
             ),
         })
+
+    css_bar.update()
+css_bar.finish(f"Found {len(css_selectors)} CSS selectors")
 
 
 # Deduplicate CSS
@@ -643,6 +744,7 @@ def find_css_references(selector):
 
 css_results = []
 
+css_ref_bar = ProgressBar(len(unique_css), "CSS references")
 for selector in unique_css:
 
     references = find_css_references(selector)
@@ -662,6 +764,9 @@ for selector in unique_css:
 
         "references": references,
     })
+
+    css_ref_bar.update()
+css_ref_bar.finish(f"Analyzed {len(unique_css)} CSS selectors")
 
 
 # ============================================================
@@ -795,29 +900,38 @@ report = {
 # WRITE JSON
 # ============================================================
 
+print_step("Writing report")
+
 OUTPUT_FILE.parent.mkdir(
     parents=True,
     exist_ok=True
 )
 
-OUTPUT_FILE.write_text(
-    json.dumps(
-        report,
-        ensure_ascii=False,
-        separators=(",", ":")
-    ),
-    encoding="utf-8"
+json_text = json.dumps(
+    report,
+    ensure_ascii=False,
+    separators=(",", ":")
 )
+
+OUTPUT_FILE.write_text(json_text, encoding="utf-8")
+
+size_kb = len(json_text.encode("utf-8")) / 1024
+print_ok(f"Report written: {relative_path(OUTPUT_FILE)} ({size_kb:.1f} KB)")
 
 
 # ============================================================
 # CLI SUMMARY
 # ============================================================
 
+total_time = time.time() - START_TIME
+
 print()
 print("=" * 70)
 print(" CODE AUDIT COMPLETE")
 print("=" * 70)
+
+print()
+print(f"Total time       : {total_time:.1f}s")
 
 print()
 print(f"TypeScript files : {len(ts_files)}")
