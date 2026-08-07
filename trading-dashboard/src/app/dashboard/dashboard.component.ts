@@ -4916,6 +4916,9 @@ onUpload(): void {
               .map((trade: any) => String(trade.position_id))
           )
         : null;
+      if (accountId && mt5History !== null) {
+        await this.syncClosedMt5Trades(supabaseTrades, mt5History, accountId);
+      }
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
@@ -4992,6 +4995,48 @@ onUpload(): void {
   getCurrentMt5LiveTrades(): Table[] {
     if (!this.isMt5LiveSnapshotAvailable || !this.mt5OpenPositionIds) return [];
     return this.mt5LiveTrades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
+  }
+
+  private async syncClosedMt5Trades(
+    supabaseTrades: any[],
+    mt5History: any[],
+    accountId: string
+  ): Promise<void> {
+    const closedMt5ByPosition = new Map(
+      mt5History
+        .filter(trade =>
+          trade?.position_id !== undefined &&
+          trade?.position_id !== null &&
+          String(trade.status).toLowerCase() !== 'open' &&
+          trade.time_close
+        )
+        .map(trade => [String(trade.position_id), trade])
+    );
+
+    const updates = supabaseTrades
+      .filter(trade => String(trade.status).toLowerCase() === 'open')
+      .map(trade => {
+        const mt5Trade = closedMt5ByPosition.get(String(trade.position_id));
+        if (!mt5Trade) return null;
+
+        const timeClose = this.formatMt5DateForSupabase(
+          this.convertAndFormatMT5Date(String(mt5Trade.time_close))
+        );
+        const tradeUpdates: Partial<Trade> = { time_close: timeClose };
+        if (mt5Trade.exit_price !== undefined && mt5Trade.exit_price !== null) {
+          tradeUpdates.price_close = Number(mt5Trade.exit_price);
+        }
+        if (mt5Trade.profit !== undefined && mt5Trade.profit !== null) {
+          tradeUpdates.pnl = Number(mt5Trade.profit);
+        }
+        if (mt5Trade.commission !== undefined && mt5Trade.commission !== null) {
+          tradeUpdates.commission = Number(mt5Trade.commission);
+        }
+        return this.supabaseService.updateTradeByTicket(trade.position_id, accountId, tradeUpdates);
+      })
+      .filter((update): update is Promise<Trade | null> => update !== null);
+
+    if (updates.length) await Promise.all(updates);
   }
 
   private reconcileMt5Statuses(supabaseTrades: any[], mt5History: any[] | null): any[] {

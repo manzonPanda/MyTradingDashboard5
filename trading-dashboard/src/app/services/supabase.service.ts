@@ -514,6 +514,18 @@ export class SupabaseService {
     return data as Trade | null;
   }
 
+  async updateTradeByTicket(ticket: number | string, accountId: string, updates: Partial<Trade>): Promise<Trade | null> {
+    const { data, error } = await this.supabase
+      .from('trades')
+      .update(updates)
+      .eq('ticket', ticket)
+      .eq('account_id', accountId)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(`Trade status update failed: ${error.message}`);
+    return data as Trade | null;
+  }
+
   async createTrade(trade: Partial<Trade>): Promise<Trade | null> {
     const { data, error } = await this.supabase
       .from('trades')
