@@ -29,20 +29,28 @@
         </button>
       </div>
 
-      <div class="server-label">{{ server.name }}</div>
-      <div class="server-detail">{{ server.detail }}</div>
-      @if (server.status === 'online' && server.account) {
-        <div class="account-details">
-          <span>{{ server.account.name || 'MT5 account' }}</span>
-          <span>Account {{ server.account.login }}</span>
-          @if (server.account.server) {
-            <span>{{ server.account.server }}</span>
-          }
-          @if (server.account.balance !== null) {
-            <span>{{ server.account.balance | currency }}</span>
-          }
-        </div>
-      }
+      <div class="server-info">
+        <div class="server-label">{{ server.name }}</div>
+        <div class="server-detail">{{ server.detail }}</div>
+        @if (server.status === 'online' && server.account) {
+          <div class="account-details">
+            <span>{{ server.account.name || 'MT5 account' }} · {{ server.account.login }}</span>
+            @if (server.account.server || server.account.balance !== null) {
+              <span>
+                @if (server.account.server) {
+                  {{ server.account.server }}
+                }
+                @if (server.account.server && server.account.balance !== null) {
+                  ·
+                }
+                @if (server.account.balance !== null) {
+                  {{ server.account.balance | currency }}
+                }
+              </span>
+            }
+          </div>
+        }
+      </div>
     </div>
   </div>
 
