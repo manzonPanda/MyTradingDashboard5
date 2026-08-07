@@ -15,7 +15,7 @@
       </h1>
 
       <p>
-        Analyze your Angular project for potentially unused code.
+        Analyze your Angular project with template-aware usage detection.
       </p>
 
     </div>
@@ -736,14 +736,22 @@
 
                     @for (
                       reference of item.references;
-                      track reference.file + reference.line
+                      track reference.file + reference.line + reference.context
                     ) {
 
                       <div class="reference">
 
-                        <span>
+                        <span class="reference-location">
                           {{ reference.file }}:{{ reference.line }}
                         </span>
+
+                        @if (reference.context) {
+
+                          <span class="reference-context">
+                            {{ reference.context }}
+                          </span>
+
+                        }
 
                       </div>
 

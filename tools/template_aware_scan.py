@@ -20,7 +20,7 @@ SRC_ROOT = ANGULAR_ROOT / "src"
 OUTPUT_FILE = (PROJECT_ROOT/ "trading-dashboard"/ "public"/ "tools"/ "code-audit-report.json")
 # OUTPUT_FILE = (ANGULAR_ROOT/ "src"/ "assets"/ "tools"/ "code-audit-report.json")
 
-SCANNER_VERSION = "2.0.0"
+SCANNER_VERSION = "2.1.0"
 
 
 TS_EXTENSIONS = {".ts"}
@@ -149,6 +149,22 @@ CSS_ID_RE = re.compile(
 )
 
 
+HOST_LISTENER_RE = re.compile(
+    r"""
+    @HostListener
+    \s*\(
+    \s*(?P<quote>['"])(?P<event>[^'"]+)(?P=quote)
+    [\s\S]*?
+    \)
+    \s*
+    (?:(?:public|private|protected|static|async|readonly)\s+)*
+    (?P<name>[A-Za-z_$][A-Za-z0-9_$]*)
+    \s*\(
+    """,
+    re.VERBOSE,
+)
+
+
 # ============================================================
 # HELPERS
 # ============================================================
@@ -235,22 +251,33 @@ contents = {
 # ============================================================
 
 functions = []
+host_listeners = {}
+
+
+for path in ts_files:
+
+    text = contents[path]
+    rel = relative_path(path)
+
+    for match in HOST_LISTENER_RE.finditer(text):
+        host_listeners[(rel, match.group("name"), line_number(text, match.start("name")))] = match.group("event")
 
 
 def register_function(name, path, line, kind):
 
-    if not name:
+    if not name or name in KEYWORDS:
         return
 
-    if name in KEYWORDS:
-        return
+    rel = relative_path(path)
 
     if name in LIFECYCLE_METHODS:
-        return
+        kind = "lifecycle-hook"
+    elif (rel, name, line) in host_listeners:
+        kind = "host-listener"
 
     functions.append({
         "name": name,
-        "file": relative_path(path),
+        "file": rel,
         "line": line,
         "kind": kind,
     })
@@ -260,7 +287,6 @@ for path in ts_files:
 
     text = contents[path]
 
-    # Class methods
     for match in METHOD_RE.finditer(text):
 
         name = match.group(1)
@@ -275,7 +301,6 @@ for path in ts_files:
             "method",
         )
 
-    # Arrow functions
     for match in ARROW_FUNCTION_RE.finditer(text):
 
         register_function(
@@ -285,7 +310,6 @@ for path in ts_files:
             "arrow-function",
         )
 
-    # Normal functions
     for match in FUNCTION_RE.finditer(text):
 
         register_function(
@@ -296,9 +320,7 @@ for path in ts_files:
         )
 
 
-# Deduplicate
 unique_functions = []
-
 seen_functions = set()
 
 for function in functions:
@@ -320,40 +342,101 @@ for function in functions:
 # FUNCTION REFERENCES
 # ============================================================
 
+def line_text_at(text, position):
+    start = text.rfind("\n", 0, position) + 1
+    end = text.find("\n", position)
+    return text[start:] if end == -1 else text[start:end]
+
+
+def template_reference_context(text, position):
+    line = line_text_at(text, position)
+    before = line[:position - (text.rfind("\n", 0, position) + 1)]
+
+    if re.search(r"@\s*(?:if|for|switch|defer)\s*\([^)]*$", before):
+        return "Angular control flow"
+    if "{{" in before and "}}" not in before:
+        return "template interpolation"
+    if re.search(r"\[\([^\]]+\)\]\s*=\s*['\"][^'\"]*$", before):
+        return "template two-way binding"
+    if re.search(r"\([^)]*\)\s*=\s*['\"][^'\"]*$", before):
+        return "template event binding"
+    if re.search(r"\[[^\]]+\]\s*=\s*['\"][^'\"]*$", before):
+        return "template property binding"
+    if re.search(r"\*[A-Za-z-]+\s*=\s*['\"][^'\"]*$", before):
+        return "template structural directive"
+
+    return "template expression"
+
+
+def typescript_reference_context(line, name):
+    escaped_name = re.escape(name)
+
+    callback_pattern = (
+        r"(?:\(|,)\s*(?:this\.)?" + escaped_name
+        + r"\s*(?=,|\))"
+    )
+    callback_property_pattern = (
+        r"\b(?:callback|handler|listener|next|error|complete)\s*:\s*"
+        + r"(?:this\.)?" + escaped_name + r"\b"
+    )
+
+    if re.search(callback_pattern, line) or re.search(callback_property_pattern, line):
+        return "callback reference"
+    if re.search(r"(?:this\.)?" + escaped_name + r"\s*\(", line):
+        return "TypeScript call"
+
+    return "TypeScript reference"
+
+
+def add_reference(references, file, line, context):
+    add_unique(
+        references,
+        {"file": file, "line": line, "context": context},
+        lambda item: (item["file"], item["line"], item["context"]),
+    )
+
+
 def find_function_references(function):
 
     name = function["name"]
-
-    pattern = re.compile(
-        r"\b" + re.escape(name) + r"\b"
-    )
-
+    pattern = re.compile(r"\b" + re.escape(name) + r"\b")
     references = []
+
+    if function["kind"] == "lifecycle-hook":
+        add_reference(
+            references,
+            function["file"],
+            function["line"],
+            "Angular lifecycle hook",
+        )
+    elif function["kind"] == "host-listener":
+        event = host_listeners[(function["file"], name, function["line"])]
+        add_reference(
+            references,
+            function["file"],
+            function["line"],
+            f"Host listener ({event})",
+        )
 
     for path in ts_files + html_files:
 
         text = contents[path]
+        rel = relative_path(path)
 
         for match in pattern.finditer(text):
 
-            line = line_number(
-                text,
-                match.start()
-            )
+            line = line_number(text, match.start())
 
-            rel = relative_path(path)
-
-            # Ignore declaration
-            if (
-                rel == function["file"]
-                and line == function["line"]
-            ):
+            if rel == function["file"] and line == function["line"]:
                 continue
 
-            references.append({
-                "file": rel,
-                "line": line,
-            })
+            context = (
+                template_reference_context(text, match.start())
+                if path.suffix.lower() in HTML_EXTENSIONS
+                else typescript_reference_context(line_text_at(text, match.start()), name)
+            )
+
+            add_reference(references, rel, line, context)
 
     return references
 
@@ -363,27 +446,13 @@ function_results = []
 for function in unique_functions:
 
     references = find_function_references(function)
-
-    status = (
-        "unused"
-        if len(references) == 0
-        else "used"
-    )
+    status = "unused" if len(references) == 0 else "used"
 
     function_results.append({
         **function,
-
         "referenceCount": len(references),
-
         "status": status,
-
-        # Only include references for unused items
-        # to keep the report file small
-        "references": (
-            references
-            if status == "unused"
-            else []
-        ),
+        "references": references,
     })
 
 
@@ -454,13 +523,7 @@ for component in components:
 
         "status": status,
 
-        # Only include references for unused items
-        # to keep the report file small
-        "references": (
-            references
-            if status == "unused"
-            else []
-        ),
+        "references": references,
     })
 
 
@@ -592,13 +655,7 @@ for selector in unique_css:
 
         "status": status,
 
-        # Only include references for unused items
-        # to keep the report file small
-        "references": (
-            references
-            if status == "unused"
-            else []
-        ),
+        "references": references,
     })
 
 
