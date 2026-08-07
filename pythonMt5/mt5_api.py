@@ -34,6 +34,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")  # All
 local_tz = ZoneInfo("Asia/Manila")
 last_disconnect_time = None
 reconnect_delay = 30  # seconds
+reconnect_in_progress = False
 
 MASTER = r"C:\Program Files\MetaTrader 5\terminal64.exe"
 
@@ -381,6 +382,9 @@ def get_open_trades():
 
 @app.route("/api/history", methods=["GET"])
 def full_history():
+    if mt5.terminal_info() is None:
+        return jsonify({"error": "MT5 terminal is unavailable"}), 503
+
     from_date = datetime(2000, 1, 1)
     to_date = datetime.now()
 
@@ -459,6 +463,9 @@ def full_history():
 
     # 📗 Open trades via current positions
     positions = mt5.positions_get()
+    if positions is None:
+        return jsonify({"error": "MT5 positions are unavailable"}), 503
+
     df_open = []
     if positions:
         for pos in positions:
@@ -498,20 +505,15 @@ def health_check():
 
     info = mt5.terminal_info()
     mt5_connected = info is not None
-    
-    # use this if you want auto-reconnect logic
-    # if mt5_connected:
-    #     # Reset disconnect timer because it's healthy again
-    #     last_disconnect_time = None
-    # else:
-    #     # If this is the first time detecting disconnect, start the timer
-    #     if last_disconnect_time is None:
-    #         last_disconnect_time = time.time()
-    #     # If 10 seconds passed since losing connection → reconnect
-    #     if time.time() - last_disconnect_time >= reconnect_delay:
-    #         eventlet.spawn_n(reconnect_mt5)
-    #         # Prevent multiple scheduled reconnects
-    #         last_disconnect_time = time.time()  # reset timer after scheduling
+
+    if mt5_connected:
+        last_disconnect_time = None
+    else:
+        if last_disconnect_time is None:
+            last_disconnect_time = time.time()
+        elif time.time() - last_disconnect_time >= reconnect_delay:
+            eventlet.spawn_n(reconnect_mt5)
+            last_disconnect_time = time.time()
 
     return jsonify({
         'status': 'healthy' if mt5_connected else 'unhealthy',
@@ -531,17 +533,37 @@ def health_check():
 
 
 def reconnect_mt5():
-    # print("⏳ Attempting MT5 reconnect...")
-    mt5.shutdown()
-    time.sleep(1)
-    mt5.initialize()
-    # print("✅ Reconnect Attempt Done")
+    global last_disconnect_time, reconnect_in_progress
+
+    if reconnect_in_progress:
+        return False
+
+    reconnect_in_progress = True
+    try:
+        mt5.shutdown()
+        time.sleep(1)
+        if not mt5.initialize(path=MASTER):
+            return False
+
+        last_disconnect_time = None
+        info = mt5.account_info()
+        if info:
+            socketio.emit('account_info', {
+                'login': info.login,
+                'name': info.name,
+                'server': info.server,
+                'balance': info.balance,
+                'starting_balance': info.balance,
+                'info': info._asdict()
+            })
+        return True
+    finally:
+        reconnect_in_progress = False
 
 @app.route("/api/start-reconnect", methods=["POST"])
 def start_reconnect():
-    # Start the reconnect timer only when this endpoint is hit
-    Timer(10, reconnect_mt5).start()
-    return jsonify({"message": "Reconnect countdown started"})
+    eventlet.spawn_n(reconnect_mt5)
+    return jsonify({"message": "MT5 reconnection started"})
 
 def close_position(position):
     symbol_info = mt5.symbol_info(position.symbol)
