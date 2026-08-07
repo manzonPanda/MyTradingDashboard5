@@ -115,7 +115,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
           balance: Number.isFinite(Number(account.balance)) ? Number(account.balance) : null
         };
         server.status = 'online';
-        server.detail = 'Connected';
+        server.detail = '';
       } else {
         server.account = undefined;
       }
@@ -137,20 +137,20 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
         if (response?.status === 'healthy' && response.mt5_connected) {
           server.status = 'online';
-          server.detail = 'Connected';
+          server.detail = '';
         } else if (response?.reconnecting) {
           server.status = 'reconnecting';
-          server.detail = 'Reconnection in progress · waiting for MT5 terminal';
+          server.detail = 'Retrying…';
         } else {
           server.status = 'offline';
           server.detail = response?.reconnect_in_seconds
-            ? `Disconnected · automatic retry in ${response.reconnect_in_seconds}s`
-            : 'Disconnected from MT5 terminal';
+            ? `Retrying in ${response.reconnect_in_seconds}s`
+            : '';
         }
 
       } catch (error) {
         server.status = 'offline';
-        server.detail = 'MT5 API is unavailable';
+        server.detail = '';
       }
 
       server.lastChecked = new Date();
@@ -172,16 +172,16 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     if (server.status === 'reconnecting') return;
 
     server.status = 'reconnecting';
-    server.detail = 'Starting MT5 reconnection…';
+    server.detail = 'Retrying…';
     this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
         next: () => {
-          server.detail = 'Reconnection in progress · waiting for MT5 terminal';
+          server.detail = 'Retrying…';
           this.reconnectRequested.emit();
         },
         error: () => {
           server.status = 'offline';
-          server.detail = 'Reconnect request failed';
+          server.detail = '';
         }
       });
   }
