@@ -542,6 +542,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly activeGaugeAlertLevels = new Map<string, 'normal' | 'high'>();
   private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
+  private mt5LiveTradesAccountId: string | null = null;
   editingAccountId: string | null = null;
   isCreatingAccount = false;
   accountPage = 1;
@@ -6455,33 +6456,44 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Map the trades once, regardless of source
     console.log('🔄 Mapping trades from response:', response?.length ?? 0, 'items');
-    const mt5Trades = (response || []).map((trade: any) => ({
-      openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
-      closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
-      tradeNotion: [],
-      status: "",
-      position: trade.position_id,
-      symbol: trade.symbol || '',
-      type: trade.trade_type === 0 ? 'Buy' : 'Sell',
-      volume: trade.volume ? trade.volume.toString() : '0',
-      entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
-      sL: trade.sl ? trade.sl.toString() : '0',
-      tP: trade.tp ? trade.tp.toString() : '0',
-      exit: trade.exit_price ? trade.exit_price.toString() : '0',
-      commission: trade.commission ? trade.commission.toString() : '0',
-      swap: trade.swap ? trade.swap.toString() : '0',
-      profit: trade.profit ? trade.profit.toString() : '0',
-      netProfit: (trade.profit + trade.commission).toString(),
-      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
-      mt5status: trade.status || '',
-      mfe: (trade.mfe ?? 0).toString(),
-      mae: (trade.mae ?? 0).toString(),
-      screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id),
-      screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
-    } as Table));
+    const currentTradesByPosition = this.mt5LiveTradesAccountId === accountId
+      ? new Map(this.mt5LiveTrades.map(trade => [String(trade.position), trade]))
+      : new Map<string, Table>();
+    const mt5Trades = (response || []).map((trade: any) => {
+      const cachedExtremes = this.getLiveExtremes(trade.position_id);
+      const currentTrade = currentTradesByPosition.get(String(trade.position_id));
+      const mfe = Math.max(Number(trade.mfe) || 0, cachedExtremes.mfe, Number(currentTrade?.mfe) || 0);
+      const mae = Math.min(Number(trade.mae) || 0, cachedExtremes.mae, Number(currentTrade?.mae) || 0);
+
+      return {
+        openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
+        closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
+        tradeNotion: [],
+        status: "",
+        position: trade.position_id,
+        symbol: trade.symbol || '',
+        type: trade.trade_type === 0 ? 'Buy' : 'Sell',
+        volume: trade.volume ? trade.volume.toString() : '0',
+        entry: trade.entry_price ? +parseFloat(trade.entry_price).toFixed(5) : '0',
+        sL: trade.sl ? trade.sl.toString() : '0',
+        tP: trade.tp ? trade.tp.toString() : '0',
+        exit: trade.exit_price ? trade.exit_price.toString() : '0',
+        commission: trade.commission ? trade.commission.toString() : '0',
+        swap: trade.swap ? trade.swap.toString() : '0',
+        profit: trade.profit ? trade.profit.toString() : '0',
+        netProfit: (trade.profit + trade.commission).toString(),
+        riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
+        rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
+        mt5status: trade.status || '',
+        mfe: String(mfe),
+        mae: String(mae),
+        screenshotUrl: trade.screenshot_url || this.getCachedTradeScreenshot(trade.position_id),
+        screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
+      } as Table;
+    });
 
     this.mt5LiveTrades = mt5Trades;
+    this.mt5LiveTradesAccountId = accountId;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
@@ -6775,7 +6787,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     const existingIndex = this.mt5LiveTrades.findIndex(t =>
-      t.position === newTrade.position
+      String(t.position) === String(newTrade.position)
     );
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
@@ -6821,7 +6833,7 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     const trade = tradeData;
 
     const liveIndex = this.mt5LiveTrades.findIndex(t =>
-      t.position === trade.ticket 
+      String(t.position) === String(trade.ticket)
     );
 
     if (liveIndex !== -1) {
