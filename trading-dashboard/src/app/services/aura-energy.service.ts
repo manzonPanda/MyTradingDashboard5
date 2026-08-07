@@ -98,15 +98,6 @@ export class AuraEnergyService {
     }
   }
 
-  async loadConfig(): Promise<AuraEnergyConfig> {
-    const userId = this.authService.user()?.id;
-    if (!userId) return this.getConfig();
-
-    const settings = await this.supabaseService.getAuraEnergySettings(userId);
-    if (settings) this.config = this.fromSettings(settings);
-    return this.getConfig();
-  }
-
   async saveConfig(config: AuraEnergyConfig = this.config): Promise<AuraEnergyConfig> {
     const userId = this.authService.user()?.id;
     if (!userId) throw new Error('No authenticated user exists.');
@@ -165,25 +156,6 @@ export class AuraEnergyService {
     }
 
     this.zone.runOutsideAngular(() => this.scheduleNextPulse(this.randomDelay()));
-  }
-
-  setPathwayPreview(enabled: boolean): void {
-    if (this.isDestroyed) {
-      return;
-    }
-
-    this.clearTimer();
-    this.clearFadeTimer();
-
-    if (!enabled) {
-      this.finishTraveler();
-      this.scheduleNextPulse(this.randomDelay());
-      return;
-    }
-
-    if (!this.isAuraTraveling) {
-      this.startTraveler();
-    }
   }
 
   destroy(): void {

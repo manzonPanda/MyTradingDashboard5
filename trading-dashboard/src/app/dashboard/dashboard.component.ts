@@ -414,31 +414,6 @@ export class DashboardComponent implements AfterViewInit {
     this.cdr.markForCheck();
   }
 
-  calculateAccountSizePercentages(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
-    if (!this.accountSizeInput || this.accountSizeInput <= 0) {
-      return this.accountSizes.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
-    }
-
-    const currentBalance = this.mt5AccountInfo?.startingBalance || 0;
-    if (currentBalance <= 0) {
-      return this.accountSizes.map(acc => ({ size: acc.size, label: acc.label, percentage: 0, displayValue: '$0.00' }));
-    }
-
-    // Calculate percentage of current account
-    const percentageOfCurrentAccount = (this.accountSizeInput / currentBalance) * 100;
-
-    return this.accountSizes.map(acc => {
-      // Calculate dollar value for this account size
-      const dollarValue = (percentageOfCurrentAccount / 100) * acc.size;
-      return {
-        size: acc.size,
-        label: acc.label,
-        percentage: percentageOfCurrentAccount,
-        displayValue: '$' + dollarValue.toFixed(2)
-      };
-    });
-  }
-
   calculateAccountSizesSecondary(): Array<{ size: number; label: string; percentage: number; displayValue: string }> {
     // Use selected account size as reference, or return zeros if no input
     const referenceSize = this.selectedAccountSize || null;
@@ -855,11 +830,6 @@ mt5AccountInfo: AccountSettings = {
     this.generateTradingChartData();
   }
 
-  toggleChartMode(): void {
-    const next = this.isDailyChart ? 'trades' : 'daily';
-    this.onChartModeChanged(next);
-  }
-
   onSlideModeChanged(checked: boolean): void {
     this.onChartModeChanged(checked ? 'daily' : 'trades');
   }
@@ -1204,11 +1174,6 @@ mt5AccountInfo: AccountSettings = {
     Chart.register(...registerables);
   }
 
-  openLiveTradeSoundSettings(): void {
-    this.liveTradeSoundSettingsDraft = { ...this.liveTradeSoundSettings };
-    this.isLiveTradeSoundSettingsOpen = true;
-  }
-
   closeLiveTradeSoundSettings(): void {
     this.isLiveTradeSoundSettingsOpen = false;
   }
@@ -1245,31 +1210,6 @@ mt5AccountInfo: AccountSettings = {
     }));
   }
 
-  saveLiveTradeSoundSettings(): void {
-    const settings = this.liveTradeSoundSettingsDraft;
-    if (settings.alertThreshold < 0 || settings.highAlertThreshold <= settings.alertThreshold || settings.volume < 0 || settings.volume > 1) {
-      this.snackBar.open('Set a valid alert range and volume.', 'Dismiss', { duration: 4000 });
-      return;
-    }
-
-    this.liveTradeSoundSettings = { ...settings };
-    this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
-    this.saveLiveTradeDisplayPreferences();
-    for (const trade of this.mt5LiveTrades) {
-      this.notifyGaugePercentage(trade);
-    }
-    this.closeLiveTradeSoundSettings();
-    this.snackBar.open('Live trade sound settings saved.', 'Dismiss', { duration: 3000 });
-    this.cdr.markForCheck();
-  }
-
-  testLiveTradeSound(): void {
-    if (!this.liveTradeSoundSettingsDraft.enabled) return;
-    const sound = new Audio(this.gaugeAlertSoundUrl);
-    sound.volume = this.liveTradeSoundSettingsDraft.volume;
-    sound.play().catch(() => this.snackBar.open('Your browser blocked the sound preview.', 'Dismiss', { duration: 4000 }));
-  }
-
   private loadLiveTradeSoundSettings(): void {
     try {
       const saved = this.document.defaultView?.localStorage.getItem(this.liveTradeSoundSettingsStorageKey);
@@ -1282,12 +1222,6 @@ mt5AccountInfo: AccountSettings = {
     } catch {
       this.liveTradeSoundSettings = { ...DEFAULT_LIVE_TRADE_SOUND_SETTINGS };
     }
-  }
-
-  openAuraConfigModal(): void {
-    this.auraConfig = this.auraEnergy.getConfig();
-    this.isAuraConfigModalOpen = true;
-    this.cdr.markForCheck();
   }
 
   closeAuraConfigModal(): void {
@@ -1525,30 +1459,6 @@ mt5AccountInfo: AccountSettings = {
     }
   }
 
-  calculateSessionWinRate(): number {
-    const { start, end } = this.getSessionWindowUtc();
-    const trades = this.tableData.filter(t => {
-      const od = this.parseOpenDate(t.openDate || '');
-      return od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
-    });
-    const totalTrades = trades.length;
-    if (totalTrades === 0) return 0;
-    const wins = trades.filter(t => this.getSafeNumber(t.netProfit) > 0).length;
-    return Math.round((wins / totalTrades) * 100);
-  }
-
-  calculateTodayWinRate(): number {
-    const { start, end } = this.getTodayWindowUtc();
-    const trades = this.tableData.filter(t => {
-      const od = this.parseOpenDate(t.openDate || '');
-      return od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
-    });
-    const totalTrades = trades.length;
-    if (totalTrades === 0) return 0;
-    const wins = trades.filter(t => this.getSafeNumber(t.netProfit) > 0).length;
-    return Math.round((wins / totalTrades) * 100);
-  }
-
   getWinRingCircumference(): number { return 2 * Math.PI * 44; }
   getWinRingDash(): string {
     const c = this.getWinRingCircumference();
@@ -1628,13 +1538,6 @@ mt5AccountInfo: AccountSettings = {
     const usedPct = limitAmt > 0 ? (usedAmt / limitAmt) * 100 : 0;
     return Math.max(0, Math.min(100, usedPct));
   }
-  getDailyLimitRingDash(): string {
-    const c = this.getDailyLimitRingCircumference();
-    const fraction = this.getDailyLimitUsedPct() / 100;
-    const arc = fraction * c;
-    return `${arc} ${Math.max(0, c - arc)}`;
-  }
-  getDailyLimitRingOffset(): number { return 0; }
 
   private setupDailyResetTimer(): void {
     // Check every minute for new session boundary and recompute
@@ -1649,11 +1552,6 @@ mt5AccountInfo: AccountSettings = {
       }
       this.updateDailyLimitMetrics();
     }, 60 * 1000);
-  }
-
-  // Math utility methods for template calculations
-  mathMin(a: number, b: number): number {
-    return Math.min(a, b);
   }
 
   mathAbs(value: number): number {
@@ -1736,26 +1634,6 @@ mt5AccountInfo: AccountSettings = {
     const breakevenCount = this.getBreakevenCount();
     const offsetPortion = (winCount + breakevenCount) / totalTrades;
     return -(circumference * offsetPortion);
-  }
-
-  // Legacy methods for compatibility
-  getSimpleGaugeColor(): string {
-    const winRate = this.calculateWinRate();
-    if (winRate >= 60) return '#10b981'; // Green for 60%+
-    if (winRate >= 40) return '#f59e0b'; // Yellow for 40-59%
-    return '#ef4444'; // Red for <40%
-  }
-
-  getSimpleGaugeDash(): string {
-    const circumference = Math.PI * 60; // Half circle circumference (radius 60)
-    return `${circumference} ${circumference}`;
-  }
-
-  getSimpleGaugeOffset(): number {
-    const winRate = this.calculateWinRate();
-    const circumference = Math.PI * 60;
-    const progress = (100 - winRate) / 100;
-    return circumference * progress;
   }
 
   openRoiEntryModal(): void {
@@ -1933,11 +1811,6 @@ mt5AccountInfo: AccountSettings = {
       this.isSavingCertificate = false;
       this.cdr.markForCheck();
     }
-  }
-
-  openPayoutCreator(): void {
-    this.payoutForm = { certificate_id: this.certificates[0]?.id ?? '', amount: null, payout_date: new Date().toISOString().slice(0, 10), notes: '', proof_url: '' };
-    this.isPayoutModalOpen = true;
   }
 
   closePayoutModal(): void {
@@ -2530,16 +2403,6 @@ mt5AccountInfo: AccountSettings = {
     this.cdr.markForCheck();
   }
 
-  initializeDataTable(): void {
-    try {
-      // Use Angular DataTables trigger for complex column support
-      this.dtTrigger.next(null);
-
-    } catch (error) {
-      console.error('❌ Error initializing DataTable:', error);
-    }
-  }
-
   refreshDataTableWithAngularBinding(): void {
     try {
       // Force Angular change detection first
@@ -2614,14 +2477,6 @@ mt5AccountInfo: AccountSettings = {
       }
     }, 150);
   }
-  
-  addMonth(date: Date): Date {
-    return addMonths(date, 1);
-  }
-  
-  subMonth(date: Date): Date {
-    return subMonths(date, 1);
-  }
 
  addTradesToCalendar() {
   this.events = [];
@@ -2663,36 +2518,6 @@ mt5AccountInfo: AccountSettings = {
       
       }
     });
-  }
-
-  getPnLColor(day: CalendarMonthViewDay): string {
-    if (!day.events.length) return 'bg-white';
-    const pnl = day.events.reduce((sum, e) => sum + (e.meta?.profit || 0), 0);
-    if (pnl > 0) return 'bg-green-100';
-    if (pnl < 0) return 'bg-red-100';
-    return 'bg-gray-100';
-  }
-
-  countWins(events: any[]): number {
-    return events.filter(event => event.meta?.profit > 0).length;
-  }
-  
-  countLosses(events: any[]): number {
-    return events.filter(event => event.meta?.profit < 0).length;
-  }
-  
-  totalProfit(events: any[]): number {
-    const sum = events
-      .filter(event => event.meta?.profit > 0)
-      .reduce((acc: number, event: any) => acc + (event.meta?.profit || 0), 0);
-    return Math.round(sum * 100) / 100;
-  }
-
-  totalLoss(events: any[]): number {
-    const sum = events
-      .filter(event => event.meta?.profit < 0)
-      .reduce((acc: number, event: any) => acc + (event.meta?.profit || 0), 0);
-    return Math.round(sum * 100) / 100;
   }
   parseTradeDate(dateStr: string): Date | null {
     // MT5 format is like "2025.03.25 09:10:25"
@@ -3228,20 +3053,6 @@ onUpload(): void {
       });
     });
   }
-  
-  copyColumns(index1: number, index2: number): void {
-    // const combinedValues = this.tableData.map(row => {
-    //   return `${row[index1]}\t${row[index2]}`; // tab-separated
-    // });
-    // const textToCopy = combinedValues.join('\n');
-    // navigator.clipboard.writeText(textToCopy).then(() => {
-    //   alert('Two columns copied to clipboard!');
-    // });
-  }
-  
-isRowAlreadySelected(row: any): boolean {
-  return row.tradeNotion.some((t: { tradeDate: any; }) => t.tradeDate);
-}
 
 
 
@@ -3535,89 +3346,6 @@ isRowAlreadySelected(row: any): boolean {
 
   }
 
-
-  async updateExistingEntry(trade:Table): Promise<any>{
-    const body = { //get the page id of the existing entry
-      "filter": {
-        "property": "ticket",
-        "number": {
-          "equals": trade.position
-        }
-      }
-    }
-    try {
-      const res: any = await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
-      );
-      if (res.results.length > 0) {
-        const pageId = res.results[0].id; // Get the first result's ID
-        const [month, day, yearAndTime] = trade.closeDate.split(".");
-        const [year, time] = yearAndTime.split(" ");
-        const iso = `${time ? `${year}-${month}-${day}T${time}:00+08:00` : ""}`; //2025-07-04T15:37:00+08:00
-        const body = {
-          "payload": {
-            "properties": {
-              "Date": {
-                "date": {
-                  "start": res.results[0].properties.Date.date.start, // Keep the original start date
-                  "end": iso
-                }
-              },
-              "price_close": {
-                 "rich_text": [
-                  {
-                    "text": {
-                      "content": trade.exit ? trade.exit.toString() : "0"
-                    }
-                  }
-                ]
-              },
-              "PnL": {
-                "number": trade.profit ? parseFloat(trade.profit) : "" // Ensure profit is a number
-              },
-              "rrr":{
-                "rich_text": [
-                  {
-                    "text": {
-                      "content": trade.rrr ? trade.rrr.toString() : "0"
-                    }
-                  }
-                ]
-              },
-              "mup":{
-                "rich_text": [
-                  {
-                    "text": {
-                      "content": trade.mfe ? trade.mfe.toString() : "0"
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "url":pageId // Use the first tradeId from tradeNotion
-        }
-
-        try {
-          const res: any = await firstValueFrom(
-            this.http.patch(`${this.BACKEND_URL_NOTION}/api/updatePropertiesToTrade`, body)
-          );
-          if (res) {
-            console.log("Updated existing entry for ticket:", res);
-          }
-          
-        } catch (error) {
-          console.error('Error updating existing entry', error);
-        }
-
-      }
-
-    } catch (error) {   
-        console.log("No existing entry found for ticket:", trade.position);
-    } 
-
-  }
-
   async compareToNotion(){
     //for progress bar comparing
     const total = this.tableData.length;
@@ -3727,32 +3455,6 @@ isRowAlreadySelected(row: any): boolean {
       }else{
       }
       return tradesFoundForUnmatched
-  }
-
-chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
-  if (this.selectedTradeId[rowIndex] === tradeNotion.tradeId) {
-    // Already selected — unselect it
-    this.selectedTradeId[rowIndex] = null;
-    row.status = "Unmatched";
-    localStorage.removeItem(rowIndex.toString());
-  } else {
-    // Select the trade
-    this.selectedTradeId[rowIndex] = tradeNotion.tradeId;
-    row.status = "Matched";
-
-    // Store original array in case of revert
-    localStorage.setItem(rowIndex.toString(), JSON.stringify(row.tradeNotion));
-  }
-}
-
-
-  revertTradeNotion(row: Table, rowIndex: number) {
-    // Revert the tradeNotion to an empty array
-    row.tradeNotion = [];
-    this.selectedTradeId[rowIndex] = null; // Reset the selected trade ID for this row
-    row.status = "Unmatched"; // Set status back to unmatched
-    row.tradeNotion = localStorage.getItem(rowIndex.toString()) ? JSON.parse(localStorage.getItem(rowIndex.toString()) || '[]') : [];
-    localStorage.removeItem(rowIndex.toString()); // Clear local storage if needed
   }
 
   async populateData(){
@@ -4415,103 +4117,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  refreshNotionData(): void {
-    this.loadNotionPerformanceData();
-  }
-
-  loadNotionDataWithButton(): void {
-    this.showLoadButton = false; // Hide the load button
-    this.loadNotionPerformanceData(); // Load the data
-  }
-
-  toggleColumnVisibility(columnKey: string): void {
-    // Prevent rapid toggles that could cause issues
-    if (this.isRefreshingTable) {
-      console.warn('Table is currently refreshing, please wait...');
-      return;
-    }
-
-    this.columnVisibility[columnKey as keyof typeof this.columnVisibility] = !this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
-
-    // Update available columns array
-    const column = this.availableColumns.find(col => col.key === columnKey);
-    if (column) {
-      column.visible = this.columnVisibility[columnKey as keyof typeof this.columnVisibility];
-    }
-
-    // Safely refresh DataTable
-    this.safelyRefreshDataTable();
-  }
-
-  toggleColumnSelector(): void {
-    this.showColumnSelector = !this.showColumnSelector;
-  }
-
-  getVisibleColumns(): any[] {
-    return this.availableColumns.filter(col => col.visible);
-  }
-
-  hideAllColumns(): void {
-    Object.keys(this.columnVisibility).forEach(key => {
-      this.columnVisibility[key as keyof typeof this.columnVisibility] = false;
-      const column = this.availableColumns.find(col => col.key === key);
-      if (column) column.visible = false;
-    });
-    this.safelyRefreshDataTable();
-  }
-
-  showAllColumns(): void {
-    Object.keys(this.columnVisibility).forEach(key => {
-      this.columnVisibility[key as keyof typeof this.columnVisibility] = true;
-      const column = this.availableColumns.find(col => col.key === key);
-      if (column) column.visible = true;
-    });
-    this.safelyRefreshDataTable();
-  }
-
-  showDefaultColumns(): void {
-    // Reset to default visibility
-    this.columnVisibility = {
-      id: true,
-      action: true,
-      date: true,
-      account: true,
-      status: true,
-      buySell: true,
-      instrument: true,
-      strategy: true,
-      lots: true,
-      pips: true,
-      pnl: true,
-      percentPnL: true,
-      commission: true,
-      swap: true,
-      idealRRR: true,
-      idealSL: true,
-      modelCheck: true,
-      rulesViolated: true,
-      oneToOneReversal: true,
-      reviewed: true,
-      dailyReflection: true,
-      weeklyRetrospective: true,
-      modelForm: false,
-      screenshots: false,
-      outcome: false,
-      held: false,
-      percentPnLCalc: false,
-      divergenceValue: false,
-      formula: false,
-      emptySelect: false
-    };
-
-    // Update available columns
-    this.availableColumns.forEach(col => {
-      col.visible = this.columnVisibility[col.key as keyof typeof this.columnVisibility];
-    });
-
-    this.safelyRefreshDataTable();
-  }
-
   private safelyRefreshDataTable(): void {
     if (this.isRefreshingTable) {
       return; // Prevent multiple simultaneous refreshes
@@ -4592,137 +4197,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
       return false;
     }
   }
-
-  checkBackendInstructions(): void {
-    const instructions = `
-        ��� How to start the Notion backend server:
-
-        1. Open a new terminal window/tab
-        2. Navigate to the backend directory:
-          cd NotionProxyApi
-
-        3. Install dependencies (if first time):
-          npm install
-
-        4. Start the development server:
-          npm run dev
-
-        5. You should see this message:
-          "✅ Server running at http://localhost:3000"
-
-        6. Then click "Test Backend" to verify the connection
-
-        📁 Project Structure:
-        - Your project has both frontend (trading-dashboard) and backend (NotionProxyApi)
-        - The backend serves as a proxy to your Notion database
-        - The frontend connects to localhost:3000 to get your Notion data
-
-        💡 Troubleshooting:
-        - Make sure you're in the NotionProxyApi folder when running npm run dev
-        - Check that port 3000 is not already in use
-        - Verify your Notion API token is configured in the backend
-        `;
-
-    alert(instructions);
-  }
-
-  async testBackendConnection(): Promise<boolean> {
-
-    try {
-      console.log('Testing POST request to /api/getAllPagesFromDB with empty body...');
-
-      // Use the exact API request format you provided - empty JSON object
-      const testBody = {}; // Empty body as per your sample request
-
-      const testResponse = await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, testBody)
-      );
-
-      console.log('✅ Backend POST request successful:', testResponse);
-
-      // Check if we got actual data
-      if (testResponse && (testResponse as any).results) {
-        const resultCount = (testResponse as any).results.length;
-        alert(`✅ Backend connection successful!\n\nYour Notion proxy server is running and found ${resultCount} pages in your database.\n\nDatabase ID: ef10ac6f79524ea49e4bc0997e0ee704`);
-      } else {
-        alert('��� Backend connection successful!\n\nYour Notion proxy server is running, but no data was returned. Check your Notion database configuration.');
-      }
-
-      return true;
-
-    } catch (error: any) {
-      console.error('❌ Backend connection test failed:');
-      console.error('- Error object:', error);
-      console.error('- Error name:', error.name);
-      console.error('- Error message:', error.message);
-      console.error('- Error status:', error.status);
-      console.error('- Error statusText:', error.statusText);
-      console.error('- Error url:', error.url);
-
-      if (error.error) {
-        console.error('- Error response body:', error.error);
-      }
-
-      // Provide detailed error message based on status
-      let errorMessage = '❌ Backend connection failed!\n\n';
-
-      if (error.status === 0 || error.status === undefined) {
-        errorMessage += '���� Connection Error: Cannot reach the server\n\n';
-        errorMessage += 'The backend server is not running.\n\n';
-        errorMessage += 'To start the backend server:\n';
-        errorMessage += '1. Open a new terminal window\n';
-        errorMessage += '2. Navigate to: cd NotionProxyApi\n';
-        errorMessage += '3. Run: npm run dev\n\n';
-        errorMessage += 'You should see: "✅ Server running at http://localhost:3000"';
-      } else if (error.status === 404) {
-        errorMessage += '���� API Endpoint Not Found\n\n';
-        errorMessage += 'The server is running but the API route is missing.\n';
-        errorMessage += 'Make sure your backend server.js has the /api/getAllPagesFromDB endpoint defined.';
-      } else if (error.status === 401 || error.status === 403) {
-        errorMessage += '���� Authentication Error\n\n';
-        errorMessage += 'The Notion API token might be invalid or missing.\n';
-        errorMessage += 'Check your Notion API token in the backend configuration.';
-      } else if (error.status >= 500) {
-        errorMessage += '💥 Server Error\n\n';
-        errorMessage += `Status: ${error.status}\n`;
-        errorMessage += `Message: ${error.message}\n\n`;
-        errorMessage += 'The server encountered an internal error.\n';
-        errorMessage += 'Check the backend server console for detailed error messages.';
-      } else {
-        errorMessage += `🚨 HTTP Error: ${error.status}\n\n`;
-        errorMessage += `Message: ${error.message}\n`;
-        errorMessage += `URL: ${error.url}\n\n`;
-        errorMessage += 'Check the backend server logs for more details.';
-      }
-
-      alert(errorMessage);
-      return false;
-    }
-  }
-
-
-
-  formatNotionDate(dateStr: string): string {
-    if (!dateStr) return '';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    } catch (error) {
-      return dateStr;
-    }
-  }
-
-  getEmotionClass(emotion: string): string {
-    const emotionLower = emotion?.toLowerCase() || '';
-    if (emotionLower.includes('confident') || emotionLower.includes('disciplined')) return 'emotion-positive';
-    if (emotionLower.includes('frustrated') || emotionLower.includes('angry')) return 'emotion-negative';
-    if (emotionLower.includes('nervous') || emotionLower.includes('anxious')) return 'emotion-warning';
-    return 'emotion-neutral';
-  }
   // Trading Metrics Calculation Methods
   calculateTotalPnL(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
@@ -4780,39 +4254,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return trades / days;
   }
 
-  calculatePnLChangePercent(): string {
-    // This would typically compare against previous period
-    // For now, we'll return a placeholder
-    return '0.00';
-  }
-
-  // Removed duplicate methods - keeping the newer implementations above
-
-  getWinPercentageForGradient(): number {
-    const total = this.getTotalTrades();
-    if (total === 0) return 0;
-    return (this.getWinCount() / total) * 100;
-  }
-
-  getBreakevenPercentageForGradient(): number {
-    const total = this.getTotalTrades();
-    if (total === 0) return 0;
-    return (this.getBreakevenCount() / total) * 100;
-  }
-
-  getLossPercentageForGradient(): number {
-    const total = this.getTotalTrades();
-    if (total === 0) return 0;
-    return (this.getLossCount() / total) * 100;
-  }
-
   calculateAccountSize(): number {
     return this.mt5AccountInfo?.startingBalance ?? 0;
-  }
-
-  calculateAvgTradeDuration(): string {
-    const minutes = this.calculateAvgTradeDurationMinutes();
-    return this.formatMinutesToDuration(minutes);
   }
 
   calculateAvgTradeDurationMinutes(): number {
@@ -4858,17 +4301,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     if (validTrades === 0) return 0;
     return Math.floor(totalMinutes / validTrades);
-  }
-
-  calculateAvgLosingTradeDuration(): string {
-    const minutes = this.calculateAvgLosingTradeDurationMinutes();
-    return this.formatMinutesToDuration(minutes) || 'No data';
-  }
-
-  getDurationBarHeight(valueMinutes: number, overallMinutes: number, losingMinutes: number): number {
-    const maxVal = Math.max(overallMinutes || 0, losingMinutes || 0);
-    if (!valueMinutes || maxVal === 0) return 20;
-    return Math.max(20, (valueMinutes / maxVal) * 80);
   }
 
   private formatMinutesToDuration(avgMinutes: number): string {
@@ -4956,17 +4388,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (avgLoss <= 0 || accountSize <= 0) return 0;
 
     return (avgLoss / accountSize) * 100;
-  }
-
-  calculateExpectancy(): number {
-    const totalTrades = this.getTotalTrades();
-    if (totalTrades === 0) return 0;
-
-    const winRate = this.calculateWinRate() / 100;
-    const avgWin = this.calculateAvgWin();
-    const avgLoss = Math.abs(this.calculateAvgLoss());
-
-    return (winRate * avgWin) - ((1 - winRate) * avgLoss);
   }
 
   calculateProfitFactor(): number {
@@ -5063,12 +4484,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return index;
   }
 
-  formatNewsTime(time: string): string {
-    if (!time || typeof time !== 'string') return '--:--';
-    // Assuming time is in format like "10:30" or "3:45"
-    return time;
-  }
-
   getLatestNews(): any[] {
     if (!this.newsData || !Array.isArray(this.newsData)) {
       return [];
@@ -5101,32 +4516,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return dayNews;
   }
 
-  getGroupedNewsForDay(dayNumber: number): any[] {
-    const dayNews = this.getNewsForDay(dayNumber);
-
-    // Group news by time
-    const timeGroups: { [key: string]: any[] } = {};
-
-    dayNews.forEach(news => {
-      const time = news.time || 'Unknown';
-      if (!timeGroups[time]) {
-        timeGroups[time] = [];
-      }
-      timeGroups[time].push(news);
-    });
-
-    // Convert to array of time groups with metadata
-    return Object.keys(timeGroups).map(time => ({
-      time,
-      events: timeGroups[time],
-      isMultiple: timeGroups[time].length > 1,
-      expanded: false // For expandable UI
-    })).sort((a, b) => {
-      // Sort by time (basic string comparison works for most time formats)
-      return a.time.localeCompare(b.time);
-    });
-  }
-
   getNewsTitle(news: any): string {
     const event = news?.event;
     if (!event || typeof event !== 'string') {
@@ -5142,31 +4531,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return news.impact;
   }
 
-  getNewsImpactClass(news: any): any {
-    const impact = this.getNewsImpact(news);
-    return {
-      'high-impact': impact === 'High',
-      'medium-impact': impact === 'Medium',
-      'low-impact': impact === 'Low'
-    };
-  }
-
   getNewsImpactBadgeClass(news: any): string {
     const impact = this.getNewsImpact(news);
     return impact.toLowerCase();
-  }
-
-  shouldShowNews(): boolean {
-    try {
-      return !this.isNewsLoading &&
-             this.newsData &&
-             Array.isArray(this.newsData) &&
-             this.newsData.length > 0 &&
-             this.getLatestNews().length > 0;
-    } catch (error) {
-      console.warn('Error checking news display condition:', error);
-      return false;
-    }
   }
 
   isLoadingNews(): boolean {
@@ -5181,14 +4548,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
 
     // Monday to Friday (1-5), roughly 9 AM to 5 PM (can be adjusted for forex hours)
     return dayOfWeek >= 1 && dayOfWeek <= 5 && hour >= 9 && hour <= 17;
-  }
-
-  getMarketStatusClass(): string {
-    return this.isMarketOpen() ? 'market-open' : 'market-closed';
-  }
-
-  getMarketStatusText(): string {
-    return this.isMarketOpen() ? 'Markets Open' : 'Markets Closed';
   }
 
   getTradingDays(): any[] {
@@ -5326,11 +4685,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.cdr.detectChanges();
   }
 
-  toggleTimeGroup(timeGroup: any): void {
-    timeGroup.expanded = !timeGroup.expanded;
-    this.cdr.detectChanges(); // Force change detection
-  }
-
   getCurrencyBackgroundClass(currency: string): string {
     const currencyMap: { [key: string]: string } = {
       'USD': 'currency-usd',
@@ -5423,11 +4777,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return this.tradeEmotionalStates[tradeKey];
   }
 
-  isTradeEmotionalFormExpanded(trade: Table): boolean {
-    const state = this.getTradeEmotionalState(trade);
-    return state?.isExpanded || false;
-  }
-
   isTradeEmotionalSubmitted(trade: Table): boolean {
     const state = this.getTradeEmotionalState(trade);
     return state?.isSubmitted || false;
@@ -5436,20 +4785,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
   getEmotionIcon(emotionName: string): string {
     const emotion = this.predefinedEmotions.find(e => e.name === emotionName);
     return emotion ? emotion.icon : '💭';
-  }
-
-  getEmotionColor(emotionName: string): string {
-    const emotion = this.predefinedEmotions.find(e => e.name === emotionName);
-    return emotion ? emotion.color : '#6b7280';
-  }
-
-  formatEmotionalTimestamp(timestamp: Date): string {
-    return timestamp.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   }
 
   getSubmittedEmotion(trade: Table): string {
@@ -5522,41 +4857,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  formatDate(dateStr: string): string {
-    // if (!dateStr) return '';
-    try {
-      // Handle MM.DD.YYYY HH:mm format
-      const [datePart, timePart] = dateStr.split(' ');
-      if (!datePart) return dateStr;
-
-      const [month, day, year] = datePart.split('.');
-      if (month && day && year) {
-        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        if (timePart) {
-          const [hours, minutes] = timePart.split(':');
-          if (hours && minutes) {
-            date.setHours(parseInt(hours), parseInt(minutes));
-            return date.toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-          }
-        }
-        return date.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-      }
-    } catch (error) {
-      console.error('Error formatting date:', error);
-    }
-    return dateStr;
-  }
-
   calculateDayPnL(events: any[]): number {
     if (!events || events.length === 0) return 0;
     return events.reduce((sum, event) => {
@@ -5575,22 +4875,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return !isNaN(num) && num < 0;
   }
 
-  getStatusClass(status: string): string {
-    return status ? status.toLowerCase() : '';
-  }
-
-  getPositionClass(position: string): string {
-    return position ? position.toLowerCase() : '';
-  }
-
   // Utility method for templates
   parseFloat(value: string): number {
     return parseFloat(value) || 0;
-  }
-
-  // Helper method to check if there are critical insights
-  hasCriticalInsights(): boolean {
-    return this.getPerformanceInsights().some(insight => insight.severity === 'critical');
   }
 
   // Advanced Trading Analytics Methods
@@ -5620,51 +4907,12 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return -maxDrawdown;
   }
 
-  getMaxDrawdownPercent(): string {
-    const maxDrawdown = Math.abs(this.getMaxDrawdown());
-    const initialBalance = 2500; // Prop firm account value
-    return ((maxDrawdown / initialBalance) * 100).toFixed(2);
-  }
-
-  getCurrentDrawdown(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-
-    let runningBalance = 0;
-    let peak = 0;
-
-    this.tableData.forEach(trade => {
-      const tradeProfit = parseFloat(trade.netProfit) || 0;
-      runningBalance += tradeProfit;
-
-      if (runningBalance > peak) {
-        peak = runningBalance;
-      }
-    });
-
-    return runningBalance - peak;
-  }
-
   getRiskRewardRatio(): string {
     const avgWin = this.calculateAvgWin();
     const avgLoss = Math.abs(this.calculateAvgLoss());
 
     if (avgLoss === 0) return '0.00';
     return (avgWin / avgLoss).toFixed(2);
-  }
-
-  getProfitFactor(): string {
-    if (!this.tableData || this.tableData.length === 0) return '0.00';
-
-    const totalWins = this.tableData
-      .filter(trade => parseFloat(trade.netProfit) > 0)
-      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
-
-    const totalLosses = Math.abs(this.tableData
-      .filter(trade => parseFloat(trade.netProfit) < 0)
-      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0));
-
-    if (totalLosses === 0) return totalWins > 0 ? '∞' : '0.00';
-    return (totalWins / totalLosses).toFixed(2);
   }
 
   // Helper methods for Profit Factor visual marker
@@ -5722,35 +4970,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return 'middle';
   }
 
-  getAvgRiskPerTrade(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-
-    const totalRisk = this.tableData.reduce((sum, trade) => {
-      const entry = parseFloat(trade.entry) || 0;
-      const stopLoss = parseFloat(trade.sL) || 0;
-      const volume = parseFloat(trade.volume) || 0;
-
-      if (entry && stopLoss && volume) {
-        const riskPerUnit = Math.abs(entry - stopLoss);
-        return sum + (riskPerUnit * volume);
-      }
-      return sum;
-    }, 0);
-
-    return totalRisk / this.tableData.length;
-  }
-
-  getKellyCriterion(): string {
-    const winRate = this.calculateWinRate() / 100;
-    const avgWin = this.calculateAvgWin();
-    const avgLoss = Math.abs(this.calculateAvgLoss());
-
-    if (avgLoss === 0) return '0.00';
-
-    const kelly = winRate - ((1 - winRate) / (avgWin / avgLoss));
-    return (kelly * 100).toFixed(2);
-  }
-
   // Trading Psychology Indicators
   getRevengeTradingScore(): number {
     if (!this.tableData || this.tableData.length < 2) return 0;
@@ -5770,13 +4989,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     return Math.min(100, (revengeTradeCount / (this.tableData.length - 1)) * 100);
-  }
-
-  getRevengeTradingClass(): string {
-    const score = this.getRevengeTradingScore();
-    if (score > 30) return 'high-risk';
-    if (score > 15) return 'medium-risk';
-    return 'low-risk';
   }
 
   getOvertradingScore(): number {
@@ -5799,13 +5011,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return Math.min(100, (excessiveTradingDays / dailyTradeCounts.length) * 100);
   }
 
-  getOvertradingClass(): string {
-    const score = this.getOvertradingScore();
-    if (score > 40) return 'high-risk';
-    if (score > 20) return 'medium-risk';
-    return 'low-risk';
-  }
-
   getFOMOScore(): number {
     if (!this.tableData || this.tableData.length < 3) return 0;
 
@@ -5826,13 +5031,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     return Math.min(100, (fomoTradeCount / (this.tableData.length - 2)) * 100);
-  }
-
-  getFOMOClass(): string {
-    const score = this.getFOMOScore();
-    if (score > 25) return 'high-risk';
-    if (score > 10) return 'medium-risk';
-    return 'low-risk';
   }
 
   getStopLossAdherence(): number {
@@ -5865,13 +5063,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return (adherentTrades.length / tradesWithSL.length) * 100;
   }
 
-  getStopLossAdherenceClass(): string {
-    const score = this.getStopLossAdherence();
-    if (score > 80) return 'high-discipline';
-    if (score > 60) return 'medium-discipline';
-    return 'low-discipline';
-  }
-
   getTakeProfitDiscipline(): number {
     if (!this.tableData || this.tableData.length === 0) return 100;
 
@@ -5895,32 +5086,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
 
     return (disciplinedTrades.length / winningTrades.length) * 100;
-  }
-
-  getTakeProfitDisciplineClass(): string {
-    const score = this.getTakeProfitDiscipline();
-    if (score > 70) return 'high-discipline';
-    if (score > 50) return 'medium-discipline';
-    return 'low-discipline';
-  }
-
-  // Time-based Analysis
-  getBestTradingDay(): { day: string, avgPnL: number } {
-    const dayStats = this.getDayOfWeekStats();
-    if (dayStats.length === 0) return { day: 'N/A', avgPnL: 0 };
-    const bestDay = dayStats.reduce((best, current) =>
-      current.avgPnL > best.avgPnL ? current : best
-    );
-    return { day: bestDay.day, avgPnL: bestDay.avgPnL };
-  }
-
-  getWorstTradingDay(): { day: string, avgPnL: number } {
-    const dayStats = this.getDayOfWeekStats();
-    if (dayStats.length === 0) return { day: 'N/A', avgPnL: 0 };
-    const worstDay = dayStats.reduce((worst, current) =>
-      current.avgPnL < worst.avgPnL ? current : worst
-    );
-    return { day: worstDay.day, avgPnL: worstDay.avgPnL };
   }
 
   getDayOfWeekStats(): { day: string, avgPnL: number, tradeCount: number }[] {
@@ -5953,75 +5118,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     });
   }
 
-  getTradingSessionStats(): { name: string, avgPnL: number, tradeCount: number }[] {
-    const sessions = [
-      { name: 'Asian', start: 0, end: 8 },
-      { name: 'London', start: 8, end: 16 },
-      { name: 'New York', start: 16, end: 24 }
-    ];
-
-    const sessionStats = sessions.map(session => {
-      const sessionTrades = this.tableData.filter(trade => {
-        const date = this.parseTradeDate(trade.openDate);
-        if (date) {
-          const hour = date.getHours();
-          return hour >= session.start && hour < session.end;
-        }
-        return false;
-      });
-
-      const totalPnL = sessionTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
-      const avgPnL = sessionTrades.length > 0 ? totalPnL / sessionTrades.length : 0;
-
-      return {
-        name: session.name,
-        avgPnL,
-        tradeCount: sessionTrades.length
-      };
-    });
-
-    return sessionStats;
-  }
-
-  // Consecutive Trades Analysis
-  getMaxConsecutiveWins(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-
-    let maxWins = 0;
-    let currentWins = 0;
-
-    this.tableData.forEach(trade => {
-      const profit = parseFloat(trade.netProfit) || 0;
-      if (profit > 0) {
-        currentWins++;
-        maxWins = Math.max(maxWins, currentWins);
-      } else {
-        currentWins = 0;
-      }
-    });
-
-    return maxWins;
-  }
-
-  getMaxConsecutiveLosses(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-
-    let maxLosses = 0;
-    let currentLosses = 0;
-
-    this.tableData.forEach(trade => {
-      const profit = parseFloat(trade.netProfit) || 0;
-      if (profit < 0) {
-        currentLosses++;
-        maxLosses = Math.max(maxLosses, currentLosses);
-      } else {
-        currentLosses = 0;
-      }
-    });
-
-    return maxLosses;
-  }
-
   getCurrentStreak(): string {
     if (!this.tableData || this.tableData.length === 0) return '0';
 
@@ -6044,109 +5140,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     return `${streak} ${isWinStreak ? 'W' : 'L'}`;
-  }
-
-  getCurrentStreakClass(): string {
-    const streak = this.getCurrentStreak();
-    if (streak.includes('W')) return 'positive';
-    if (streak.includes('L')) {
-      const count = parseInt(streak.split(' ')[0]);
-      return count > 3 ? 'high-risk' : 'negative';
-    }
-    return 'neutral';
-  }
-
-  getAvgRecoveryTime(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-
-    const recoveryTimes: number[] = [];
-    let lossStreak = 0;
-
-    this.tableData.forEach(trade => {
-      const profit = parseFloat(trade.netProfit) || 0;
-
-      if (profit < 0) {
-        lossStreak++;
-      } else if (lossStreak > 0) {
-        recoveryTimes.push(lossStreak);
-        lossStreak = 0;
-      }
-    });
-
-    return recoveryTimes.length > 0 ?
-      recoveryTimes.reduce((sum, time) => sum + time, 0) / recoveryTimes.length : 0;
-  }
-
-  // Performance Heatmap
-  getPerformanceHeatmap(): { value: number, class: string, tooltip: string }[] {
-    const last30Days: { value: number, class: string, tooltip: string }[] = [];
-
-    // console.log('Total trades in tableData:', this.tableData.length);
-    if (this.tableData.length > 0) {
-      // console.log('First trade date:', this.tableData[0].openDate);
-      // console.log('Last trade date:', this.tableData[this.tableData.length - 1].openDate);
-    }
-
-    // Instead of using today's date, let's use the date range from the actual trades
-    if (!this.tableData || this.tableData.length === 0) {
-      // If no trades, show empty heatmap for last 30 days
-      const today = new Date();
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        last30Days.push({
-          value: 0,
-          class: 'neutral',
-          tooltip: `${date.toLocaleDateString()}: 0 trades, 0.00 P&L`
-        });
-      }
-      return last30Days;
-    }
-
-    // Find the date range of the trades
-    const tradeDates = this.tableData.map(trade => this.parseTradeDate(trade.openDate)).filter(date => date !== null) as Date[];
-    const minDate = new Date(Math.min(...tradeDates.map(d => d.getTime())));
-    const maxDate = new Date(Math.max(...tradeDates.map(d => d.getTime())));
-
-    // console.log('Trade date range:', minDate.toDateString(), 'to', maxDate.toDateString());
-
-    // Use the actual trade date range to show the last 30 days from the most recent trade
-    const endDate = maxDate;
-
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(endDate);
-      date.setDate(date.getDate() - i);
-
-      const dayTrades = this.tableData.filter(trade => {
-        const tradeDate = this.parseTradeDate(trade.openDate);
-        if (!tradeDate) return false;
-
-        // Compare just the date part (year, month, day)
-        return tradeDate.getFullYear() === date.getFullYear() &&
-               tradeDate.getMonth() === date.getMonth() &&
-               tradeDate.getDate() === date.getDate();
-      });
-
-      const dayPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.netProfit) || 0), 0);
-
-      let cellClass = 'neutral';
-      if (dayPnL > 50) cellClass = 'positive-high';
-      else if (dayPnL > 25) cellClass = 'positive-med';
-      else if (dayPnL > 0) cellClass = 'positive-low';
-      else if (dayPnL < -50) cellClass = 'negative-high';
-      else if (dayPnL < -25) cellClass = 'negative-med';
-      else if (dayPnL < 0) cellClass = 'negative-low';
-
-      // console.log(`Date: ${date.toLocaleDateString()}, Trades: ${dayTrades.length}, P&L: ${dayPnL.toFixed(2)}, Class: ${cellClass}`);
-
-      last30Days.push({
-        value: dayPnL,
-        class: cellClass,
-        tooltip: `${date.toLocaleDateString()}: ${dayTrades.length} trades, ${dayPnL.toFixed(2)} P&L`
-      });
-    }
-
-    return last30Days;
   }
 
   // Performance Insights
@@ -6350,36 +5343,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     this.mt5SyncStatus = 'idle';
     this.mt5SyncStatusMessage = '';
     this.cdr.markForCheck();
-  }
-
-  async syncMT5Trades(): Promise<void> {
-    if (this.isSyncingMT5Trades) return;
-
-    this.isSyncingMT5Trades = true;
-    try {
-      await this.loadMT5Data();
-      const trades = this.mt5LiveTrades
-        .filter(trade => trade.position !== undefined && trade.position !== null && trade.position !== '')
-        .map(trade => this.mapMt5TradeForSupabase(trade));
-      if (!this.selectedAccount) {
-        throw new Error('Select an account before syncing MT5 trades.');
-      }
-      const { created, updated } = await this.supabaseService.syncMt5Trades(trades, this.selectedAccount.name);
-
-      this.snackBar.open(`MT5 sync complete: ${created} created, ${updated} updated.`, 'Dismiss', {
-        duration: 4000,
-        verticalPosition: 'top',
-        horizontalPosition: 'right',
-        panelClass: ['account-notification', 'notification-success']
-      });
-    } catch (error) {
-      console.error('Failed to sync MT5 trades to Supabase:', error);
-      const message = error instanceof Error ? error.message : 'Unknown sync error';
-      this.snackBar.open(`MT5 sync failed: ${message}`, 'Dismiss', { duration: 8000 });
-    } finally {
-      this.isSyncingMT5Trades = false;
-      this.cdr.markForCheck();
-    }
   }
 
   private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
@@ -6591,32 +5554,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-  }
-
-  
-
-  simulateMFEUpdates(ticket: number): void {
-    let updateCount = 0;
-    const maxUpdates = 10;
-
-    const interval = setInterval(() => {
-      updateCount++;
-
-      // Simulate increasing profit to show MFE tracking
-      const currentProfit = 10 + (updateCount * 15) + (Math.random() * 10 - 5); // Generally increasing profit
-
-      const priceUpdateData = {
-        ticket: ticket.toString(),
-        profit: currentProfit,
-        price_current: (1.2500 + Math.random() * 0.01).toFixed(5)
-      };
-
-      this.updateMT5TradePrice(priceUpdateData);
-
-      if (updateCount >= maxUpdates) {
-        clearInterval(interval);
-      }
-    }, 1000); // Update every second for demo
   }
 
   
@@ -7063,21 +6000,9 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }, 200);
   }
 
-  // Toggle method for single notion data button
-  toggleNotionData(): void {
-    this.showNotionData = !this.showNotionData;
-  }
-
   // Simple pagination methods
   getFilteredTableData(): Table[] {
     return this.tableData || [];
-  }
-
-  getDisplayedRows(): Table[] {
-    const filtered = this.getFilteredTableData();
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    return filtered.slice(startIndex, endIndex);
   }
 
   getTotalPages(): number {
@@ -7089,126 +6014,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (page >= 1 && page <= this.getTotalPages()) {
       this.currentPage = page;
     }
-  }
-
-  isNewTrade(trade: Table): boolean {
-    // Check if trade is recently added OR if it doesn't have a close date (live trade)
-    const isRecent = this.recentlyAddedTrades.includes(trade);
-    const isLiveTrade = !trade.closeDate || trade.closeDate === '' || trade.closeDate === '-' || trade.closeDate === 'N/A';
-    return isRecent || isLiveTrade;
-  }
-
-  // Removed duplicate getSafeNumber method - using the implementation above
-
-  getRiskPercentage(row: Table): string {
-    // Calculate risk percentage based on actual account size
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
-    const riskAmount = this.getSafeNumber(row.riskPerTrade);
-
-    if (riskAmount <= 0 || accountSize <= 0) {
-      return '0.0';
-    }
-
-    const percentage = (riskAmount / accountSize) * 100;
-    return percentage.toFixed(1);
-  }
-
-  getRRRPercentage(row: Table): string {
-    // Calculate percentage gained based on R:R ratio and risk amount
-    const rrr = row.rrr ? parseFloat(row.rrr.toString().replace('R', '')) : 0;
-    const riskAmount = this.getSafeNumber(row.riskPerTrade);
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
-
-    if (rrr <= 0 || riskAmount <= 0 || accountSize <= 0) {
-      return '0.0';
-    }
-
-    const gainAmount = rrr * riskAmount;
-    const gainPercentage = (gainAmount / accountSize) * 100;
-    return gainPercentage.toFixed(1);
-  }
-
-  getMURPercentage(row: Table): string {
-    // Calculate MUR percentage based on actual account size
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
-    const murAmount = this.getSafeNumber(row.mfe);
-
-    if (murAmount <= 0 || accountSize <= 0) {
-      return '0.0';
-    }
-
-    const percentage = (murAmount / accountSize) * 100;
-    return percentage.toFixed(1);
-  }
-
-  getNetPnLPercentage(row: Table): string {
-    // Calculate Net P&L percentage based on actual account size
-    const accountSize = this.mt5AccountInfo?.balance || this.calculateAccountSize() || 2500; // Fallback to 5k
-    const netPnL = this.getSafeNumber(row.netProfit);
-
-    if (accountSize <= 0) {
-      return '0.0';
-    }
-
-    const percentage = (netPnL / accountSize) * 100;
-    return percentage.toFixed(1);
-  }
-
-  addRowDirectlyToDataTable(newTrade: Table): void {
-    try {
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        const table = $('#myTable').DataTable();
-
-        // Create row data array matching the table structure
-        const rowData = [
-          newTrade.openDate,
-          '', // Notion Trades column (complex, will be empty for direct insert)
-          newTrade.status,
-          newTrade.position,
-          newTrade.symbol,
-          newTrade.type,
-          newTrade.volume,
-          newTrade.entry,
-          newTrade.sL,
-          newTrade.tP,
-          newTrade.closeDate,
-          newTrade.exit,
-          newTrade.commission,
-          newTrade.swap,
-          newTrade.profit,
-          newTrade.netProfit
-        ];
-
-        // Add the row and redraw
-        const rowNode = table.row.add(rowData).draw(false);
-        // Scroll to top to show the new row
-        $('#myTable_wrapper .dataTables_scrollBody').scrollTop(0);
-
-      }
-
-    } catch (error) {
-      console.error('❌ Error adding row directly to DataTable:', error);
-    }
-  }
-
-  refreshDataTable(): void {
-    try {
-      // Use Angular binding refresh for complex columns
-      this.refreshDataTableWithAngularBinding();
-
-    } catch (error) {
-      console.error('❌ Error refreshing DataTable:', error);
-    }
-  }
-
-  forceDataTableRefresh(): void {
-    // Method 1: Immediate change detection
-    this.cdr.detectChanges();
-
-    // Method 2: Nuclear option - completely rebuild the table
-    setTimeout(() => {
-      this.nuclearDataTableRebuild();
-    }, 100);
   }
 
   nuclearDataTableRebuild(): void {
@@ -7245,25 +6050,8 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
   }
 
-  // News Reminder Control Methods
-  toggleReminderDetails(): void {
-    this.showReminderDetails = !this.showReminderDetails;
-  }
-
   getReminderStatus(): { total: number; scheduled: number } {
     return this.newsReminder.getReminderStatus();
-  }
-
-  getReminderStatusText(): string {
-    const status = this.getReminderStatus();
-    if (status.scheduled === 0) {
-      return 'No active reminders - only current day news will have reminders';
-    }
-    return `${status.scheduled} active reminders for current day news`;
-  }
-
-  refreshNewsReminders(): void {
-    this.newsReminder.scheduleAllReminders(this.newsData);
   }
 
   clearAllReminders(): void {
@@ -7317,39 +6105,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     }
 
     return Number.isNaN(eventTime.getTime()) ? null : eventTime;
-  }
-
-  // Trading settings handler methods
-  onProfitTargetChange(): void {
-
-    // Add visual feedback
-    const dropdown = document.querySelector('.setting-dropdown') as HTMLElement;
-    if (dropdown) {
-      dropdown.classList.add('value-changed');
-      setTimeout(() => dropdown.classList.remove('value-changed'), 600);
-    }
-
-    // Stop any existing celebration and reset tracking for new target
-    this.confetti.stopCurrentCelebration();
-    this.hasCelebratedCurrentTarget = false;
-    this.lastCelebratedTarget = 0;
-
-    this.updateTradingTargets();
-
-    // Check if we should immediately celebrate the new target
-    setTimeout(() => {
-      this.checkForProfitTargetCelebration();
-    }, 100);
-  }
-
-  // Test method to manually trigger confetti (for development/testing)
-  testConfettiCelebration(): void {
-    // Stop any existing celebration first
-    this.confetti.stopCurrentCelebration();
-    // Start new celebration
-    setTimeout(() => {
-      this.confetti.celebrateProfitTarget(this.mt5AccountInfo.profitTarget);
-    }, 100);
   }
 
   // Check for profit target achievement and trigger celebration
@@ -7444,24 +6199,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     return items.slice(0, limit);
   }
 
-  getRecentTradeChunks(): Table[][] {
-    const recent = this.getRecentTrades(10);
-    const chunks: Table[][] = [];
-    for (let i = 0; i < recent.length; i += 5) {
-      chunks.push(recent.slice(i, i + 5));
-    }
-    return chunks;
-  }
-
-  // Session (day) filtering helpers for tiles
-  private getSessionFilteredTrades(): Table[] {
-    const { start, end } = this.getSessionWindowUtc();
-    return (Array.isArray(this.tableData) ? this.tableData : []).filter(t => {
-      const od = this.parseOpenDate(t.openDate || '');
-      return !!od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
-    });
-  }
-
   // Today-only filtering helpers for Day Trades chips (midnight PHT to now)
   private getTodayFilteredTrades(): Table[] {
     const { start, end } = this.getTodayWindowUtc();
@@ -7506,28 +6243,6 @@ chooseUnmatchedTrade(tradeNotion: Trades, row: Table, rowIndex: number) {
     if (!isFinite(pct) || isNaN(pct)) return '0.00%';
     const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
     return `${sign}${pct.toFixed(2)}%`;
-  }
-
-  formatShortDate(dateStr: string): string {
-    const d = this.parseOpenDate(dateStr || '');
-    if (!d) return '';
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${mm}/${dd}`;
-  }
-
-  onMaxLossChange(): void {
-
-
-    // Add visual feedback
-    const dropdowns = document.querySelectorAll('.setting-dropdown');
-    const maxLossDropdown = dropdowns[1] as HTMLElement; // Second dropdown is max loss
-    if (maxLossDropdown) {
-      maxLossDropdown.classList.add('value-changed');
-      setTimeout(() => maxLossDropdown.classList.remove('value-changed'), 600);
-    }
-
-    this.updateTradingTargets();
   }
 
   private updateTradingTargets(): void {

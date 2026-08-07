@@ -624,13 +624,4 @@ export class ConfettiService {
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7', '#FF9800', '#795548']
     });
   }
-
-  celebrateBigWin(amount: number): void {
-    this.celebrate({
-      text: `💰 MASSIVE WIN! +$${amount.toFixed(2)} 💰<br><span style="font-size: 0.6em;">Keep this momentum going! 🔥</span>`,
-      duration: 4000,
-      particleCount: 1000, // Epic confetti storm for big wins!
-      colors: ['#FFD700', '#32CD32', '#00FF7F', '#ADFF2F']
-    });
-  }
 }

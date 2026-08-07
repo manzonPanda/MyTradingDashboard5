@@ -388,12 +388,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     this.openTrades = [];
   }
 
-  openGaugeSettings(): void {
-    this.gaugePercentDraft = String(this.positiveGaugePercentMax);
-    this.soundSettingsDraft = { ...this.liveTradeSoundSettings };
-    this.isGaugeSettingsOpen = true;
-  }
-
   saveSoundSettings(): void {
     if (this.soundSettingsDraft.alertThreshold < 0 || this.soundSettingsDraft.highAlertThreshold <= this.soundSettingsDraft.alertThreshold || this.soundSettingsDraft.volume < 0 || this.soundSettingsDraft.volume > 1) return;
     this.liveTradeSoundSettingsChange.emit({ ...this.soundSettingsDraft });
@@ -567,23 +561,5 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
       return `${sign}$${(absAmount / 1000).toFixed(1)}K`;
     }
     return `${sign}$${absAmount.toFixed(2)}`;
-  }
-
-  getRRClass(): string {
-    if (this.totalRRValue > 0) return 'positive';
-    if (this.totalRRValue < 0) return 'negative';
-    return 'neutral';
-  }
-
-  getPercentageClass(): string {
-    if (this.percentageOfAccount > 0) return 'positive';
-    if (this.percentageOfAccount < 0) return 'negative';
-    return 'neutral';
-  }
-
-  getPnLClass(): string {
-    if (this.totalUnrealizedValue > 0) return 'positive';
-    if (this.totalUnrealizedValue < 0) return 'negative';
-    return 'neutral';
   }
 }

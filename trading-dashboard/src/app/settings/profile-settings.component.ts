@@ -111,15 +111,6 @@ export class ProfileSettingsComponent implements OnInit {
     this.liveTradeDisplayPreferencesChange.emit({ ...preferences });
   }
 
-  async navigateTo(path: string): Promise<void> {
-    await this.router.navigateByUrl(path);
-  }
-
-  async backToDashboard(): Promise<void> {
-    this.closed.emit();
-    await this.router.navigateByUrl('/');
-  }
-
   async signOut(): Promise<void> {
     await this.auth.signOut();
     await this.router.navigateByUrl('/');
