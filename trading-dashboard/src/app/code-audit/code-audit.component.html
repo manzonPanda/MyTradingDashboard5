@@ -1,0 +1,1002 @@
+<div class="audit-page">
+
+  <!-- HEADER -->
+
+  <header class="audit-header">
+
+    <div>
+
+      <div class="eyebrow">
+        DEVELOPMENT TOOL
+      </div>
+
+      <h1>
+        Code Audit
+      </h1>
+
+      <p>
+        Analyze your Angular project for potentially unused code.
+      </p>
+
+    </div>
+
+
+    <button
+      class="refresh-button"
+      type="button"
+      (click)="loadReport()"
+      [disabled]="loading">
+
+      <span
+        class="refresh-icon"
+        [class.spinning]="loading">
+        ↻
+      </span>
+
+      Run Scan
+
+    </button>
+
+  </header>
+
+
+  <!-- LOADING -->
+
+  @if (loading) {
+
+    <div class="state-card">
+
+      <div class="loader"></div>
+
+      <div>
+
+        <strong>
+          Loading audit report
+        </strong>
+
+        <span>
+          Analyzing your project...
+        </span>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ERROR -->
+
+  @if (!loading && error) {
+
+    <div class="state-card error">
+
+      <div class="state-icon">
+        !
+      </div>
+
+      <div>
+
+        <strong>
+          Audit unavailable
+        </strong>
+
+        <span>
+          {{ error }}
+        </span>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  @if (!loading && report) {
+
+    <!-- SUMMARY -->
+
+    <section class="summary-grid">
+
+
+      <!-- HEALTH -->
+
+      <article class="health-card">
+
+        <div class="health-ring">
+
+          <svg
+            viewBox="0 0 100 100">
+
+            <circle
+              class="ring-background"
+              cx="50"
+              cy="50"
+              r="40">
+            </circle>
+
+            <circle
+              class="ring-progress"
+              cx="50"
+              cy="50"
+              r="40"
+              [style.stroke-dashoffset]="healthDashOffset">
+            </circle>
+
+          </svg>
+
+          <div class="health-value">
+
+            <strong>
+              {{ healthScore }}
+            </strong>
+
+            <span>
+              /100
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="health-info">
+
+          <span class="card-label">
+            CODE HEALTH
+          </span>
+
+          <h2>
+            {{ healthLabel }}
+          </h2>
+
+          <p>
+            Based on unused functions,
+            components and styles.
+          </p>
+
+        </div>
+
+      </article>
+
+
+      <!-- FILES -->
+
+      <article class="metric-card">
+
+        <span class="metric-icon">
+          TS
+        </span>
+
+        <span class="card-label">
+          TYPESCRIPT
+        </span>
+
+        <strong>
+          {{ report.summary.typescriptFiles }}
+        </strong>
+
+        <span>
+          files scanned
+        </span>
+
+      </article>
+
+
+      <article class="metric-card">
+
+        <span class="metric-icon">
+          HTML
+        </span>
+
+        <span class="card-label">
+          TEMPLATES
+        </span>
+
+        <strong>
+          {{ report.summary.htmlFiles }}
+        </strong>
+
+        <span>
+          files scanned
+        </span>
+
+      </article>
+
+
+      <article class="metric-card warning">
+
+        <span class="metric-icon">
+          ⚠
+        </span>
+
+        <span class="card-label">
+          ISSUES
+        </span>
+
+        <strong>
+          {{
+            report.summary.potentiallyUnusedFunctions
+            +
+            report.summary.potentiallyUnusedComponents
+            +
+            report.summary.potentiallyUnusedCss
+          }}
+        </strong>
+
+        <span>
+          potentially unused
+        </span>
+
+      </article>
+
+
+    </section>
+
+
+    <!-- TABS -->
+
+    <nav class="audit-tabs">
+
+      <button
+        type="button"
+        [class.active]="activeTab === 'overview'"
+        (click)="setTab('overview')">
+
+        Overview
+
+      </button>
+
+      <button
+        type="button"
+        [class.active]="activeTab === 'functions'"
+        (click)="setTab('functions')">
+
+        Functions
+
+        @if (
+          report.summary.potentiallyUnusedFunctions > 0
+        ) {
+
+          <span class="tab-count">
+            {{ report.summary.potentiallyUnusedFunctions }}
+          </span>
+
+        }
+
+      </button>
+
+
+      <button
+        type="button"
+        [class.active]="activeTab === 'components'"
+        (click)="setTab('components')">
+
+        Components
+
+        @if (
+          report.summary.potentiallyUnusedComponents > 0
+        ) {
+
+          <span class="tab-count">
+            {{ report.summary.potentiallyUnusedComponents }}
+          </span>
+
+        }
+
+      </button>
+
+
+      <button
+        type="button"
+        [class.active]="activeTab === 'css'"
+        (click)="setTab('css')">
+
+        CSS / SCSS
+
+        @if (
+          report.summary.potentiallyUnusedCss > 0
+        ) {
+
+          <span class="tab-count">
+            {{ report.summary.potentiallyUnusedCss }}
+          </span>
+
+        }
+
+      </button>
+
+    </nav>
+
+
+    <!-- TOOLBAR -->
+
+    @if (
+      activeTab === 'functions'
+      ||
+      activeTab === 'css'
+    ) {
+
+      <section class="toolbar">
+
+        <div class="search">
+
+          <span>
+            ⌕
+          </span>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search functions, files, selectors..."
+          />
+
+        </div>
+
+
+        <div class="filters">
+
+          <button
+            type="button"
+            [class.active]="statusFilter === 'all'"
+            (click)="setStatusFilter('all')">
+
+            All
+
+          </button>
+
+          <button
+            type="button"
+            [class.active]="statusFilter === 'unused'"
+            (click)="setStatusFilter('unused')">
+
+            Unused
+
+          </button>
+
+          <button
+            type="button"
+            [class.active]="statusFilter === 'used'"
+            (click)="setStatusFilter('used')">
+
+            Used
+
+          </button>
+
+        </div>
+
+      </section>
+
+    }
+
+
+    <!-- OVERVIEW -->
+
+    @if (activeTab === 'overview') {
+
+      <section class="overview-grid">
+
+
+        <article class="panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <span class="panel-kicker">
+                FUNCTIONS
+              </span>
+
+              <h3>
+                TypeScript Functions
+              </h3>
+
+            </div>
+
+            <span class="panel-number">
+              {{ report.summary.functionsFound }}
+            </span>
+
+          </div>
+
+
+          <div class="progress-row">
+
+            <div class="progress">
+
+              <div
+                class="progress-fill"
+                [style.width.%]="
+                  (
+                    (
+                      report.summary.functionsFound
+                      -
+                      report.summary.potentiallyUnusedFunctions
+                    )
+                    /
+                    report.summary.functionsFound
+                  ) * 100
+                ">
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel-footer">
+
+            <span>
+              {{
+                report.summary.potentiallyUnusedFunctions
+              }}
+              potentially unused
+            </span>
+
+            <button
+              type="button"
+              (click)="setTab('functions')">
+
+              Inspect →
+
+            </button>
+
+          </div>
+
+        </article>
+
+
+        <article class="panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <span class="panel-kicker">
+                ANGULAR
+              </span>
+
+              <h3>
+                Components
+              </h3>
+
+            </div>
+
+            <span class="panel-number">
+              {{ report.summary.angularComponentsFound }}
+            </span>
+
+          </div>
+
+
+          <div class="component-stat">
+
+            <span class="status-dot"></span>
+
+            <strong>
+              {{
+                report.summary.angularComponentsFound
+                -
+                report.summary.potentiallyUnusedComponents
+              }}
+            </strong>
+
+            <span>
+              active references
+            </span>
+
+          </div>
+
+
+          <div class="panel-footer">
+
+            <span>
+              {{
+                report.summary.potentiallyUnusedComponents
+              }}
+              potentially unused
+            </span>
+
+            <button
+              type="button"
+              (click)="setTab('components')">
+
+              Inspect →
+
+            </button>
+
+          </div>
+
+        </article>
+
+
+        <article class="panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <span class="panel-kicker">
+                STYLING
+              </span>
+
+              <h3>
+                CSS / SCSS
+              </h3>
+
+            </div>
+
+            <span class="panel-number">
+              {{ report.summary.cssSelectorsFound }}
+            </span>
+
+          </div>
+
+
+          <div class="component-stat">
+
+            <span class="status-dot"></span>
+
+            <strong>
+              {{
+                report.summary.cssSelectorsFound
+                -
+                report.summary.potentiallyUnusedCss
+              }}
+            </strong>
+
+            <span>
+              referenced selectors
+            </span>
+
+          </div>
+
+
+          <div class="panel-footer">
+
+            <span>
+              {{ report.summary.potentiallyUnusedCss }}
+              potentially unused
+            </span>
+
+            <button
+              type="button"
+              (click)="setTab('css')">
+
+              Inspect →
+
+            </button>
+
+          </div>
+
+        </article>
+
+
+      </section>
+
+    }
+
+
+    <!-- FUNCTIONS -->
+
+    @if (activeTab === 'functions') {
+
+      <section class="list-panel">
+
+        <div class="list-header">
+
+          <div>
+
+            <span class="panel-kicker">
+              TYPESCRIPT
+            </span>
+
+            <h2>
+              Functions
+            </h2>
+
+          </div>
+
+          <span>
+            {{ filteredFunctions.length }}
+            results
+          </span>
+
+        </div>
+
+
+        <div class="audit-list">
+
+          @for (
+            item of filteredFunctions;
+            track trackByFunction($index, item)
+          ) {
+
+            <article
+              class="audit-row"
+              [class.unused]="item.status === 'unused'"
+              (click)="selectFunction(item)">
+
+              <div class="status-indicator">
+
+                @if (item.status === 'unused') {
+                  ⚠
+                } @else {
+                  ✓
+                }
+
+              </div>
+
+
+              <div class="row-main">
+
+                <div class="row-title">
+
+                  <strong>
+                    {{ item.name }}
+                  </strong>
+
+                  <span class="type-badge">
+                    {{ item.kind }}
+                  </span>
+
+                </div>
+
+                <span class="file-path">
+                  {{ item.file }}:{{ item.line }}
+                </span>
+
+              </div>
+
+
+              <div class="row-stat">
+
+                <strong>
+                  {{ item.referenceCount }}
+                </strong>
+
+                <span>
+                  references
+                </span>
+
+              </div>
+
+
+              <div class="row-chevron">
+                →
+              </div>
+
+            </article>
+
+
+            @if (
+              selectedFunction === item
+            ) {
+
+              <div class="detail-panel">
+
+                <div class="detail-header">
+
+                  <div>
+
+                    <span class="panel-kicker">
+                      REFERENCES
+                    </span>
+
+                    <h3>
+                      {{ item.name }}
+                    </h3>
+
+                  </div>
+
+                  <span
+                    class="status-badge"
+                    [class.unused]="item.status === 'unused'">
+
+                    {{
+                      item.status === 'unused'
+                        ? 'Potentially unused'
+                        : 'Used'
+                    }}
+
+                  </span>
+
+                </div>
+
+
+                @if (
+                  item.references.length === 0
+                ) {
+
+                  <div class="no-references">
+
+                    <span>
+                      ⚠
+                    </span>
+
+                    <div>
+
+                      <strong>
+                        No references found
+                      </strong>
+
+                      <p>
+                        This scanner could not find
+                        another reference to this function
+                        in TypeScript or Angular templates.
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                } @else {
+
+                  <div class="references">
+
+                    @for (
+                      reference of item.references;
+                      track reference.file + reference.line
+                    ) {
+
+                      <div class="reference">
+
+                        <span>
+                          {{ reference.file }}:{{ reference.line }}
+                        </span>
+
+                      </div>
+
+                    }
+
+                  </div>
+
+                }
+
+              </div>
+
+            }
+
+          }
+
+
+          @if (filteredFunctions.length === 0) {
+
+            <div class="empty-state">
+
+              <span>
+                ⌕
+              </span>
+
+              <strong>
+                No functions found
+              </strong>
+
+              <p>
+                Try changing your search or filters.
+              </p>
+
+            </div>
+
+          }
+
+        </div>
+
+      </section>
+
+    }
+
+
+    <!-- COMPONENTS -->
+
+    @if (activeTab === 'components') {
+
+      <section class="list-panel">
+
+        <div class="list-header">
+
+          <div>
+
+            <span class="panel-kicker">
+              ANGULAR
+            </span>
+
+            <h2>
+              Components
+            </h2>
+
+          </div>
+
+          <span>
+            {{ report.components.length }}
+            components
+          </span>
+
+        </div>
+
+
+        <div class="audit-list">
+
+          @for (
+            item of report.components;
+            track item.file + item.line
+          ) {
+
+            <article
+              class="audit-row"
+              [class.unused]="item.status === 'unused'">
+
+              <div class="status-indicator">
+
+                @if (item.status === 'unused') {
+                  ⚠
+                } @else {
+                  ✓
+                }
+
+              </div>
+
+
+              <div class="row-main">
+
+                <div class="row-title">
+
+                  <strong>
+                    &lt;{{ item.selector }}&gt;
+                  </strong>
+
+                </div>
+
+                <span class="file-path">
+                  {{ item.file }}:{{ item.line }}
+                </span>
+
+              </div>
+
+
+              <div class="row-stat">
+
+                <strong>
+                  {{ item.referenceCount }}
+                </strong>
+
+                <span>
+                  HTML references
+                </span>
+
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      </section>
+
+    }
+
+
+    <!-- CSS -->
+
+    @if (activeTab === 'css') {
+
+      <section class="list-panel">
+
+        <div class="list-header">
+
+          <div>
+
+            <span class="panel-kicker">
+              STYLING
+            </span>
+
+            <h2>
+              CSS / SCSS Selectors
+            </h2>
+
+          </div>
+
+          <span>
+            {{ filteredCss.length }}
+            results
+          </span>
+
+        </div>
+
+
+        <div class="audit-list">
+
+          @for (
+            item of filteredCss;
+            track trackByCss($index, item)
+          ) {
+
+            <article
+              class="audit-row"
+              [class.unused]="item.status === 'unused'"
+              (click)="selectCss(item)">
+
+              <div class="status-indicator">
+
+                @if (item.status === 'unused') {
+                  ⚠
+                } @else {
+                  ✓
+                }
+
+              </div>
+
+
+              <div class="row-main">
+
+                <div class="row-title">
+
+                  <strong>
+                    {{ item.selector }}
+                  </strong>
+
+                  <span class="type-badge">
+                    {{ item.type }}
+                  </span>
+
+                </div>
+
+                <span class="file-path">
+                  {{ item.file }}:{{ item.line }}
+                </span>
+
+              </div>
+
+
+              <div class="row-stat">
+
+                <strong>
+                  {{ item.referenceCount }}
+                </strong>
+
+                <span>
+                  references
+                </span>
+
+              </div>
+
+
+              <div class="row-chevron">
+                →
+              </div>
+
+            </article>
+
+          }
+
+
+          @if (filteredCss.length === 0) {
+
+            <div class="empty-state">
+
+              <span>
+                ⌕
+              </span>
+
+              <strong>
+                No selectors found
+              </strong>
+
+              <p>
+                Try changing your search or filters.
+              </p>
+
+            </div>
+
+          }
+
+        </div>
+
+      </section>
+
+    }
+
+  }
+
+</div>

@@ -32,6 +32,11 @@
                 "glob": "firebase-messaging-sw.js",
                 "input": "src",
                 "output": "/"
+              },
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
               }
             ],
             "styles": [
@@ -112,12 +117,9 @@
             ],
             "scripts": []
           }
+        }
+      }
     }
-  },
-  "cli": {
-    "analytics": false
-  }
-}
   },
   "cli": {
     "analytics": false
