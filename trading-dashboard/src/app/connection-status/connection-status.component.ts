@@ -70,11 +70,9 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Monitor internet connection
     this.internetStatusSubscription = this.statusService.online$.subscribe(status => {
       this.isInternetOnline = status;
       if (!status) {
-        // If no internet, mark all external servers as offline
         this.servers.forEach(server => {
           if (server.name !== 'Angular') {
             server.status = 'offline';
@@ -83,10 +81,8 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Initial status check
     this.checkAllServerStatus();
 
-    // Set up periodic status checks every 5 seconds
     this.statusCheckSubscription = interval(5000).subscribe(() => {
       if (this.isInternetOnline) {
         this.checkAllServerStatus();
@@ -107,7 +103,6 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
      await Promise.all(
     this.servers.map(async (server) => {
       if (server.name === 'Angular') {
-        // Angular is always online if we're running this code
         server.status = 'online';
         server.lastChecked = new Date();
         return;
@@ -146,24 +141,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     return `${server.tooltip}: ${status}${lastChecked}`;
   }
 
-  getOverallStatus(): 'online' | 'offline' | 'mixed' {
-    const onlineCount = this.servers.filter(s => s.status === 'online').length;
-    const totalCount = this.servers.length;
-
-    if (onlineCount === totalCount) return 'online';
-    if (onlineCount === 0) return 'offline';
-    return 'mixed';
-  }
-
-  // async reconnectMT5(): Promise<void> {
-  //   const mt5Server = this.servers.find(s => s.name === 'MT5 API');
-  //   if (mt5Server) {
-  //     mt5Server.status = 'checking';
-  //     await new Promise(resolve => setTimeout(resolve, 1000));
-  //     await this.checkAllServerStatus();
-  //   }
-  // }
-   reconnectMT5() {
+  reconnectMT5(): void {
     this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
         next: () => {
