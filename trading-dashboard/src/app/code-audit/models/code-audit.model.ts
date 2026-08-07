@@ -1,4 +1,3 @@
-
 export interface CodeAuditReference {
   file: string;
   line: number;
@@ -9,7 +8,7 @@ export interface CodeAuditFunction {
   name: string;
   file: string;
   line: number;
-  kind: 'method' | 'arrow-function' | 'function';
+  kind: 'method' | 'arrow-function' | 'function' | 'lifecycle-hook' | 'host-listener';
   referenceCount: number;
   status: 'used' | 'unused';
   references: CodeAuditReference[];
@@ -65,4 +64,4 @@ export interface CodeAuditReport {
   functions: CodeAuditFunction[];
   components: CodeAuditComponent[];
   css: CodeAuditCss[];
-}   
+}
