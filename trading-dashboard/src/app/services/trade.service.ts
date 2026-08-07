@@ -11,10 +11,6 @@ export class TradeService {
   private apiUrl = `${environment.backendUrlMt5}/api`;
   constructor(private http: HttpClient) {}
 
-  closeTrade(ticket: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/close_trade`, { ticket });
-  }
-
   closeAllTrades(): Observable<any> {
     return this.http.post(`${this.apiUrl}/close_all_trades`, {});
   }

@@ -486,20 +486,6 @@ export class SupabaseService {
     return data.id;
   }
 
-  async getTradesByDateRange(startDate: string, endDate: string, accountId?: string): Promise<Trade[]> {
-    let query = this.supabase
-      .from('trades')
-      .select('*')
-      .gte('time_open', startDate)
-      .lte('time_open', endDate);
-    if (accountId) {
-      query = query.eq('account_id', accountId);
-    }
-    const { data, error } = await query.order('time_open', { ascending: true });
-    if (error) { console.error('Error fetching trades by date range:', error); return []; }
-    return (data as Trade[]) || [];
-  }
-
   async getTradeByTicket(ticket: number | string, accountId?: string): Promise<Trade | null> {
     let query = this.supabase
       .from('trades')
@@ -536,26 +522,6 @@ export class SupabaseService {
       .maybeSingle();
     if (error) throw new Error(`Trade MFE/MAE update failed: ${error.message}`);
     return data as Trade | null;
-  }
-
-  /**
-   * Fetch all trades from Supabase, ordered by time_open descending,
-   * and map them to the NotionPerformanceData shape that the dashboard
-   * expects (so the table/charts work without touching the template).
-   *
-   * This replaces the old loadNotionPerformanceData() flow that paginated
-   * the Notion API via the NotionProxyApi backend.
-   */
-  async getTradeHistory(): Promise<any[]> {
-    const { data, error } = await this.supabase
-      .from('trades')
-      .select('*, accounts(name)')
-      .order('time_open', { ascending: false, nullsFirst: false });
-    if (error) {
-      console.error('Error fetching trade history from Supabase:', error);
-      return [];
-    }
-    return (data || []).map(row => this.mapTradeToNotionPerf(row));
   }
 
   /**
@@ -617,16 +583,6 @@ export class SupabaseService {
       sl: row.sl,
       tp: row.tp
     };
-  }
-
-  async getTradeByDate(dateStart: string): Promise<Trade | null> {
-    const { data, error } = await this.supabase
-      .from('trades')
-      .select('*')
-      .eq('time_open', dateStart)
-      .maybeSingle();
-    if (error) { console.error('Error fetching trade by date:', error); return null; }
-    return data as Trade | null;
   }
 
   async createTrade(trade: Partial<Trade>): Promise<Trade | null> {
@@ -731,11 +687,6 @@ export class SupabaseService {
     return data as Trade;
   }
 
-  async getTradeScreenshotUrl(ticket: number | string): Promise<string | null> {
-    const urls = await this.getTradeScreenshotUrls([ticket]);
-    return urls[String(ticket)]?.[0] ?? null;
-  }
-
   async getTradeScreenshotUrls(tickets: Array<number | string>): Promise<Record<string, string[]>> {
     if (!tickets.length) return {};
 
@@ -808,27 +759,5 @@ export class SupabaseService {
     if (!deletedRows?.length) {
       throw new Error('Screenshot was not deleted. Apply the screenshot DELETE policies in Supabase.');
     }
-  }
-
-  async uploadFile(file: File, path: string): Promise<string | null> {
-    const { error } = await this.supabase.storage
-      .from('trade-files')
-      .upload(path, file);
-    if (error) { console.error('Error uploading file:', error); return null; }
-    const { data: urlData } = this.supabase.storage
-      .from('trade-files')
-      .getPublicUrl(path);
-    return urlData.publicUrl;
-  }
-
-  subscribeToTrades(callback: (payload: any) => void) {
-    return this.supabase
-      .channel('trades-channel')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'trades'
-      }, callback)
-      .subscribe();
   }
 }
