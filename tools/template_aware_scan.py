@@ -20,7 +20,7 @@ SRC_ROOT = ANGULAR_ROOT / "src"
 OUTPUT_FILE = (PROJECT_ROOT/ "trading-dashboard"/ "public"/ "tools"/ "code-audit-report.json")
 # OUTPUT_FILE = (ANGULAR_ROOT/ "src"/ "assets"/ "tools"/ "code-audit-report.json")
 
-SCANNER_VERSION = "2.1.0"
+SCANNER_VERSION = "2.1.1"
 
 
 TS_EXTENSIONS = {".ts"}

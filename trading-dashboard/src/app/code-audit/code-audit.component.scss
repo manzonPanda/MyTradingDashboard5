@@ -61,6 +61,28 @@
 }
 
 
+.scan-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  color: #8fa2bb;
+  font-size: 10px;
+}
+
+
+.scan-badge {
+  padding: 4px 7px;
+  border: 1px solid rgba(114, 223, 170, 0.25);
+  border-radius: 5px;
+  background: rgba(114, 223, 170, 0.08);
+  color: #72dfaa;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+
 .refresh-button {
   display: inline-flex;
   align-items: center;
@@ -257,6 +279,79 @@
 .metric-card.warning .metric-icon {
   background: rgba(255, 184, 77, 0.1);
   color: #ffbd63;
+}
+
+
+.signal-panel {
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  border: 1px solid #263852;
+  border-radius: 16px;
+  background: rgba(13, 23, 40, 0.72);
+}
+
+
+.signal-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+
+.signal-panel-heading h2 {
+  margin: 5px 0 0;
+  font-size: 17px;
+}
+
+
+.signal-panel-note {
+  color: #8fa2bb;
+  font-size: 10px;
+}
+
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+
+.signal-card {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  column-gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(66, 88, 119, 0.55);
+  border-radius: 10px;
+  background: rgba(29, 45, 68, 0.45);
+}
+
+
+.signal-icon {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(169, 112, 255, 0.14);
+  color: #d7b9ff;
+  font-size: 13px;
+}
+
+
+.signal-card strong {
+  font-size: 18px;
+}
+
+
+.signal-card > span:last-child {
+  color: #9fb0c7;
+  font-size: 10px;
 }
 
 
@@ -614,6 +709,15 @@
 }
 
 
+.reference-summary {
+  display: block;
+  margin-top: 5px;
+  color: #b789ff;
+  font-size: 10px;
+  text-transform: capitalize;
+}
+
+
 .row-stat {
   display: flex;
   flex-direction: column;
@@ -849,6 +953,12 @@
       1fr;
   }
 
+
+  .signal-grid {
+    grid-template-columns:
+      1fr;
+  }
+
 }
 
 
@@ -868,6 +978,12 @@
   .refresh-button {
     width: 100%;
     justify-content: center;
+  }
+
+
+  .signal-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
 
