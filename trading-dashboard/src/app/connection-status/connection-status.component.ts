@@ -137,14 +137,18 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         if (response?.status === 'healthy' && response.mt5_connected) {
           server.status = 'online';
           server.detail = '';
+        } else if (server.status === 'reconnecting') {
+          server.detail = 'Reconnecting…';
         } else {
           server.status = 'offline';
           server.detail = 'Disconnected';
         }
 
       } catch (error) {
-        server.status = 'offline';
-        server.detail = '';
+        if (server.status !== 'reconnecting') {
+          server.status = 'offline';
+          server.detail = 'Disconnected';
+        }
       }
 
       server.lastChecked = new Date();
@@ -166,11 +170,11 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     if (server.status === 'reconnecting') return;
 
     server.status = 'reconnecting';
-    server.detail = 'Retrying…';
+    server.detail = 'Reconnecting…';
     this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
         next: () => {
-          server.detail = 'Retrying…';
+          server.detail = 'Reconnecting…';
           this.reconnectRequested.emit();
         },
         error: () => {
