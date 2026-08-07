@@ -3,9 +3,21 @@
 }
 
 
+:host {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  background: #0b1220;
+  color: #e8e8ef;
+}
+
+
 .audit-page {
   min-height: 100%;
   padding: 28px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(93, 72, 153, 0.2), transparent 34%),
+    linear-gradient(145deg, #0b1220 0%, #101a2b 100%);
   color: #e8e8ef;
 }
 
@@ -26,11 +38,11 @@
 .eyebrow,
 .panel-kicker,
 .card-label {
+  color: #aebdd1;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  opacity: 0.75;
 }
 
 
@@ -44,7 +56,7 @@
 
 .audit-header p {
   margin: 0;
-  color: #b0b0bd;
+  color: #b8c6d8;
   font-size: 14px;
 }
 
@@ -54,17 +66,18 @@
   align-items: center;
   gap: 9px;
   padding: 10px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid #344661;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.055);
-  color: #fff;
+  background: #17243a;
+  color: #f5f8fc;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
 
 .refresh-button:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: #21324d;
+  border-color: #536b91;
   transform: translateY(-1px);
 }
 
@@ -111,14 +124,15 @@
 .panel,
 .list-panel,
 .state-card {
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid #263852;
   background:
     linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.045),
-      rgba(255, 255, 255, 0.018)
+      rgba(29, 45, 68, 0.92),
+      rgba(16, 28, 45, 0.96)
     );
   border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(2, 8, 20, 0.2);
 }
 
 
@@ -153,7 +167,7 @@
 
 
 .ring-background {
-  stroke: rgba(255, 255, 255, 0.07);
+  stroke: #2a3b55;
 }
 
 
@@ -185,8 +199,8 @@
 
 
 .health-value span {
+  color: #b8c6d8;
   font-size: 10px;
-  opacity: 0.7;
 }
 
 
@@ -199,7 +213,7 @@
 .health-info p {
   max-width: 250px;
   margin: 0;
-  color: #a8a8b5;
+  color: #b8c6d8;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -220,8 +234,8 @@
   place-items: center;
   margin-bottom: 15px;
   border-radius: 9px;
-  background: rgba(169, 112, 255, 0.12);
-  color: #c79aff;
+  background: rgba(169, 112, 255, 0.18);
+  color: #d7b9ff;
   font-size: 10px;
   font-weight: 700;
 }
@@ -235,7 +249,7 @@
 
 .metric-card > span:last-child {
   margin-top: 3px;
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-size: 11px;
 }
 
@@ -256,9 +270,9 @@
   margin-bottom: 14px;
   padding: 4px;
   overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid #263852;
   border-radius: 11px;
-  background: rgba(0, 0, 0, 0.12);
+  background: #0d1728;
 }
 
 
@@ -270,20 +284,20 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #a8a8b5;
+  color: #b8c6d8;
   white-space: nowrap;
   cursor: pointer;
 }
 
 
 .audit-tabs button:hover {
-  color: #ddd;
+  color: #f1f5fb;
 }
 
 
 .audit-tabs button.active {
-  background: rgba(169, 112, 255, 0.13);
-  color: #cda9ff;
+  background: #332452;
+  color: #e0c9ff;
 }
 
 
@@ -319,14 +333,14 @@
   gap: 9px;
   width: min(500px, 100%);
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid #2b3e5a;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.13);
+  background: #0d1728;
 }
 
 
 .search span {
-  color: #a0a0ad;
+  color: #b9c7d9;
   font-size: 18px;
 }
 
@@ -343,7 +357,7 @@
 
 
 .search input::placeholder {
-  color: #8d8d9d;
+  color: #91a2ba;
 }
 
 
@@ -358,15 +372,15 @@
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: #a0a0ad;
+  color: #b4c2d5;
   cursor: pointer;
 }
 
 
 .filters button.active {
-  border-color: rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.05);
-  color: #eee;
+  border-color: #3a5072;
+  background: #1b2a42;
+  color: #f1f5fb;
 }
 
 
@@ -421,7 +435,7 @@
   height: 5px;
   overflow: hidden;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.07);
+  background: #2a3b55;
 }
 
 
@@ -447,7 +461,7 @@
 
 
 .component-stat span:last-child {
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-size: 11px;
 }
 
@@ -465,7 +479,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-size: 11px;
 }
 
@@ -473,7 +487,7 @@
 .panel-footer button {
   border: 0;
   background: transparent;
-  color: #b789ff;
+  color: #d0adff;
   cursor: pointer;
 }
 
@@ -504,7 +518,7 @@
 
 
 .list-header > span {
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-size: 11px;
 }
 
@@ -582,8 +596,8 @@
 .type-badge {
   padding: 3px 6px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #a8a8b5;
+  background: #263852;
+  color: #c2cede;
   font-size: 9px;
 }
 
@@ -592,7 +606,7 @@
   display: block;
   margin-top: 4px;
   overflow: hidden;
-  color: #8d8d9d;
+  color: #9fb0c7;
   font-family: monospace;
   font-size: 10px;
   text-overflow: ellipsis;
@@ -613,22 +627,22 @@
 
 
 .row-stat span {
-  color: #8d8d9d;
+  color: #9fb0c7;
   font-size: 9px;
 }
 
 
 .row-chevron {
-  color: #8d8d9d;
+  color: #9fb0c7;
 }
 
 
 .detail-panel {
   margin: 0 20px 12px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid #2b3e5a;
   border-radius: 11px;
-  background: rgba(0, 0, 0, 0.15);
+  background: #0a1424;
 }
 
 
@@ -682,7 +696,7 @@
 
 .no-references p {
   margin: 5px 0 0;
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-size: 11px;
   line-height: 1.5;
 }
@@ -705,7 +719,7 @@
   display: block;
   margin-top: 5px;
   overflow: hidden;
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-family: monospace;
   font-size: 10px;
   text-overflow: ellipsis;
@@ -735,7 +749,7 @@
 
 
 .state-card span {
-  color: #a0a0ad;
+  color: #b2c0d2;
   font-size: 12px;
 }
 
@@ -773,7 +787,7 @@
   justify-content: center;
   min-height: 220px;
   gap: 7px;
-  color: #a0a0ad;
+  color: #b2c0d2;
 }
 
 
