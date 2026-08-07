@@ -32,8 +32,6 @@ interface MT5HealthResponse {
   status: string;
   service: string;
   mt5_connected: boolean;
-  reconnecting?: boolean;
-  reconnect_in_seconds?: number;
   timestamp: string;
   port: string;
 }
@@ -138,14 +136,9 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         if (response?.status === 'healthy' && response.mt5_connected) {
           server.status = 'online';
           server.detail = '';
-        } else if (response?.reconnecting) {
-          server.status = 'reconnecting';
-          server.detail = 'Retrying…';
         } else {
           server.status = 'offline';
-          server.detail = response?.reconnect_in_seconds
-            ? `Retrying in ${response.reconnect_in_seconds}s`
-            : '';
+          server.detail = '';
         }
 
       } catch (error) {

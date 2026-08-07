@@ -32,8 +32,6 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")  # Allow WebSocket connections
 local_tz = ZoneInfo("Asia/Manila")
-last_disconnect_time = None
-reconnect_delay = 30  # seconds
 reconnect_in_progress = False
 
 MASTER = r"C:\Program Files\MetaTrader 5\terminal64.exe"
@@ -501,40 +499,20 @@ def full_history():
 
 @app.route("/api/health", methods=["GET"])
 def health_check():
-    global last_disconnect_time
-
     info = mt5.terminal_info()
     mt5_connected = info is not None
-
-    if mt5_connected:
-        last_disconnect_time = None
-    else:
-        if last_disconnect_time is None:
-            last_disconnect_time = time.time()
-        elif time.time() - last_disconnect_time >= reconnect_delay:
-            eventlet.spawn_n(reconnect_mt5)
-            last_disconnect_time = time.time()
 
     return jsonify({
         'status': 'healthy' if mt5_connected else 'unhealthy',
         'service': 'MT5_API',
         'mt5_connected': mt5_connected,
-        'reconnecting': reconnect_in_progress,
-        'time_since_disconnect': (
-            int(time.time() - last_disconnect_time)
-            if last_disconnect_time else 0
-        ),
-        'reconnect_in_seconds': (
-            reconnect_delay - int(time.time() - last_disconnect_time)
-            if last_disconnect_time else 0
-        ),
         'timestamp': datetime.now().isoformat(),
         'port': 5000
     })
 
 
 def reconnect_mt5():
-    global last_disconnect_time, reconnect_in_progress
+    global reconnect_in_progress
 
     if reconnect_in_progress:
         return False
@@ -546,7 +524,6 @@ def reconnect_mt5():
         if not mt5.initialize(path=MASTER):
             return False
 
-        last_disconnect_time = None
         info = mt5.account_info()
         if info:
             socketio.emit('account_info', {
