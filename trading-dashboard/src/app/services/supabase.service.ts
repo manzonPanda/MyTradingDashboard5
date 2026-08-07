@@ -207,16 +207,6 @@ export class SupabaseService {
     return data as UserSettings;
   }
 
-  async getAuraEnergySettings(userId: string): Promise<AuraEnergySettings | null> {
-    const { data, error } = await this.supabase
-      .from('user_settings')
-      .select('aura_enabled, aura_travel_duration_ms, aura_min_delay_ms, aura_max_delay_ms, aura_trail_length_percent, aura_stroke_width, aura_head_radius, aura_bloom_intensity, aura_fade_duration_ms, aura_color_start, aura_color_mid, aura_color_peak, aura_color_head, aura_min_targets, aura_max_targets')
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (error) throw new Error(`AURA energy settings loading failed: ${error.message}`);
-    return data as AuraEnergySettings | null;
-  }
-
   async updateAuraEnergySettings(userId: string, updates: AuraEnergySettings): Promise<AuraEnergySettings> {
     const { data, error } = await this.supabase
       .from('user_settings')
@@ -524,67 +514,6 @@ export class SupabaseService {
     return data as Trade | null;
   }
 
-  /**
-   * Map a Supabase trades row to the NotionPerformanceData interface.
-   * Fields not present in Supabase (e.g. strategy, modelCheck, screenshots)
-   * are defaulted so the dashboard table doesn't break.
-   */
-  private mapTradeToNotionPerf(row: any): any {
-    const accountName = row.accounts?.name || '';
-    const accountArr = accountName ? [accountName] : [];
-
-    // rules_violated is stored as text — wrap to array for multi_select display
-    const rulesViolatedArr = row.rules_violated ? [row.rules_violated] : [];
-
-    // rrr is text like "+13.80R" — keep as-is
-    // held is text like "6h 15m" — keep as-is
-    // mup is numeric — keep as number
-
-    return {
-      id: row.id || '',
-      action: '',                    // Notion title — not in Supabase
-      date: row.time_open || '',    // start date
-      idealRRR: '',                  // not in Supabase
-      buySell: row.buy_sell || '',
-      modelCheck: [],                // not in Supabase
-      status: '',                    // not in Supabase
-      percentPnL: 0,                 // computed elsewhere
-      weeklyRetrospective: row.weekly_retrospective || '',
-      account: accountArr,
-      strategy: '',                  // not in Supabase
-      oneToOneReversal: false,       // not in Supabase
-      screenshots: [],               // not in Supabase
-      modelForm: [],                 // not in Supabase
-      idealSL: '',                   // not in Supabase
-      reviewed: false,               // not in Supabase
-      uniqueID: 0,                   // not in Supabase
-      commission: row.commission ?? 0,
-      outcome: [],                   // not in Supabase
-      held: row.held || '',
-      instrument: row.instrument || '',
-      pnl: row.pnl ?? 0,
-      percentPnLCalc: '',            // formula — not stored
-      dailyReflection: row.daily_reflection || '',
-      lots: row.lots ?? 0,
-      divergenceValue: 0,            // not in Supabase
-      pips: row.pips ?? 0,
-      formula: row.pnl ?? 0,         // formula placeholder = pnl
-      rulesViolated: rulesViolatedArr,
-      emptySelect: '',               // not in Supabase
-      swap: row.swap ?? 0,
-      // Extra Supabase-specific fields (useful for the dashboard):
-      ticket: row.ticket,
-      time_close: row.time_close,
-      mup: row.mup,
-      price_close: row.price_close,
-      price_open: row.price_open,
-      risk_per_trade: row.risk_per_trade,
-      rrr: row.rrr,
-      sl: row.sl,
-      tp: row.tp
-    };
-  }
-
   async createTrade(trade: Partial<Trade>): Promise<Trade | null> {
     const { data, error } = await this.supabase
       .from('trades')
@@ -602,11 +531,6 @@ export class SupabaseService {
       if (existing?.id) return this.updateTrade(existing.id, tradeForAccount);
     }
     return this.createTrade(tradeForAccount);
-  }
-
-  async syncMt5Trades(trades: Partial<Trade>[], accountName: string): Promise<{ created: number; updated: number }> {
-    const accountId = await this.getOrCreateAccountId(accountName);
-    return this.syncTradesToAccount(trades, accountId);
   }
 
   async syncTradesToAccount(

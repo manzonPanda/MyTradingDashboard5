@@ -1174,10 +1174,6 @@ mt5AccountInfo: AccountSettings = {
     Chart.register(...registerables);
   }
 
-  closeLiveTradeSoundSettings(): void {
-    this.isLiveTradeSoundSettingsOpen = false;
-  }
-
   onLiveTradeSoundSettingsChange(settings: LiveTradeSoundSettingsModel): void {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
@@ -1526,19 +1522,6 @@ mt5AccountInfo: AccountSettings = {
   onDonutArcMove(evt: MouseEvent, isWin: boolean): void { this.showDonutTooltip(evt, isWin); }
   onDonutArcLeave(): void { this.donutTooltipVisible = false; }
 
-  // Daily Limit ring gauge (left) – map 0–capacity% (e.g., 8%) to full circle
-  getDailyLimitRingCircumference(): number { return 2 * Math.PI * 44; }
-
-  private getDailyLimitUsedPct(): number {
-    const startBal = this.mt5AccountInfo?.startingBalance || 0;
-    const capPct = this.mt5AccountInfo?.dailyLossLimit || 8; // capacity percent (default 8%)
-    if (startBal <= 0 || capPct <= 0) return 0;
-    const limitAmt = startBal * (capPct / 100);
-    const usedAmt = Math.min(limitAmt, Math.max(0, -this.dailyPnL));
-    const usedPct = limitAmt > 0 ? (usedAmt / limitAmt) * 100 : 0;
-    return Math.max(0, Math.min(100, usedPct));
-  }
-
   private setupDailyResetTimer(): void {
     // Check every minute for new session boundary and recompute
     setInterval(() => {
@@ -1715,18 +1698,6 @@ mt5AccountInfo: AccountSettings = {
 
   get roiNetReturn(): number {
     return this.roiPayouts - this.roiExpenses;
-  }
-
-  get roiReturnPercentage(): number {
-    return this.roiExpenses ? (this.roiNetReturn / this.roiExpenses) * 100 : 0;
-  }
-
-  get certificatePayoutTotal(): number {
-    return this.certificatePayouts.reduce((total, payout) => total + Number(payout.amount || 0), 0);
-  }
-
-  get fundedCertificateCount(): number {
-    return this.certificates.filter(certificate => certificate.status === 'funded').length;
   }
 
   openCertificateCreator(): void {
@@ -2401,28 +2372,6 @@ mt5AccountInfo: AccountSettings = {
     this.auraConfig = this.auraEnergy.getConfig();
     this.auraEnergy.start();
     this.cdr.markForCheck();
-  }
-
-  refreshDataTableWithAngularBinding(): void {
-    try {
-      // Force Angular change detection first
-      this.cdr.detectChanges();
-
-      // For Angular DataTables, we need to destroy and recreate to pick up new data
-      setTimeout(() => {
-        if ($.fn.dataTable.isDataTable('#myTable')) {
-          $('#myTable').DataTable().destroy();
-        }
-
-        // Trigger recreation with new data
-        setTimeout(() => {
-          this.dtTrigger.next(null);
-        }, 100);
-      }, 50);
-
-    } catch (error) {
-      console.error('❌ Error refreshing DataTable with Angular binding:', error);
-    }
   }
 
   ngOnDestroy(): void {
@@ -3537,93 +3486,6 @@ onUpload(): void {
     }
   }
 
-  async loadNotionPerformanceData(): Promise<void> {
-    this.isLoadingNotionData = true;
-    try {
-      // Check if backend is running first
-      const backendRunning = await this.isBackendRunning();
-
-      if (!backendRunning) {
-        console.warn('⚠️ Backend is not running or not accessible');
-        this.notionPerformanceData = [];
-        return;
-      }
-
-      // Collect all results using pagination
-      let allResults: any[] = [];
-      let hasMore = true;
-      let startCursor: string | null = null;
-      let pageCount = 0;
-
-
-      while (hasMore) {
-        pageCount++;
-
-        // Build request body for pagination
-        const body: any = {};
-        if (startCursor) {
-          body.start_cursor = startCursor;
-        }
-
-        // Use the proxy endpoint that matches your database ID exactly
-        const proxyResponse: any = await firstValueFrom(
-          this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
-        );
-
-        if (proxyResponse && proxyResponse.results && proxyResponse.results.length > 0) {
-          // Add results from this page to our collection
-          allResults = allResults.concat(proxyResponse.results);
-          // Check if there are more pages
-          hasMore = proxyResponse.has_more === true;
-          startCursor = proxyResponse.next_cursor || null;
-
-        } else {
-          hasMore = false;
-        }
-
-        // Safety check to prevent infinite loops
-        if (pageCount > 50) {
-          console.warn('⚠️ Stopped pagination after 50 pages to prevent infinite loop');
-          break;
-        }
-      }
-
-      if (allResults.length > 0) {
-        this.notionPerformanceData = this.parseNotionResponse(allResults);
- 
-      } else {
-        console.warn('⚠��� No results found in your Notion database after pagination');
-        this.notionPerformanceData = [];
-   
-      }
-
-      // Trigger DataTable rendering safely
-      this.triggerDataTableRender();
-
-    } catch (error: any) {
-      console.error('❌ Error during paginated loading of your Notion data:');
-      console.error('Full error object:', error);
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error status:', error.status);
-
-      if (error.status === 0) {
-        console.error('🔌 Connection failed - backend server may not be running');
-      }
-
-      // Show empty state instead of mock data
-      this.notionPerformanceData = [];
-   
-
-      // Still trigger DataTable rendering safely
-      this.triggerDataTableRender();
-
-    } finally {
-      this.isLoadingNotionData = false;
-      this.cdr.markForCheck();
-    }
-  }
-
 
 
   // Generate stunning chart data with realistic trading patterns
@@ -4117,59 +3979,6 @@ onUpload(): void {
     }
   }
 
-  private safelyRefreshDataTable(): void {
-    if (this.isRefreshingTable) {
-      return; // Prevent multiple simultaneous refreshes
-    }
-
-    this.isRefreshingTable = true;
-
-    try {
-      // Check if the table element exists
-      const tableElement = document.getElementById('notionTable');
-      if (!tableElement) {
-        console.warn('Table element not found, skipping DataTable refresh');
-        this.isRefreshingTable = false;
-        return;
-      }
-
-      // Check if DataTable is initialized and destroy it safely
-      if ($.fn.dataTable.isDataTable('#notionTable')) {
-        const table = $('#notionTable').DataTable();
-        if (table && typeof table.destroy === 'function') {
-          table.destroy(true); // true = remove from DOM completely
-        }
-      }
-
-      // Clear any existing DataTable data
-      $('#notionTable').empty();
-
-      // Wait for DOM cleanup, then reinitialize
-      setTimeout(() => {
-        try {
-          // Double-check the element still exists after timeout
-          const tableElementAfter = document.getElementById('notionTable');
-          if (tableElementAfter) {
-            this.dtTriggerNotion.next(null);
-          }
-        } finally {
-          this.isRefreshingTable = false;
-        }
-      }, 200);
-
-    } catch (error) {
-      console.error('Error refreshing DataTable:', error);
-      // Fallback: just trigger re-render without destroying
-      setTimeout(() => {
-        try {
-          this.dtTriggerNotion.next(null);
-        } finally {
-          this.isRefreshingTable = false;
-        }
-      }, 100);
-    }
-  }
-
   async isBackendRunning(): Promise<boolean> {
     try {
       // Try a simple POST request to see if backend endpoint is responding
@@ -4256,66 +4065,6 @@ onUpload(): void {
 
   calculateAccountSize(): number {
     return this.mt5AccountInfo?.startingBalance ?? 0;
-  }
-
-  calculateAvgTradeDurationMinutes(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    let totalMinutes = 0;
-    let validTrades = 0;
-
-    this.tableData.forEach(trade => {
-      if (trade.openDate && trade.closeDate && trade.closeDate !== '-' && trade.closeDate.trim() !== '') {
-        const holdTimeStr = this.calculateHoldTime(trade.openDate, trade.closeDate);
-        if (holdTimeStr && holdTimeStr !== '') {
-          const minutes = this.parseHoldTimeToMinutes(holdTimeStr);
-          if (minutes > 0) {
-            totalMinutes += minutes;
-            validTrades++;
-          }
-        }
-      }
-    });
-
-    if (validTrades === 0) return 0;
-    return Math.floor(totalMinutes / validTrades);
-  }
-
-  calculateAvgLosingTradeDurationMinutes(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
-    let totalMinutes = 0;
-    let validTrades = 0;
-
-    this.tableData.forEach(trade => {
-      const netProfit = parseFloat(trade.netProfit) || 0;
-      if (netProfit < 0 && trade.openDate && trade.closeDate && trade.closeDate !== '-' && trade.closeDate.trim() !== '') {
-        const holdTimeStr = this.calculateHoldTime(trade.openDate, trade.closeDate);
-        if (holdTimeStr && holdTimeStr !== '') {
-          const minutes = this.parseHoldTimeToMinutes(holdTimeStr);
-          if (minutes > 0) {
-            totalMinutes += minutes;
-            validTrades++;
-          }
-        }
-      }
-    });
-
-    if (validTrades === 0) return 0;
-    return Math.floor(totalMinutes / validTrades);
-  }
-
-  private formatMinutesToDuration(avgMinutes: number): string {
-    if (!avgMinutes || avgMinutes <= 0) return '0min';
-    const hours = Math.floor(avgMinutes / 60);
-    const remainingMinutes = avgMinutes % 60;
-    if (hours > 0 && remainingMinutes > 0) {
-      return `${hours}hrs ${remainingMinutes}min`;
-    } else if (hours > 0) {
-      return `${hours}hrs`;
-    } else if (avgMinutes > 0) {
-      return `${avgMinutes}min`;
-    } else {
-      return '<1min';
-    }
   }
 
   private parseHoldTimeToMinutes(holdTimeStr: string): number {
@@ -4482,14 +4231,6 @@ onUpload(): void {
   // News helper methods
   trackByNewsIndex(index: number, item: any): number {
     return index;
-  }
-
-  getLatestNews(): any[] {
-    if (!this.newsData || !Array.isArray(this.newsData)) {
-      return [];
-    }
-    // Show all news for Monday to Friday
-    return this.newsData;
   }
 
   getNewsForDay(dayNumber: number): any[] {
@@ -5009,239 +4750,6 @@ onUpload(): void {
     const excessiveTradingDays = dailyTradeCounts.filter(count => count > avgTradesPerDay * 2).length;
 
     return Math.min(100, (excessiveTradingDays / dailyTradeCounts.length) * 100);
-  }
-
-  getFOMOScore(): number {
-    if (!this.tableData || this.tableData.length < 3) return 0;
-
-    let fomoTradeCount = 0;
-
-    for (let i = 2; i < this.tableData.length; i++) {
-      const trade1 = parseFloat(this.tableData[i-2].netProfit) || 0;
-      const trade2 = parseFloat(this.tableData[i-1].netProfit) || 0;
-      const currentTrade = parseFloat(this.tableData[i].netProfit) || 0;
-
-      // FOMO: Two consecutive wins followed by a quick loss
-      if (trade1 > 0 && trade2 > 0 && currentTrade < 0) {
-        const timeDiff = this.getTimeDifferenceBetweenTrades(i-1, i);
-        if (timeDiff < 30) { // Less than 30 minutes
-          fomoTradeCount++;
-        }
-      }
-    }
-
-    return Math.min(100, (fomoTradeCount / (this.tableData.length - 2)) * 100);
-  }
-
-  getStopLossAdherence(): number {
-    if (!this.tableData || this.tableData.length === 0) return 100;
-
-    const tradesWithSL = this.tableData.filter(trade => {
-      const sl = parseFloat(trade.sL);
-      return sl && sl > 0;
-    });
-
-    if (tradesWithSL.length === 0) return 0;
-    const adherentTrades = tradesWithSL.filter(trade => {
-      const entry = parseFloat(trade.entry);
-      const exit = parseFloat(trade.exit);
-      const sl = parseFloat(trade.sL);
-      const profit = parseFloat(trade.netProfit);
-
-      // If it's a loss, check if exit price is close to SL
-      if (profit < 0) {
-        const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
-        if (tradeType === 'buy') {
-          return exit <= sl * 1.05; // 5% tolerance
-        } else {
-          return exit >= sl * 0.95; // 5% tolerance
-        }
-      }
-      return true; // Winning trades are considered adherent
-    });
-
-    return (adherentTrades.length / tradesWithSL.length) * 100;
-  }
-
-  getTakeProfitDiscipline(): number {
-    if (!this.tableData || this.tableData.length === 0) return 100;
-
-    const winningTrades = this.tableData.filter(trade => parseFloat(trade.netProfit) > 0);
-
-    if (winningTrades.length === 0) return 0;
-
-    const disciplinedTrades = winningTrades.filter(trade => {
-      const entry = parseFloat(trade.entry);
-      const exit = parseFloat(trade.exit);
-      const tp = parseFloat(trade.tP);
-
-      if (!tp || tp === 0) return false;
-
-      const tradeType = trade.type ? trade.type.toString().toLowerCase() : '';
-      if (tradeType === 'buy') {
-        return exit >= tp * 0.95; // Took profit close to target
-      } else {
-        return exit <= tp * 1.05; // Took profit close to target
-      }
-    });
-
-    return (disciplinedTrades.length / winningTrades.length) * 100;
-  }
-
-  getDayOfWeekStats(): { day: string, avgPnL: number, tradeCount: number }[] {
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayStats: { [key: number]: { totalPnL: number, count: number } } = {};
-
-    this.tableData.forEach(trade => {
-      const date = this.parseTradeDate(trade.openDate);
-      if (date) {
-        const dayOfWeek = date.getDay();
-        const pnl = parseFloat(trade.netProfit) || 0;
-
-        if (!dayStats[dayOfWeek]) {
-          dayStats[dayOfWeek] = { totalPnL: 0, count: 0 };
-        }
-
-        dayStats[dayOfWeek].totalPnL += pnl;
-        dayStats[dayOfWeek].count++;
-      }
-    });
-
-    return Object.keys(dayStats).map(dayIndex => {
-      const index = parseInt(dayIndex);
-      const stats = dayStats[index];
-      return {
-        day: dayNames[index],
-        avgPnL: stats.totalPnL / stats.count,
-        tradeCount: stats.count
-      };
-    });
-  }
-
-  getCurrentStreak(): string {
-    if (!this.tableData || this.tableData.length === 0) return '0';
-
-    let streak = 0;
-    let isWinStreak = false;
-
-    for (let i = this.tableData.length - 1; i >= 0; i--) {
-      const profit = parseFloat(this.tableData[i].netProfit) || 0;
-
-      if (i === this.tableData.length - 1) {
-        isWinStreak = profit > 0;
-        streak = 1;
-      } else {
-        if ((isWinStreak && profit > 0) || (!isWinStreak && profit < 0)) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-    }
-
-    return `${streak} ${isWinStreak ? 'W' : 'L'}`;
-  }
-
-  // Performance Insights
-  getPerformanceInsights(): { title: string, description: string, recommendations: string[], severity: string }[] {
-    const insights: { title: string, description: string, recommendations: string[], severity: string }[] = [];
-
-    // Win Rate Analysis
-    const winRate = this.calculateWinRate();
-    if (winRate < 40) {
-      insights.push({
-        title: '�� Low Win Rate Detected',
-        description: `Your win rate of ${winRate.toFixed(1)}% is below the typical 40-60% range for successful traders.`,
-        recommendations: [
-          'Review your entry criteria - you may be entering trades with poor setups',
-          'Consider tightening your trade selection process',
-          'Focus on high-probability setups only',
-          'Backtest your strategy to validate its effectiveness'
-        ],
-        severity: 'critical'
-      });
-    }
-
-    // Risk/Reward Analysis
-    const rrRatio = parseFloat(this.getRiskRewardRatio());
-    if (rrRatio < 1.5) {
-      insights.push({
-        title: '⚖️ Poor Risk/Reward Ratio',
-        description: `Your risk/reward ratio of ${rrRatio} means you're risking too much for too little reward.`,
-        recommendations: [
-          'Aim for at least 1:2 risk/reward ratio on trades',
-          'Let your winners run longer before taking profit',
-          'Consider wider take profit targets',
-          'Review if you\'re cutting winners too early'
-        ],
-        severity: 'warning'
-      });
-    }
-
-    // Revenge Trading
-    const revengeScore = this.getRevengeTradingScore();
-    if (revengeScore > 20) {
-      insights.push({
-        title: '😤 Revenge Trading Pattern',
-        description: `${revengeScore.toFixed(1)}% of your trades show signs of revenge trading after losses.`,
-        recommendations: [
-          'Take a break after a losing trade to reset emotionally',
-          'Set a maximum daily loss limit and stick to it',
-          'Keep a trading journal to identify emotional triggers',
-          'Never increase position size after a loss'
-        ],
-        severity: 'critical'
-      });
-    }
-
-    // Overtrading
-    const overtradingScore = this.getOvertradingScore();
-    if (overtradingScore > 30) {
-      insights.push({
-        title: '📈 Overtrading Detected',
-        description: `You have excessive trading days suggesting overtrading behavior.`,
-        recommendations: [
-          'Set a maximum number of trades per day (e.g., 3-5 trades)',
-          'Focus on quality over quantity',
-          'Wait for high-probability setups only',
-          'Take time to analyze the market before entering'
-        ],
-        severity: 'warning'
-      });
-    }
-
-    // Drawdown Analysis
-    const maxDrawdown = Math.abs(this.getMaxDrawdown());
-    if (maxDrawdown > 1000) {
-      insights.push({
-        title: '📉 High Drawdown Risk',
-        description: `Your maximum drawdown of $${maxDrawdown.toFixed(2)} indicates high risk exposure.`,
-        recommendations: [
-          'Reduce position sizes to limit account risk',
-          'Implement stricter stop losses',
-          'Never risk more than 1-2% of account per trade',
-          'Consider a period of paper trading to rebuild confidence'
-        ],
-        severity: 'critical'
-      });
-    }
-
-    // Positive insights
-    if (insights.length === 0) {
-      insights.push({
-        title: '✅ Good Trading Performance',
-        description: 'Your trading shows good discipline and risk management.',
-        recommendations: [
-          'Continue following your current strategy',
-          'Consider gradually increasing position sizes',
-          'Document what\'s working well in your trading journal',
-          'Stay consistent with your approach'
-        ],
-        severity: 'success'
-      });
-    }
-
-    return insights;
   }
 
   // Helper Methods
@@ -6016,40 +5524,6 @@ onUpload(): void {
     }
   }
 
-  nuclearDataTableRebuild(): void {
-    try {
-      // Step 1: Completely destroy existing DataTable
-      if ($.fn.dataTable.isDataTable('#myTable')) {
-        $('#myTable').DataTable().destroy();
-        $('#myTable').empty(); // Clear all HTML content
-      }
-
-      // Step 2: Force Angular change detection
-      this.cdr.detectChanges();
-
-      // Step 3: Wait for DOM cleanup
-      setTimeout(() => {
-        // Step 4: Manually rebuild table HTML if needed
-        // Step 5: Reinitialize with fresh DataTable
-        setTimeout(() => {
-          this.dtTrigger.next(null);
-
-          // Step 6: If still no luck, try direct jQuery DataTable initialization
-          setTimeout(() => {
-            if (!$.fn.dataTable.isDataTable('#myTable') && this.tableData.length > 0) {
-              $('#myTable').DataTable(this.dtOptions);
-            }
-          }, 300);
-        }, 200);
-      }, 100);
-
-    } catch (error) {
-      console.error('❌ Error in nuclear rebuild:', error);
-      // Last resort fallback
-      this.dtTrigger.next(null);
-    }
-  }
-
   getReminderStatus(): { total: number; scheduled: number } {
     return this.newsReminder.getReminderStatus();
   }
@@ -6188,17 +5662,6 @@ onUpload(): void {
     this.cdr.markForCheck();
   }
 
-  // Recent Trades PnL tiles helpers
-  getRecentTrades(limit: number = 10): Table[] {
-    const items = Array.isArray(this.tableData) ? [...this.tableData] : [];
-    items.sort((a, b) => {
-      const da = this.parseOpenDate(a.openDate || '')?.getTime() || 0;
-      const db = this.parseOpenDate(b.openDate || '')?.getTime() || 0;
-      return db - da; // newest first
-    });
-    return items.slice(0, limit);
-  }
-
   // Today-only filtering helpers for Day Trades chips (midnight PHT to now)
   private getTodayFilteredTrades(): Table[] {
     const { start, end } = this.getTodayWindowUtc();
@@ -6243,18 +5706,6 @@ onUpload(): void {
     if (!isFinite(pct) || isNaN(pct)) return '0.00%';
     const sign = pct > 0 ? '+' : pct < 0 ? '' : '';
     return `${sign}${pct.toFixed(2)}%`;
-  }
-
-  private updateTradingTargets(): void {
-    // Update any chart reference lines or calculations based on new targets
-    console.log('📊 Updating trading targets - Profit:', this.mt5AccountInfo.profitTarget + '%, Max Loss:', this.mt5AccountInfo.maxTotalDrawdown + '%');
-
-    // Trigger chart refresh to update profit target line
-    this.generateTradingChartData();
-
-    // Save to localStorage for persistence
-    localStorage.setItem('tradingProfitTarget', this.mt5AccountInfo.profitTarget.toString());
-    localStorage.setItem('tradingMaxLoss', this.mt5AccountInfo.maxTotalDrawdown.toString());
   }
 
 
