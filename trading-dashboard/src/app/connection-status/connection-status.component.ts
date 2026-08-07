@@ -73,6 +73,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
       if (!status) {
         this.servers.forEach(server => {
           server.status = 'offline';
+          server.detail = 'Disconnected';
         });
       }
     });
@@ -138,7 +139,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
           server.detail = '';
         } else {
           server.status = 'offline';
-          server.detail = '';
+          server.detail = 'Disconnected';
         }
 
       } catch (error) {
@@ -174,7 +175,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         },
         error: () => {
           server.status = 'offline';
-          server.detail = '';
+          server.detail = 'Disconnected';
         }
       });
   }
