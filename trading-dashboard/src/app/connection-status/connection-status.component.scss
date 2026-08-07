@@ -19,21 +19,6 @@
   }
 }
 
-.connection-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
-
-  .connection-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #374151;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-right: 8px;
-  }
-}
-
 .servers-grid {
   display: flex;
   flex-direction: column;
@@ -174,40 +159,6 @@
   }
 }
 
-.overall-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  margin-left: 4px;
-}
-
-.overall-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-
-  &.overall-dot-online {
-    background: linear-gradient(135deg, #10b981, #059669);
-    animation: online-pulse 2s infinite;
-  }
-
-  &.overall-dot-offline {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-  }
-
-  &.overall-dot-mixed {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    animation: mixed-pulse 1.5s infinite;
-  }
-}
-
-// Animations
 @keyframes online-pulse {
   0%, 100% {
     opacity: 1;
@@ -225,17 +176,6 @@
   }
   50% {
     opacity: 0.4;
-  }
-}
-
-@keyframes mixed-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
   }
 }
 
@@ -277,7 +217,6 @@
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .connection-status-container {
     gap: 8px;
@@ -319,7 +258,6 @@
   }
 }
 
-// Dark mode support
 @media (prefers-color-scheme: dark) {
   .connection-status-container {
     background: rgba(30, 41, 59, 0.95);

@@ -12,7 +12,5 @@ import { AuthService } from './services/auth.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'trading-dashboard';
-
   constructor(readonly auth: AuthService) {}
 }
