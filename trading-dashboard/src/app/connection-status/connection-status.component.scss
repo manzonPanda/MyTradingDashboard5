@@ -41,7 +41,8 @@
     transform: scale(1.05);
   }
 
-  &.status-checking {
+  &.status-checking,
+  &.status-reconnecting {
     animation: pulse 1.5s infinite;
   }
 }
@@ -69,7 +70,8 @@
     filter: grayscale(0.8) brightness(0.6);
   }
 
-  &.icon-checking {
+  &.icon-checking,
+  &.icon-reconnecting {
     filter: brightness(0.9);
     animation: checking 1s infinite alternate;
   }
@@ -105,7 +107,8 @@
     background: linear-gradient(135deg, #ef4444, #dc2626);
   }
 
-  &.dot-checking {
+  &.dot-checking,
+  &.dot-reconnecting {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     animation: checking-blink 1s infinite;
   }
@@ -121,6 +124,27 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 2px;
+}
+
+.server-detail,
+.account-details {
+  max-width: 180px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.server-detail {
+  color: #475569;
+}
+
+.account-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: #334155;
+  font-weight: 600;
 }
 
 .reconnect-icon-btn {
@@ -233,6 +257,12 @@
   }
 
   .server-label {
+    font-size: 9px;
+  }
+
+  .server-detail,
+  .account-details {
+    max-width: 150px;
     font-size: 9px;
   }
 

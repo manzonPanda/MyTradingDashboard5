@@ -519,6 +519,7 @@ def health_check():
         'status': 'healthy' if mt5_connected else 'unhealthy',
         'service': 'MT5_API',
         'mt5_connected': mt5_connected,
+        'reconnecting': reconnect_in_progress,
         'time_since_disconnect': (
             int(time.time() - last_disconnect_time)
             if last_disconnect_time else 0
