@@ -115,7 +115,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
           balance: Number.isFinite(Number(account.balance)) ? Number(account.balance) : null
         };
         server.status = 'online';
-        server.detail = `Connected · account ${account.login}`;
+        server.detail = 'Connected';
       } else {
         server.account = undefined;
       }
@@ -137,9 +137,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
         if (response?.status === 'healthy' && response.mt5_connected) {
           server.status = 'online';
-          server.detail = server.account?.login
-            ? `Connected · account ${server.account.login}`
-            : 'Connected to MT5 terminal';
+          server.detail = 'Connected';
         } else if (response?.reconnecting) {
           server.status = 'reconnecting';
           server.detail = 'Reconnection in progress · waiting for MT5 terminal';
