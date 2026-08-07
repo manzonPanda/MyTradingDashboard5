@@ -762,6 +762,7 @@ mt5AccountInfo: AccountSettings = {
 };
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   private mt5OpenPositionIds: Set<string> | null = null;
+  private isMt5LiveSnapshotAvailable = false;
   private mt5AccountLogin: string | null = null;
   private mt5DataLoadVersion = 0;
   isLoadingMT5Data = false;
@@ -2173,6 +2174,7 @@ mt5AccountInfo: AccountSettings = {
     localStorage.setItem(this.selectedAccountStorageKey, account.id);
     this.mt5LiveTrades = [];
     this.recentlyAddedTrades = [];
+    this.isMt5LiveSnapshotAvailable = false;
     this.mt5OpenPositionIds = new Set();
     this.updateTableData();
     this.applySelectedAccountSettings();
@@ -2220,6 +2222,7 @@ mt5AccountInfo: AccountSettings = {
       if (!this.isActiveMt5Account()) {
         this.mt5LiveTrades = [];
         this.recentlyAddedTrades = [];
+        this.isMt5LiveSnapshotAvailable = false;
         this.mt5OpenPositionIds = new Set();
         this.updateTableData();
       } else {
@@ -3449,15 +3452,15 @@ onUpload(): void {
     }
   }
 
-  async getMt5API(): Promise<any[]> {
+  async getMt5API(): Promise<any[] | null> {
     try {
       const response = await firstValueFrom(
         this.http.get<any[]>(`${this.BACKEND_URL_MT5}/api/history`)
       );
       return Array.isArray(response) ? response : [];
     } catch (error) {
-      console.warn('MT5 history unavailable; using Supabase trade history.', error);
-      return [];
+      console.warn('MT5 history unavailable; live positions are hidden until the connection recovers.', error);
+      return null;
     }
   }
 
@@ -4905,13 +4908,12 @@ onUpload(): void {
         this.getSupabaseTrades(),
         this.getMt5API()
       ]);
-      this.mt5OpenPositionIds = mt5History.length > 0
+      this.isMt5LiveSnapshotAvailable = mt5History !== null && this.isActiveMt5Account();
+      this.mt5OpenPositionIds = this.isMt5LiveSnapshotAvailable
         ? new Set(
-            this.isActiveMt5Account()
-              ? mt5History
-                  .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
-                  .map((trade: any) => String(trade.position_id))
-              : []
+            (mt5History ?? [])
+              .filter((trade: any) => String(trade?.status).toLowerCase() === 'open')
+              .map((trade: any) => String(trade.position_id))
           )
         : null;
       response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
@@ -4988,20 +4990,20 @@ onUpload(): void {
 
   
   getCurrentMt5LiveTrades(): Table[] {
-    if (!this.mt5OpenPositionIds) {
-      return this.mt5LiveTrades.filter(trade => String(trade.mt5status).toLowerCase() === 'open' || !trade.closeDate || trade.closeDate === '-');
-    }
+    if (!this.isMt5LiveSnapshotAvailable || !this.mt5OpenPositionIds) return [];
     return this.mt5LiveTrades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
   }
 
-  private reconcileMt5Statuses(supabaseTrades: any[], mt5History: any[]): any[] {
+  private reconcileMt5Statuses(supabaseTrades: any[], mt5History: any[] | null): any[] {
+    if (mt5History === null) return supabaseTrades;
+
     const mt5ByPosition = new Map(
-      (mt5History || [])
+      mt5History
         .filter(trade => trade?.position_id !== undefined && trade?.position_id !== null)
         .map(trade => [String(trade.position_id), trade])
     );
-
-    return supabaseTrades.map(trade => {
+    const supabasePositionIds = new Set(supabaseTrades.map(trade => String(trade.position_id)));
+    const reconciledSupabaseTrades = supabaseTrades.map(trade => {
       const mt5Trade = mt5ByPosition.get(String(trade.position_id));
       if (!mt5Trade || String(mt5Trade.status).toLowerCase() === 'open') return trade;
 
@@ -5015,6 +5017,14 @@ onUpload(): void {
         swap: mt5Trade.swap ?? trade.swap
       };
     });
+    const mt5OnlyOpenTrades = mt5History.filter(trade =>
+      String(trade?.status).toLowerCase() === 'open' &&
+      trade?.position_id !== undefined &&
+      trade?.position_id !== null &&
+      !supabasePositionIds.has(String(trade.position_id))
+    );
+
+    return [...reconciledSupabaseTrades, ...mt5OnlyOpenTrades];
   }
 
   private async getSupabaseTrades(): Promise<any[]> {
