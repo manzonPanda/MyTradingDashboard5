@@ -3492,7 +3492,7 @@ onUpload(): void {
 
 
   // Generate stunning chart data with realistic trading patterns
-  generateTradingChartData(): void {
+  generateTradingChartData(updateMode: 'active' | 'none' = 'active'): void {
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
     const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
     const chartRange = Math.max(startingBalance * 0.1, 1);
@@ -3824,7 +3824,7 @@ onUpload(): void {
 
     // Trigger chart update with animation
     if (this.chart) {
-      this.chart.update('active');
+      this.chart.update(updateMode);
     }
 
     // Trigger change detection to update chart display
@@ -5497,7 +5497,7 @@ onUpload(): void {
     this.tableData = [...this.mt5LiveTrades];
 
     this.updateDailyLimitMetrics();
-    this.generateTradingChartData();
+    this.generateTradingChartData('none');
     this.checkForProfitTargetCelebration();
 
     this.cdr.detectChanges();
