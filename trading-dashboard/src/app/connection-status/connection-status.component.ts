@@ -38,20 +38,6 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
   servers: ServerStatus[] = [
     {
-      name: 'Angular',
-      url: '/assets/images/angular_icon.gif',
-      status: 'online',
-      icon: '/assets/images/angular_icon.gif',
-      tooltip: 'Angular Development Server'
-    },
-    {
-      name: 'NotionProxy',
-      url: `${environment.backendUrlNotion}/api/health`,
-      status: 'checking',
-      icon: '/assets/images/notion-icon.png',
-      tooltip: 'Notion Proxy API Server'
-    },
-    {
       name: 'MT5 API',
       url: `${environment.backendUrlMt5}/api/health`,
       status: 'checking',
@@ -74,9 +60,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
       this.isInternetOnline = status;
       if (!status) {
         this.servers.forEach(server => {
-          if (server.name !== 'Angular') {
-            server.status = 'offline';
-          }
+          server.status = 'offline';
         });
       }
     });
@@ -102,12 +86,6 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   private async checkAllServerStatus(): Promise<void> {
      await Promise.all(
     this.servers.map(async (server) => {
-      if (server.name === 'Angular') {
-        server.status = 'online';
-        server.lastChecked = new Date();
-        return;
-      }
-
       try {
         const response = await firstValueFrom(
           this.http.get<MT5HealthResponse>(server.url).pipe(
