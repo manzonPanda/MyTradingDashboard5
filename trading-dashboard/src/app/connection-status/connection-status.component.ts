@@ -8,20 +8,30 @@ import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../../src/environments/environment';
 import { EventEmitter, Output } from '@angular/core';
+import { io, Socket } from 'socket.io-client';
+
+interface MT5AccountInfo {
+  login: string | number | null;
+  name: string | null;
+  server: string | null;
+  balance: number | null;
+}
 
 interface ServerStatus {
   name: string;
   url: string;
-  status: 'online' | 'offline' | 'checking';
+  status: 'online' | 'offline' | 'checking' | 'reconnecting';
   icon: string;
   tooltip: string;
+  detail: string;
+  account?: MT5AccountInfo;
   lastChecked?: Date;
 }
 
 interface MT5HealthResponse {
   status: string;
   service: string;
-  mt5_connected:boolean;
+  mt5_connected: boolean;
   timestamp: string;
   port: string;
 }
@@ -38,30 +48,18 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
   servers: ServerStatus[] = [
     {
-      name: 'Angular',
-      url: '/assets/images/angular_icon.gif',
-      status: 'online',
-      icon: '/assets/images/angular_icon.gif',
-      tooltip: 'Angular Development Server'
-    },
-    {
-      name: 'NotionProxy',
-      url: `${environment.backendUrlNotion}/api/health`,
-      status: 'checking',
-      icon: '/assets/images/notion-icon.png',
-      tooltip: 'Notion Proxy API Server'
-    },
-    {
       name: 'MT5 API',
       url: `${environment.backendUrlMt5}/api/health`,
       status: 'checking',
       icon: '/assets/images/mt5_icon.png',
-      tooltip: 'MetaTrader 5 API Server'
+      tooltip: 'MetaTrader 5 API Server',
+      detail: 'Checking MT5 connection…'
     }
   ];
 
   private statusCheckSubscription?: Subscription;
   private internetStatusSubscription?: Subscription;
+  private socket?: Socket;
   isInternetOnline = true;
 
   constructor(
@@ -74,13 +72,13 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
       this.isInternetOnline = status;
       if (!status) {
         this.servers.forEach(server => {
-          if (server.name !== 'Angular') {
-            server.status = 'offline';
-          }
+          server.status = 'offline';
+          server.detail = 'Disconnected';
         });
       }
     });
 
+    this.connectToMT5Updates();
     this.checkAllServerStatus();
 
     this.statusCheckSubscription = interval(5000).subscribe(() => {
@@ -97,17 +95,35 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     if (this.internetStatusSubscription) {
       this.internetStatusSubscription.unsubscribe();
     }
+    this.socket?.disconnect();
+  }
+
+  private connectToMT5Updates(): void {
+    this.socket = io(environment.backendUrlMt5, {
+      transports: ['websocket'],
+      upgrade: false
+    });
+
+    this.socket.on('account_info', (account: MT5AccountInfo) => {
+      const server = this.servers[0];
+      if (account?.login !== null && account?.login !== undefined) {
+        server.account = {
+          login: account.login,
+          name: account.name ?? null,
+          server: account.server ?? null,
+          balance: Number.isFinite(Number(account.balance)) ? Number(account.balance) : null
+        };
+        server.status = 'online';
+        server.detail = '';
+      } else {
+        server.account = undefined;
+      }
+    });
   }
 
   private async checkAllServerStatus(): Promise<void> {
      await Promise.all(
     this.servers.map(async (server) => {
-      if (server.name === 'Angular') {
-        server.status = 'online';
-        server.lastChecked = new Date();
-        return;
-      }
-
       try {
         const response = await firstValueFrom(
           this.http.get<MT5HealthResponse>(server.url).pipe(
@@ -118,14 +134,21 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
           )
         );
 
-        if (response && response.status === 'healthy') {
+        if (response?.status === 'healthy' && response.mt5_connected) {
           server.status = 'online';
+          server.detail = '';
+        } else if (server.status === 'reconnecting') {
+          server.detail = 'Reconnecting…';
         } else {
           server.status = 'offline';
+          server.detail = 'Disconnected';
         }
 
       } catch (error) {
-        server.status = 'offline';
+        if (server.status !== 'reconnecting') {
+          server.status = 'offline';
+          server.detail = 'Disconnected';
+        }
       }
 
       server.lastChecked = new Date();
@@ -135,6 +158,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
   getServerTooltip(server: ServerStatus): string {
     const status = server.status === 'online' ? 'Connected' :
+                  server.status === 'reconnecting' ? 'Reconnecting...' :
                   server.status === 'offline' ? 'Disconnected' : 'Checking...';
     const lastChecked = server.lastChecked ?
       ` (Last checked: ${server.lastChecked.toLocaleTimeString()})` : '';
@@ -142,12 +166,21 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   }
 
   reconnectMT5(): void {
+    const server = this.servers[0];
+    if (server.status === 'reconnecting') return;
+
+    server.status = 'reconnecting';
+    server.detail = 'Reconnecting…';
     this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
         next: () => {
+          server.detail = 'Reconnecting…';
           this.reconnectRequested.emit();
         },
-        error: (err) => console.error(err)
+        error: () => {
+          server.status = 'offline';
+          server.detail = 'Disconnected';
+        }
       });
   }
 }

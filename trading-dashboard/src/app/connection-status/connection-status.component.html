@@ -29,7 +29,14 @@
         </button>
       </div>
 
-      <div class="server-label">{{ server.name }}</div>
+      <div class="server-info">
+        @if (server.status === 'online' && server.account?.name) {
+          <div class="account-details">{{ server.account?.name }} | {{ server.account?.login }}</div>
+        }
+        @if (server.status !== 'online' && server.status !== 'checking' && server.detail) {
+          <div class="server-detail">{{ server.detail }}</div>
+        }
+      </div>
     </div>
   </div>
 
