@@ -33,6 +33,7 @@ export class ConfettiService {
   private animationId: number | null = null;
   private audio: HTMLAudioElement | null = null;
   private readonly celebrationMusic = new Audio('/assets/sounds/profit-target-theme.mp3');
+  private readonly payoutCelebrationMusic = new Audio('/assets/sounds/multo(cupOfJoe).mp3');
   private isPlaying = false;
 
   constructor() {
@@ -566,6 +567,8 @@ export class ConfettiService {
     this.isPlaying = false;
     this.celebrationMusic.pause();
     this.celebrationMusic.currentTime = 0;
+    this.payoutCelebrationMusic.pause();
+    this.payoutCelebrationMusic.currentTime = 0;
 
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
@@ -613,6 +616,28 @@ export class ConfettiService {
   // Public method to manually stop celebration
   stopCurrentCelebration(): void {
     this.stopCelebration();
+  }
+
+  celebratePayout(): void {
+    this.stopCelebration();
+    this.celebrate({
+      text: 'PAYOUT RECEIVED!',
+      duration: 0,
+      particleCount: 1800,
+      playSound: false,
+      colors: ['#FFD700', '#FFF7AE', '#FF6B6B', '#FF9FF3', '#A78BFA', '#54A0FF', '#4ECDC4', '#00D2D3', '#76FF03', '#FECA57']
+    });
+    void this.playPayoutCelebrationMusic();
+  }
+
+  private async playPayoutCelebrationMusic(): Promise<void> {
+    this.payoutCelebrationMusic.loop = false;
+    this.payoutCelebrationMusic.currentTime = 0;
+    try {
+      await this.payoutCelebrationMusic.play();
+    } catch (error) {
+      console.warn('Could not play payout celebration music:', error);
+    }
   }
 
   // Public method to trigger different types of celebrations
