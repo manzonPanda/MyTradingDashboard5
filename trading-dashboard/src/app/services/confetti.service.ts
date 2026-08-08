@@ -630,7 +630,7 @@ export class ConfettiService {
     this.celebrate({
       text: 'PAYOUT RECEIVED!',
       duration: 0,
-      particleCount: 1800,
+      particleCount: 2600,
       playSound: false,
       showMusicControl: false,
       dismissTextOnly: true,
@@ -660,6 +660,11 @@ export class ConfettiService {
     notification.setAttribute('role', 'status');
     notification.setAttribute('aria-live', 'polite');
 
+    const icon = document.createElement('span');
+    icon.className = 'material-icons payout-music-icon';
+    icon.textContent = 'music_note';
+    icon.setAttribute('aria-hidden', 'true');
+
     const copy = document.createElement('div');
     copy.className = 'payout-music-notification-copy';
     const label = document.createElement('strong');
@@ -675,7 +680,7 @@ export class ConfettiService {
     stopButton.setAttribute('aria-label', 'Stop payout music');
     stopButton.addEventListener('click', () => this.stopPayoutCelebrationMusic());
 
-    notification.append(copy, stopButton);
+    notification.append(icon, copy, stopButton);
     document.body.appendChild(notification);
     this.payoutMusicNotification = notification;
   }
@@ -715,17 +720,29 @@ export class ConfettiService {
         z-index: 10001;
         display: flex;
         align-items: center;
-        gap: 16px;
-        width: min(320px, calc(100vw - 48px));
+        gap: 12px;
+        width: min(340px, calc(100vw - 48px));
         padding: 14px 16px;
-        border: 1px solid rgba(255, 255, 255, 0.28);
+        border: 1px solid #DDD6FE;
         border-radius: 18px;
-        background: linear-gradient(135deg, rgba(32, 23, 76, 0.96), rgba(116, 44, 123, 0.96));
-        box-shadow: 0 16px 40px rgba(31, 20, 72, 0.34), 0 0 24px rgba(255, 215, 0, 0.22);
-        color: #fff;
+        background: linear-gradient(135deg, #FFFFFF 0%, #EDE9FE 100%);
+        box-shadow: 0 16px 40px rgba(124, 58, 237, 0.16), 0 0 24px rgba(139, 92, 246, 0.18);
+        color: #334155;
         font-family: inherit;
         animation: payoutMusicNotificationIn 0.35s ease-out;
         backdrop-filter: blur(14px);
+      }
+      .payout-music-icon {
+        display: grid;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+        color: #FFFFFF;
+        font-size: 22px;
+        animation: payoutMusicIconPulse 1.2s ease-in-out infinite;
       }
       .payout-music-notification-copy {
         display: grid;
@@ -740,7 +757,7 @@ export class ConfettiService {
       }
       .payout-music-notification-copy span {
         overflow: hidden;
-        color: rgba(255, 255, 255, 0.78);
+        color: #64748B;
         font-size: 0.92rem;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -748,10 +765,10 @@ export class ConfettiService {
       .payout-music-stop-button {
         flex: 0 0 auto;
         padding: 8px 13px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        border: 1px solid #C4B5FD;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
+        background: rgba(124, 58, 237, 0.08);
+        color: #6D28D9;
         cursor: pointer;
         font: inherit;
         font-size: 0.82rem;
@@ -759,8 +776,29 @@ export class ConfettiService {
         transition: background 0.2s ease, transform 0.2s ease;
       }
       .payout-music-stop-button:hover {
-        background: rgba(255, 255, 255, 0.24);
+        background: rgba(124, 58, 237, 0.16);
         transform: translateY(-1px);
+      }
+      body.dark-theme .payout-music-notification {
+        border-color: #64748B;
+        background: linear-gradient(135deg, #172033 0%, #1E293B 100%);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), 0 0 24px rgba(139, 92, 246, 0.2);
+        color: #E2E8F0;
+      }
+      body.dark-theme .payout-music-notification-copy span {
+        color: #CBD5E1;
+      }
+      body.dark-theme .payout-music-stop-button {
+        border-color: #64748B;
+        background: rgba(196, 181, 253, 0.12);
+        color: #C4B5FD;
+      }
+      body.dark-theme .payout-music-stop-button:hover {
+        background: rgba(196, 181, 253, 0.2);
+      }
+      @keyframes payoutMusicIconPulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(124, 58, 237, 0); }
+        50% { transform: scale(1.08); box-shadow: 0 0 18px rgba(124, 58, 237, 0.34); }
       }
       @keyframes payoutMusicNotificationIn {
         from { opacity: 0; transform: translateY(-12px) scale(0.96); }
