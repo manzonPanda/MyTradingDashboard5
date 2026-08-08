@@ -13155,7 +13155,7 @@ table.simple-table {
 .payout-certificate-amount { display: block; margin-top: 0.8rem; color: var(--tf-positive); font-size: 1.05rem; }
 .payout-certificate-media { min-width: 0; }
 .payout-proof-link, .payout-proof-placeholder { position: relative; display: grid; width: 100%; max-width: 11rem; height: 12rem; overflow: hidden; place-items: center; border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 12px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), var(--tf-bg-tertiary)); color: var(--tf-positive); }
-.payout-proof-link { cursor: zoom-in; }
+.payout-proof-link { padding: 0; cursor: zoom-in; font: inherit; }
 .payout-proof-preview { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .payout-proof-overlay { position: absolute; right: 0.35rem; bottom: 0.35rem; display: grid; width: 1.5rem; height: 1.5rem; place-items: center; border-radius: 0.4rem; background: rgba(15, 23, 42, 0.72); color: #fff; }
 .payout-proof-overlay mat-icon { width: 0.85rem; height: 0.85rem; font-size: 0.85rem; }

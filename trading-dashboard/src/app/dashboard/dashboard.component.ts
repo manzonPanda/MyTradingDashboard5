@@ -1883,6 +1883,12 @@ mt5AccountInfo: AccountSettings = {
     return payout.proof_url.startsWith('http') ? payout.proof_url : this.payoutProofUrls[payout.id] ?? null;
   }
 
+  openPayoutImageViewer(payout: Payout): void {
+    const url = this.getPayoutProofUrl(payout);
+    if (!url) return;
+    this.certificateImageViewer = { url, alt: `${this.getPayoutFirmName(payout)} payout proof` };
+  }
+
   private async loadPayoutProofUrls(payouts: Payout[]): Promise<void> {
     const proofUrls: Record<string, string> = {};
     for (const payout of payouts) {

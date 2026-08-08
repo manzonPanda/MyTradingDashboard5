@@ -1182,10 +1182,10 @@
                     </div>
                     <div class="certificate-card-media payout-certificate-media">
                       @if (getPayoutProofUrl(payout); as proofUrl) {
-                        <a class="payout-proof-link" [href]="proofUrl" target="_blank" rel="noopener noreferrer">
+                        <button class="payout-proof-link" type="button" [attr.aria-label]="'Enlarge ' + getPayoutFirmName(payout) + ' payout proof'" (click)="openPayoutImageViewer(payout)">
                           <img class="payout-proof-preview" [src]="proofUrl" [alt]="getPayoutFirmName(payout) + ' payout proof'">
-                          <span class="payout-proof-overlay"><mat-icon>open_in_new</mat-icon></span>
-                        </a>
+                          <span class="payout-proof-overlay"><mat-icon>zoom_in</mat-icon></span>
+                        </button>
                       } @else {
                         <div class="payout-proof-placeholder"><mat-icon>payments</mat-icon></div>
                       }

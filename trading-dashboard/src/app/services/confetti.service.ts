@@ -160,7 +160,7 @@ export class ConfettiService {
         rotation: Math.random() * 360,
         rotationSpeed: (Math.random() - 0.5) * 10,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 8 + 4,
+        size: Math.random() * 10 + 6,
         gravity: Math.random() * 0.3 + 0.1,
         life: 1,
         maxLife: Math.random() * 3 + 2,
@@ -207,12 +207,12 @@ export class ConfettiService {
         this.ctx.translate(particle.x, particle.y);
         this.ctx.rotate(particle.rotation * Math.PI / 180);
 
-        const alpha = Math.max(0, particle.life / particle.maxLife);
+        const alpha = Math.max(0, Math.min(1, particle.life));
         this.ctx.globalAlpha = alpha;
 
         // Add glow effect
         this.ctx.shadowColor = particle.color;
-        this.ctx.shadowBlur = 10 * alpha;
+        this.ctx.shadowBlur = 16 * alpha;
 
         this.ctx.fillStyle = particle.color;
         this.drawParticle(particle);
@@ -239,7 +239,7 @@ export class ConfettiService {
         rotation: Math.random() * 360,
         rotationSpeed: (Math.random() - 0.5) * 15,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 10 + 6,
+        size: Math.random() * 12 + 8,
         gravity: Math.random() * 0.4 + 0.15,
         life: 1,
         maxLife: Math.random() * 4 + 3,
@@ -384,7 +384,7 @@ export class ConfettiService {
     const closeButton = document.createElement('button');
     closeButton.innerHTML = dismissTextOnly ? '✕ Hide Text' : '✕ Close Celebration';
     closeButton.style.cssText = `
-      background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+      background: ${dismissTextOnly ? 'linear-gradient(135deg, #7C3AED, #8B5CF6)' : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'};
       border: none;
       border-radius: 25px;
       padding: 12px 24px;
