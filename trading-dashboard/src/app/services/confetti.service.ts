@@ -5,6 +5,9 @@ export interface ConfettiConfig {
   particleCount?: number;
   text?: string;
   playSound?: boolean;
+  showMusicControl?: boolean;
+  dismissTextOnly?: boolean;
+  showSubtitle?: boolean;
   colors?: string[];
 }
 
@@ -33,9 +36,16 @@ export class ConfettiService {
   private animationId: number | null = null;
   private audio: HTMLAudioElement | null = null;
   private readonly celebrationMusic = new Audio('/assets/sounds/profit-target-theme.mp3');
+  private readonly payoutCelebrationMusic = new Audio('/assets/sounds/multo(cupOfJoe).mp3');
+  private readonly payoutMusicEndedHandler = (): void => {
+    this.removePayoutMusicNotification();
+    this.stopCelebration();
+  };
+  private payoutMusicNotification: HTMLElement | null = null;
   private isPlaying = false;
 
   constructor() {
+    this.payoutCelebrationMusic.addEventListener('ended', this.payoutMusicEndedHandler);
     this.initializeAudio();
   }
 
@@ -88,6 +98,9 @@ export class ConfettiService {
       particleCount: 800, // Massive confetti explosion!
       text: 'PROFIT TARGET REACHED!',
       playSound: true,
+      showMusicControl: true,
+      dismissTextOnly: false,
+      showSubtitle: true,
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
     };
 
@@ -102,7 +115,7 @@ export class ConfettiService {
     }
 
     if (finalConfig.text) {
-      this.showCelebrationText(finalConfig.text, finalConfig.duration);
+      this.showCelebrationText(finalConfig.text, finalConfig.duration, finalConfig.showMusicControl, finalConfig.dismissTextOnly, finalConfig.showSubtitle);
     }
 
     this.startAnimation();
@@ -149,7 +162,7 @@ export class ConfettiService {
         rotation: Math.random() * 360,
         rotationSpeed: (Math.random() - 0.5) * 10,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 8 + 4,
+        size: Math.random() * 10 + 6,
         gravity: Math.random() * 0.3 + 0.1,
         life: 1,
         maxLife: Math.random() * 3 + 2,
@@ -196,12 +209,12 @@ export class ConfettiService {
         this.ctx.translate(particle.x, particle.y);
         this.ctx.rotate(particle.rotation * Math.PI / 180);
 
-        const alpha = Math.max(0, particle.life / particle.maxLife);
+        const alpha = Math.max(0, Math.min(1, particle.life));
         this.ctx.globalAlpha = alpha;
 
         // Add glow effect
         this.ctx.shadowColor = particle.color;
-        this.ctx.shadowBlur = 10 * alpha;
+        this.ctx.shadowBlur = 16 * alpha;
 
         this.ctx.fillStyle = particle.color;
         this.drawParticle(particle);
@@ -228,7 +241,7 @@ export class ConfettiService {
         rotation: Math.random() * 360,
         rotationSpeed: (Math.random() - 0.5) * 15,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 10 + 6,
+        size: Math.random() * 12 + 8,
         gravity: Math.random() * 0.4 + 0.15,
         life: 1,
         maxLife: Math.random() * 4 + 3,
@@ -304,7 +317,7 @@ export class ConfettiService {
     }
   }
 
-  private showCelebrationText(text: string, duration: number): void {
+  private showCelebrationText(text: string, duration: number, showMusicControl: boolean, dismissTextOnly: boolean, showSubtitle: boolean): void {
     // Remove existing celebration text if any
     const existing = document.getElementById('celebration-text');
     if (existing) {
@@ -371,15 +384,15 @@ export class ConfettiService {
 
     // Create close button
     const closeButton = document.createElement('button');
-    closeButton.innerHTML = '✕ Close Celebration';
+    closeButton.innerHTML = dismissTextOnly ? '✕ Hide Text' : '✕ Close Celebration';
     closeButton.style.cssText = `
-      background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+      background: ${dismissTextOnly ? 'linear-gradient(135deg, #7C3AED, #8B5CF6)' : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'};
       border: none;
       border-radius: 25px;
-      padding: 12px 24px;
+      padding: ${dismissTextOnly ? '7px 13px' : '12px 24px'};
       color: white;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: ${dismissTextOnly ? '0.78rem' : '1rem'};
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transition: all 0.3s ease;
@@ -397,28 +410,36 @@ export class ConfettiService {
     });
 
     closeButton.addEventListener('click', () => {
-      this.stopCelebration();
+      if (dismissTextOnly) {
+        this.hideCelebrationText();
+      } else {
+        this.stopCelebration();
+      }
     });
 
-    const musicButton = document.createElement('button');
-    musicButton.innerHTML = '⏸ Pause Music';
-    musicButton.style.cssText = `
-      margin-left: 12px;
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      border: none;
-      border-radius: 25px;
-      padding: 12px 24px;
-      color: white;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    `;
-    musicButton.addEventListener('click', async () => {
-      await this.toggleCelebrationMusic();
-      musicButton.innerHTML = this.celebrationMusic.paused ? '▶ Play Music' : '⏸ Pause Music';
-    });
+    let musicButton: HTMLButtonElement | null = null;
+    if (showMusicControl) {
+      musicButton = document.createElement('button');
+      musicButton.innerHTML = '⏸ Pause Music';
+      musicButton.style.cssText = `
+        margin-left: 12px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 24px;
+        color: white;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+      `;
+      musicButton.addEventListener('click', async () => {
+        if (!musicButton) return;
+        await this.toggleCelebrationMusic();
+        musicButton.innerHTML = this.celebrationMusic.paused ? '▶ Play Music' : '⏸ Pause Music';
+      });
+    }
 
     // Add enhanced CSS animations
     if (!document.getElementById('celebration-styles')) {
@@ -541,9 +562,9 @@ export class ConfettiService {
 
     // Assemble the components
     textContainer.appendChild(textOverlay);
-    textContainer.appendChild(subtitle);
+    if (showSubtitle) textContainer.appendChild(subtitle);
     textContainer.appendChild(closeButton);
-    textContainer.appendChild(musicButton);
+    if (musicButton) textContainer.appendChild(musicButton);
 
     textContainer.style.animation = 'celebrationFadeIn 0.8s ease-out';
 
@@ -578,17 +599,7 @@ export class ConfettiService {
       this.ctx = null;
     }
 
-    const textOverlay = document.getElementById('celebration-text');
-    if (textOverlay) {
-      // Smooth fade out
-      textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
-      setTimeout(() => {
-        if (textOverlay.parentNode) {
-          textOverlay.remove();
-        }
-      }, 500);
-    }
-
+    this.hideCelebrationText();
     this.particles = [];
   }
 
@@ -613,6 +624,198 @@ export class ConfettiService {
   // Public method to manually stop celebration
   stopCurrentCelebration(): void {
     this.stopCelebration();
+  }
+
+  celebratePayout(): void {
+    this.stopPayoutCelebrationMusic();
+    this.stopCelebration();
+    this.celebrate({
+      text: 'Payout received! <br>💸Woohooooo! 🥰💰',
+      duration: 0,
+      particleCount: 2600,
+      playSound: false,
+      showMusicControl: false,
+      dismissTextOnly: true,
+      showSubtitle: false,
+      colors: ['#FFD700', '#FFF7AE', '#FF6B6B', '#FF9FF3', '#A78BFA', '#54A0FF', '#4ECDC4', '#00D2D3', '#76FF03', '#FECA57']
+    });
+    void this.playPayoutCelebrationMusic();
+  }
+
+  private async playPayoutCelebrationMusic(): Promise<void> {
+    this.payoutCelebrationMusic.loop = false;
+    this.payoutCelebrationMusic.currentTime = 0;
+    try {
+      await this.payoutCelebrationMusic.play();
+      this.showPayoutMusicNotification();
+    } catch (error) {
+      this.removePayoutMusicNotification();
+      console.warn('Could not play payout celebration music:', error);
+    }
+  }
+
+  private showPayoutMusicNotification(): void {
+    this.removePayoutMusicNotification();
+    this.ensurePayoutMusicStyles();
+
+    const notification = document.createElement('aside');
+    notification.className = 'payout-music-notification';
+    notification.setAttribute('role', 'status');
+    notification.setAttribute('aria-live', 'polite');
+
+    const icon = document.createElement('span');
+    icon.className = 'material-icons payout-music-icon';
+    icon.textContent = 'music_note';
+    icon.setAttribute('aria-hidden', 'true');
+
+    const copy = document.createElement('div');
+    copy.className = 'payout-music-notification-copy';
+    const label = document.createElement('strong');
+    label.textContent = 'Music playing';
+    const title = document.createElement('span');
+    title.textContent = 'Multo';
+    copy.append(label, title);
+
+    const stopButton = document.createElement('button');
+    stopButton.className = 'payout-music-stop-button';
+    stopButton.type = 'button';
+    stopButton.textContent = 'Stop';
+    stopButton.setAttribute('aria-label', 'Stop payout music');
+    stopButton.addEventListener('click', () => this.stopPayoutCelebrationMusic());
+
+    notification.append(icon, copy, stopButton);
+    document.body.appendChild(notification);
+    this.payoutMusicNotification = notification;
+  }
+
+  private removePayoutMusicNotification(): void {
+    this.payoutMusicNotification?.remove();
+    this.payoutMusicNotification = null;
+  }
+
+  private stopPayoutCelebrationMusic(stopConfetti = true): void {
+    this.payoutCelebrationMusic.pause();
+    this.payoutCelebrationMusic.currentTime = 0;
+    this.removePayoutMusicNotification();
+    if (stopConfetti) this.stopCelebration();
+  }
+
+  private hideCelebrationText(): void {
+    const textOverlay = document.getElementById('celebration-text');
+    if (!textOverlay) return;
+
+    textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
+    setTimeout(() => {
+      if (textOverlay.parentNode) textOverlay.remove();
+    }, 500);
+  }
+
+  private ensurePayoutMusicStyles(): void {
+    if (document.getElementById('payout-music-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'payout-music-styles';
+    style.textContent = `
+      .payout-music-notification {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: min(340px, calc(100vw - 48px));
+        padding: 14px 16px;
+        border: 1px solid #DDD6FE;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #FFFFFF 0%, #EDE9FE 100%);
+        box-shadow: 0 16px 40px rgba(124, 58, 237, 0.16), 0 0 24px rgba(139, 92, 246, 0.18);
+        color: #334155;
+        font-family: inherit;
+        animation: payoutMusicNotificationIn 0.35s ease-out;
+        backdrop-filter: blur(14px);
+      }
+      .payout-music-icon {
+        display: grid;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+        color: #FFFFFF;
+        font-size: 22px;
+        animation: payoutMusicIconPulse 1.2s ease-in-out infinite;
+      }
+      .payout-music-notification-copy {
+        display: grid;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
+      }
+      .payout-music-notification-copy strong {
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .payout-music-notification-copy span {
+        overflow: hidden;
+        color: #64748B;
+        font-size: 0.92rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .payout-music-stop-button {
+        flex: 0 0 auto;
+        padding: 8px 13px;
+        border: 1px solid #C4B5FD;
+        border-radius: 999px;
+        background: rgba(124, 58, 237, 0.08);
+        color: #6D28D9;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      .payout-music-stop-button:hover {
+        background: rgba(124, 58, 237, 0.16);
+        transform: translateY(-1px);
+      }
+      body.dark-theme .payout-music-notification {
+        border-color: #64748B;
+        background: linear-gradient(135deg, #172033 0%, #1E293B 100%);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), 0 0 24px rgba(139, 92, 246, 0.2);
+        color: #E2E8F0;
+      }
+      body.dark-theme .payout-music-notification-copy span {
+        color: #CBD5E1;
+      }
+      body.dark-theme .payout-music-stop-button {
+        border-color: #64748B;
+        background: rgba(196, 181, 253, 0.12);
+        color: #C4B5FD;
+      }
+      body.dark-theme .payout-music-stop-button:hover {
+        background: rgba(196, 181, 253, 0.2);
+      }
+      @keyframes payoutMusicIconPulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(124, 58, 237, 0); }
+        50% { transform: scale(1.08); box-shadow: 0 0 18px rgba(124, 58, 237, 0.34); }
+      }
+      @keyframes payoutMusicNotificationIn {
+        from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @media (max-width: 600px) {
+        .payout-music-notification {
+          top: 16px;
+          right: 16px;
+          width: calc(100vw - 32px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   // Public method to trigger different types of celebrations

@@ -1798,6 +1798,7 @@ mt5AccountInfo: AccountSettings = {
       this.certificatePayouts = [payout, ...this.certificatePayouts];
       await this.loadPayoutProofUrls(this.certificatePayouts);
       this.isPayoutModalOpen = false;
+      this.confetti.celebratePayout();
       this.snackBar.open('Payout recorded.', 'Dismiss', { duration: 3000 });
     } catch (error) {
       console.error('Unable to save payout:', error);
@@ -1880,6 +1881,12 @@ mt5AccountInfo: AccountSettings = {
   getPayoutProofUrl(payout: Payout): string | null {
     if (!payout.proof_url) return null;
     return payout.proof_url.startsWith('http') ? payout.proof_url : this.payoutProofUrls[payout.id] ?? null;
+  }
+
+  openPayoutImageViewer(payout: Payout): void {
+    const url = this.getPayoutProofUrl(payout);
+    if (!url) return;
+    this.certificateImageViewer = { url, alt: `${this.getPayoutFirmName(payout)} payout proof` };
   }
 
   private async loadPayoutProofUrls(payouts: Payout[]): Promise<void> {
@@ -2027,6 +2034,7 @@ mt5AccountInfo: AccountSettings = {
       this.editingRoiTransactionId = null;
       this.roiReceiptFile = null;
       this.isRoiEntryModalOpen = false;
+      if (!editingId && savedTransaction.transaction_type === 'payout') this.confetti.celebratePayout();
       this.snackBar.open(editingId ? 'ROI transaction updated.' : 'ROI transaction saved.', 'Dismiss', { duration: 3000 });
     } catch (error) {
       console.error('Unable to save ROI transaction:', error);
