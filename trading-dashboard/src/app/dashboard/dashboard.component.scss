@@ -13200,6 +13200,47 @@ table.simple-table {
 }
 
 :host-context(body.dark-theme) {
+  .target-label.gradient-text,
+  .metric-title.gradient-text {
+    background: linear-gradient(135deg, #bfdbfe, #e9d5ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .metric-title {
+    color: #dbe4f2;
+  }
+
+  .metric-icon {
+    color: #cbd5e1;
+    opacity: 1;
+  }
+
+  .metric-subtitle,
+  .metric-header .loading-text {
+    color: #b8c4d6;
+  }
+
+  .card-header-enhanced .header-text {
+    .card-title {
+      color: #f1f5f9;
+    }
+
+    .card-subtitle {
+      color: #cbd5e1;
+    }
+  }
+
+  .section-title,
+  .roi-card-heading h2,
+  .certificates-hero h1 {
+    color: #f1f5f9;
+  }
+}
+
+:host-context(body.dark-theme) {
   .dashboard-navigation {
     background: #111827;
     border-right-color: #3f4f66;
