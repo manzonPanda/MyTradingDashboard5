@@ -5,6 +5,8 @@ export interface ConfettiConfig {
   particleCount?: number;
   text?: string;
   playSound?: boolean;
+  showMusicControl?: boolean;
+  dismissTextOnly?: boolean;
   colors?: string[];
 }
 
@@ -34,7 +36,10 @@ export class ConfettiService {
   private audio: HTMLAudioElement | null = null;
   private readonly celebrationMusic = new Audio('/assets/sounds/profit-target-theme.mp3');
   private readonly payoutCelebrationMusic = new Audio('/assets/sounds/multo(cupOfJoe).mp3');
-  private readonly payoutMusicEndedHandler = (): void => this.removePayoutMusicNotification();
+  private readonly payoutMusicEndedHandler = (): void => {
+    this.removePayoutMusicNotification();
+    this.stopCelebration();
+  };
   private payoutMusicNotification: HTMLElement | null = null;
   private isPlaying = false;
 
@@ -92,6 +97,8 @@ export class ConfettiService {
       particleCount: 800, // Massive confetti explosion!
       text: 'PROFIT TARGET REACHED!',
       playSound: true,
+      showMusicControl: true,
+      dismissTextOnly: false,
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
     };
 
@@ -106,7 +113,7 @@ export class ConfettiService {
     }
 
     if (finalConfig.text) {
-      this.showCelebrationText(finalConfig.text, finalConfig.duration);
+      this.showCelebrationText(finalConfig.text, finalConfig.duration, finalConfig.showMusicControl, finalConfig.dismissTextOnly);
     }
 
     this.startAnimation();
@@ -308,7 +315,7 @@ export class ConfettiService {
     }
   }
 
-  private showCelebrationText(text: string, duration: number): void {
+  private showCelebrationText(text: string, duration: number, showMusicControl: boolean, dismissTextOnly: boolean): void {
     // Remove existing celebration text if any
     const existing = document.getElementById('celebration-text');
     if (existing) {
@@ -375,7 +382,7 @@ export class ConfettiService {
 
     // Create close button
     const closeButton = document.createElement('button');
-    closeButton.innerHTML = '✕ Close Celebration';
+    closeButton.innerHTML = dismissTextOnly ? '✕ Hide Text' : '✕ Close Celebration';
     closeButton.style.cssText = `
       background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
       border: none;
@@ -401,28 +408,36 @@ export class ConfettiService {
     });
 
     closeButton.addEventListener('click', () => {
-      this.stopCelebration();
+      if (dismissTextOnly) {
+        this.hideCelebrationText();
+      } else {
+        this.stopCelebration();
+      }
     });
 
-    const musicButton = document.createElement('button');
-    musicButton.innerHTML = '⏸ Pause Music';
-    musicButton.style.cssText = `
-      margin-left: 12px;
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      border: none;
-      border-radius: 25px;
-      padding: 12px 24px;
-      color: white;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    `;
-    musicButton.addEventListener('click', async () => {
-      await this.toggleCelebrationMusic();
-      musicButton.innerHTML = this.celebrationMusic.paused ? '▶ Play Music' : '⏸ Pause Music';
-    });
+    let musicButton: HTMLButtonElement | null = null;
+    if (showMusicControl) {
+      musicButton = document.createElement('button');
+      musicButton.innerHTML = '⏸ Pause Music';
+      musicButton.style.cssText = `
+        margin-left: 12px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 24px;
+        color: white;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+      `;
+      musicButton.addEventListener('click', async () => {
+        if (!musicButton) return;
+        await this.toggleCelebrationMusic();
+        musicButton.innerHTML = this.celebrationMusic.paused ? '▶ Play Music' : '⏸ Pause Music';
+      });
+    }
 
     // Add enhanced CSS animations
     if (!document.getElementById('celebration-styles')) {
@@ -547,7 +562,7 @@ export class ConfettiService {
     textContainer.appendChild(textOverlay);
     textContainer.appendChild(subtitle);
     textContainer.appendChild(closeButton);
-    textContainer.appendChild(musicButton);
+    if (musicButton) textContainer.appendChild(musicButton);
 
     textContainer.style.animation = 'celebrationFadeIn 0.8s ease-out';
 
@@ -582,17 +597,7 @@ export class ConfettiService {
       this.ctx = null;
     }
 
-    const textOverlay = document.getElementById('celebration-text');
-    if (textOverlay) {
-      // Smooth fade out
-      textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
-      setTimeout(() => {
-        if (textOverlay.parentNode) {
-          textOverlay.remove();
-        }
-      }, 500);
-    }
-
+    this.hideCelebrationText();
     this.particles = [];
   }
 
@@ -627,6 +632,8 @@ export class ConfettiService {
       duration: 0,
       particleCount: 1800,
       playSound: false,
+      showMusicControl: false,
+      dismissTextOnly: true,
       colors: ['#FFD700', '#FFF7AE', '#FF6B6B', '#FF9FF3', '#A78BFA', '#54A0FF', '#4ECDC4', '#00D2D3', '#76FF03', '#FECA57']
     });
     void this.playPayoutCelebrationMusic();
@@ -678,10 +685,21 @@ export class ConfettiService {
     this.payoutMusicNotification = null;
   }
 
-  private stopPayoutCelebrationMusic(): void {
+  private stopPayoutCelebrationMusic(stopConfetti = true): void {
     this.payoutCelebrationMusic.pause();
     this.payoutCelebrationMusic.currentTime = 0;
     this.removePayoutMusicNotification();
+    if (stopConfetti) this.stopCelebration();
+  }
+
+  private hideCelebrationText(): void {
+    const textOverlay = document.getElementById('celebration-text');
+    if (!textOverlay) return;
+
+    textOverlay.style.animation = 'celebrationFadeIn 0.5s ease-out reverse';
+    setTimeout(() => {
+      if (textOverlay.parentNode) textOverlay.remove();
+    }, 500);
   }
 
   private ensurePayoutMusicStyles(): void {
