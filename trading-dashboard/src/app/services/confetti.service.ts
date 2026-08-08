@@ -387,10 +387,10 @@ export class ConfettiService {
       background: ${dismissTextOnly ? 'linear-gradient(135deg, #7C3AED, #8B5CF6)' : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'};
       border: none;
       border-radius: 25px;
-      padding: 12px 24px;
+      padding: ${dismissTextOnly ? '7px 13px' : '12px 24px'};
       color: white;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: ${dismissTextOnly ? '0.78rem' : '1rem'};
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transition: all 0.3s ease;
@@ -628,7 +628,7 @@ export class ConfettiService {
     this.stopPayoutCelebrationMusic();
     this.stopCelebration();
     this.celebrate({
-      text: 'PAYOUT RECEIVED!',
+      text: 'Payout received! <br>💸Woohooooo! 🥰💰',
       duration: 0,
       particleCount: 2600,
       playSound: false,
