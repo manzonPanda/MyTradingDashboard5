@@ -34,9 +34,12 @@ export class ConfettiService {
   private audio: HTMLAudioElement | null = null;
   private readonly celebrationMusic = new Audio('/assets/sounds/profit-target-theme.mp3');
   private readonly payoutCelebrationMusic = new Audio('/assets/sounds/multo(cupOfJoe).mp3');
+  private readonly payoutMusicEndedHandler = (): void => this.removePayoutMusicNotification();
+  private payoutMusicNotification: HTMLElement | null = null;
   private isPlaying = false;
 
   constructor() {
+    this.payoutCelebrationMusic.addEventListener('ended', this.payoutMusicEndedHandler);
     this.initializeAudio();
   }
 
@@ -567,8 +570,6 @@ export class ConfettiService {
     this.isPlaying = false;
     this.celebrationMusic.pause();
     this.celebrationMusic.currentTime = 0;
-    this.payoutCelebrationMusic.pause();
-    this.payoutCelebrationMusic.currentTime = 0;
 
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
@@ -619,6 +620,7 @@ export class ConfettiService {
   }
 
   celebratePayout(): void {
+    this.stopPayoutCelebrationMusic();
     this.stopCelebration();
     this.celebrate({
       text: 'PAYOUT RECEIVED!',
@@ -635,9 +637,126 @@ export class ConfettiService {
     this.payoutCelebrationMusic.currentTime = 0;
     try {
       await this.payoutCelebrationMusic.play();
+      this.showPayoutMusicNotification();
     } catch (error) {
+      this.removePayoutMusicNotification();
       console.warn('Could not play payout celebration music:', error);
     }
+  }
+
+  private showPayoutMusicNotification(): void {
+    this.removePayoutMusicNotification();
+    this.ensurePayoutMusicStyles();
+
+    const notification = document.createElement('aside');
+    notification.className = 'payout-music-notification';
+    notification.setAttribute('role', 'status');
+    notification.setAttribute('aria-live', 'polite');
+
+    const copy = document.createElement('div');
+    copy.className = 'payout-music-notification-copy';
+    const label = document.createElement('strong');
+    label.textContent = 'Music playing';
+    const title = document.createElement('span');
+    title.textContent = 'Multo';
+    copy.append(label, title);
+
+    const stopButton = document.createElement('button');
+    stopButton.className = 'payout-music-stop-button';
+    stopButton.type = 'button';
+    stopButton.textContent = 'Stop';
+    stopButton.setAttribute('aria-label', 'Stop payout music');
+    stopButton.addEventListener('click', () => this.stopPayoutCelebrationMusic());
+
+    notification.append(copy, stopButton);
+    document.body.appendChild(notification);
+    this.payoutMusicNotification = notification;
+  }
+
+  private removePayoutMusicNotification(): void {
+    this.payoutMusicNotification?.remove();
+    this.payoutMusicNotification = null;
+  }
+
+  private stopPayoutCelebrationMusic(): void {
+    this.payoutCelebrationMusic.pause();
+    this.payoutCelebrationMusic.currentTime = 0;
+    this.removePayoutMusicNotification();
+  }
+
+  private ensurePayoutMusicStyles(): void {
+    if (document.getElementById('payout-music-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'payout-music-styles';
+    style.textContent = `
+      .payout-music-notification {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: min(320px, calc(100vw - 48px));
+        padding: 14px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(32, 23, 76, 0.96), rgba(116, 44, 123, 0.96));
+        box-shadow: 0 16px 40px rgba(31, 20, 72, 0.34), 0 0 24px rgba(255, 215, 0, 0.22);
+        color: #fff;
+        font-family: inherit;
+        animation: payoutMusicNotificationIn 0.35s ease-out;
+        backdrop-filter: blur(14px);
+      }
+      .payout-music-notification-copy {
+        display: grid;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
+      }
+      .payout-music-notification-copy strong {
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .payout-music-notification-copy span {
+        overflow: hidden;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.92rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .payout-music-stop-button {
+        flex: 0 0 auto;
+        padding: 8px 13px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      .payout-music-stop-button:hover {
+        background: rgba(255, 255, 255, 0.24);
+        transform: translateY(-1px);
+      }
+      @keyframes payoutMusicNotificationIn {
+        from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @media (max-width: 600px) {
+        .payout-music-notification {
+          top: 16px;
+          right: 16px;
+          width: calc(100vw - 32px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   // Public method to trigger different types of celebrations
