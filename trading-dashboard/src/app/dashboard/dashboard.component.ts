@@ -10,12 +10,7 @@ import { Router } from '@angular/router';
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
 import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
-import { addMonths, subMonths } from 'date-fns';
-// DataTables removed to avoid heavy pre-bundling issues
-// import { DataTablesModule  } from 'angular-datatables';
-import { Subject } from 'rxjs';
-// import * as DataTables from 'datatables.net';
-// import 'datatables.net'; // Removed for build stability
+import { Subject } from 'rxjs'
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -34,7 +29,6 @@ import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { ViewChild, ElementRef, AfterViewInit, HostListener, Renderer2 } from '@angular/core';
-import { FcmService } from '../services/fcm.service';
 import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
@@ -948,8 +942,6 @@ mt5AccountInfo: AccountSettings = {
   private isRefreshingTable = false;
 
   // Backend configuration
-  // private BACKEND_URL = 'http://localhost:3000'; // This will be overridden in cloud environments
-     private BACKEND_URL_NOTION = environment.backendUrlNotion;
      private BACKEND_URL_MT5 = environment.backendUrlMt5;
 
   // Confetti celebration tracking
@@ -1158,7 +1150,7 @@ mt5AccountInfo: AccountSettings = {
     return this.profileDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map(name => name[0]).join('').toUpperCase() || 'T';
   }
 
-  constructor(private firestore: Firestore, private fcm: FcmService, private http: HttpClient, private cdr: ChangeDetectorRef,
+  constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
     private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
@@ -1452,7 +1444,6 @@ mt5AccountInfo: AccountSettings = {
     // Notify at -3.5%
     if (this.dailyPnLPercent <= -3.5 && !this.dailyLimitNotified) {
       this.dailyLimitNotified = true;
-      this.sendNotif('', 'Daily Limit Alert', `You have reached -3.5% today. Current: ${this.dailyPnLPercent.toFixed(2)}%`);
     }
   }
 
@@ -2274,7 +2265,7 @@ mt5AccountInfo: AccountSettings = {
     try {
       const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const news: any = await firstValueFrom(
-        this.http.get(`${environment.backendUrlNotion}/api/news?timezone=${encodeURIComponent(browserTimeZone)}`)
+        this.http.get(`${environment.backendUrlNews}/api/news?timezone=${encodeURIComponent(browserTimeZone)}`)
       );
       this.newsData = Array.isArray(news) ? news : [];
 
@@ -2296,23 +2287,6 @@ mt5AccountInfo: AccountSettings = {
     } finally {
       this.isNewsLoading = false;
       this.cdr.markForCheck();
-    }
-
-    //Firebase Cloud Messaging setup
-    const token = await this.fcm.requestPermission();
-    if (token) {
-      // You would store this token in your backend DB tied to the user
-      this.fcm.listen();
-
-      // Set up news reminder callback
-      this.newsReminder.setSendNotificationCallback((title: string, body: string) => {
-        this.sendNotif(token, title, body);
-      });
-
-      // Schedule reminders for loaded news
-      if (this.newsData && this.newsData.length > 0) {
-        this.newsReminder.scheduleAllReminders(this.newsData);
-      }
     }
 
     this.dtOptions = {
@@ -2348,11 +2322,6 @@ mt5AccountInfo: AccountSettings = {
       ]
     };
 
-    // await this.loadTrades(); // Load trades from Firestore
-    // await this.loadMT5Data(); // Load MT5 trades
-    // this.addTradesToCalendar(); // Add trades to calendar events
-
- 
 
     // Simple table - no DataTables initialization needed!
 
@@ -2984,480 +2953,9 @@ onUpload(): void {
     }
   });
 }
-  
-  // (removed unused real-time trades listener)
-  
-  loadTrades(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const tradesRef = collection(this.firestore, 'trades');
-      getDocs(tradesRef).then((querySnapshot) => {
-        const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
-        // Don't overwrite existing tableData, merge with MT5 trades
-        if (this.mt5LiveTrades.length > 0) {
-          // Keep MT5 trades and add Firestore trades
-          this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
-        } else {
-          this.tableData = firestoreTrades;
-        }
-
-        resolve(); // Notify that loading is done
-      }).catch((error) => {
-        console.warn('���️ Firestore connection issue - operating in offline mode:', error.message);
-        // Continue with existing data or empty array
-        if (this.mt5LiveTrades && this.mt5LiveTrades.length > 0) {
-          this.tableData = [...this.mt5LiveTrades];
-        } else {
-          this.tableData = [];
-        }
-        resolve(); // Don't reject, just continue with available data
-      });
-    });
-  }
-
-
-
-  async getAllPagesFromDB(startDate:Date,endDate:Date){ 
-    const formattedStartDate = startDate
-      ? `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
-      : '';
-    const formattedEndDate = endDate
-      ? `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
-      : '';
-    // this.isLoadingPatching = true;
-    this.progressPatching = 0;
-
-    const body = {
-      "filter": {
-        "and": [
-          {
-            "property": "Date",
-            "date": {
-              "on_or_after": formattedStartDate
-            }
-          },
-          {
-            "property": "Date",
-            "date": {
-              "on_or_before": formattedEndDate
-            }
-          }
-        ]
-      }
-    }
-    this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
-    .subscribe({
-      next: async (res:any) => {
-        this.trades = [];
-        res.results.map((prop: any) => {
-          const d = new Date(prop.properties.Date.date.start);
-          const dayOfWeek = d.getDay();
-          const hours = d.getHours();
-          const minutes = d.getMinutes();
-          // Skip weekends (0 = Sunday, 6 = Saturday)
-          // AND exclude the notion entry if hh:mm = 00:00
-          if (dayOfWeek !== 0 && dayOfWeek !== 6 && hours !== 0 && minutes !== 0)  {
-            this.trades.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`, 
-            tradeId: prop.id });
-          }
-        });
-        const total = this.trades.length;
-        let completed = 0;
-
-        for (const trade of this.trades) {
-          let relationId
-          try {
-             relationId = this.relations.filter(rel => rel.relationName === trade.tradeDate)[0].relationId
-            
-          } catch (error) {
-          }
-          const body = {
-            "payload": {
-              "properties": {
-                "Activity log": {
-                  "relation": [
-                    {
-                      "id": relationId
-                    }
-                  ]
-                }
-              }
-            },
-            "url":trade.tradeId
-          }
-          try {
-            const res: any = await firstValueFrom(
-              this.http.patch(`${this.BACKEND_URL_NOTION}/api/patchRelationIdToTrade`, body) //Patching
-            );
-            if (res) {
-            }else{
-            }
-            completed++;
-            this.progressPatching = Math.floor((completed / total) * 100);
-
-          } catch (error) {
-            this.patchingError = true
-            console.error('Error patching:',trade, error);
-          }
-        }
-        // this.isLoadingPatching = false; //hide the progress for checking and patching, which should be located at the end of the process
-        // this.isLoadingChecking = false;
-      },
-      error: (err) => {
-        this.patchingError = true
-        console.error('Error:', err)
-      }
-    });
-  }
 
   delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  async checkAndCreateRelationId(){
-    // if (!this.startDate || !this.endDate){  // Check if startDate or endDate is null{
-    //   return
-    // }
-    this.isLoadingChecking = true;
-    this.isLoadingPatching = true;
-    this.isLoadingComparing = true;
-    this.isLoadingPopulating = true;
-    this.progressChecking = 0;
-    this.progressPatching = 0;
-    this.progressComparing = 0;
-    this.progressPopulating = 0;
-    const dateRange: string[] = [];
-
-    //loop every trades in the table,format the date and save it to dateRange as MM-DD-YYYY
-    for ( let i=0; i<= this.tableData.length-1; i++){
-      let d = new Date(this.tableData[i].openDate ?? '');
-      const dayOfWeek = d.getDay();
-      // Skip weekends (0 = Sunday, 6 = Saturday)  Skip if date is weekends (0 = Sunday, 6 = Saturday)
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const year = d.getFullYear();
-        dateRange.push(`${month}-${day}-${year}`);
-      }
-    }
-    const total = dateRange.length;
-    let completed = 0;
-    //loop every date in dateRange, check if relationName already exists in Notion, if not, create it
-    //however, to speed up the loop process, if the previous date is already done checking and if date already exists in this.relations, continue already to the next date
-    for (const date of dateRange) {
-       // ✅ Skip if already exists 
-        const alreadyProcessed = this.relations.some(rel => rel.relationName === date);
-        if (alreadyProcessed  ) { 
-          completed++;
-          this.progressChecking = Math.floor((completed / total) * 100);
-          continue; // Skip to next date
-        }
-
-
-       const body = {
-          "filter": {
-            "property": "Name",
-            "title": {
-              "equals": date
-            }
-          }
-        }
-        try {
-          const res: any = await firstValueFrom(
-            this.http.post(`${this.BACKEND_URL_NOTION}/api/getRelationName`, body)
-          );
-          //To check if an object with the same relationName already exists in the this.relations array before pushing
-          if (res.results.length > 0) {
-            const exists = this.relations.some(
-              rel => rel.relationName === date && rel.relationId === res.results[0].id
-            );
-            if (!exists) {
-              this.relations.push({
-                relationName: date,
-                relationId: res.results[0].id
-              });
-            }
-          } else {
-            await this.createRelationId(date); // make this async if needed
-          }
-          completed++;
-          this.progressChecking = Math.floor((completed / total) * 100);
-          
-          // await this.delay(300); // optional
-        } catch (error) {   
-          this.checkingError = true      
-          console.error('Error checking relation for', date, error);
-        }
-    }
-    const startDate = new Date(this.tableData[0].openDate ?? '')
-    const endDate = new Date(this.tableData[this.tableData.length-1].openDate ?? '')
-    this.getAllPagesFromDB(startDate,endDate) //ready for Patching.. relationIds to ActivityLog
-  }
-
-  async createRelationId(dateName:string): Promise<any>{
-    const body = {
-      "parent": {
-        "database_id": "5e00bcb25c3d4276b1de54de3576894a"
-      },
-      "properties": {
-        "Name": {
-          "title": [
-            {
-              "text": {
-                "content": dateName
-              }
-            }
-          ]
-        }
-      }
-    }
-    const res: any = await firstValueFrom(
-      this.http.post(`${this.BACKEND_URL_NOTION}/api/createRelationId`, body)
-    );
-    if (res) {
-      // this.relations = []
-      this.relations.push({ relationName: dateName, relationId: res.id })
-    } 
-
-  }
-
-    async createNewEntry(trade:Table): Promise<any>{
-      const [month, day, yearAndTime] = trade.openDate.split(".");
-      const [year, time] = yearAndTime.split(" ");
-      const iso = `${time ? `${year}-${month}-${day}T${time}:00+08:00` : ""}`; //2025-07-04T15:37:00+08:00
-    const body = {
-        "parent": {
-          "database_id": "ef10ac6f79524ea49e4bc0997e0ee704"
-        },
-        "properties": {
-          "Date": {
-            "date": {
-              "start": iso, //2025-07-04T15:37:00+08:00
-              "end": iso
-            }
-          },
-          "Account": {  
-            "multi_select": [
-              { "name": this.selectedAccount?.name ?? '' }
-            ]
-          },
-          "ticket":{
-            "number": trade.position
-          },
-          "riskPerTrade":{
-              "rich_text": [
-                {
-                  "text": {
-                    "content": trade.riskPerTrade
-                  }
-                }
-              ]
-            },
-          "sl":{
-              "rich_text": [
-                {
-                  "text": {
-                    "content": trade.sL
-                  }
-                }
-              ]
-            },
-          "tp":{
-            "rich_text": [
-              {
-                "text": {
-                  "content": trade.tP
-                }
-              }
-            ]
-          },
-          "Lots":{
-            "rich_text": [
-              {
-                "text": {
-                  "content": trade.volume
-                }
-              }
-            ]
-          },
-          "price_open":{
-            "rich_text": [
-              {
-                "text": {
-                  "content": trade.entry
-                }
-              }
-            ]
-          },
-          "Buy/Sell": {
-            "select": {
-              "name": parseInt(trade.type) === 0 ? 'Buy' : 'Sell'
-            }
-          }
-
-
-        }
-      }
-    const res: any = await firstValueFrom(
-      this.http.post(`${this.BACKEND_URL_NOTION}/api/createNewEntry`, body)
-    );
-    // if (res) {
-      
-    // } 
-
-  }
-
-  async compareToNotion(){
-    //for progress bar comparing
-    const total = this.tableData.length;
-    let completed = 0;
-
-    for (const row of this.tableData) {  //for every rows in table, get the notion trades page using OpenDate (as a uniqueID)
-      const originalDateStr = row.openDate; // e.g. "07.04.2025 15:37"
-      const [datePart, timePart] = originalDateStr.split(' ');
-      const [month, day, year] = datePart.split('.').map(Number);
-      const [hour, minute] = timePart.split(':').map(Number);
-
-      // Create the date in local time (assumes you are in GMT+8 like Philippines)
-      const date = new Date(year, month - 1, day, hour, minute);
-      const isoDate = this.formatToNotionDate(date,"yyyymmdd");;
-      const body = {
-        "filter": {
-          "property": "Date",  // exact name of the Date property in Notion
-          "date": {
-            "equals": isoDate
-          }
-        }
-      }
-
-      try {
-        const res: any = await firstValueFrom(
-          this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body)
-        );
-        if (res.results && res.results.length > 0) {
-          // console.log("Matched found: "+res.results[0].properties["Daily Reflection 📆"])
-          row.tradeNotion = [{tradeDate: "", tradeId: res.results[0].id}];
-          row.status = "Matched"
-          console.log('✅ Match found for', originalDateStr, '- Status:', row.status);
-        }else{
-          row.status = "Unmatched"
-            const tradesForUnmatched = await this.getTradesUnmatched(isoDate)
-            row.tradeNotion = tradesForUnmatched.map((trade: Trades) =>
-              trade
-            );
-            console.log('⚠️ No match for', originalDateStr, '- Found', tradesForUnmatched.length, 'unmatched trades');
-        }
-        completed++;
-        this.progressComparing = Math.floor((completed / total) * 100);
-      } catch (error) {
-        this.comparingError = true
-        console.error('Error comparing to Notion',row, error);
-      }
-    }
-
-    console.log('��� Compare to Notion completed! Data updated in simple table.');
-
-    // Simple change detection - no DataTable refresh needed!
-    this.cdr.detectChanges();
-  }
-
-// Helper function to format the date; Manually format to ISO with +08:00 timezone
- formatToNotionDate(date: Date,dateFormat:String): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  const hh = String(date.getHours()).padStart(2, '0');
-  const min = String(date.getMinutes()).padStart(2, '0');
-  
-  return (dateFormat === "yyyymmdd")
-  ? `${yyyy}-${mm}-${dd}T${hh}:${min}:00+08:00`
-  : `${yyyy}-${dd}-${mm}T${hh}:${min}:00+08:00`;
-}
-
-  async getTradesUnmatched(isoDate:any): Promise<any>{
-    const targetTime = new Date(isoDate); //"2025-07-04T15:37:00+08:00"
-    // Subtract 10 minutes
-    const from = new Date(targetTime.getTime() - 10 * 60 * 1000);
-    // Add 30 minutes
-    const to = new Date(targetTime.getTime() + 30 * 60 * 1000);
-    const fromISO = this.formatToNotionDate(from,"yyyymmdd");
-    const toISO = this.formatToNotionDate(to,"yyyymmdd");
-   
-    const body = {
-      "filter": {
-        "and": [
-          {
-            "property": "Date",
-            "date": {
-              "on_or_after": fromISO
-            }
-          },
-          {
-            "property": "Date",
-            "date": {
-              "on_or_before": toISO
-            }
-          }
-        ]
-      }
-    }
-    const res: any = await firstValueFrom(
-      this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, body));
-
-    const tradesFoundForUnmatched:Trades[] = []
-     if (res.results && res.results.length > 0) {
-        res.results.map((prop: any) => {
-          const d = new Date(prop.properties.Date.date.start);
-          const hh = String(d.getHours()).padStart(2, '0');
-          const min = String(d.getMinutes()).padStart(2, '0');
-          tradesFoundForUnmatched.push({ tradeDate: `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}.${d.getFullYear()} ${hh}:${min}`, 
-          tradeId: prop.id })
-        });
-      }else{
-      }
-      return tradesFoundForUnmatched
-  }
-
-  async populateData(){
-    //for progress bar populating
-    const total = this.tableData.length;
-    let completed = 0;  
-    //returns true only if every object in the array meets the condition-for checking if all trades are Matched status
-    const allMatched = this.tableData.every(item => item.status === 'Matched');
-    // const propFirmAccountValue = 5000; //change this in the future to read the excel file
-    if (allMatched) {
-      for (const trade of this.tableData) {
-          const percentPnLTemp = (parseFloat(trade.netProfit) / this.mt5AccountInfo.startingBalance) * 100; // Assuming 5000 is the base value for PnL percentage calculation
-          const percentPnL = parseFloat(percentPnLTemp.toFixed(2)); // -0.23
-          const body = {
-            "payload": {
-              "properties": {
-                "PnL": {
-                  "number": trade.netProfit ? parseFloat(trade.netProfit) : "" // Ensure netProfit is a number
-                },
-                "%PnL": {
-                  "number": percentPnL
-                }
-              }
-            },
-            "url":trade.tradeNotion[0].tradeId // Use the first tradeId from tradeNotion
-          }
-
-          try {
-            const res: any = await firstValueFrom(
-              this.http.patch(`${this.BACKEND_URL_NOTION}/api/updatePropertiesToTrade`, body)
-            );
-            if (res) {
-            }
-            completed++;
-            this.progressPopulating = Math.floor((completed / total) * 100);
-          } catch (error) {
-            this.populatingError = true
-            console.error('Error populating data for', error);
-          }
-      }
-
-    } else {
-    }
   }
 
   async getMt5API(): Promise<any[] | null> {
@@ -3471,33 +2969,6 @@ onUpload(): void {
       return null;
     }
   }
-
-  async sendNotif(token: string, title: string, body: string): Promise<void> {
-    try {
-      const token = localStorage.getItem('fcm_token');
-      if (!token) {
-        console.warn('⚠No FCM token available for notification');
-        return;
-      }
-
-      const payload = {
-        "token": token,
-        "title": title,
-        "body": body,
-      };
-
-      const res: any = await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL_NOTION}/api/sendNotif`, payload)
-      );
-
-      if (res) {
-      }
-    } catch (error) {
-      console.error('��� Error sending notification:', error);
-    }
-  }
-
-
 
   // Generate stunning chart data with realistic trading patterns
   generateTradingChartData(): void {
@@ -3990,33 +3461,6 @@ onUpload(): void {
     }
   }
 
-  async isBackendRunning(): Promise<boolean> {
-    try {
-      // Try a simple POST request to see if backend endpoint is responding
-      const quickTestBody = {}; // Empty body as per your specification
-
-      await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL_NOTION}/api/getAllPagesFromDB`, quickTestBody, {
-          headers: { 'Cache-Control': 'no-cache' }
-        })
-      );
-
-      return true;
-
-    } catch (error: any) {
-      // If it's a 404 with GET, but we're using POST now, so any response means server is up
-      if (error.status === 404) {
-        return false;
-      }
-
-      // If it's any other error but not connection error, server might be running
-      if (error.status && error.status !== 0) {
-        return true; // Server is running, just has issues
-      }
-
-      return false;
-    }
-  }
   // Trading Metrics Calculation Methods
   calculateTotalPnL(): number {
     if (!this.tableData || this.tableData.length === 0) return 0;
@@ -4775,30 +4219,6 @@ onUpload(): void {
     return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60); // difference in minutes
   }
 
-  // loadTrades(): Promise<void> {
-  //   return new Promise((resolve, reject) => {
-  //     const tradesRef = collection(this.firestore, 'trades');
-  //     getDocs(tradesRef).then((querySnapshot) => {
-  //       const firestoreTrades = querySnapshot.docs.map(doc => doc.data()['rowData']);
-  //       console.log("��� Loaded from Firestore:", firestoreTrades.length, "trades");
-
-  //       // Don't overwrite existing tableData, merge with MT5 trades
-  //       if (this.mt5LiveTrades.length > 0) {
-  //         console.log("���� Preserving existing MT5 trades:", this.mt5LiveTrades.length);
-  //         // Keep MT5 trades and add Firestore trades
-  //         this.tableData = [...this.mt5LiveTrades, ...firestoreTrades];
-  //       } else {
-  //         this.tableData = firestoreTrades;
-  //       }
-
-  //       console.log("📊 Final tableData after loadTrades:", this.tableData.length);
-  //       resolve(); // Notify that loading is done
-  //     }).catch((error) => {
-  //       console.error('Error loading trades:', error);
-  //       reject(error);
-  //     });
-  //   });
-  // }
 
   async syncImportedMt5Trades(): Promise<void> {
     if (this.isSyncingMT5Trades || !this.mt5ImportedTrades.length) return;

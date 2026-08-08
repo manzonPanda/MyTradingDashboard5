@@ -6,7 +6,7 @@ npm install -g nodemon
 npm install express
 pip install flask flask-cors flask-socketio MetaTrader5 eventlet python-dateutil pandas
 
-*******Installation of NotioProxyApi*********
+*******Installation of ForexNewsApi*********
 npm install 
 npm install express
 
