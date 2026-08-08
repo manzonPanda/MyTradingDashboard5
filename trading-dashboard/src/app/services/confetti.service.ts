@@ -7,6 +7,7 @@ export interface ConfettiConfig {
   playSound?: boolean;
   showMusicControl?: boolean;
   dismissTextOnly?: boolean;
+  showSubtitle?: boolean;
   colors?: string[];
 }
 
@@ -99,6 +100,7 @@ export class ConfettiService {
       playSound: true,
       showMusicControl: true,
       dismissTextOnly: false,
+      showSubtitle: true,
       colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#00D2D3', '#FF1744', '#76FF03', '#E91E63', '#9C27B0', '#673AB7']
     };
 
@@ -113,7 +115,7 @@ export class ConfettiService {
     }
 
     if (finalConfig.text) {
-      this.showCelebrationText(finalConfig.text, finalConfig.duration, finalConfig.showMusicControl, finalConfig.dismissTextOnly);
+      this.showCelebrationText(finalConfig.text, finalConfig.duration, finalConfig.showMusicControl, finalConfig.dismissTextOnly, finalConfig.showSubtitle);
     }
 
     this.startAnimation();
@@ -315,7 +317,7 @@ export class ConfettiService {
     }
   }
 
-  private showCelebrationText(text: string, duration: number, showMusicControl: boolean, dismissTextOnly: boolean): void {
+  private showCelebrationText(text: string, duration: number, showMusicControl: boolean, dismissTextOnly: boolean, showSubtitle: boolean): void {
     // Remove existing celebration text if any
     const existing = document.getElementById('celebration-text');
     if (existing) {
@@ -560,7 +562,7 @@ export class ConfettiService {
 
     // Assemble the components
     textContainer.appendChild(textOverlay);
-    textContainer.appendChild(subtitle);
+    if (showSubtitle) textContainer.appendChild(subtitle);
     textContainer.appendChild(closeButton);
     if (musicButton) textContainer.appendChild(musicButton);
 
@@ -634,6 +636,7 @@ export class ConfettiService {
       playSound: false,
       showMusicControl: false,
       dismissTextOnly: true,
+      showSubtitle: false,
       colors: ['#FFD700', '#FFF7AE', '#FF6B6B', '#FF9FF3', '#A78BFA', '#54A0FF', '#4ECDC4', '#00D2D3', '#76FF03', '#FECA57']
     });
     void this.playPayoutCelebrationMusic();
