@@ -13199,6 +13199,104 @@ table.simple-table {
   line-height: 0.9rem;
 }
 
+:host-context(body.dark-theme) {
+  .dashboard-navigation {
+    background: #111827;
+    border-right-color: #3f4f66;
+  }
+
+  .navigation-brand {
+    border-bottom-color: #3f4f66;
+  }
+
+  .navigation-brand-name {
+    color: #f8fafc !important;
+  }
+
+  .navigation-section-label,
+  .navigation-panel-heading {
+    color: #cbd5e1;
+  }
+
+  .navigation-link {
+    color: #e2e8f0;
+
+    > mat-icon:first-child {
+      color: #c4b5fd;
+    }
+
+    strong {
+      color: #f8fafc;
+    }
+
+    small {
+      color: #cbd5e1;
+    }
+
+    &.is-active {
+      border-color: #64748b;
+      background: #243047;
+      color: #f8fafc;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+
+      > mat-icon:first-child {
+        color: #ffffff;
+        background: #7c3aed;
+      }
+    }
+
+    &:hover {
+      border-color: #64748b;
+      background: #1e293b;
+      color: #f8fafc;
+    }
+  }
+
+  .navigation-card-label {
+    border-bottom-color: #3f4f66;
+    color: #dbe4f2;
+  }
+
+  .navigation-display-trigger {
+    color: #cbd5e1;
+
+    &:hover {
+      background: #243047;
+      color: #f8fafc;
+    }
+  }
+
+  .navigation-display-menu {
+    border-color: #475569;
+    background: #1e293b;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+
+    button {
+      color: #e2e8f0;
+
+      mat-icon {
+        color: #a8b5c7;
+      }
+
+      &:hover {
+        background: #243047;
+      }
+
+      &[aria-checked='true'] mat-icon {
+        color: #c4b5fd;
+      }
+    }
+  }
+
+  .navigation-footer {
+    border-top-color: #3f4f66;
+  }
+
+  .navigation-profile-copy small {
+    color: #f1eaff;
+  }
+}
+
 .metrics-section .trading-chart-container .chart-header {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
