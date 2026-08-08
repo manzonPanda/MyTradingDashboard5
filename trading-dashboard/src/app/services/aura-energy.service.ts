@@ -546,7 +546,10 @@ export class AuraEnergyService {
   private isVisible(target: HTMLElement): boolean {
     const bounds = target.getBoundingClientRect();
     const style = window.getComputedStyle(target);
-    return style.display !== 'none' && style.visibility !== 'hidden' && bounds.width > 120 && bounds.height > 80 && bounds.bottom > 0 && bounds.right > 0 && bounds.top < window.innerHeight && bounds.left < window.innerWidth;
+    const isCompactChartStat = target.dataset['auraTarget'] === 'chart-stat';
+    const minWidth = isCompactChartStat ? 40 : 120;
+    const minHeight = isCompactChartStat ? 40 : 80;
+    return style.display !== 'none' && style.visibility !== 'hidden' && bounds.width > minWidth && bounds.height > minHeight && bounds.bottom > 0 && bounds.right > 0 && bounds.top < window.innerHeight && bounds.left < window.innerWidth;
   }
 
   private shuffle<T>(items: T[]): T[] {
