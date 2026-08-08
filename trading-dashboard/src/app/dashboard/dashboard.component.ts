@@ -508,7 +508,7 @@ export class DashboardComponent implements AfterViewInit {
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
   private readonly tradeScreenshotStorageKey = 'trading-dashboard.trade-screenshots.v1';
   private readonly legacyLiveExtremesStorageKey = 'trading-dashboard.live-trade-extremes';
-  private readonly gaugeAlertSoundUrl = '/assets/sounds/trade-alert.flac';
+  private readonly gaugeAlertSoundUrl = '/assets/sounds/trade-alert.wav';
   private readonly highGaugeAlertSoundUrl = '/assets/sounds/trade-alert-high.wav';
   private readonly newsReminderSoundUrl = '/assets/sounds/news-alert.wav';
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
