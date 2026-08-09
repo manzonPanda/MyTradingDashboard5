@@ -9,7 +9,6 @@ import { CommonModule, DOCUMENT, Location } from "@angular/common";
 import { Router } from '@angular/router';
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
-import { Firestore, collection, addDoc, setDoc, doc,getDocs,onSnapshot   } from '@angular/fire/firestore';
 import { Subject } from 'rxjs'
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -1150,7 +1149,7 @@ mt5AccountInfo: AccountSettings = {
     return this.profileDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map(name => name[0]).join('').toUpperCase() || 'T';
   }
 
-  constructor(private firestore: Firestore, private http: HttpClient, private cdr: ChangeDetectorRef,
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
     private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
@@ -2917,42 +2916,6 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     }
     return -1; // Return -1 if the text is not found
   }
-
-  // Optional: Implement file upload to a server or Firebase
-onUpload(): void {
-  const collectionRef = collection(this.firestore, 'trades');
-
-  this.showProgressBar = true;
-  this.hideProgressBar = false;
-  this.isUploading = true;
-  this.uploadProgress = 0;
-
-  const total = this.tableData.length;
-  let uploaded = 0;
-
-  this.tableData.forEach(async (row) => {
-    try {
-      const documentId = row.openDate;
-      const docRef = doc(collectionRef, documentId);
-      await setDoc(docRef, {
-        rowData: row
-      });
-      uploaded++;
-      this.uploadProgress = Math.round((uploaded / total) * 100);
-    } catch (error) {
-      console.error('Error uploading row: ', error);
-    }
-
-    if (uploaded === total) {
-      setTimeout(() => {
-        this.isUploading = false;
-        this.hideProgressBar = true; // Triggers CSS fade-out
-        this.showProgressBar = false;
-        this.uploadProgress = 0;
-      }, 2000); // Wait for CSS transition
-    }
-  });
-}
 
   delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
