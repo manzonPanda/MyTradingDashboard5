@@ -74,15 +74,8 @@ export class AuraAiService {
   readonly lastTokenInfo = signal<{ inputTokens: number; outputTokens: number; totalTokens: number } | null>(null);
   readonly conversationTokens = signal<{ inputTokens: number; outputTokens: number; totalTokens: number }>({ inputTokens: 0, outputTokens: 0, totalTokens: 0 });
 
-  private backendUrl = 'http://localhost:5000';
+  private readonly backendUrl = environment.backendUrlAura;
   private currentConversationId: string | null = null;
-
-  constructor() {
-    // In development, call the backend directly (avoids proxy config issues)
-    // In production, use the configured backend URL
-    const isDev = !window.location.hostname.includes('jakemt5.host');
-    this.backendUrl = isDev ? 'http://localhost:5000' : (environment.backendUrlAura || 'https://aura-backend.jakemt5.host');
-  }
 
   private async getAuthHeaders(): Promise<HeadersInit> {
     const { data } = await this.supabaseService.client.auth.getSession();
