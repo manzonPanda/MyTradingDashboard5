@@ -1,0 +1,180 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.prop-equity-curve {
+  --curve-text: var(--tf-text-primary, #1e293b);
+  --curve-muted: var(--tf-text-secondary, #64748b);
+  --curve-border: var(--tf-border-primary, rgba(148, 163, 184, 0.2));
+  --curve-surface: rgba(255, 255, 255, 0.45);
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.06), transparent 42%), var(--curve-surface);
+}
+
+.prop-equity-curve.is-dark {
+  --curve-text: #f1f5f9;
+  --curve-muted: #94a3b8;
+  --curve-border: rgba(167, 139, 250, 0.17);
+  --curve-surface: rgba(15, 23, 42, 0.45);
+}
+
+.prop-equity-curve__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.35rem 0.45rem;
+}
+
+.prop-equity-curve__eyebrow {
+  color: var(--curve-muted);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.prop-equity-curve__headline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin-top: 0.28rem;
+  color: var(--curve-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.prop-equity-curve__headline strong {
+  color: var(--curve-text);
+  font-size: clamp(1.05rem, 1.7vw, 1.32rem);
+  letter-spacing: -0.035em;
+}
+
+.prop-equity-curve__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  flex: 0 0 auto;
+  margin-top: 0.08rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(139, 92, 246, 0.18);
+  border-radius: 0.5rem;
+  background: rgba(139, 92, 246, 0.08);
+  color: #7c3aed;
+  font-size: 0.67rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.prop-equity-curve__status-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.prop-equity-curve__status.is-live,
+.prop-equity-curve__status.is-near-target,
+.prop-equity-curve__status.is-target-reached {
+  border-color: rgba(52, 211, 153, 0.25);
+  background: rgba(16, 185, 129, 0.09);
+  color: #059669;
+}
+
+.prop-equity-curve__status.is-near-drawdown,
+.prop-equity-curve__status.is-drawdown-breached {
+  border-color: rgba(251, 113, 133, 0.28);
+  background: rgba(244, 63, 94, 0.08);
+  color: #e11d48;
+}
+
+.prop-equity-curve__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.2rem 1.35rem 0;
+  color: var(--curve-muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.prop-equity-curve__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.prop-equity-curve__legend-mark {
+  width: 0.52rem;
+  height: 0.52rem;
+  border-radius: 50%;
+  background: #a78bfa;
+}
+
+.prop-equity-curve__legend-mark.is-equity {
+  width: 0.95rem;
+  height: 0.16rem;
+  border-radius: 999px;
+  background: #8b5cf6;
+}
+
+.prop-equity-curve__legend-mark.is-balance {
+  width: 0.95rem;
+  height: 0.12rem;
+  border-radius: 999px;
+  background: #2dd4bf;
+}
+
+.prop-equity-curve__legend-mark.is-win { background: #34d399; }
+.prop-equity-curve__legend-mark.is-loss { background: #fb7185; }
+
+.prop-equity-curve__canvas {
+  min-height: 0;
+  height: 100%;
+  margin-top: 0.2rem;
+}
+
+.prop-equity-curve__empty {
+  position: absolute;
+  inset: 5.8rem 1rem 1.25rem;
+  display: grid;
+  place-content: center;
+  gap: 0.45rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--curve-border);
+  background: color-mix(in srgb, var(--curve-surface) 88%, transparent);
+  color: var(--curve-muted);
+  text-align: center;
+}
+
+.prop-equity-curve__empty strong { color: var(--curve-text); }
+.prop-equity-curve__empty span { max-width: 17rem; font-size: 0.78rem; line-height: 1.45; }
+
+.prop-equity-curve__empty-icon {
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 0.6rem;
+  background: rgba(139, 92, 246, 0.09);
+  color: #8b5cf6;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .prop-equity-curve__header { padding: 0.85rem 1rem 0.35rem; }
+  .prop-equity-curve__legend { gap: 0.55rem; padding: 0.2rem 1rem 0; }
+  .prop-equity-curve__legend span:nth-last-child(-n + 2) { display: none; }
+  .prop-equity-curve__status { font-size: 0.6rem; }
+}

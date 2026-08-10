@@ -1,0 +1,34 @@
+<section class="prop-equity-curve" [class.is-dark]="isDarkTheme" [class.is-loading]="isLoading" [class.is-live]="isLive" [attr.aria-busy]="isLoading">
+  <header class="prop-equity-curve__header">
+    <div>
+      <div class="prop-equity-curve__eyebrow">AURA prop-firm equity curve</div>
+      <div class="prop-equity-curve__headline">
+        <span>Equity</span>
+        @if (currentPoint; as current) {
+          <strong>{{ current.equity | currency:'USD':'symbol':'1.2-2' }}</strong>
+        }
+      </div>
+    </div>
+    <div class="prop-equity-curve__status" [class]="'prop-equity-curve__status is-' + chartState">
+      <span class="prop-equity-curve__status-dot"></span>
+      {{ isLive ? 'Live equity' : statusLabel }}
+    </div>
+  </header>
+
+  <div class="prop-equity-curve__legend" aria-label="Chart legend">
+    <span><i class="prop-equity-curve__legend-mark is-equity"></i>Equity</span>
+    <span><i class="prop-equity-curve__legend-mark is-balance"></i>Balance</span>
+    <span><i class="prop-equity-curve__legend-mark is-win"></i>Win</span>
+    <span><i class="prop-equity-curve__legend-mark is-loss"></i>Loss</span>
+  </div>
+
+  <div class="prop-equity-curve__canvas" #chartHost aria-label="Account equity curve with prop-firm thresholds"></div>
+
+  @if (!isLoading && !points.length) {
+    <div class="prop-equity-curve__empty">
+      <div class="prop-equity-curve__empty-icon">↗</div>
+      <strong>Ready for your first trade</strong>
+      <span>Your account thresholds are shown here as trading activity arrives.</span>
+    </div>
+  }
+</section>
