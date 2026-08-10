@@ -24,6 +24,7 @@ import { ConnectionStatusComponent } from '../connection-status/connection-statu
 import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.component';
 import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.component';
 import { LiveRRTrackerComponent, LiveTradeSoundSettings as LiveTradeSoundSettingsModel } from '../live-rr-tracker/live-rr-tracker.component';
+import { PropFirmEquityChartComponent, AccountEquityPoint, PropFirmChartConfig } from '../prop-firm-equity-chart/prop-firm-equity-chart.component';
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -147,6 +148,7 @@ interface NotionPerformanceData {
     TradingCalendarComponent,
     DreamTimelineComponent,
     LiveRRTrackerComponent,
+    PropFirmEquityChartComponent,
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
@@ -479,6 +481,7 @@ export class DashboardComponent implements AfterViewInit {
 
   // Additional calculation methods for missing functions
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+  @ViewChild(PropFirmEquityChartComponent) propFirmChart?: PropFirmEquityChartComponent;
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
   locale: string = 'en';
@@ -952,6 +955,18 @@ mt5AccountInfo: AccountSettings = {
   public chartType: ChartType = 'line';
   public chartLabels: string[] = [];
   public isDailyChart: boolean = false;
+  public chartMode: 'trades' | 'daily' = 'trades';
+  public accountEquityData: AccountEquityPoint[] = [];
+  public chartConfig: PropFirmChartConfig = {
+    startingBalance: 0,
+    profitTarget: 0,
+    maxDrawdown: 0,
+    dailyLossLimit: 0,
+    currentBalance: 0,
+    currentEquity: 0,
+    floatingPnL: 0,
+    hasLiveTrade: false,
+  };
   public chartData: any = {
     labels: [],
     datasets: [
@@ -1301,6 +1316,9 @@ mt5AccountInfo: AccountSettings = {
         }
       }
     };
+
+    // Refresh the ECharts prop-firm curve with the newly applied theme.
+    this.propFirmChart?.refresh();
   }
 
   startReconnect(): void {
@@ -2934,345 +2952,142 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     }
   }
 
-  // Generate stunning chart data with realistic trading patterns
+  // Generate normalized account-equity data for the ECharts prop-firm curve.
+  // Balance = realized P&L; Equity = balance + floating (unrealized) P&L.
   generateTradingChartData(): void {
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
-    const dailyLimitPercent = this.mt5AccountInfo?.dailyLossLimit ?? 0;
-    const chartRange = Math.max(startingBalance * 0.1, 1);
-    const chartOptions = this.chartOptions as any;
-    this.chartOptions = {
-      ...chartOptions,
-      scales: {
-        ...chartOptions.scales,
-        y: {
-          ...chartOptions.scales.y,
-          min: startingBalance - chartRange,
-          max: startingBalance + chartRange,
-          ticks: {
-            ...chartOptions.scales.y.ticks,
-            stepSize: undefined,
-            count: 10,
-            maxTicksLimit: 10
-          }
-        }
-      }
+    const profitTargetPct = this.mt5AccountInfo?.profitTarget ?? 0;
+    const maxDDPct = this.mt5AccountInfo?.maxTotalDrawdown ?? 0;
+    const dailyLossPct = this.mt5AccountInfo?.dailyLossLimit ?? 0;
+
+    // Reference levels derived from account config (never hard-coded).
+    const profitTarget = startingBalance * (1 + profitTargetPct / 100);
+    const maxDrawdown = startingBalance * (1 - maxDDPct / 100);
+    const dailyLossLimit = startingBalance * (1 - dailyLossPct / 100);
+
+    // Floating (unrealized) P&L of currently open/live MT5 trades.
+    const openTrades = this.getCurrentMt5LiveTrades();
+    const openIds = this.mt5OpenPositionIds ?? new Set<string>();
+    const isOpenTrade = (t: Table) => (t.closeDate && t.closeDate === '-') || openIds.has(String(t.position));
+    const floatingPnL = Math.round(openTrades.reduce((sum, t) => sum + (parseFloat(t.netProfit) || 0), 0) * 100) / 100;
+
+    const dayKeyOf = (ts: string): string => {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return '?';
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${mm}-${dd}`;
     };
-    let currentBalance = startingBalance;
-    let cumulativePnL = 0;
-    let peakBalance = startingBalance;
 
-    const labels: string[] = [];
-    const balanceData: number[] = [];
-    const pnlData: number[] = [];
-    const drawdownData: number[] = [];
-
-    // Sort trades by date for proper chart progression
+    const points: AccountEquityPoint[] = [];
     const sortedTrades = [...this.tableData].sort((a, b) => {
-      const dateA = new Date(a.openDate || '');
-      const dateB = new Date(b.openDate || '');
-      return dateA.getTime() - dateB.getTime();
+      return new Date(a.openDate || '').getTime() - new Date(b.openDate || '').getTime();
     });
 
-    // Add starting point
-    labels.push('Start');
-    balanceData.push(startingBalance ?? 0);
-    pnlData.push(0);
-    drawdownData.push(0);
+    // Starting point.
+    points.push({ timestamp: 'Start', balance: startingBalance, equity: startingBalance });
+
+    let runningBalance = startingBalance;
+    let runningOpenTotal = 0;
+    const dayPnL: Record<string, number> = {};
 
     if (this.isDailyChart) {
+      // Aggregate CLOSED trades by trading day.
       const dayMap = new Map<string, { pnl: number; date: Date }>();
-      sortedTrades.forEach(trade => {
+      sortedTrades.forEach((trade) => {
         const d = new Date(trade.openDate || '');
-        if (isNaN(d.getTime())) return;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        if (isNaN(d.getTime()) || isOpenTrade(trade)) return;
+        const key = dayKeyOf(trade.openDate);
         const pnl = parseFloat(trade.netProfit || '0');
-        if (!dayMap.has(key)) {
-          dayMap.set(key, { pnl: pnl, date: new Date(d.getFullYear(), d.getMonth(), d.getDate()) });
-        } else {
-          const prev = dayMap.get(key)!;
-          prev.pnl += pnl;
-        }
+        if (!dayMap.has(key)) dayMap.set(key, { pnl, date: d });
+        else dayMap.get(key)!.pnl += pnl;
       });
 
-      const daily = Array.from(dayMap.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
-      daily.forEach(day => {
-        currentBalance += day.pnl;
-        cumulativePnL += day.pnl;
-        if (currentBalance > peakBalance) peakBalance = currentBalance;
-        const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
-        const dateLabel = day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        labels.push(`${dateLabel}`);
-        balanceData.push(currentBalance);
-        pnlData.push(cumulativePnL);
-        drawdownData.push(drawdown);
+      const days = [...dayMap.values()].sort((a, b) => a.date.getTime() - b.date.getTime());
+      days.forEach((day) => {
+        runningBalance += day.pnl;
+        dayPnL[dayKeyOf(day.date.toISOString())] = day.pnl;
+        points.push({
+          timestamp: day.date.toISOString(),
+          balance: runningBalance,
+          equity: runningBalance + runningOpenTotal,
+          floatingPnL: runningOpenTotal || undefined,
+          pnl: day.pnl,
+          dailyPnl: day.pnl,
+          tradeResult: day.pnl >= 0 ? 'win' : 'loss',
+        });
       });
     } else {
-      // Process each trade for chart progression
-      sortedTrades.forEach((trade, index) => {
-        const tradeProfit = parseFloat(trade.netProfit || '0');
-        currentBalance += tradeProfit;
-        cumulativePnL += tradeProfit;
+      sortedTrades.forEach((trade) => {
+        const net = parseFloat(trade.netProfit || '0');
+        const isOpen = isOpenTrade(trade);
+        const ts = (trade.openDate && trade.openDate !== '-') ? trade.openDate : new Date().toISOString();
 
-        if (currentBalance > peakBalance) {
-          peakBalance = currentBalance;
+        if (isOpen) {
+          runningOpenTotal += net;
+        } else {
+          runningBalance += net;
+          dayPnL[dayKeyOf(ts)] = (dayPnL[dayKeyOf(ts)] || 0) + net;
         }
 
-        const drawdown = ((peakBalance - currentBalance) / peakBalance) * 100;
-
-        const tradeDate = new Date(trade.openDate || '');
-        const dateLabel = tradeDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric'
+        const riskAmt = (() => { const r = parseFloat(trade.riskPerTrade || '0'); return r > 0 ? Math.round(r * 100) / 100 : undefined; })();
+        points.push({
+          timestamp: ts,
+          balance: Math.round(runningBalance * 100) / 100,
+          equity: Math.round((runningBalance + runningOpenTotal) * 100) / 100,
+          floatingPnL: isOpen ? Math.round(runningOpenTotal * 100) / 100 : undefined,
+          tradeId: trade.position !== undefined && trade.position !== '' ? String(trade.position) : undefined,
+          tradeResult: isOpen ? 'open' : (net >= 0 ? 'win' : 'loss'),
+          symbol: trade.symbol || undefined,
+          type: trade.type || undefined,
+          volume: trade.volume !== undefined ? String(trade.volume) : undefined,
+          risk: riskAmt,
+          rr: (trade.rrr && trade.rrr !== '0' && trade.rrr !== '-') ? trade.rrr : undefined,
+          openTime: ts,
+          closeTime: (trade.closeDate && trade.closeDate !== '-') ? trade.closeDate : undefined,
+          pnl: Math.round(net * 100) / 100,
+          dailyPnl: dayPnL[dayKeyOf(ts)] ? Math.round(dayPnL[dayKeyOf(ts)] * 100) / 100 : (isOpen ? Math.round(runningOpenTotal * 100) / 100 : undefined),
         });
-
-        labels.push(`${dateLabel} #${index + 1}`);
-        balanceData.push(currentBalance);
-        pnlData.push(cumulativePnL);
-        drawdownData.push(drawdown);
       });
     }
 
-    const dailyLimitBalance = currentBalance * (1 - dailyLimitPercent / 100);
-
-    // If no trades, show empty chart with starting balance and reference lines
-    if (sortedTrades.length === 0) {
-      const currentTotalPnL = this.calculateTotalPnL();
-      const pnlLineValue = startingBalance + currentTotalPnL;
-      const accountSize = this.calculateAccountSize();
-
-      this.chartData = {
-        labels: ['Start'],
-        datasets: [
-          {
-            label: 'Account Balance',
-            data: [startingBalance],
-            borderColor: 'rgb(16, 185, 129)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 4,
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: 'rgb(16, 185, 129)', // Green starting point
-            pointBorderColor: 'transparent',
-            pointBorderWidth: 0,
-            pointRadius: 8,
-            pointHoverRadius: 12
-          },
-          {
-            label: '🟠 --- Current P&L',
-            data: [pnlLineValue],
-            borderColor: '#7c3aed',
-            backgroundColor: 'transparent',
-            borderWidth: 1,
-            borderDash: [8, 4],
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
-          },
-          {
-            label: `Daily Limit (${this.mt5AccountInfo.dailyLossLimit}%)`,
-            data: [dailyLimitBalance],
-            borderColor: '#F59E0B',
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            borderDash: [8, 4],
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
-          },
-          {
-            label: `🎯 Profit Target (${this.mt5AccountInfo.profitTarget}%)`,
-            data: [startingBalance * (1 + this.mt5AccountInfo.profitTarget / 100)],
-            borderColor: 'rgb(16, 185, 129)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 4,
-            borderDash: [12, 8],
-            fill: false,
-            tension: 0,
-            pointRadius: 6,
-            pointHoverRadius: 10,
-            pointBackgroundColor: 'rgb(16, 185, 129)',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 3,
-            pointStyle: 'triangle',
-            shadowOffsetX: 0,
-            shadowOffsetY: 2,
-            shadowBlur: 8,
-            shadowColor: 'rgba(16, 185, 129, 0.3)'
-          },
-          {
-            label: '🟣 --- Starting Balance',
-            data: [accountSize],
-            borderColor: '#3d3aed',
-            backgroundColor: 'transparent',
-            borderWidth: 1,
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            pointBackgroundColor: 'transparent',
-            pointBorderColor: 'transparent'
-          },
-          {
-            label: `⚠️ Max Drawdown (${this.mt5AccountInfo.maxTotalDrawdown}%)`,
-            data: [startingBalance * (1 - this.mt5AccountInfo.maxTotalDrawdown / 100)],
-            borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            borderWidth: 4,
-            borderDash: [8, 6],
-            fill: false,
-            tension: 0,
-            pointRadius: 6,
-            pointHoverRadius: 10,
-            pointBackgroundColor: 'rgb(239, 68, 68)',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 3,
-            pointStyle: 'rect',
-            shadowOffsetX: 0,
-            shadowOffsetY: 2,
-            shadowBlur: 8,
-            shadowColor: 'rgba(239, 68, 68, 0.3)'
-          }
-        ]
-      };
-      return;
+    // If live/open trades exist and the tail point is not already marked open,
+    // append a "now" point so the current live equity is explicit.
+    const tail = points[points.length - 1];
+    if (openTrades.length && floatingPnL !== 0 && tail?.tradeResult !== 'open') {
+      const now = new Date().toISOString();
+      points.push({
+        timestamp: now,
+        balance: Math.round(runningBalance * 100) / 100,
+        equity: Math.round((runningBalance + floatingPnL) * 100) / 100,
+        floatingPnL,
+        tradeId: openTrades[0]?.position !== undefined ? String(openTrades[0].position) : undefined,
+        tradeResult: 'open',
+        symbol: openTrades[0]?.symbol || undefined,
+        type: openTrades[0]?.type || undefined,
+        volume: openTrades[0]?.volume !== undefined ? String(openTrades[0].volume) : undefined,
+        openTime: now,
+        pnl: floatingPnL,
+        dailyPnl: floatingPnL,
+      });
     }
 
-    // Calculate current total P&L for horizontal reference line
-    const currentTotalPnL = this.calculateTotalPnL();
-    const pnlLineValue = startingBalance + currentTotalPnL;
-
-    // Calculate highest balance reached
-    const highestBalance = Math.max(...balanceData);
-
-    // Get account size for purple reference line
-    const accountSize = this.calculateAccountSize();
-
-    // Chart with trading data progression and reference lines
-    this.chartData = {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Account Balance',
-          data: balanceData,
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
-            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-            return gradient;
-          },
-          borderWidth: 4,
-          fill: true,
-          tension: 0.3,
-          pointBackgroundColor: balanceData.map((val, i, arr) => {
-            if (i === 0) return 'rgb(16, 185, 129)'; // Starting point - green (no blue)
-            const profit = val - arr[i-1];
-            return profit >= 0 ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'; // Green for profit, red for loss
-          }),
-          pointBorderColor: 'transparent',
-          pointBorderWidth: 0,
-          pointRadius: balanceData.map((_, i, arr) => {
-            if (i === 0 || i === arr.length - 1) return 8; // Larger points for start/end
-            return 6;
-          }),
-          pointHoverRadius: 12
-        },
-        {
-          label: '🟠 --- Current P&L',
-          data: new Array(labels.length).fill(pnlLineValue),
-          borderColor: '#7c3aed',
-          backgroundColor: 'transparent',
-          borderWidth: 1,
-          borderDash: [8, 4],
-          fill: false,
-          tension: 0,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
-        },
-        {
-          label: `Daily Limit (${this.mt5AccountInfo.dailyLossLimit}%)`,
-          data: new Array(labels.length).fill(dailyLimitBalance),
-          borderColor: '#F59E0B',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderDash: [8, 4],
-          fill: false,
-          tension: 0,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
-        },
-        {
-          label: `🎯 Profit Target (${this.mt5AccountInfo.profitTarget}%)`,
-          data: new Array(labels.length).fill(startingBalance * (1 + this.mt5AccountInfo.profitTarget / 100)),
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: 'rgba(16, 185, 129, 0.05)',
-          borderWidth: 4,
-          borderDash: [12, 8],
-          fill: '+1',
-          tension: 0,
-          pointRadius: 0,
-          pointHoverRadius: 8,
-          pointBackgroundColor: 'rgb(16, 185, 129)',
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          shadowOffsetX: 0,
-          shadowOffsetY: 2,
-          shadowBlur: 12,
-          shadowColor: 'rgba(16, 185, 129, 0.4)'
-        },
-        {
-          label: '���� --- Starting Balance',
-          data: new Array(labels.length).fill(accountSize),
-          borderColor: '#3d3aed',
-          backgroundColor: 'transparent',
-          borderWidth: 1,
-          fill: false,
-          tension: 0,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
-        },
-        {
-          label: `⚠️ Max Drawdown (${this.mt5AccountInfo.maxTotalDrawdown}%)`,
-          data: new Array(labels.length).fill(startingBalance * (1 - this.mt5AccountInfo.maxTotalDrawdown / 100)),
-          borderColor: 'rgb(239, 68, 68)',
-          backgroundColor: 'rgba(239, 68, 68, 0.08)',
-          borderWidth: 4,
-          borderDash: [8, 6],
-          fill: '-1',
-          tension: 0,
-          pointRadius: 0,
-          pointHoverRadius: 8,
-          pointBackgroundColor: 'rgb(239, 68, 68)',
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          shadowOffsetX: 0,
-          shadowOffsetY: 2,
-          shadowBlur: 12,
-          shadowColor: 'rgba(239, 68, 68, 0.4)'
-        }
-      ]
+    this.accountEquityData = points;
+    this.chartConfig = {
+      startingBalance,
+      profitTarget,
+      maxDrawdown,
+      dailyLossLimit,
+      currentBalance: Math.round(runningBalance * 100) / 100,
+      currentEquity: Math.round((runningBalance + floatingPnL) * 100) / 100,
+      floatingPnL,
+      hasLiveTrade: openTrades.length > 0,
     };
+    this.chartMode = this.isDailyChart ? 'daily' : 'trades';
 
-    // Trigger chart update with animation
-    if (this.chart) {
-      this.chart.update('active');
-    }
-
-    // Trigger change detection to update chart display
     this.cdr.markForCheck();
   }
+
 
 
   private parseNotionResponse(results: any[]): NotionPerformanceData[] {
