@@ -1,0 +1,210 @@
+.aura-equity-chart {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(248, 250, 252, 0.18));
+}
+
+.aura-equity-chart__surface {
+  width: 100%;
+  height: 100%;
+}
+
+.aura-equity-chart__state {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid rgba(109, 40, 217, 0.12);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 4px 14px rgba(76, 29, 149, 0.08);
+  color: var(--tf-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+
+.aura-equity-chart__state-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.aura-equity-chart__state--positive {
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.aura-equity-chart__state--positive .aura-equity-chart__state-dot {
+  background: #22c55e;
+}
+
+.aura-equity-chart__state--warning {
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.aura-equity-chart__state--warning .aura-equity-chart__state-dot {
+  background: #f59e0b;
+}
+
+.aura-equity-chart__state--danger {
+  color: #be123c;
+  border-color: rgba(244, 63, 94, 0.25);
+}
+
+.aura-equity-chart__state--danger .aura-equity-chart__state-dot {
+  background: #f43f5e;
+}
+
+.aura-equity-chart__overlay,
+.aura-equity-chart__empty {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 1.5rem;
+  background: rgba(var(--tf-bg-card-rgb), 0.88);
+  color: var(--tf-text-secondary);
+  text-align: center;
+  backdrop-filter: blur(3px);
+}
+
+.aura-equity-chart__overlay p,
+.aura-equity-chart__empty-title,
+.aura-equity-chart__empty-copy {
+  margin: 0;
+}
+
+.aura-equity-chart__spinner {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid rgba(139, 92, 246, 0.18);
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: aura-equity-spin 0.85s linear infinite;
+}
+
+.aura-equity-chart__empty-title {
+  color: var(--tf-text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.aura-equity-chart__empty-copy {
+  max-width: 22rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.aura-equity-tooltip {
+  min-width: 13.5rem;
+  color: #cbd5e1;
+  font-family: inherit;
+}
+
+.aura-equity-tooltip__content {
+  padding: 0.8rem 0.9rem;
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 0.7rem;
+}
+
+.aura-equity-tooltip__time {
+  color: #ddd6fe;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.aura-equity-tooltip__divider {
+  height: 1px;
+  margin: 0.55rem 0;
+  background: rgba(196, 181, 253, 0.16);
+}
+
+.aura-equity-tooltip__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.16rem 0;
+  font-size: 0.72rem;
+}
+
+.aura-equity-tooltip__row span {
+  color: #94a3b8;
+}
+
+.aura-equity-tooltip__row strong {
+  color: #f8fafc;
+  font-weight: 700;
+  text-align: right;
+}
+
+.aura-equity-tooltip__main {
+  color: #c4b5fd !important;
+  font-size: 0.82rem;
+}
+
+.aura-equity-tooltip__positive {
+  color: #4ade80 !important;
+}
+
+.aura-equity-tooltip__negative {
+  color: #fda4af !important;
+}
+
+:host-context(body.dark-theme) .aura-equity-chart {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.72), rgba(15, 23, 42, 0.32));
+}
+
+:host-context(body.dark-theme) .aura-equity-chart__state {
+  border-color: rgba(196, 181, 253, 0.2);
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+:host-context(body.dark-theme) .aura-equity-chart__state--positive {
+  color: #86efac;
+}
+
+:host-context(body.dark-theme) .aura-equity-chart__state--warning {
+  color: #fcd34d;
+}
+
+:host-context(body.dark-theme) .aura-equity-chart__state--danger {
+  color: #fda4af;
+}
+
+@keyframes aura-equity-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .aura-equity-chart__state {
+    top: 0.65rem;
+    left: 0.65rem;
+    padding: 0.28rem 0.48rem;
+    font-size: 0.6rem;
+  }
+
+  .aura-equity-tooltip {
+    min-width: 11.75rem;
+  }
+}

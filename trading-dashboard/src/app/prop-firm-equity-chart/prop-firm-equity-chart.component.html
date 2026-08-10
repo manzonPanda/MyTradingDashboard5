@@ -1,0 +1,19 @@
+<section class="aura-equity-chart" aria-label="Prop-firm account equity curve">
+  <div class="aura-equity-chart__state" [ngClass]="'aura-equity-chart__state--' + accountStateTone">
+    <span class="aura-equity-chart__state-dot"></span>
+    {{ accountState }}
+  </div>
+  <div #chartHost class="aura-equity-chart__surface"></div>
+
+  @if (isLoading) {
+    <div class="aura-equity-chart__overlay">
+      <span class="aura-equity-chart__spinner"></span>
+      <p>Loading account performance</p>
+    </div>
+  } @else if (!model.hasTrades) {
+    <div class="aura-equity-chart__empty">
+      <span class="aura-equity-chart__empty-title">Your equity curve will appear here</span>
+      <span class="aura-equity-chart__empty-copy">Account thresholds are ready for your first completed trade.</span>
+    </div>
+  }
+</section>
