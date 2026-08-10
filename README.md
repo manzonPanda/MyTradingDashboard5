@@ -12,7 +12,8 @@ npm install express
 
 
 *******VScode task - Run task************
-shift+space
+Custom tasks are saved in project's root directory inside the .vscode/tasks.json file
+shortcutKey: shift+space
 extension name: Task runner plus
 
 

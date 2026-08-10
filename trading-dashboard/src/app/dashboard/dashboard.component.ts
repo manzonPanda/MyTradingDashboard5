@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule, DOCUMENT, Location } from "@angular/common";
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
 import { Subject } from 'rxjs'
@@ -165,7 +165,8 @@ interface NotionPerformanceData {
     MatProgressSpinnerModule,
     MatSnackBarModule,
     BaseChartDirective,
-    ProfileSettingsComponent
+    ProfileSettingsComponent,
+    RouterLink
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']

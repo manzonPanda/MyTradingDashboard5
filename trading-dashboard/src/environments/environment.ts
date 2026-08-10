@@ -2,6 +2,7 @@ export const environment = {
   production: false,
   backendUrlNews: 'https://forexnewsapi.onrender.com',
   backendUrlMt5: 'https://mt5-api.jakemt5.host',
+  backendUrlAura: 'http://localhost:5000',
   // === Supabase config (replaces Notion) ===
   supabase: {
     url: 'https://jpkvxlzyswookygwcsog.supabase.co',        // TODO: replace with your Project URL

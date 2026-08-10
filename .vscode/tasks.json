@@ -17,7 +17,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Backend-NotionApi",
+      "label": "Backend-ForexNewsApi",
       "type": "shell",
       "command": "npm run dev",
       "options": {
@@ -62,12 +62,28 @@
       "problemMatcher": []
     },
     {
+      "label": "Backend-AURA_AI",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/aura-backend",
+        "shell": {
+          "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+          "args": [
+            "-c"
+          ]
+        }
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Start All",
       "dependsOn": [
         "Frontend-Angular",
-        "Backend-NotionApi",
+        "Backend-ForexNewsApi",
         "Backend-MT5api",
-        "Tunnel-Cloudflare"
+        "Tunnel-Cloudflare",
+        "Backend-AURA_AI"
       ],
       "dependsOrder": "parallel",
       "problemMatcher": []

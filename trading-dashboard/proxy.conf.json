@@ -5,6 +5,15 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
+  "/aura-api": {
+    "target": "http://localhost:5000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/aura-api": ""
+    }
+  },
   "/notion-api": {
     "target": "http://localhost:3000",
     "secure": false,
