@@ -10616,6 +10616,10 @@ table.simple-table {
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
+.navigation-timeline-card {
+  container-type: inline-size;
+}
+
 .navigation-card-label {
   gap: 0.45rem;
   padding: 0.6rem 0.7rem;
@@ -10671,13 +10675,14 @@ table.simple-table {
         text-align: center;
 
         .value {
-          font-size: 1.1rem;
+          font-size: clamp(0.75rem, 9cqw, 1rem);
           line-height: 1;
         }
 
         .label {
-          font-size: 0.55rem;
+          font-size: clamp(0.42rem, 5.5cqw, 0.55rem);
           line-height: 1.1;
+          letter-spacing: 0;
           white-space: nowrap;
         }
       }
