@@ -115,7 +115,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
   private chart: echarts.ECharts | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
-  accountState: 'normal' | 'near-target' | 'target-reached' | 'near-drawdown' | 'drawdown-breached' = 'normal';
   hasNoTrades = true;
   isLive = false;
 
@@ -136,16 +135,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
   refresh(): void {
     if (this.chart) {
       this.render();
-    }
-  }
-
-  get stateLabel(): string {
-    switch (this.accountState) {
-      case 'target-reached': return 'Profit Target Reached';
-      case 'near-target': return 'Near Profit Target';
-      case 'drawdown-breached': return 'Drawdown Breached';
-      case 'near-drawdown': return 'Near Drawdown';
-      default: return 'On Track';
     }
   }
 
@@ -184,25 +173,9 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     return `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
-  private computeState(): void {
-    const { currentEquity, profitTarget, maxDrawdown, hasLiveTrade } = this.config;
-    this.isLive = hasLiveTrade;
-    const points = this.points || [];
-    this.hasNoTrades = points.length <= 1 && !hasLiveTrade;
-
-    if (maxDrawdown > 0) {
-      const ddBuffer = (profitTarget - maxDrawdown) * 0.08;
-      if (currentEquity <= maxDrawdown) {
-        this.accountState = 'drawdown-breached';
-      } else if (currentEquity <= maxDrawdown + ddBuffer && currentEquity <= profitTarget) {
-        this.accountState = 'near-drawdown';
-      }
-    }
-    if (profitTarget > 0 && currentEquity >= profitTarget) {
-      this.accountState = 'target-reached';
-    } else if (profitTarget > 0 && currentEquity >= profitTarget * 0.92) {
-      this.accountState = 'near-target';
-    }
+  private updateChartState(): void {
+    this.isLive = this.config.hasLiveTrade;
+    this.hasNoTrades = (this.points || []).length <= 1 && !this.isLive;
   }
 
   /** Calendar-day key (YYYY-MM-DD) used to detect first trade of a day. */
@@ -268,7 +241,19 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
   private buildMarkLines(pal: AuraPalette): any[] {
     const { profitTarget, startingBalance, maxDrawdown, dailyLossLimit } = this.config;
     const lines: any[] = [];
-    const chipBg = this.isDark() ? 'rgba(15,23,42,0.65)' : 'rgba(255,255,255,0.7)';
+    const labelBackground = this.isDark() ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.84)';
+    const labelStyle = {
+      show: true,
+      position: 'end',
+      align: 'left',
+      verticalAlign: 'middle',
+      distance: 12,
+      fontSize: 11,
+      fontWeight: 700,
+      backgroundColor: labelBackground,
+      padding: [4, 8],
+      borderRadius: 4,
+    };
 
     if (Number.isFinite(profitTarget) && profitTarget > 0) {
       lines.push({
@@ -276,15 +261,9 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         name: 'Profit Target',
         lineStyle: { color: '#16A34A', width: 1, type: 'dashed', opacity: 0.85 },
         label: {
-          show: true,
-          position: 'end',
-          formatter: `Profit Target  ${this.fmtUsdPlain(profitTarget)}`,
+          ...labelStyle,
+          formatter: 'Profit Target',
           color: '#16A34A',
-          fontSize: 10,
-          fontWeight: 600,
-          backgroundColor: chipBg,
-          padding: [2, 6],
-          borderRadius: 4,
         },
       });
     }
@@ -295,14 +274,9 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         name: 'Starting Balance',
         lineStyle: { color: pal.textMuted, width: 1, type: 'dashed', opacity: 0.7 },
         label: {
-          show: true,
-          position: 'end',
-          formatter: `Start  ${this.fmtUsdPlain(startingBalance)}`,
+          ...labelStyle,
+          formatter: 'Start',
           color: pal.textMuted,
-          fontSize: 10,
-          backgroundColor: chipBg,
-          padding: [2, 6],
-          borderRadius: 4,
         },
       });
     }
@@ -313,15 +287,9 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         name: 'Max Drawdown',
         lineStyle: { color: '#EF4444', width: 1, type: 'dashed', opacity: 0.8 },
         label: {
-          show: true,
-          position: 'end',
-          formatter: `Drawdown  ${this.fmtUsdPlain(maxDrawdown)}`,
+          ...labelStyle,
+          formatter: 'Drawdown',
           color: '#EF4444',
-          fontSize: 10,
-          fontWeight: 600,
-          backgroundColor: chipBg,
-          padding: [2, 6],
-          borderRadius: 4,
         },
       });
     }
@@ -332,14 +300,9 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         name: 'Daily Limit',
         lineStyle: { color: '#F59E0B', width: 1, type: 'dashed', opacity: 0.75 },
         label: {
-          show: true,
-          position: 'end',
-          formatter: `Daily Limit  ${this.fmtUsdPlain(dailyLossLimit)}`,
+          ...labelStyle,
+          formatter: 'Daily Limit',
           color: '#F59E0B',
-          fontSize: 10,
-          backgroundColor: chipBg,
-          padding: [2, 6],
-          borderRadius: 4,
         },
       });
     }
@@ -444,7 +407,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
 
   private render(): void {
     if (!this.chart) return;
-    this.computeState();
+    this.updateChartState();
 
     const pal = this.palette();
     const yRange = this.computeYRange();
@@ -501,7 +464,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       animationDuration: 600,
       animationEasing: 'cubicOut',
       backgroundColor: 'transparent',
-      grid: { left: 16, right: 96, top: 26, bottom: 34, containLabel: true },
+      grid: { left: 16, right: 156, top: 26, bottom: 34, containLabel: true },
       tooltip: {
         trigger: 'axis',
         confine: true,
@@ -649,18 +612,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         z: 4,
         silent: true,
         tooltip: { show: false },
-      });
-      option.graphic.push({
-        type: 'text',
-        right: 6,
-        top: 4,
-        style: {
-          text: '● LIVE',
-          fill: '#16A34A',
-          fontSize: 11,
-          fontWeight: 700,
-          fontFamily: 'inherit',
-        },
       });
     }
 
