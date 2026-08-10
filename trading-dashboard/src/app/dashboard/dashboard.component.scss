@@ -10616,6 +10616,10 @@ table.simple-table {
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
+.navigation-timeline-card {
+  container-type: inline-size;
+}
+
 .navigation-card-label {
   gap: 0.45rem;
   padding: 0.6rem 0.7rem;
@@ -10640,6 +10644,9 @@ table.simple-table {
       padding: 0.65rem;
 
       .time-units {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: stretch;
         gap: 0.3rem;
         min-width: 0;
         padding: 0;
@@ -10650,20 +10657,33 @@ table.simple-table {
       }
 
       .start-date-horizontal {
+        flex: 0 0 100%;
         margin-bottom: 0.15rem;
         padding: 0.35rem 0.45rem;
         font-size: 0.68rem;
       }
 
       .time-unit {
-        padding: 0.25rem 0.45rem;
+        display: flex;
+        flex: 1 1 0;
+        min-width: 0;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.05rem;
+        padding: 0.25rem 0.2rem;
+        text-align: center;
 
         .value {
-          font-size: 1.1rem;
+          font-size: clamp(0.62rem, 7cqw, 0.85rem);
+          line-height: 1;
         }
 
         .label {
-          font-size: 0.59rem;
+          font-size: clamp(0.38rem, 4.5cqw, 0.45rem);
+          line-height: 1.1;
+          letter-spacing: 0;
+          white-space: nowrap;
         }
       }
     }
@@ -10965,6 +10985,29 @@ table.simple-table {
     height: 1rem;
     font-size: 1rem;
     color: #7C3AED;
+  }
+}
+
+.navigation-groq-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.45rem;
+  transition: background-color 160ms ease;
+
+  img {
+    display: block;
+    width: min(100%, 9rem);
+    height: auto;
+    max-height: 1.55rem;
+    object-fit: contain;
+  }
+
+  &:hover {
+    background: rgba(124, 58, 237, 0.12);
   }
 }
 
@@ -12075,7 +12118,8 @@ table.simple-table {
 
     .navigation-brand-copy,
     .navigation-live-panel,
-    .navigation-utility-link {
+    .navigation-utility-link,
+    .navigation-groq-badge {
       display: none;
     }
 
@@ -12137,7 +12181,8 @@ table.simple-table {
 
 .dashboard-navigation.is-expanded {
   .navigation-brand {
-    padding-inline: 0.6rem;
+    gap: 0.5rem;
+    padding: 0 0.4rem 0.75rem;
   }
 
   .navigation-links {
@@ -12148,7 +12193,8 @@ table.simple-table {
     display: grid;
     grid-template-columns: 1.75rem minmax(0, 1fr);
     justify-content: initial;
-    padding: 0.65rem 0.55rem;
+    min-height: 1.8rem;
+    padding: 0.45rem 0.55rem;
 
     span {
       display: flex;
