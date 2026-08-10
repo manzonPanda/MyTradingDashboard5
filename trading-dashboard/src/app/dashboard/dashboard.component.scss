@@ -10968,6 +10968,29 @@ table.simple-table {
   }
 }
 
+.navigation-groq-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.45rem;
+  transition: background-color 160ms ease;
+
+  img {
+    display: block;
+    width: min(100%, 9rem);
+    height: auto;
+    max-height: 1.55rem;
+    object-fit: contain;
+  }
+
+  &:hover {
+    background: rgba(124, 58, 237, 0.12);
+  }
+}
+
 #accounts,
 #notion-update,
 #trading-history {
@@ -12075,7 +12098,8 @@ table.simple-table {
 
     .navigation-brand-copy,
     .navigation-live-panel,
-    .navigation-utility-link {
+    .navigation-utility-link,
+    .navigation-groq-badge {
       display: none;
     }
 
