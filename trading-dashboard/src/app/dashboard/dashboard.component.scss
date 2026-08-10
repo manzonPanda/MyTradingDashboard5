@@ -12161,7 +12161,8 @@ table.simple-table {
 
 .dashboard-navigation.is-expanded {
   .navigation-brand {
-    padding-inline: 0.6rem;
+    gap: 0.5rem;
+    padding: 0 0.4rem 0.75rem;
   }
 
   .navigation-links {
