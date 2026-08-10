@@ -123,7 +123,9 @@
         aria-label="Powered by Groq for fast inference"
         title="Powered by Groq for fast inference">
         <img
-          src="https://console.groq.com/powered-by-groq-dark.svg"
+          [src]="isDarkTheme
+            ? 'https://console.groq.com/powered-by-groq-dark.svg'
+            : 'https://console.groq.com/powered-by-groq-light.svg'"
           alt="Powered by Groq for fast inference." />
       </a>
       <button
