@@ -225,8 +225,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
 
     // Sensible padding scaled to the account and the spread.
     const span = rawMax - rawMin;
-    const basePad = (startingBalance || 1) * 0.02;
-    const pad = Math.max(basePad, span * 0.18);
+    const basePad = (startingBalance || 1) * 0.01;
+    const pad = Math.max(basePad, span * 0.06);
     let min = rawMin - pad;
     let max = rawMax + pad;
 
@@ -248,7 +248,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       align: 'left',
       verticalAlign: 'middle',
       distance: 12,
-      fontSize: 11,
+      fontSize: 12,
       fontWeight: 700,
       backgroundColor: labelBackground,
       padding: [4, 8],
@@ -327,7 +327,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     );
   }
 
-  private tradeDetailHtml(p: AccountEquityPoint, pal: AuraPalette): string {
+  private tradeDetailHtml(p: AccountEquityPoint): string {
     if (!p?.tradeId) return '';
     const rows: string[] = [];
     if (p.symbol) {
@@ -338,8 +338,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       rows.push(`<div class="pf-td-line">${line}</div>`);
     }
     if (Number.isFinite(p.pnl)) {
-      const color = (p.pnl || 0) >= 0 ? '#16A34A' : '#EF4444';
-      rows.push(`<div class="pf-td-row"><span>P&amp;L</span><b style="color:${color}">${this.fmtUsd(p.pnl || 0)}</b></div>`);
+      rows.push(`<div class="pf-td-row"><span>P&amp;L</span><b class="${(p.pnl || 0) >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(p.pnl || 0)}</b></div>`);
     }
     if (Number.isFinite(p.risk) && p.risk && p.risk > 0) {
       rows.push(`<div class="pf-td-row"><span>Risk</span><b>${this.fmtUsdPlain(p.risk)}</b></div>`);
@@ -355,6 +354,10 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     } else if (closeLabel) {
       rows.push(`<div class="pf-td-row"><span>Close</span><b>${closeLabel}</b></div>`);
     }
+    const duration = this.tradeDuration(p.openTime, p.closeTime);
+    if (duration) {
+      rows.push(`<div class="pf-td-row"><span>Duration</span><b>${duration}</b></div>`);
+    }
 
     return `
       <div class="pf-td-divider"></div>
@@ -363,8 +366,18 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     `;
   }
 
+  private tradeDuration(openTime?: string, closeTime?: string): string {
+    if (!openTime || !closeTime) return '';
+    const durationMs = new Date(closeTime).getTime() - new Date(openTime).getTime();
+    if (!Number.isFinite(durationMs) || durationMs < 0) return '';
+    const minutes = Math.round(durationMs / 60000);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+  }
+
   private tooltipHtml(params: any): string {
-    const pal = this.palette();
     const first = params && params[0];
     const raw = first?.data as any;
     if (!raw) return '';
@@ -374,33 +387,25 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     const balance = Number(raw.balance ?? equity);
     const floating = Number(raw.floatingPnL ?? 0);
     const isOpen = raw.tradeResult === 'open';
-    const isCurrent = raw.isCurrent === true;
-
-    const fpColor = floating >= 0 ? '#16A34A' : '#EF4444';
 
     let dailyRow = '';
     if (Number.isFinite(raw.dailyPnl)) {
-      const c = (raw.dailyPnl || 0) >= 0 ? '#16A34A' : '#EF4444';
       dailyRow = `
-        <div class="pf-td-row"><span>Daily P&amp;L</span><b style="color:${c}">${this.fmtUsd(raw.dailyPnl)}</b></div>`;
+        <div class="pf-td-row"><span>Daily P&amp;L</span><b class="${(raw.dailyPnl || 0) >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(raw.dailyPnl)}</b></div>`;
     }
 
-    const liveTag = isOpen && isCurrent
-      ? `<span class="pf-live-tag"><span class="pf-live-dot"></span>LIVE</span>`
-      : '';
-
     return `
-      <div class="pf-tooltip" style="min-width:${isOpen || raw.tradeId ? 232 : 200}px">
-        <div class="pf-td-head" style="color:${pal.tooltipBody}">
-          <span>${this.fmtHeader(ts || '')}</span>${liveTag}
+      <div class="pf-tooltip${isOpen || raw.tradeId ? ' pf-tooltip--trade' : ''}">
+        <div class="pf-td-head">
+          <span>${this.fmtHeader(ts || '')}</span>
         </div>
-        <div class="pf-eq" style="color:${pal.tooltipTitle}">${this.fmtUsdPlain(equity)}</div>
-        <div class="pf-eq-label" style="color:${pal.tooltipMuted}">Equity</div>
-        <div class="pf-td-divider" style="margin:8px 0"></div>
-        <div class="pf-td-row"><span style="color:${pal.tooltipMuted}">Balance</span><b style="color:${pal.tooltipBody}">${this.fmtUsdPlain(balance)}</b></div>
-        <div class="pf-td-row"><span style="color:${pal.tooltipMuted}">Floating P&amp;L</span><b style="color:${fpColor}">${this.fmtUsd(floating)}</b></div>
+        <div class="pf-eq">${this.fmtUsdPlain(equity)}</div>
+        <div class="pf-eq-label">Equity</div>
+        <div class="pf-td-divider pf-tooltip-divider"></div>
+        <div class="pf-td-row"><span>Balance</span><b>${this.fmtUsdPlain(balance)}</b></div>
+        <div class="pf-td-row"><span>Floating P&amp;L</span><b class="${floating >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(floating)}</b></div>
         ${dailyRow}
-        ${raw.tradeId ? this.tradeDetailHtml(raw as AccountEquityPoint, pal) : ''}
+        ${raw.tradeId ? this.tradeDetailHtml(raw as AccountEquityPoint) : ''}
       </div>
     `;
   }
@@ -464,7 +469,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       animationDuration: 600,
       animationEasing: 'cubicOut',
       backgroundColor: 'transparent',
-      grid: { left: 16, right: 156, top: 26, bottom: 34, containLabel: true },
+      grid: { left: 20, right: 112, top: 24, bottom: 38, containLabel: true },
       tooltip: {
         trigger: 'axis',
         confine: true,
@@ -473,7 +478,12 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         borderWidth: 1,
         padding: 12,
         extraCssText: 'backdrop-filter: blur(12px); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.18);',
-        textStyle: { color: pal.tooltipBody, fontSize: 12 },
+        textStyle: { color: pal.tooltipBody, fontSize: 13 },
+        axisPointer: {
+          type: 'line',
+          snap: true,
+          lineStyle: { color: 'rgba(124, 58, 237, 0.5)', width: 1, type: 'dashed' },
+        },
         formatter: (params: any) => this.tooltipHtml(params),
       },
       xAxis: {
@@ -484,7 +494,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         axisTick: { show: false },
         axisLabel: {
           color: pal.axis,
-          fontSize: 11,
+          fontSize: 12,
+          fontWeight: 500,
           hideOverlap: true,
           // Labels are pre-formatted: non-empty only on the first point of a
           // trading day; empty strings render no repeated date labels.
@@ -500,7 +511,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         axisTick: { show: false },
         axisLabel: {
           color: pal.axis,
-          fontSize: 11,
+          fontSize: 12,
+          fontWeight: 500,
           formatter: (v: number) =>
             Math.abs(v) >= 10000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
         },
@@ -528,7 +540,11 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
               { offset: 1, color: this.isDark() ? 'rgba(124,58,237,0.02)' : 'rgba(124,58,237,0.02)' },
             ]),
           },
-          emphasis: { focus: 'series' },
+          emphasis: {
+            focus: 'series',
+            lineStyle: { width: this.isDark() ? 3.5 : 3 },
+            symbolSize: 10,
+          },
           markLine: {
             symbol: 'none',
             silent: true,
@@ -586,8 +602,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
             value: [last.value[0], last.value[1]],
             itemStyle: {
               color: this.pointCurrentColor(),
-              shadowBlur: 16,
-              shadowColor: 'rgba(124,58,237,0.65)',
+              shadowBlur: 11,
+              shadowColor: 'rgba(124,58,237,0.45)',
             },
           },
         ],
@@ -606,8 +622,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         type: 'effectScatter',
         data: [[last.value[0], last.value[1]]],
         symbol: 'circle',
-        symbolSize: 22,
-        rippleEffect: { brushType: 'stroke', scale: 2.8, period: 4 },
+        symbolSize: 18,
+        rippleEffect: { brushType: 'stroke', scale: 2.4, period: 4 },
         itemStyle: { color: '#8B5CF6' },
         z: 4,
         silent: true,

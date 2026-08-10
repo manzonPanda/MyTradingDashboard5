@@ -26,14 +26,6 @@
   z-index: 1;
 }
 
-.pf-live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #16A34A;
-  animation: pf-live-blink 1.4s ease-in-out infinite;
-}
-
 /* ---------- Empty state ---------- */
 .pf-empty {
   position: absolute;
@@ -98,7 +90,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -106,13 +98,13 @@
 }
 
 :host ::ng-deep .pf-eq {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
 
 :host ::ng-deep .pf-eq-label {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -130,8 +122,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.78rem;
-  padding: 2.5px 0;
+  font-size: 0.84rem;
+  padding: 3px 0;
 
   span {
     color: var(--tf-text-muted, #94A3B8);
@@ -145,13 +137,13 @@
 
 :host ::ng-deep .pf-td-line {
   justify-content: flex-start;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
   padding-bottom: 4px;
 }
 
 :host ::ng-deep .pf-td-title {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #7C3AED;
   text-transform: uppercase;
@@ -159,21 +151,12 @@
   margin-bottom: 4px;
 }
 
-:host ::ng-deep .pf-live-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 999px;
-  background: rgba(22, 163, 74, 0.16);
+:host ::ng-deep .pf-value-positive {
   color: #16A34A;
-  font-size: 0.6rem;
-  border: 1px solid rgba(22, 163, 74, 0.35);
 }
 
-@keyframes pf-live-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+:host ::ng-deep .pf-value-negative {
+  color: #EF4444;
 }
 
 @keyframes pf-spin {
