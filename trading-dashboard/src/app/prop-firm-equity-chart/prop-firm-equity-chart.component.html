@@ -6,22 +6,6 @@
   <div #chartEl class="pf-chart-canvas"></div>
 
 
-  <!-- Account state chip -->
-  <div class="pf-status" *ngIf="hasTrades">
-    <div class="pf-status-chip" [class]="accountState">
-      <span class="pf-status-dot"></span>
-      <span class="pf-status-label">{{ stateLabel }}</span>
-      <span class="pf-live-badge" *ngIf="isLive"><span class="pf-live-dot"></span>LIVE</span>
-    </div>
-  </div>
-
-  <!-- Win / Loss / Open legend -->
-  <div class="pf-legend" *ngIf="hasTrades">
-    <span class="pf-legend-item"><i class="pf-dot win"></i>Win</span>
-    <span class="pf-legend-item"><i class="pf-dot loss"></i>Loss</span>
-    <span class="pf-legend-item" *ngIf="isLive"><i class="pf-dot open"></i>Open</span>
-  </div>
-
   <!-- Polished empty state -->
   <div class="pf-empty" *ngIf="!hasTrades">
     <div class="pf-empty-icon">
