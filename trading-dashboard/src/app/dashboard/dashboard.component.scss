@@ -10640,6 +10640,9 @@ table.simple-table {
       padding: 0.65rem;
 
       .time-units {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: stretch;
         gap: 0.3rem;
         min-width: 0;
         padding: 0;
@@ -10650,13 +10653,18 @@ table.simple-table {
       }
 
       .start-date-horizontal {
+        flex: 0 0 100%;
         margin-bottom: 0.15rem;
         padding: 0.35rem 0.45rem;
         font-size: 0.68rem;
       }
 
       .time-unit {
-        padding: 0.25rem 0.45rem;
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        gap: 0.2rem;
+        padding: 0.25rem 0.3rem;
 
         .value {
           font-size: 1.1rem;
