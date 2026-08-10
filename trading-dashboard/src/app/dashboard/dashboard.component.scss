@@ -10675,12 +10675,12 @@ table.simple-table {
         text-align: center;
 
         .value {
-          font-size: clamp(0.75rem, 9cqw, 1rem);
+          font-size: clamp(0.62rem, 7cqw, 0.85rem);
           line-height: 1;
         }
 
         .label {
-          font-size: clamp(0.42rem, 5.5cqw, 0.55rem);
+          font-size: clamp(0.38rem, 4.5cqw, 0.45rem);
           line-height: 1.1;
           letter-spacing: 0;
           white-space: nowrap;
