@@ -38,7 +38,10 @@ export class WinRateGaugeComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     this.chart = echarts.init(this.gaugeElement.nativeElement, undefined, { renderer: 'canvas' });
     this.render();
-    this.resizeObserver = new ResizeObserver(() => this.chart?.resize());
+    this.resizeObserver = new ResizeObserver(() => {
+      this.chart?.resize();
+      this.render();
+    });
     this.resizeObserver.observe(this.gaugeElement.nativeElement);
   }
 
@@ -52,6 +55,15 @@ export class WinRateGaugeComponent implements OnInit, OnChanges, OnDestroy {
     const isDark = this.document.body.classList.contains('dark-theme');
     const winRate = Math.max(0, Math.min(100, this.stats.winRate));
     const trackColor = isDark ? 'rgba(148, 163, 184, 0.28)' : '#e5e7eb';
+    const gaugeWidth = this.gaugeElement.nativeElement.clientWidth;
+    const gaugeHeight = this.gaugeElement.nativeElement.clientHeight;
+    if (!gaugeWidth || !gaugeHeight) return;
+
+    const gaugeRadius = Math.min(gaugeWidth * 0.46, gaugeHeight * 0.78);
+    const gaugeCenter = [gaugeWidth / 2, gaugeHeight * 0.78];
+    const scale = Math.max(0.82, Math.min(1.15, gaugeWidth / 230));
+    const trackWidth = Math.max(10, Math.round(16 * scale));
+    const progressWidth = Math.max(7, Math.round(10 * scale));
 
     this.chart.setOption({
       animationDuration: 600,
@@ -63,8 +75,8 @@ export class WinRateGaugeComponent implements OnInit, OnChanges, OnDestroy {
           endAngle: 0,
           min: 0,
           max: 100,
-          center: ['50%', '72%'],
-          radius: '145%',
+          center: gaugeCenter,
+          radius: gaugeRadius,
           pointer: { show: false },
           axisTick: { show: false },
           splitLine: { show: false },
@@ -75,7 +87,7 @@ export class WinRateGaugeComponent implements OnInit, OnChanges, OnDestroy {
           progress: { show: false },
           axisLine: {
             roundCap: true,
-            lineStyle: { width: 16, color: [[1, trackColor]] },
+            lineStyle: { width: trackWidth, color: [[1, trackColor]] },
           },
           silent: true,
         },
@@ -85,8 +97,8 @@ export class WinRateGaugeComponent implements OnInit, OnChanges, OnDestroy {
           endAngle: 0,
           min: 0,
           max: 100,
-          center: ['50%', '72%'],
-          radius: '145%',
+          center: gaugeCenter,
+          radius: gaugeRadius,
           pointer: { show: false },
           axisTick: { show: false },
           splitLine: { show: false },
@@ -98,7 +110,7 @@ export class WinRateGaugeComponent implements OnInit, OnChanges, OnDestroy {
           axisLine: {
             roundCap: true,
             lineStyle: {
-              width: 10,
+              width: progressWidth,
               color: [
                 [winRate / 100, '#16a34a'],
                 [1, '#ef4444'],
