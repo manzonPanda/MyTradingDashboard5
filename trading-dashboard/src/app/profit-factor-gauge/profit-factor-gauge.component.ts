@@ -31,7 +31,10 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
   ngOnInit(): void {
     this.chart = echarts.init(this.gaugeElement.nativeElement, undefined, { renderer: 'canvas' });
     this.render();
-    this.resizeObserver = new ResizeObserver(() => this.chart?.resize());
+    this.resizeObserver = new ResizeObserver(() => {
+      this.chart?.resize();
+      this.render();
+    });
     this.resizeObserver.observe(this.gaugeElement.nativeElement);
   }
 
@@ -42,10 +45,14 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
   private render(): void {
     if (!this.chart) return;
 
-    const isDark = this.document.body.classList.contains('dark-theme');
-    const displayedValue = Math.max(0, Math.min(3, this.value));
-    const labelColor = isDark ? '#cbd5e1' : '#475569';
-    const pointerColor = isDark ? '#f8fafc' : '#0f172a';
+    const displayedValue = Math.max(0, Math.min(3.5, this.value));
+    const status = this.getStatus(displayedValue);
+    const gaugeWidth = this.gaugeElement.nativeElement.clientWidth;
+    const scale = Math.max(0.72, Math.min(1, gaugeWidth / 260));
+    const pointerWidth = Math.round(40 * scale);
+    const axisLabelFontSize = Math.max(8, Math.round(10 * scale));
+    const titleFontSize = Math.max(9, Math.round(11 * scale));
+    const detailFontSize = Math.max(18, Math.round(24 * scale));
 
     this.chart.setOption({
       animationDuration: 600,
@@ -54,57 +61,81 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         type: 'gauge',
         startAngle: 180,
         endAngle: 0,
-        center: ['50%', '75%'],
-        radius: '100%',
+        center: ['50%', '62%'],
+        radius: '90%',
         min: 0,
-        max: 3,
-        splitNumber: 3,
+        max: 3.5,
+        splitNumber: 7,
         axisLine: {
           lineStyle: {
-            width: 14,
+            width: 20,
             color: [
-              [1 / 3, '#EF4444'],
-              [2 / 3, '#F59E0B'],
-              [1, '#22C55E'],
+              [1 / 3.5, '#EF4444'],
+              [1.3 / 3.5, '#F59E0B'],
+              [1.75 / 3.5, '#EAB308'],
+              [3 / 3.5, '#22C55E'],
+              [1, '#8B5CF6'],
             ],
           },
         },
         pointer: {
-          icon: 'path://M2 0 L-2 0 L0 -66 Z',
-          length: '62%',
-          width: 8,
-          offsetCenter: [0, '5%'],
-          itemStyle: { color: pointerColor },
-        },
-        anchor: {
-          show: true,
-          size: 11,
-          itemStyle: { color: pointerColor },
+          icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+          length: '15%',
+          width: pointerWidth,
+          offsetCenter: [0, '-70%'],
+          itemStyle: { color: 'auto' },
         },
         axisTick: {
-          distance: -18,
+          distance: -20,
           splitNumber: 4,
-          length: 6,
-          lineStyle: { color: isDark ? 'rgba(203, 213, 225, 0.55)' : 'rgba(71, 85, 105, 0.45)', width: 1 },
+          length: 8,
+          lineStyle: { color: 'auto', width: 2 },
         },
         splitLine: {
-          distance: -20,
+          distance: -22,
           length: 12,
-          lineStyle: { color: labelColor, width: 1.5 },
+          lineStyle: { color: 'auto', width: 4 },
         },
         axisLabel: {
-          distance: -27,
-          color: labelColor,
-          fontSize: 10.5,
-          fontWeight: 600,
-          formatter: (axisValue: number) => axisValue === 3 ? '3.0+' : axisValue.toFixed(1),
+          color: '#64748B',
+          fontSize: axisLabelFontSize,
+          distance: 12,
+          formatter: (value: number) => {
+            if (value === 0) return '0.0';
+            if (value === 1) return '1.0';
+            if (value === 3) return '3.0';
+            if (value === 3.5) return '3.5+';
+            return '';
+          },
         },
-        title: { show: false },
-        detail: { show: false },
-        data: [{ value: displayedValue }],
+        title: {
+          offsetCenter: [0, '-2%'],
+          fontSize: titleFontSize,
+          lineHeight: Math.round(14 * scale),
+          fontWeight: 600,
+          color: 'auto',
+        },
+        detail: {
+          fontSize: detailFontSize,
+          lineHeight: Math.round(28 * scale),
+          fontWeight: 700,
+          offsetCenter: [0, '-30%'],
+          valueAnimation: true,
+          formatter: (value: number) => value.toFixed(2),
+          color: 'auto',
+        },
+        data: [{ value: displayedValue, name: status }],
         silent: true,
       }],
     }, { notMerge: true });
+  }
+
+  private getStatus(value: number): string {
+    if (value < 1) return 'UNPROFITABLE';
+    if (value < 1.3) return 'MARGINAL';
+    if (value < 1.75) return 'RESPECTABLE';
+    if (value < 3) return 'STRONG';
+    return 'EXCEPTIONAL';
   }
 
   ngOnDestroy(): void {
