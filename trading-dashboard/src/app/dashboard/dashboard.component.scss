@@ -609,57 +609,12 @@
   &:nth-child(3) { animation-delay: 0.3s; }
 }
 
-// Profit Factor Chart Styling
 .profit-factor-chart {
   box-sizing: border-box;
   flex: 1 1 auto;
-  margin: 0.65rem 0.875rem 0;
+  margin: 0.7rem auto 0;
   min-width: 0;
-  width: auto;
-
-  .profit-factor-svg {
-    width: 100%;
-    height: 82px;
-    display: block;
-    overflow: visible;
-
-    .chart-label {
-      fill: #64748b;
-      font-size: 9px;
-      font-weight: 600;
-    }
-
-    .gauge-zone {
-      stroke: none;
-    }
-
-    .break-even-divider {
-      stroke: #334155;
-      stroke-width: 2;
-      opacity: 0.9;
-    }
-
-    .pf-marker-line {
-      stroke-width: 1.25;
-      opacity: 0.9;
-      stroke-linecap: round;
-    }
-
-    .zone-label {
-      fill: #64748b;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-    }
-
-    .zone-label-profitable {
-      fill: #15803d;
-    }
-
-    .zone-label-strong {
-      fill: #166534;
-    }
-  }
+  width: 90%;
 }
 
 // Recent Trades PnL tiles styles
@@ -3443,16 +3398,9 @@ table.simple-table {
       align-items: flex-start;
 
       .profit-factor-chart {
-        width: auto;
+        width: 100%;
         margin: 0;
-        transform: translateY(-10px);
-        transform-origin: center;
         overflow: visible;
-
-        .profit-factor-svg {
-          width: 180px;
-          display: block;
-        }
       }
     }
 
