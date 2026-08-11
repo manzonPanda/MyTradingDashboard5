@@ -4,40 +4,12 @@
 }
 
 .profit-factor-gauge-shell {
-  height: 136px;
+  height: 190px;
   position: relative;
   width: 100%;
 }
 
 .profit-factor-gauge-canvas {
-  height: 136px;
+  height: 190px;
   width: 100%;
-}
-
-.profit-factor-zone-labels {
-  bottom: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  left: 0;
-  position: absolute;
-  right: 0;
-}
-
-.profit-factor-zone-label {
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-align: center;
-}
-
-.profit-factor-zone-loss {
-  color: #dc2626;
-}
-
-.profit-factor-zone-profitable {
-  color: #d97706;
-}
-
-.profit-factor-zone-strong {
-  color: #16a34a;
 }

@@ -42,10 +42,8 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
   private render(): void {
     if (!this.chart) return;
 
-    const isDark = this.document.body.classList.contains('dark-theme');
-    const displayedValue = Math.max(0, Math.min(3, this.value));
-    const labelColor = isDark ? '#cbd5e1' : '#475569';
-    const pointerColor = isDark ? '#f8fafc' : '#0f172a';
+    const displayedValue = Math.max(0, Math.min(3.5, this.value));
+    const status = this.getStatus(displayedValue);
 
     this.chart.setOption({
       animationDuration: 600,
@@ -54,50 +52,77 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         type: 'gauge',
         startAngle: 180,
         endAngle: 0,
-        center: ['50%', '75%'],
-        radius: '100%',
+        radius: '90%',
         min: 0,
-        max: 3,
-        splitNumber: 3,
+        max: 3.5,
+        splitNumber: 7,
         axisLine: {
           lineStyle: {
-            width: 14,
+            width: 20,
             color: [
-              [1 / 3, '#EF4444'],
-              [2 / 3, '#F59E0B'],
-              [1, '#22C55E'],
+              [1 / 3.5, '#EF4444'],
+              [1.3 / 3.5, '#F59E0B'],
+              [1.75 / 3.5, '#EAB308'],
+              [3 / 3.5, '#22C55E'],
+              [1, '#8B5CF6'],
             ],
           },
         },
         pointer: {
-          icon: 'path://M2 0 L-2 0 L0 -66 Z',
-          length: '62%',
-          width: 8,
-          offsetCenter: [0, '5%'],
-          itemStyle: { color: pointerColor },
-        },
-        anchor: {
-          show: true,
-          size: 11,
-          itemStyle: { color: pointerColor },
+          icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+          length: '15%',
+          width: 40,
+          offsetCenter: [0, '-70%'],
+          itemStyle: { color: 'auto' },
         },
         axisTick: {
-          distance: -18,
-          splitNumber: 4,
-          length: 6,
-          lineStyle: { color: isDark ? 'rgba(203, 213, 225, 0.55)' : 'rgba(71, 85, 105, 0.45)', width: 1 },
+          length: 10,
+          lineStyle: { color: 'auto', width: 2 },
         },
         splitLine: {
-          distance: -20,
-          length: 12,
-          lineStyle: { color: labelColor, width: 1.5 },
+          length: 14,
+          lineStyle: { color: 'auto', width: 5 },
         },
-        title: { show: false },
-        detail: { show: false },
-        data: [{ value: displayedValue }],
+        axisLabel: {
+          color: '#64748B',
+          fontSize: 20,
+          distance: 30,
+          formatter: (value: number) => {
+            if (value === 0) return '0.0';
+            if (value === 1) return '1.0';
+            if (value === 1.3) return '1.3';
+            if (value === 1.75) return '1.75';
+            if (value === 3) return '3.0';
+            if (value === 3.5) return '3.5+';
+            return '';
+          },
+        },
+        title: {
+          offsetCenter: [0, '-5%'],
+          fontSize: 30,
+          fontWeight: 600,
+          color: 'auto',
+        },
+        detail: {
+          fontSize: 30,
+          fontWeight: 700,
+          offsetCenter: [0, '-35%'],
+          valueAnimation: true,
+          formatter: (value: number) => value.toFixed(2),
+          color: 'auto',
+        },
+        data: [{ value: displayedValue, name: status }],
         silent: true,
       }],
     }, { notMerge: true });
+  }
+
+  private getStatus(value: number): string {
+    if (value < 1) return 'UNPROFITABLE';
+    if (value < 1.3) return 'MARGINAL';
+    if (value < 1.75) return 'RESPECTABLE';
+    if (value < 3) return 'STRONG';
+    return 'EXCEPTIONAL';
   }
 
   ngOnDestroy(): void {
