@@ -782,8 +782,6 @@
           <div *ngIf="!isLoadingMetrics" class="combined-content">
             <div class="combined-top-row">
               <div class="profit-factor-summary">
-                <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
-                <div class="metric-subtitle">Gross win / Gross loss</div>
                 <div class="profit-factor-chart">
                   <svg viewBox="0 0 180 40" class="profit-factor-svg">
                     <rect x="0" y="15" width="180" height="10" rx="5" fill="#e2e8f0" stroke="none"/>
