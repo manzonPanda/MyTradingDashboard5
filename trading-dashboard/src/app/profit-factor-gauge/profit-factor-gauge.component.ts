@@ -92,13 +92,6 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           length: 12,
           lineStyle: { color: labelColor, width: 1.5 },
         },
-        axisLabel: {
-          distance: -27,
-          color: labelColor,
-          fontSize: 10.5,
-          fontWeight: 600,
-          formatter: (axisValue: number) => axisValue === 3 ? '3.0+' : axisValue.toFixed(1),
-        },
         title: { show: false },
         detail: { show: false },
         data: [{ value: displayedValue }],
