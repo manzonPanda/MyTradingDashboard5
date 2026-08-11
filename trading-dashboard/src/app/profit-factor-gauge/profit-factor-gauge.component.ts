@@ -52,6 +52,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         type: 'gauge',
         startAngle: 180,
         endAngle: 0,
+        center: ['50%', '62%'],
         radius: '90%',
         min: 0,
         max: 3.5,
@@ -76,37 +77,40 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           itemStyle: { color: 'auto' },
         },
         axisTick: {
-          length: 10,
+          distance: -20,
+          splitNumber: 4,
+          length: 8,
           lineStyle: { color: 'auto', width: 2 },
         },
         splitLine: {
-          length: 14,
-          lineStyle: { color: 'auto', width: 5 },
+          distance: -22,
+          length: 12,
+          lineStyle: { color: 'auto', width: 4 },
         },
         axisLabel: {
           color: '#64748B',
-          fontSize: 20,
-          distance: 30,
+          fontSize: 10,
+          distance: 12,
           formatter: (value: number) => {
             if (value === 0) return '0.0';
             if (value === 1) return '1.0';
-            if (value === 1.3) return '1.3';
-            if (value === 1.75) return '1.75';
             if (value === 3) return '3.0';
             if (value === 3.5) return '3.5+';
             return '';
           },
         },
         title: {
-          offsetCenter: [0, '-5%'],
-          fontSize: 30,
+          offsetCenter: [0, '-2%'],
+          fontSize: 11,
+          lineHeight: 14,
           fontWeight: 600,
           color: 'auto',
         },
         detail: {
-          fontSize: 30,
+          fontSize: 24,
+          lineHeight: 28,
           fontWeight: 700,
-          offsetCenter: [0, '-35%'],
+          offsetCenter: [0, '-30%'],
           valueAnimation: true,
           formatter: (value: number) => value.toFixed(2),
           color: 'auto',
