@@ -56,7 +56,6 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const gaugeCenterY = gaugeHeight * 0.9;
     const scale = Math.max(0.72, Math.min(1.2, gaugeWidth / 600));
     const axisLineWidth = Math.max(10, Math.round(16 * scale));
-    const pointerWidth = Math.max(16, Math.round(28 * scale));
     const axisTickWidth = Math.max(1, Math.round(2 * scale));
     const splitLineWidth = Math.max(2, Math.round(5 * scale));
     const axisTickLength = Math.max(6, Math.round(10 * scale));
@@ -91,8 +90,8 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         },
         pointer: {
           icon: 'path://M12.8,0.7l8,40.1H4.8L12.8,0.7z',
-          length: '20%',
-          width: pointerWidth,
+          length: '25%',
+          width: 20,
           offsetCenter: [0, '-50%'],
           itemStyle: { color: 'auto' },
         },
