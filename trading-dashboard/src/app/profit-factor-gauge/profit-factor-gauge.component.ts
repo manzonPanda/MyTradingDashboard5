@@ -31,7 +31,10 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
   ngOnInit(): void {
     this.chart = echarts.init(this.gaugeElement.nativeElement, undefined, { renderer: 'canvas' });
     this.render();
-    this.resizeObserver = new ResizeObserver(() => this.chart?.resize());
+    this.resizeObserver = new ResizeObserver(() => {
+      this.chart?.resize();
+      this.render();
+    });
     this.resizeObserver.observe(this.gaugeElement.nativeElement);
   }
 
@@ -44,6 +47,12 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
 
     const displayedValue = Math.max(0, Math.min(3.5, this.value));
     const status = this.getStatus(displayedValue);
+    const gaugeWidth = this.gaugeElement.nativeElement.clientWidth;
+    const scale = Math.max(0.72, Math.min(1, gaugeWidth / 260));
+    const pointerWidth = Math.round(40 * scale);
+    const axisLabelFontSize = Math.max(8, Math.round(10 * scale));
+    const titleFontSize = Math.max(9, Math.round(11 * scale));
+    const detailFontSize = Math.max(18, Math.round(24 * scale));
 
     this.chart.setOption({
       animationDuration: 600,
@@ -72,7 +81,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         pointer: {
           icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
           length: '15%',
-          width: 40,
+          width: pointerWidth,
           offsetCenter: [0, '-70%'],
           itemStyle: { color: 'auto' },
         },
@@ -89,7 +98,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         },
         axisLabel: {
           color: '#64748B',
-          fontSize: 10,
+          fontSize: axisLabelFontSize,
           distance: 12,
           formatter: (value: number) => {
             if (value === 0) return '0.0';
@@ -101,14 +110,14 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         },
         title: {
           offsetCenter: [0, '-2%'],
-          fontSize: 11,
-          lineHeight: 14,
+          fontSize: titleFontSize,
+          lineHeight: Math.round(14 * scale),
           fontWeight: 600,
           color: 'auto',
         },
         detail: {
-          fontSize: 24,
-          lineHeight: 28,
+          fontSize: detailFontSize,
+          lineHeight: Math.round(28 * scale),
           fontWeight: 700,
           offsetCenter: [0, '-30%'],
           valueAnimation: true,
