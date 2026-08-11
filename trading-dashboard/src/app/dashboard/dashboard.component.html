@@ -768,28 +768,6 @@
           </div>
         </div>
 
-        <div data-aura-target class="metric-card profitability-winrate-card">
-          <div class="metric-header combined-metric-header">
-            <div class="combined-heading">
-              <h3 class="metric-title gradient-text">Profit Factor</h3>
-            </div>
-            <mat-icon class="metric-icon">trending_up</mat-icon>
-          </div>
-          <div *ngIf="isLoadingMetrics" class="metric-loading">
-            <mat-progress-spinner diameter="24" mode="indeterminate" color="primary"></mat-progress-spinner>
-            <span class="loading-text">Loading...</span>
-          </div>
-          <div *ngIf="!isLoadingMetrics" class="combined-content">
-            <div class="combined-top-row">
-              <div class="profit-factor-summary">
-                <div class="profit-factor-chart">
-                  <app-profit-factor-gauge [value]="getProfitFactorNumeric()"></app-profit-factor-gauge>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div data-aura-target class="metric-card win-rate-card">
           <div class="metric-header">
             <h3 class="metric-title gradient-text">Win Rate</h3>
