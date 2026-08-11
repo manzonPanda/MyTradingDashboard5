@@ -611,8 +611,11 @@
 
 // Profit Factor Chart Styling
 .profit-factor-chart {
-  margin: 0.65rem 0 0;
-  width: 100%;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  margin: 0.65rem 0.875rem 0;
+  min-width: 0;
+  width: auto;
 
   .profit-factor-svg {
     width: 100%;
