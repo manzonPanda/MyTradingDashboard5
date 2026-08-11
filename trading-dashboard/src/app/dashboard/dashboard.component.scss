@@ -1054,6 +1054,8 @@ table.simple-table {
     justify-content: space-between;
     align-items: flex-start;
     max-width: 100%;
+    width: 100%;
+    min-width: 0;
     margin: 0;
     gap: 0;
     height: 180px;
@@ -1063,8 +1065,9 @@ table.simple-table {
     display: flex;
     align-items: flex-start;
     gap: 0;
-    flex: 1;
+    flex: 1 1 auto;
     width: 100%;
+    min-width: 0;
     margin-left: 0;
   }
 
@@ -1074,15 +1077,19 @@ table.simple-table {
     gap: 0;
     width: 100%;
     max-width: none;
-    flex: 1;
+    min-width: 0;
+    flex: 1 1 auto;
     height: 180px;
 
     .trading-days-grid {
       display: flex;
+      flex: 1 1 auto;
       gap: 0;
       background: var(--tf-bg-tertiary);
       padding: 0;
       width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
       height: 180px;
       border-radius: 8px;
       border: 1px solid var(--tf-border-primary);
@@ -1114,8 +1121,9 @@ table.simple-table {
       .day-column {
         display: flex;
         flex-direction: column;
-        min-width: 120px;
+        min-width: 0;
         max-width: none;
+        width: 0;
         flex: 1 1 0;
         height: 100%;
         background: var(--tf-bg-card);
@@ -1185,7 +1193,8 @@ table.simple-table {
             grid-column: 1 / -1;
           }
           padding: 0;
-          flex: 1;
+          flex: 1 1 auto;
+          min-width: 0;
           height: calc(180px - 35px);
           overflow-y: auto;
           overflow-x: hidden;
@@ -12537,6 +12546,7 @@ table.simple-table {
 
     .trading-week-container .trading-days-grid .day-column {
       min-width: 90px;
+      width: auto;
     }
   }
 
@@ -12653,6 +12663,7 @@ table.simple-table {
 
     .trading-week-container .trading-days-grid .day-column {
       min-width: 84px;
+      width: auto;
     }
   }
 
