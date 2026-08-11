@@ -54,8 +54,13 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const gaugeRadius = Math.min(gaugeWidth * 0.46, gaugeHeight * 0.78);
     const gaugeCenterX = gaugeWidth / 2;
     const gaugeCenterY = gaugeHeight * 0.82;
-    const scale = Math.max(0.82, Math.min(1.15, gaugeWidth / 230));
-    const pointerWidth = Math.round(40 * scale);
+    const scale = Math.max(0.72, Math.min(1.2, gaugeRadius / 120));
+    const axisLineWidth = Math.max(12, Math.round(20 * scale));
+    const pointerWidth = Math.max(24, Math.round(40 * scale));
+    const axisTickWidth = Math.max(1, Math.round(2 * scale));
+    const splitLineWidth = Math.max(2, Math.round(4 * scale));
+    const axisTickLength = Math.max(6, Math.round(8 * scale));
+    const splitLineLength = Math.max(9, Math.round(12 * scale));
     const axisLabelFontSize = Math.max(8, Math.round(10 * scale));
     const titleFontSize = Math.max(9, Math.round(11 * scale));
     const detailFontSize = Math.max(18, Math.round(24 * scale));
@@ -74,7 +79,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         splitNumber: 7,
         axisLine: {
           lineStyle: {
-            width: 20,
+            width: axisLineWidth,
             color: [
               [1 / 3.5, '#EF4444'],
               [1.3 / 3.5, '#F59E0B'],
@@ -94,13 +99,13 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         axisTick: {
           distance: -20,
           splitNumber: 4,
-          length: 8,
-          lineStyle: { color: 'auto', width: 2 },
+          length: axisTickLength,
+          lineStyle: { color: 'auto', width: axisTickWidth },
         },
         splitLine: {
           distance: -22,
-          length: 12,
-          lineStyle: { color: 'auto', width: 4 },
+          length: splitLineLength,
+          lineStyle: { color: 'auto', width: splitLineWidth },
         },
         axisLabel: {
           color: '#64748B',
