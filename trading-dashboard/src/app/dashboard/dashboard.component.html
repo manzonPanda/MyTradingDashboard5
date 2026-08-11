@@ -793,21 +793,13 @@
                   </div>
                 </div>
                 <div class="profit-factor-chart">
-                  <svg viewBox="0 0 180 76" class="profit-factor-svg" role="img" aria-label="Profit Factor position from 0.0 to 3.0 plus">
-                    <rect x="0" y="18" width="60" height="12" rx="5" fill="#dc2626" class="gauge-zone gauge-zone-losing"/>
-                    <rect x="60" y="18" width="60" height="12" fill="#d97706" class="gauge-zone gauge-zone-profitable"/>
-                    <rect x="120" y="18" width="60" height="12" rx="5" fill="#16a34a" class="gauge-zone gauge-zone-strong"/>
-                    <line x1="60" y1="14" x2="60" y2="34" class="break-even-divider"/>
-                    <line [attr.x1]="getProfitFactorX()" y1="13" [attr.x2]="getProfitFactorX()" y2="35" [attr.stroke]="getProfitFactorMarkerColor()" class="pf-marker-line"/>
-                    <text x="30" y="47" text-anchor="middle" class="zone-label zone-label-losing">LOSING</text>
-                    <text x="90" y="47" text-anchor="middle" class="zone-label zone-label-profitable">PROFITABLE</text>
-                    <text x="150" y="47" text-anchor="middle" class="zone-label zone-label-strong">STRONG</text>
-                    <text x="0" y="66" text-anchor="start" class="chart-label">0.0</text>
-                    <text x="60" y="66" text-anchor="middle" class="chart-label">1.0</text>
-                    <text x="120" y="66" text-anchor="middle" class="chart-label">2.0</text>
-                    <text x="180" y="66" text-anchor="end" class="chart-label">3.0+</text>
-                  </svg>
+                  <app-profit-factor-gauge
+                    [profitFactor]="getProfitFactorNumeric()"
+                    [grossProfit]="calculateGrossProfit()"
+                    [grossLoss]="calculateGrossLoss()">
+                  </app-profit-factor-gauge>
                 </div>
+                <div class="profit-factor-basis">Gross Win / Gross Loss</div>
               </div>
             </div>
           </div>

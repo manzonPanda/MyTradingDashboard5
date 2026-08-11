@@ -1,0 +1,3 @@
+<div class="profit-factor-gauge" role="img" [attr.aria-label]="'Profit Factor ' + profitFactor.toFixed(2) + ', ' + (profitFactor < 1 ? 'losing' : profitFactor === 1 ? 'break-even' : profitFactor < 2 ? 'profitable' : 'strong')">
+  <div #gaugeElement class="gauge-canvas"></div>
+</div>

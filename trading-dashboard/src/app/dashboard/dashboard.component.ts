@@ -26,6 +26,7 @@ import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.compone
 import { LiveRRTrackerComponent, LiveTradeSoundSettings as LiveTradeSoundSettingsModel } from '../live-rr-tracker/live-rr-tracker.component';
 import { PropFirmEquityChartComponent, AccountEquityPoint, PropFirmChartConfig } from '../prop-firm-equity-chart/prop-firm-equity-chart.component';
 import { WinRateGaugeComponent, WinRateGaugeStats } from '../win-rate-gauge/win-rate-gauge.component';
+import { ProfitFactorGaugeComponent } from '../profit-factor-gauge/profit-factor-gauge.component';
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -151,6 +152,7 @@ interface NotionPerformanceData {
     LiveRRTrackerComponent,
     PropFirmEquityChartComponent,
     WinRateGaugeComponent,
+    ProfitFactorGaugeComponent,
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
@@ -3324,30 +3326,33 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return (avgLoss / accountSize) * 100;
   }
 
-  calculateProfitFactor(): number {
-    if (!this.tableData || this.tableData.length === 0) {
-      if (this.tableData && this.tableData.length === 0) {
-       
-      }
-      return 0;
-    }
-
-    const grossProfit = this.tableData
+  calculateGrossProfit(): number {
+    return this.getClosedProfitFactorTrades()
       .filter(trade => (parseFloat(trade.netProfit) || 0) > 0)
       .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0);
+  }
 
-    const grossLoss = Math.abs(this.tableData
+  calculateGrossLoss(): number {
+    return Math.abs(this.getClosedProfitFactorTrades()
       .filter(trade => (parseFloat(trade.netProfit) || 0) < 0)
       .reduce((total, trade) => total + (parseFloat(trade.netProfit) || 0), 0));
+  }
 
-    if (grossLoss === 0) {
-  
-      return grossProfit > 0 ? 999 : 0;
-    }
+  calculateProfitFactor(): number {
+    const grossProfit = this.calculateGrossProfit();
+    const grossLoss = this.calculateGrossLoss();
 
-    const result = parseFloat((grossProfit / grossLoss).toFixed(2));
-   
-    return result;
+    if (grossLoss === 0) return grossProfit > 0 ? 999 : 0;
+    return parseFloat((grossProfit / grossLoss).toFixed(2));
+  }
+
+  private getClosedProfitFactorTrades(): Table[] {
+    if (!this.tableData) return [];
+    return this.tableData.filter(trade => {
+      const status = String(trade.mt5status || '').toLowerCase();
+      return status !== 'open' &&
+        !((trade.closeDate && trade.closeDate === '-') || this.mt5OpenPositionIds?.has(String(trade.position)));
+    });
   }
 
   calculateBestProfit(): number {
@@ -3847,26 +3852,12 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return pf;
   }
 
-  getProfitFactorX(): number {
-    const clamped = Math.max(0, Math.min(this.getProfitFactorNumeric(), 3));
-    return clamped * 60;
-  }
-
   getProfitFactorStatus(): 'LOSING' | 'BREAK-EVEN' | 'PROFITABLE' | 'STRONG' {
     const pf = this.getProfitFactorNumeric();
     if (pf < 1) return 'LOSING';
     if (pf === 1) return 'BREAK-EVEN';
     if (pf < 2) return 'PROFITABLE';
     return 'STRONG';
-  }
-
-  getProfitFactorMarkerColor(): string {
-    const pf = this.getProfitFactorNumeric();
-    if (pf >= 2) return '#166534';
-    if (pf > 1) return '#15803d';
-    if (pf === 1) return '#64748b';
-    if (pf > 0) return '#b91c1c';
-    return '#64748b';
   }
 
   // Trading Psychology Indicators
