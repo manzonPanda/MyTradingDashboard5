@@ -62,7 +62,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const axisTickLength = Math.max(6, Math.round(10 * scale));
     const splitLineLength = Math.max(9, Math.round(14 * scale));
     const axisLabelFontSize = Math.max(9, Math.round(20 * scale));
-    const titleFontSize = Math.max(10, Math.round(30 * scale));
+    const titleFontSize = Math.max(10, Math.round(22 * scale));
     const detailFontSize = Math.max(18, Math.round(30 * scale));
 
     this.chart.setOption({
@@ -122,7 +122,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         title: {
           offsetCenter: [0, '-7%'],
           fontSize: titleFontSize,
-          lineHeight: Math.round(30 * scale),
+          lineHeight: Math.round(24 * scale),
           fontWeight: 600,
           color: 'auto',
         },
