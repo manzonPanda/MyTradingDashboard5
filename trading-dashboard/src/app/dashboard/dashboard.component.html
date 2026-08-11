@@ -771,7 +771,7 @@
         <div data-aura-target class="metric-card profitability-winrate-card">
           <div class="metric-header combined-metric-header">
             <div class="combined-heading">
-              <h3 class="metric-title gradient-text">Profit Factor</h3>
+              <h3 class="metric-title gradient-text">Grade Rating</h3>
             </div>
             <mat-icon class="metric-icon">trending_up</mat-icon>
           </div>
@@ -782,24 +782,14 @@
           <div *ngIf="!isLoadingMetrics" class="combined-content">
             <div class="combined-top-row">
               <div class="profit-factor-summary">
-                <div class="profit-factor-kpi-row">
-                  <div class="metric-value profit-factor-value" [class.positive]="getProfitFactorNumeric() > 1" [class.negative]="getProfitFactorNumeric() < 1">{{ getProfitFactorNumeric() | number:'1.2-2' }}</div>
-                  <div class="profit-factor-status"
-                    [class.status-losing]="getProfitFactorStatus() === 'LOSING'"
-                    [class.status-break-even]="getProfitFactorStatus() === 'BREAK-EVEN'"
-                    [class.status-profitable]="getProfitFactorStatus() === 'PROFITABLE'"
-                    [class.status-strong]="getProfitFactorStatus() === 'STRONG'">
-                    {{ getProfitFactorStatus() }}
-                  </div>
-                </div>
                 <div class="profit-factor-chart">
                   <app-profit-factor-gauge
                     [profitFactor]="getProfitFactorNumeric()"
+                    [gradeRating]="getProfitFactorGradeRating()"
                     [grossProfit]="calculateGrossProfit()"
                     [grossLoss]="calculateGrossLoss()">
                   </app-profit-factor-gauge>
                 </div>
-                <div class="profit-factor-basis">Gross Win / Gross Loss</div>
               </div>
             </div>
           </div>

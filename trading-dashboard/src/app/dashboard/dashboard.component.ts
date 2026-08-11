@@ -3852,12 +3852,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return pf;
   }
 
-  getProfitFactorStatus(): 'LOSING' | 'BREAK-EVEN' | 'PROFITABLE' | 'STRONG' {
-    const pf = this.getProfitFactorNumeric();
-    if (pf < 1) return 'LOSING';
-    if (pf === 1) return 'BREAK-EVEN';
-    if (pf < 2) return 'PROFITABLE';
-    return 'STRONG';
+  getProfitFactorGradeRating(): number {
+    return Math.max(0, Math.min(this.getProfitFactorNumeric() / 3, 1));
   }
 
   // Trading Psychology Indicators

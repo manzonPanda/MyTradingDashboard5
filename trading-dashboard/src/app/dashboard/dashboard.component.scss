@@ -3324,61 +3324,11 @@ table.simple-table {
     }
 
     .profit-factor-summary {
-      display: flex;
-      flex-direction: column;
-      gap: 0.1rem;
       width: 100%;
 
-      .profit-factor-kpi-row {
-        display: flex;
-        align-items: baseline;
-        gap: 0.65rem;
-        min-height: 2rem;
-      }
-
-      .profit-factor-value {
-        font-size: 1.75rem;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-        line-height: 0.95;
-        margin: 0;
-      }
-
-      .profit-factor-status {
-        font-size: 0.68rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        line-height: 1;
-      }
-
-      .status-losing {
-        color: #b91c1c;
-      }
-
-      .status-break-even {
-        color: #64748b;
-      }
-
-      .status-profitable {
-        color: #15803d;
-      }
-
-      .status-strong {
-        color: #166534;
-      }
-
       .profit-factor-chart {
-        flex: 0 0 auto;
         margin: 0.1rem 0.5rem 0;
         width: auto;
-      }
-
-      .profit-factor-basis {
-        color: var(--tf-text-muted);
-        font-size: 0.58rem;
-        font-weight: 600;
-        line-height: 1;
-        margin: 0.1rem 0 0;
       }
     }
 
