@@ -1,0 +1,70 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.win-rate-gauge {
+  position: relative;
+  width: 100%;
+  height: 92px;
+  overflow: hidden;
+}
+
+.gauge-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.gauge-percentage {
+  position: absolute;
+  top: 57px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--tf-text-primary);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.gauge-results {
+  position: absolute;
+  right: 18%;
+  bottom: 0;
+  left: 18%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.gauge-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 44px;
+}
+
+.gauge-result strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gauge-result small {
+  color: var(--tf-text-muted);
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.gauge-result-win strong {
+  color: #16a34a;
+}
+
+.gauge-result-loss strong {
+  color: #ef4444;
+}
