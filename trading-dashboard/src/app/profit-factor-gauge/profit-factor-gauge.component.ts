@@ -51,19 +51,19 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const gaugeHeight = this.gaugeElement.nativeElement.clientHeight;
     if (!gaugeWidth || !gaugeHeight) return;
 
-    const gaugeRadius = Math.min(gaugeWidth * 0.46, gaugeHeight * 0.78);
+    const gaugeRadius = Math.min(gaugeWidth * 0.48, gaugeHeight * 0.78);
     const gaugeCenterX = gaugeWidth / 2;
-    const gaugeCenterY = gaugeHeight * 0.82;
-    const scale = Math.max(0.72, Math.min(1.2, gaugeRadius / 120));
-    const axisLineWidth = Math.max(12, Math.round(20 * scale));
+    const gaugeCenterY = gaugeHeight * 0.9;
+    const scale = Math.max(0.72, Math.min(1.2, gaugeWidth / 600));
+    const axisLineWidth = Math.max(12, Math.round(22 * scale));
     const pointerWidth = Math.max(24, Math.round(40 * scale));
     const axisTickWidth = Math.max(1, Math.round(2 * scale));
-    const splitLineWidth = Math.max(2, Math.round(4 * scale));
-    const axisTickLength = Math.max(6, Math.round(8 * scale));
-    const splitLineLength = Math.max(9, Math.round(12 * scale));
-    const axisLabelFontSize = Math.max(8, Math.round(10 * scale));
-    const titleFontSize = Math.max(9, Math.round(11 * scale));
-    const detailFontSize = Math.max(18, Math.round(24 * scale));
+    const splitLineWidth = Math.max(2, Math.round(5 * scale));
+    const axisTickLength = Math.max(6, Math.round(10 * scale));
+    const splitLineLength = Math.max(9, Math.round(14 * scale));
+    const axisLabelFontSize = Math.max(9, Math.round(20 * scale));
+    const titleFontSize = Math.max(10, Math.round(30 * scale));
+    const detailFontSize = Math.max(18, Math.round(30 * scale));
 
     this.chart.setOption({
       animationDuration: 600,
@@ -91,26 +91,26 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         },
         pointer: {
           icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
-          length: '15%',
+          length: '17%',
           width: pointerWidth,
-          offsetCenter: [0, '-70%'],
+          offsetCenter: [0, '-68%'],
           itemStyle: { color: 'auto' },
         },
         axisTick: {
-          distance: -20,
+          distance: -18,
           splitNumber: 4,
           length: axisTickLength,
           lineStyle: { color: 'auto', width: axisTickWidth },
         },
         splitLine: {
-          distance: -22,
+          distance: -20,
           length: splitLineLength,
           lineStyle: { color: 'auto', width: splitLineWidth },
         },
         axisLabel: {
           color: '#64748B',
           fontSize: axisLabelFontSize,
-          distance: 12,
+          distance: 18,
           formatter: (value: number) => {
             if (value === 0) return '0.0';
             if (value === 1) return '1.0';
@@ -120,15 +120,15 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           },
         },
         title: {
-          offsetCenter: [0, '-2%'],
+          offsetCenter: [0, '-7%'],
           fontSize: titleFontSize,
-          lineHeight: Math.round(14 * scale),
+          lineHeight: Math.round(30 * scale),
           fontWeight: 600,
           color: 'auto',
         },
         detail: {
           fontSize: detailFontSize,
-          lineHeight: Math.round(28 * scale),
+          lineHeight: Math.round(36 * scale),
           fontWeight: 700,
           offsetCenter: [0, '-30%'],
           valueAnimation: true,
