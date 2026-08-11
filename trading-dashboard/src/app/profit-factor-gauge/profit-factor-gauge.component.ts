@@ -91,7 +91,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         },
         pointer: {
           icon: 'path://M12.8,0.7l8,40.1H4.8L12.8,0.7z',
-          length: '12%',
+          length: '14%',
           width: pointerWidth,
           offsetCenter: [0, '-50%'],
           itemStyle: { color: 'auto' },
