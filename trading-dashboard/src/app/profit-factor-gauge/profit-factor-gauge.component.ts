@@ -93,7 +93,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
           length: '17%',
           width: pointerWidth,
-          offsetCenter: [0, '-68%'],
+          offsetCenter: [0, '-50%'],
           itemStyle: { color: 'auto' },
         },
         axisTick: {
