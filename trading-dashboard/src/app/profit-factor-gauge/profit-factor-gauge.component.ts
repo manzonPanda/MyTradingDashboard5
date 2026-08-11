@@ -55,7 +55,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const gaugeCenterX = gaugeWidth / 2;
     const gaugeCenterY = gaugeHeight * 0.9;
     const scale = Math.max(0.72, Math.min(1.2, gaugeWidth / 600));
-    const axisLineWidth = Math.max(12, Math.round(22 * scale));
+    const axisLineWidth = Math.max(10, Math.round(16 * scale));
     const pointerWidth = Math.max(24, Math.round(40 * scale));
     const axisTickWidth = Math.max(1, Math.round(2 * scale));
     const splitLineWidth = Math.max(2, Math.round(5 * scale));
