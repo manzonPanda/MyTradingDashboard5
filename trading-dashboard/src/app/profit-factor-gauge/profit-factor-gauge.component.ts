@@ -48,11 +48,21 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const displayedValue = Math.max(0, Math.min(3.5, this.value));
     const status = this.getStatus(displayedValue);
     const gaugeWidth = this.gaugeElement.nativeElement.clientWidth;
-    const scale = Math.max(0.72, Math.min(1, gaugeWidth / 260));
-    const pointerWidth = Math.round(40 * scale);
-    const axisLabelFontSize = Math.max(8, Math.round(10 * scale));
-    const titleFontSize = Math.max(9, Math.round(11 * scale));
-    const detailFontSize = Math.max(18, Math.round(24 * scale));
+    const gaugeHeight = this.gaugeElement.nativeElement.clientHeight;
+    if (!gaugeWidth || !gaugeHeight) return;
+
+    const gaugeRadius = Math.min(gaugeWidth * 0.48, gaugeHeight * 0.78);
+    const gaugeCenterX = gaugeWidth / 2;
+    const gaugeCenterY = gaugeHeight * 0.9;
+    const scale = Math.max(0.72, Math.min(1.2, gaugeWidth / 600));
+    const axisLineWidth = Math.max(10, Math.round(16 * scale));
+    const axisTickWidth = Math.max(1, Math.round(2 * scale));
+    const splitLineWidth = Math.max(2, Math.round(5 * scale));
+    const axisTickLength = Math.max(6, Math.round(10 * scale));
+    const splitLineLength = Math.max(9, Math.round(14 * scale));
+    const axisLabelFontSize = Math.max(9, Math.round(20 * scale));
+    const titleFontSize = Math.max(10, Math.round(22 * scale));
+    const detailFontSize = Math.max(18, Math.round(30 * scale));
 
     this.chart.setOption({
       animationDuration: 600,
@@ -61,14 +71,14 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         type: 'gauge',
         startAngle: 180,
         endAngle: 0,
-        center: ['50%', '62%'],
-        radius: '90%',
+        center: [gaugeCenterX, gaugeCenterY],
+        radius: gaugeRadius,
         min: 0,
         max: 3.5,
         splitNumber: 7,
         axisLine: {
           lineStyle: {
-            width: 20,
+            width: axisLineWidth,
             color: [
               [1 / 3.5, '#EF4444'],
               [1.3 / 3.5, '#F59E0B'],
@@ -79,27 +89,27 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           },
         },
         pointer: {
-          icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
-          length: '15%',
-          width: pointerWidth,
-          offsetCenter: [0, '-70%'],
+          icon: 'path://M12.8,0.7l8,40.1H4.8L12.8,0.7z',
+          length: '25%',
+          width: 15,
+          offsetCenter: [0, '-50%'],
           itemStyle: { color: 'auto' },
         },
         axisTick: {
-          distance: -20,
+          distance: 0,
           splitNumber: 4,
-          length: 8,
-          lineStyle: { color: 'auto', width: 2 },
+          length: axisTickLength,
+          lineStyle: { color: 'auto', width: axisTickWidth },
         },
         splitLine: {
-          distance: -22,
-          length: 12,
-          lineStyle: { color: 'auto', width: 4 },
+          distance: 0,
+          length: splitLineLength,
+          lineStyle: { color: 'auto', width: splitLineWidth },
         },
         axisLabel: {
           color: '#64748B',
           fontSize: axisLabelFontSize,
-          distance: 12,
+          distance: 18,
           formatter: (value: number) => {
             if (value === 0) return '0.0';
             if (value === 1) return '1.0';
@@ -109,15 +119,15 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           },
         },
         title: {
-          offsetCenter: [0, '-2%'],
+          offsetCenter: [0, '-7%'],
           fontSize: titleFontSize,
-          lineHeight: Math.round(14 * scale),
+          lineHeight: Math.round(24 * scale),
           fontWeight: 600,
           color: 'auto',
         },
         detail: {
           fontSize: detailFontSize,
-          lineHeight: Math.round(28 * scale),
+          lineHeight: Math.round(36 * scale),
           fontWeight: 700,
           offsetCenter: [0, '-30%'],
           valueAnimation: true,

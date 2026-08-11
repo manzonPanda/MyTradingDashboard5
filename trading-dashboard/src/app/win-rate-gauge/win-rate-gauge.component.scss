@@ -6,7 +6,8 @@
 .win-rate-gauge {
   position: relative;
   width: 100%;
-  height: 92px;
+  aspect-ratio: 1.7;
+  min-height: 120px;
   overflow: hidden;
 }
 
@@ -19,7 +20,7 @@
 
 .gauge-percentage {
   position: absolute;
-  top: 57px;
+  top: 57%;
   left: 50%;
   transform: translateX(-50%);
   color: var(--tf-text-primary);
@@ -31,9 +32,9 @@
 
 .gauge-results {
   position: absolute;
-  right: 18%;
+  right: 10%;
   bottom: 0;
-  left: 18%;
+  left: 10%;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
