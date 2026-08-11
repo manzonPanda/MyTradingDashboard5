@@ -4,13 +4,13 @@
 }
 
 .profit-factor-gauge-shell {
-  height: clamp(130px, 30vw, 150px);
+  height: clamp(160px, 38vw, 210px);
   position: relative;
   width: 100%;
 }
 
 .profit-factor-gauge-canvas {
   height: 100%;
-  min-height: 130px;
+  min-height: 160px;
   width: 100%;
 }
