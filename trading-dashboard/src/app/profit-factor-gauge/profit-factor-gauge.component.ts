@@ -97,13 +97,13 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
           itemStyle: { color: 'auto' },
         },
         axisTick: {
-          distance: -18,
+          distance: 0,
           splitNumber: 4,
           length: axisTickLength,
           lineStyle: { color: 'auto', width: axisTickWidth },
         },
         splitLine: {
-          distance: -20,
+          distance: 0,
           length: splitLineLength,
           lineStyle: { color: 'auto', width: splitLineWidth },
         },
