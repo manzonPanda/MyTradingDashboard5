@@ -1,0 +1,14 @@
+<div class="win-rate-gauge" role="img" [attr.aria-label]="stats.winRate.toFixed(1) + '% win rate, ' + stats.wins + ' wins and ' + stats.losses + ' losses'">
+  <div #gaugeElement class="gauge-canvas"></div>
+  <strong class="gauge-percentage">{{ stats.winRate | number:'1.1-1' }}%</strong>
+  <div class="gauge-results">
+    <span class="gauge-result gauge-result-win">
+      <strong>{{ stats.wins }}</strong>
+      <small>WINS</small>
+    </span>
+    <span class="gauge-result gauge-result-loss">
+      <strong>{{ stats.losses }}</strong>
+      <small>LOSSES</small>
+    </span>
+  </div>
+</div>

@@ -25,6 +25,7 @@ import { TradingCalendarComponent } from '../trading-calendar/trading-calendar.c
 import { DreamTimelineComponent } from '../dream-timeline/dream-timeline.component';
 import { LiveRRTrackerComponent, LiveTradeSoundSettings as LiveTradeSoundSettingsModel } from '../live-rr-tracker/live-rr-tracker.component';
 import { PropFirmEquityChartComponent, AccountEquityPoint, PropFirmChartConfig } from '../prop-firm-equity-chart/prop-firm-equity-chart.component';
+import { WinRateGaugeComponent, WinRateGaugeStats } from '../win-rate-gauge/win-rate-gauge.component';
 import { io, Socket } from "socket.io-client";
 import { Chart, ChartConfiguration, ChartOptions, ChartType, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -149,6 +150,7 @@ interface NotionPerformanceData {
     DreamTimelineComponent,
     LiveRRTrackerComponent,
     PropFirmEquityChartComponent,
+    WinRateGaugeComponent,
     MatSlideToggleModule,
     MatCardModule,
     CommonModule,
@@ -488,6 +490,7 @@ export class DashboardComponent implements AfterViewInit {
   rawData: any[] = [];
   // Active Account Table
   tableData: Table[] = []; // Initialize as empty array
+  winRateGaugeStats: WinRateGaugeStats = { wins: 0, losses: 0, winRate: 0 };
   mt5ImportedTrades: Table[] = [];
   mt5SyncAccountId = '';
   accounts: Account[] = [];
@@ -1551,36 +1554,6 @@ mt5AccountInfo: AccountSettings = {
     return Math.abs(value);
   }
 
-  // Trade statistics calculation methods
-  calculateWinRate(): number {
-    const totalTrades = this.getTotalTrades();
-    if (totalTrades === 0) return 0;
-
-    const winningTrades = this.getWinCount();
-    return Math.round((winningTrades / totalTrades) * 100);
-  }
-
-  getWinCount(): number {
-    return this.tableData.filter(trade => {
-      const netProfit = this.getSafeNumber(trade.netProfit);
-      return netProfit > 0;
-    }).length;
-  }
-
-  getLossCount(): number {
-    return this.tableData.filter(trade => {
-      const netProfit = this.getSafeNumber(trade.netProfit);
-      return netProfit < 0;
-    }).length;
-  }
-
-  getBreakevenCount(): number {
-    return this.tableData.filter(trade => {
-      const netProfit = this.getSafeNumber(trade.netProfit);
-      return netProfit === 0;
-    }).length;
-  }
-
   getTotalTrades(): number {
     return this.tableData.length;
   }
@@ -1591,42 +1564,19 @@ mt5AccountInfo: AccountSettings = {
     return isNaN(num) ? 0 : num;
   }
 
-  // Count-based gauge chart methods for Trade Win %
-  getWinGaugeDash(): string {
-    const circumference = Math.PI * 60; // Half circle circumference (radius 60)
-    const totalTrades = this.getTotalTrades();
-    if (totalTrades === 0) return '0 0';
+  private updateWinRateGaugeStats(): void {
+    const closedTrades = this.tableData.filter(trade =>
+      !((trade.closeDate && trade.closeDate === '-') || this.mt5OpenPositionIds?.has(String(trade.position)))
+    );
+    const wins = closedTrades.filter(trade => this.getSafeNumber(trade.netProfit) > 0).length;
+    const losses = closedTrades.filter(trade => this.getSafeNumber(trade.netProfit) < 0).length;
+    const closedDecisiveTrades = wins + losses;
 
-    const winCount = this.getWinCount();
-    const winPortion = (winCount / totalTrades) * circumference;
-    const gap = circumference - winPortion;
-    return `${winPortion} ${gap}`;
-  }
-
-  getWinGaugeOffset(): number {
-    return 0; // Start from the beginning
-  }
-
-  getLossGaugeDash(): string {
-    const circumference = Math.PI * 60;
-    const totalTrades = this.getTotalTrades();
-    if (totalTrades === 0) return '0 0';
-
-    const lossCount = this.getLossCount();
-    const lossPortion = (lossCount / totalTrades) * circumference;
-    const gap = circumference - lossPortion;
-    return `${lossPortion} ${gap}`;
-  }
-
-  getLossGaugeOffset(): number {
-    const circumference = Math.PI * 60;
-    const totalTrades = this.getTotalTrades();
-    if (totalTrades === 0) return 0;
-
-    const winCount = this.getWinCount();
-    const breakevenCount = this.getBreakevenCount();
-    const offsetPortion = (winCount + breakevenCount) / totalTrades;
-    return -(circumference * offsetPortion);
+    this.winRateGaugeStats = {
+      wins,
+      losses,
+      winRate: closedDecisiveTrades ? (wins / closedDecisiveTrades) * 100 : 0,
+    };
   }
 
   openRoiEntryModal(): void {
@@ -2574,6 +2524,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       mt5status:"closed",
       mfe:"0" // Initialize MFE to 0 for imported trades
     } as Table)); //The 'as Table' makes sure it matches the interface
+    this.updateWinRateGaugeStats();
   }
 
   onFileSelected(event: any): void {
@@ -4702,6 +4653,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   updateTableDataOnly(): void {
     this.tableData = [...this.mt5LiveTrades];
+    this.updateWinRateGaugeStats();
 
     this.updateDailyLimitMetrics();
     this.generateTradingChartData();
@@ -4716,6 +4668,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
     const previousLength = this.tableData ? this.tableData.length : 0;
     this.tableData = [...this.mt5LiveTrades];
+    this.updateWinRateGaugeStats();
 
     // Recalculate Daily Limit metrics
     this.updateDailyLimitMetrics();
