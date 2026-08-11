@@ -61,7 +61,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         type: 'gauge',
         startAngle: 180,
         endAngle: 0,
-        center: ['50%', '65%'],
+        center: ['50%', '72%'],
         radius: '90%',
         min: 0,
         max: 3.5,
