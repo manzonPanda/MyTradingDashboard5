@@ -611,79 +611,55 @@
 
 // Profit Factor Chart Styling
 .profit-factor-chart {
-  margin: 0.5rem 0;
-  width: 100%;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  margin: 0.65rem 0.875rem 0;
+  min-width: 0;
+  width: auto;
 
   .profit-factor-svg {
     width: 100%;
-    height: 50px;
-    cursor: pointer;
+    height: 82px;
+    display: block;
+    overflow: visible;
 
     .chart-label {
       fill: #64748b;
-      font-size: 10px;
-      font-weight: 500;
-    }
-
-    .break-even-label {
-      fill: #64748b;
-      font-weight: 600;
-      opacity: 0.8;
       font-size: 9px;
+      font-weight: 600;
     }
 
-    .level-segment {
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-
-      &.poor {
-        stroke: rgba(239, 68, 68, 0.2);
-        stroke-width: 0.5;
-      }
-
-      &.concerning {
-        stroke: rgba(245, 158, 11, 0.2);
-        stroke-width: 0.5;
-      }
-
-      &.good {
-        stroke: rgba(34, 197, 94, 0.2);
-        stroke-width: 0.5;
-      }
-
-      &.excellent {
-        stroke: rgba(16, 185, 129, 0.2);
-        stroke-width: 0.5;
-      }
-
-      &.outstanding {
-        stroke: rgba(5, 150, 105, 0.2);
-        stroke-width: 0.5;
-      }
-
-      &.elite {
-        stroke: rgba(6, 95, 70, 0.2);
-        stroke-width: 0.5;
-      }
+    .gauge-zone {
+      stroke: none;
     }
 
-    rect {
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    .break-even-divider {
+      stroke: #334155;
+      stroke-width: 2;
+      opacity: 0.9;
     }
 
-    line {
-      opacity: 0.7;
+    .pf-marker-line {
+      stroke-width: 1.25;
+      opacity: 0.9;
+      stroke-linecap: round;
     }
 
-    .pf-marker-line { opacity: 1; stroke-linecap: round; }
-    .pf-marker-dot { filter: drop-shadow(0 1px 1.5px rgba(0,0,0,0.15)); }
+    .zone-label {
+      fill: #64748b;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
 
-    &:hover .level-segment {
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-      transform: translateY(-0.5px);
+    .zone-label-profitable {
+      fill: #15803d;
+    }
+
+    .zone-label-strong {
+      fill: #166534;
     }
   }
-
 }
 
 // Recent Trades PnL tiles styles
@@ -3395,13 +3371,51 @@ table.simple-table {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
+      width: 100%;
 
-      .metric-value {
-        margin-bottom: 0.05rem;
+      .profit-factor-kpi-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
       }
 
-      .metric-subtitle {
-        font-size: 0.6rem;
+      .profit-factor-value {
+        font-size: 2.15rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+        margin: 0;
+      }
+
+      .profit-factor-status {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        line-height: 1;
+      }
+
+      .status-losing {
+        color: #b91c1c;
+      }
+
+      .status-break-even {
+        color: #64748b;
+      }
+
+      .status-profitable {
+        color: #15803d;
+      }
+
+      .status-strong {
+        color: #166534;
+      }
+
+      .profit-factor-basis {
+        color: var(--tf-text-muted);
+        font-size: 0.62rem;
+        font-weight: 600;
+        line-height: 1;
+        margin-top: 0.05rem;
       }
     }
 

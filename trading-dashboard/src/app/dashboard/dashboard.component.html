@@ -782,76 +782,30 @@
           <div *ngIf="!isLoadingMetrics" class="combined-content">
             <div class="combined-top-row">
               <div class="profit-factor-summary">
-                <div class="metric-value" [class.positive]="calculateProfitFactor() > 1" [class.negative]="calculateProfitFactor() < 1">{{ calculateProfitFactor() | number:'1.2-2' }}</div>
-                <div class="metric-subtitle">Gross win / Gross loss</div>
+                <div class="profit-factor-kpi-row">
+                  <div class="metric-value profit-factor-value" [class.positive]="getProfitFactorNumeric() > 1" [class.negative]="getProfitFactorNumeric() < 1">{{ getProfitFactorNumeric() | number:'1.2-2' }}</div>
+                  <div class="profit-factor-status"
+                    [class.status-losing]="getProfitFactorStatus() === 'LOSING'"
+                    [class.status-break-even]="getProfitFactorStatus() === 'BREAK-EVEN'"
+                    [class.status-profitable]="getProfitFactorStatus() === 'PROFITABLE'"
+                    [class.status-strong]="getProfitFactorStatus() === 'STRONG'">
+                    {{ getProfitFactorStatus() }}
+                  </div>
+                </div>
                 <div class="profit-factor-chart">
-                  <svg viewBox="0 0 180 40" class="profit-factor-svg">
-                    <rect x="0" y="15" width="180" height="10" rx="5" fill="#e2e8f0" stroke="none"/>
-                    <rect
-                      x="0"
-                      y="15"
-                      width="30"
-                      height="10"
-                      rx="5"
-                      [attr.fill]="calculateProfitFactor() >= 0.5 ? '#ef4444' : (calculateProfitFactor() > 0 ? '#ef4444' : '#e2e8f0')"
-                      [attr.opacity]="calculateProfitFactor() >= 0.5 ? '0.7' : (calculateProfitFactor() > 0 ? '1' : '0.3')"
-                      stroke="none"
-                      class="level-segment poor"/>
-                    <rect
-                      x="30"
-                      y="15"
-                      width="30"
-                      height="10"
-                      [attr.fill]="calculateProfitFactor() >= 1.0 ? '#f59e0b' : (calculateProfitFactor() >= 0.5 ? '#f59e0b' : '#e2e8f0')"
-                      [attr.opacity]="calculateProfitFactor() >= 1.0 ? '0.7' : (calculateProfitFactor() >= 0.5 ? '1' : '0.3')"
-                      stroke="none"
-                      class="level-segment concerning"/>
-                    <rect
-                      x="60"
-                      y="15"
-                      width="30"
-                      height="10"
-                      [attr.fill]="calculateProfitFactor() >= 1.5 ? '#22c55e' : (calculateProfitFactor() >= 1.0 ? '#22c55e' : '#e2e8f0')"
-                      [attr.opacity]="calculateProfitFactor() >= 1.5 ? '0.7' : (calculateProfitFactor() >= 1.0 ? '1' : '0.3')"
-                      stroke="none"
-                      class="level-segment good"/>
-                    <rect
-                      x="90"
-                      y="15"
-                      width="30"
-                      height="10"
-                      [attr.fill]="calculateProfitFactor() >= 2.0 ? '#10b981' : (calculateProfitFactor() >= 1.5 ? '#10b981' : '#e2e8f0')"
-                      [attr.opacity]="calculateProfitFactor() >= 2.0 ? '0.7' : (calculateProfitFactor() >= 1.5 ? '1' : '0.3')"
-                      stroke="none"
-                      class="level-segment excellent"/>
-                    <rect
-                      x="120"
-                      y="15"
-                      width="30"
-                      height="10"
-                      [attr.fill]="calculateProfitFactor() >= 2.5 ? '#059669' : (calculateProfitFactor() >= 2.0 ? '#059669' : '#e2e8f0')"
-                      [attr.opacity]="calculateProfitFactor() >= 2.5 ? '0.7' : (calculateProfitFactor() >= 2.0 ? '1' : '0.3')"
-                      stroke="none"
-                      class="level-segment outstanding"/>
-                    <rect
-                      x="150"
-                      y="15"
-                      width="30"
-                      height="10"
-                      rx="5"
-                      [attr.fill]="calculateProfitFactor() >= 2.5 ? '#065f46' : '#e2e8f0'"
-                      [attr.opacity]="calculateProfitFactor() >= 2.5 ? '1' : '0.3'"
-                      stroke="none"
-                      class="level-segment elite"/>
-                    <line x1="60" y1="12" x2="60" y2="30" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2"/>
-                    <text [attr.x]="getProfitFactorLabelX()" y="12" [attr.text-anchor]="getProfitFactorTextAnchor()" class="break-even-label" font-size="7" fill="#64748b">{{ getProfitFactorLabel() }}</text>
-                    <!-- Dynamic PF marker -->
-                    <line [attr.x1]="getProfitFactorX()" y1="10" [attr.x2]="getProfitFactorX()" y2="32" [attr.stroke]="getProfitFactorMarkerColor()" stroke-width="2" class="pf-marker-line"/>
-                    <circle [attr.cx]="getProfitFactorX()" cy="20" r="3" [attr.fill]="getProfitFactorMarkerColor()" class="pf-marker-dot"/>
-                    <text x="0" y="35" text-anchor="start" class="chart-label" font-size="8">0.0</text>
-                    <text x="60" y="35" text-anchor="middle" class="chart-label" font-size="8">1.0</text>
-                    <text x="120" y="35" text-anchor="middle" class="chart-label" font-size="8">2.0</text>
-                    <text x="180" y="35" text-anchor="end" class="chart-label" font-size="8">3.0+</text>
+                  <svg viewBox="0 0 180 76" class="profit-factor-svg" role="img" aria-label="Profit Factor position from 0.0 to 3.0 plus">
+                    <rect x="0" y="18" width="60" height="12" rx="5" fill="#dc2626" class="gauge-zone gauge-zone-losing"/>
+                    <rect x="60" y="18" width="60" height="12" fill="#d97706" class="gauge-zone gauge-zone-profitable"/>
+                    <rect x="120" y="18" width="60" height="12" rx="5" fill="#16a34a" class="gauge-zone gauge-zone-strong"/>
+                    <line x1="60" y1="14" x2="60" y2="34" class="break-even-divider"/>
+                    <line [attr.x1]="getProfitFactorX()" y1="13" [attr.x2]="getProfitFactorX()" y2="35" [attr.stroke]="getProfitFactorMarkerColor()" class="pf-marker-line"/>
+                    <text x="30" y="47" text-anchor="middle" class="zone-label zone-label-losing">LOSING</text>
+                    <text x="90" y="47" text-anchor="middle" class="zone-label zone-label-profitable">PROFITABLE</text>
+                    <text x="150" y="47" text-anchor="middle" class="zone-label zone-label-strong">STRONG</text>
+                    <text x="0" y="66" text-anchor="start" class="chart-label">0.0</text>
+                    <text x="60" y="66" text-anchor="middle" class="chart-label">1.0</text>
+                    <text x="120" y="66" text-anchor="middle" class="chart-label">2.0</text>
+                    <text x="180" y="66" text-anchor="end" class="chart-label">3.0+</text>
                   </svg>
                 </div>
               </div>
