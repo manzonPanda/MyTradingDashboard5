@@ -48,6 +48,12 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     const displayedValue = Math.max(0, Math.min(3.5, this.value));
     const status = this.getStatus(displayedValue);
     const gaugeWidth = this.gaugeElement.nativeElement.clientWidth;
+    const gaugeHeight = this.gaugeElement.nativeElement.clientHeight;
+    if (!gaugeWidth || !gaugeHeight) return;
+
+    const gaugeRadius = Math.min(gaugeWidth * 0.46, gaugeHeight * 0.78);
+    const gaugeCenterX = gaugeWidth / 2;
+    const gaugeCenterY = gaugeHeight * 0.82;
     const scale = Math.max(0.82, Math.min(1.15, gaugeWidth / 230));
     const pointerWidth = Math.round(40 * scale);
     const axisLabelFontSize = Math.max(8, Math.round(10 * scale));
@@ -61,8 +67,8 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         type: 'gauge',
         startAngle: 180,
         endAngle: 0,
-        center: ['50%', '72%'],
-        radius: '90%',
+        center: [gaugeCenterX, gaugeCenterY],
+        radius: gaugeRadius,
         min: 0,
         max: 3.5,
         splitNumber: 7,
