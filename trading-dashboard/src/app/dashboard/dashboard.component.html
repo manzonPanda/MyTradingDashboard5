@@ -792,9 +792,6 @@
                     {{ getProfitFactorStatus() }}
                   </div>
                 </div>
-                <div *ngIf="getProfitFactorNumeric() !== 1" class="profit-factor-delta" [class.delta-positive]="getProfitFactorNumeric() > 1" [class.delta-negative]="getProfitFactorNumeric() < 1">
-                  {{ getProfitFactorDeltaLabel() }}
-                </div>
                 <div class="profit-factor-chart">
                   <svg viewBox="0 0 180 76" class="profit-factor-svg" role="img" aria-label="Profit Factor position from 0.0 to 3.0 plus">
                     <rect x="0" y="18" width="60" height="12" rx="5" fill="#dc2626" class="gauge-zone gauge-zone-losing"/>

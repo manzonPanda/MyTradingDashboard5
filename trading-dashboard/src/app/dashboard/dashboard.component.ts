@@ -3860,12 +3860,6 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return 'STRONG';
   }
 
-  getProfitFactorDeltaLabel(): string {
-    const delta = this.getProfitFactorNumeric() - 1;
-    const direction = delta > 0 ? 'ABOVE' : 'BELOW';
-    return `${delta > 0 ? '+' : ''}${delta.toFixed(2)} ${direction} BREAK-EVEN`;
-  }
-
   getProfitFactorMarkerColor(): string {
     const pf = this.getProfitFactorNumeric();
     if (pf >= 2) return '#166534';
