@@ -254,11 +254,9 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
   soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
-  private gaugeValueInterval?: ReturnType<typeof setInterval>;
   private tradeGaugeElementsSubscription?: Subscription;
   private readonly gaugeCharts = new Map<HTMLDivElement, echarts.ECharts>();
   private readonly gaugeResizeObservers = new Map<HTMLDivElement, ResizeObserver>();
-  private readonly gaugeValues = new Map<HTMLDivElement, number>();
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
   private previousBodyOverflow = '';
 
@@ -274,18 +272,19 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
       this.gaugePercentDraft = String(savedGaugeMax);
     }
     this.calculateLiveMetrics();
-    this.holdingTimeInterval = setInterval(() => this.cdr.markForCheck(), 1000);
+    this.holdingTimeInterval = setInterval(() => {
+      this.updateTradeGauges();
+      this.cdr.markForCheck();
+    }, 1000);
   }
 
   ngAfterViewInit(): void {
     this.syncTradeGauges();
     this.tradeGaugeElementsSubscription = this.tradeGaugeElements.changes.subscribe(() => this.syncTradeGauges());
-    this.gaugeValueInterval = setInterval(() => this.updateTradeGauges(), 550);
   }
 
   ngOnDestroy(): void {
     if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
-    if (this.gaugeValueInterval) clearInterval(this.gaugeValueInterval);
     this.tradeGaugeElementsSubscription?.unsubscribe();
     this.disposeTradeGauges();
     if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
@@ -326,13 +325,9 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
       if (Number.isFinite(max) && max >= .1 && max <= 100) this.gaugePercentDraft = String(max);
     }
 
-    if (changes['mt5LiveTrades']) {
+    if (changes['mt5LiveTrades'] || changes['tableData'] || changes['accountSize'] || changes['positiveGaugePercentMax']) {
       this.calculateLiveMetrics();
-    }
-
-    // Also recalculate if tableData changes (in case trades are updated there)
-    if (changes['tableData'] || changes['accountSize']) {
-      this.calculateLiveMetrics();
+      this.updateTradeGauges();
     }
   }
 
@@ -535,20 +530,20 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
       if (!gaugeElements.has(element)) {
         this.gaugeResizeObservers.get(element)?.disconnect();
         this.gaugeResizeObservers.delete(element);
-        this.gaugeValues.delete(element);
         chart.dispose();
         this.gaugeCharts.delete(element);
       }
     });
 
-    gaugeElements.forEach(element => {
+    Array.from(gaugeElements).forEach((element, index) => {
       if (this.gaugeCharts.has(element)) return;
 
+      const trade = this.openTrades[index];
+      if (!trade) return;
+
       const chart = echarts.init(element, undefined, { renderer: 'canvas' });
-      const initialValue = 2.31;
       this.gaugeCharts.set(element, chart);
-      this.gaugeValues.set(element, initialValue);
-      this.renderTradeGauge(chart, initialValue);
+      this.renderTradeGauge(chart, trade);
 
       const resizeObserver = new ResizeObserver(() => chart.resize());
       resizeObserver.observe(element);
@@ -557,33 +552,15 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
   }
 
   private updateTradeGauges(): void {
-    this.gaugeCharts.forEach((chart, element) => {
-      const currentValue = this.gaugeValues.get(element) ?? 2.31;
-      const nextValue = Math.max(0, Math.min(3, currentValue + (Math.random() - 0.5)));
-      const value = Number(nextValue.toFixed(2));
-      const color = this.getPowerColor(value);
-      const glow = this.getGlow(value);
-
-      this.gaugeValues.set(element, value);
-      chart.setOption({
-        series: [{
-          data: [this.getGaugeData(value)],
-          progress: {
-            itemStyle: {
-              color,
-              shadowBlur: glow.shadowBlur,
-              shadowColor: glow.shadowColor,
-            },
-          },
-          detail: { color },
-        }],
-      });
+    this.tradeGaugeElements.forEach(({ nativeElement: element }, index) => {
+      const chart = this.gaugeCharts.get(element);
+      const trade = this.openTrades[index];
+      if (chart && trade) this.renderTradeGauge(chart, trade);
     });
   }
 
-  private renderTradeGauge(chart: echarts.ECharts, value: number): void {
-    const color = this.getPowerColor(value);
-    const glow = this.getGlow(value);
+  private renderTradeGauge(chart: echarts.ECharts, trade: Table): void {
+    const state = this.getTradeGaugeState(trade);
 
     chart.setOption({
       series: [{
@@ -601,9 +578,9 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
           roundCap: false,
           clip: false,
           itemStyle: {
-            color,
-            shadowBlur: glow.shadowBlur,
-            shadowColor: glow.shadowColor,
+            color: state.color,
+            shadowBlur: state.glow.shadowBlur,
+            shadowColor: state.glow.shadowColor,
           },
         },
         axisLine: {
@@ -615,7 +592,8 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
         axisLabel: { show: false },
         splitLine: { show: false },
         axisTick: { show: false },
-        data: [this.getGaugeData(value)],
+        clockwise: state.isPositive,
+        data: [this.getGaugeData(state.value)],
         animationDuration: 700,
         animationDurationUpdate: 700,
         animationEasing: 'cubicInOut',
@@ -623,9 +601,9 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
         detail: {
           fontSize: 40,
           fontWeight: 'bold',
-          color,
+          color: state.color,
           valueAnimation: true,
-          formatter: (gaugeValue: number) => `${gaugeValue.toFixed(2)}%`,
+          formatter: () => `${state.percentage.toFixed(2)}%`,
         },
       }],
     });
@@ -637,8 +615,32 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
       detail: {
         valueAnimation: true,
         offsetCenter: ['0%', '0%'],
-        fontSize: 80,
+        fontSize: 40,
       },
+    };
+  }
+
+  private getTradeGaugeState(trade: Table): {
+    value: number;
+    percentage: number;
+    isPositive: boolean;
+    color: string;
+    glow: { shadowBlur: number; shadowColor: string };
+  } {
+    const percentage = this.getTradePercent(trade);
+    const isPositive = percentage >= 0;
+    const gaugeMaximum = isPositive ? this.positiveGaugePercentMax : 1;
+    const fraction = gaugeMaximum > 0 ? Math.min(1, Math.abs(percentage) / gaugeMaximum) : 0;
+    const value = Number((fraction * 3).toFixed(2));
+    const color = percentage < 0 ? '#ef4444' : this.getPowerColor(value);
+    const glow = this.getGlow(value);
+
+    return {
+      value,
+      percentage,
+      isPositive,
+      color,
+      glow: { ...glow, shadowColor: color },
     };
   }
 
@@ -706,7 +708,6 @@ export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges,
     this.gaugeResizeObservers.clear();
     this.gaugeCharts.forEach(chart => chart.dispose());
     this.gaugeCharts.clear();
-    this.gaugeValues.clear();
   }
 
   getTradeR(trade: Table): number {
