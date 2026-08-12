@@ -26,6 +26,27 @@
   z-index: 1;
 }
 
+/* ---------- Goku mascot (left half of the chart) ---------- */
+.pf-goku {
+  position: absolute;
+  left: 40px;
+  bottom: 0;
+  height: 50%;
+  width: auto;
+  max-width: 55%;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  object-fit: contain;
+  opacity: 0.96;
+  filter: drop-shadow(0 6px 14px rgba(124, 58, 237, 0.35));
+  transition: opacity 0.3s ease, transform 0.3s ease;
+
+  :host-context(body.dark-theme) & {
+    opacity: 0.92;
+  }
+}
+
 /* ---------- Empty state ---------- */
 .pf-empty {
   position: absolute;
