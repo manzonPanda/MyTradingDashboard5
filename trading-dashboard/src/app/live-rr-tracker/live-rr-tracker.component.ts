@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { TradeService } from '../services/trade.service';
+import { LiveTradeGaugeComponent } from '../live-trade-gauge/live-trade-gauge.component';
 
 export interface LiveTradeSoundSettings {
   enabled: boolean;
@@ -36,7 +37,7 @@ interface Table {
 @Component({
   selector: 'app-live-rr-tracker',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, LiveTradeGaugeComponent],
   template: `
     <div class="live-rr-tracker-container">
       <!-- Empty State - No Live Trades -->
@@ -210,17 +211,13 @@ interface Table {
                 <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
               <div class="trade-gauge-content">
-                <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
-                  <svg viewBox="0 0 100 100" class="trade-gauge-svg">
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
-                    <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
-                            [attr.stroke-dasharray]="getTradeGaugeDash(trade)" [attr.transform]="getTradeGaugeTransform(trade)"/>
-                    <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
-                  </svg>
-                  <div class="trade-gauge-center">
-                    <div class="trade-gauge-percent" [ngClass]="getTradePnLClass(trade)">{{ getTradePercent(trade) | number:'1.2-2' }}%</div>
-                  </div>
-                </div>
+                <app-live-trade-gauge
+                  class="trade-gauge"
+                  [value]="getTradePercent(trade)"
+                  [positiveMax]="3"
+                  [negativeMax]="getTradeRiskPercent(trade)"
+                  [symbol]="trade.symbol">
+                </app-live-trade-gauge>
               </div>
             </div>
           </article>
@@ -516,32 +513,12 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     return trade.position || index;
   }
 
-  getTradeGaugeDash(trade: Table): string {
-    const circumference = 2 * Math.PI * 44;
-    const value = this.getTradeProfit(trade) > 0
-      ? Math.abs(this.getTradePercent(trade)) / this.positiveGaugePercentMax
-      : Math.abs(this.getTradePercent(trade)) / 1;
-    const fraction = Math.min(1, value);
-    const arc = fraction * circumference;
-    return `${arc} ${Math.max(0, circumference - arc)}`;
-  }
-
   getTradeR(trade: Table): number {
     const risk = parseFloat(trade.riskPerTrade || '0') || 0;
     if (risk > 0) return this.getTradeProfit(trade) / risk;
 
     const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
     return Number.isFinite(reportedR) ? reportedR : 0;
-  }
-
-  getTradeGaugeColor(trade: Table): string {
-    return this.getTradeProfit(trade) < 0 ? '#ef4444' : '#10b981';
-  }
-
-  getTradeGaugeTransform(trade: Table): string {
-    return this.getTradeProfit(trade) < 0
-      ? 'rotate(90 50 50) scale(-1 1) translate(-100 0)'
-      : 'rotate(-90 50 50)';
   }
 
   getTradePnLClass(trade: Table): string {
