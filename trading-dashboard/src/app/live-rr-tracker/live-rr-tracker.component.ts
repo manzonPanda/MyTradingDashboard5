@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import * as echarts from 'echarts';
+import { Subscription } from 'rxjs';
 import { TradeService } from '../services/trade.service';
 
 export interface LiveTradeSoundSettings {
@@ -210,17 +212,7 @@ interface Table {
                 <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
               <div class="trade-gauge-content">
-                <div class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'">
-                  <svg viewBox="0 0 100 100" class="trade-gauge-svg">
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" stroke-width="10"/>
-                    <circle cx="50" cy="50" r="44" fill="none" [attr.stroke]="getTradeGaugeColor(trade)" stroke-width="10" stroke-linecap="butt"
-                            [attr.stroke-dasharray]="getTradeGaugeDash(trade)" [attr.transform]="getTradeGaugeTransform(trade)"/>
-                    <rect x="48.5" y="0" width="3" height="16" class="trade-gauge-marker"/>
-                  </svg>
-                  <div class="trade-gauge-center">
-                    <div class="trade-gauge-percent" [ngClass]="getTradePnLClass(trade)">{{ getTradePercent(trade) | number:'1.2-2' }}%</div>
-                  </div>
-                </div>
+                <div #tradeGauge class="trade-gauge" [attr.aria-label]="trade.symbol + ' unrealized P&L gauge'"></div>
               </div>
             </div>
           </article>
@@ -232,7 +224,7 @@ interface Table {
   styleUrls: ['./live-rr-tracker.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
+export class LiveRRTrackerComponent implements AfterViewInit, OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
@@ -240,6 +232,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() liveTradeSoundSettings: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   @Output() liveTradeSoundSettingsChange = new EventEmitter<LiveTradeSoundSettings>();
   @Output() gaugePercentMaxChange = new EventEmitter<number>();
+  @ViewChildren('tradeGauge') tradeGaugeElements!: QueryList<ElementRef<HTMLDivElement>>;
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
@@ -261,6 +254,11 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   soundSettingsDraft: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   isGaugeSettingsOpen = false;
   private holdingTimeInterval?: ReturnType<typeof setInterval>;
+  private gaugeValueInterval?: ReturnType<typeof setInterval>;
+  private tradeGaugeElementsSubscription?: Subscription;
+  private readonly gaugeCharts = new Map<HTMLDivElement, echarts.ECharts>();
+  private readonly gaugeResizeObservers = new Map<HTMLDivElement, ResizeObserver>();
+  private readonly gaugeValues = new Map<HTMLDivElement, number>();
   private closeAllConfirmationTimeout?: ReturnType<typeof setTimeout>;
   private previousBodyOverflow = '';
 
@@ -279,10 +277,24 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     this.holdingTimeInterval = setInterval(() => this.cdr.markForCheck(), 1000);
   }
 
+  ngAfterViewInit(): void {
+    this.syncTradeGauges();
+    this.tradeGaugeElementsSubscription = this.tradeGaugeElements.changes.subscribe(() => this.syncTradeGauges());
+    this.gaugeValueInterval = setInterval(() => this.updateTradeGauges(), 550);
+  }
+
   ngOnDestroy(): void {
     if (this.holdingTimeInterval) clearInterval(this.holdingTimeInterval);
+    if (this.gaugeValueInterval) clearInterval(this.gaugeValueInterval);
+    this.tradeGaugeElementsSubscription?.unsubscribe();
+    this.disposeTradeGauges();
     if (this.closeAllConfirmationTimeout) clearTimeout(this.closeAllConfirmationTimeout);
     this.setBodyScrollLocked(false);
+  }
+
+  @HostListener('window:resize')
+  resizeTradeGauges(): void {
+    this.gaugeCharts.forEach(chart => chart.resize());
   }
 
   @HostListener('document:keydown.escape')
@@ -516,14 +528,185 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     return trade.position || index;
   }
 
-  getTradeGaugeDash(trade: Table): string {
-    const circumference = 2 * Math.PI * 44;
-    const value = this.getTradeProfit(trade) > 0
-      ? Math.abs(this.getTradePercent(trade)) / this.positiveGaugePercentMax
-      : Math.abs(this.getTradePercent(trade)) / 1;
-    const fraction = Math.min(1, value);
-    const arc = fraction * circumference;
-    return `${arc} ${Math.max(0, circumference - arc)}`;
+  private syncTradeGauges(): void {
+    const gaugeElements = new Set(this.tradeGaugeElements.map(({ nativeElement }) => nativeElement));
+
+    this.gaugeCharts.forEach((chart, element) => {
+      if (!gaugeElements.has(element)) {
+        this.gaugeResizeObservers.get(element)?.disconnect();
+        this.gaugeResizeObservers.delete(element);
+        this.gaugeValues.delete(element);
+        chart.dispose();
+        this.gaugeCharts.delete(element);
+      }
+    });
+
+    gaugeElements.forEach(element => {
+      if (this.gaugeCharts.has(element)) return;
+
+      const chart = echarts.init(element, undefined, { renderer: 'canvas' });
+      const initialValue = 2.31;
+      this.gaugeCharts.set(element, chart);
+      this.gaugeValues.set(element, initialValue);
+      this.renderTradeGauge(chart, initialValue);
+
+      const resizeObserver = new ResizeObserver(() => chart.resize());
+      resizeObserver.observe(element);
+      this.gaugeResizeObservers.set(element, resizeObserver);
+    });
+  }
+
+  private updateTradeGauges(): void {
+    this.gaugeCharts.forEach((chart, element) => {
+      const currentValue = this.gaugeValues.get(element) ?? 2.31;
+      const nextValue = Math.max(0, Math.min(3, currentValue + (Math.random() - 0.5)));
+      const value = Number(nextValue.toFixed(2));
+      const color = this.getPowerColor(value);
+      const glow = this.getGlow(value);
+
+      this.gaugeValues.set(element, value);
+      chart.setOption({
+        series: [{
+          data: [this.getGaugeData(value)],
+          progress: {
+            itemStyle: {
+              color,
+              shadowBlur: glow.shadowBlur,
+              shadowColor: glow.shadowColor,
+            },
+          },
+          detail: { color },
+        }],
+      });
+    });
+  }
+
+  private renderTradeGauge(chart: echarts.ECharts, value: number): void {
+    const color = this.getPowerColor(value);
+    const glow = this.getGlow(value);
+
+    chart.setOption({
+      series: [{
+        type: 'gauge',
+        startAngle: 90,
+        endAngle: -270,
+        center: ['50%', '50%'],
+        radius: '65%',
+        min: 0,
+        max: 3,
+        pointer: { show: false },
+        progress: {
+          show: true,
+          overlap: false,
+          roundCap: false,
+          clip: false,
+          itemStyle: {
+            color,
+            shadowBlur: glow.shadowBlur,
+            shadowColor: glow.shadowColor,
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            width: 40,
+            color: [[1, '#e5e7eb']],
+          },
+        },
+        axisLabel: { show: false },
+        splitLine: { show: false },
+        axisTick: { show: false },
+        data: [this.getGaugeData(value)],
+        animationDuration: 700,
+        animationDurationUpdate: 700,
+        animationEasing: 'cubicInOut',
+        animationEasingUpdate: 'cubicInOut',
+        detail: {
+          fontSize: 40,
+          fontWeight: 'bold',
+          color,
+          valueAnimation: true,
+          formatter: (gaugeValue: number) => `${gaugeValue.toFixed(2)}%`,
+        },
+      }],
+    });
+  }
+
+  private getGaugeData(value: number) {
+    return {
+      value,
+      detail: {
+        valueAnimation: true,
+        offsetCenter: ['0%', '0%'],
+        fontSize: 80,
+      },
+    };
+  }
+
+  private getRadiantColor(value: number): string {
+    const t = Math.max(0, Math.min(1, value / 3));
+    let r: number;
+    let g: number;
+    let b: number;
+
+    if (t < 0.5) {
+      const p = t / 0.5;
+      r = Math.round(134 + (34 - 134) * p);
+      g = Math.round(239 + (211 - 239) * p);
+      b = Math.round(172 + (238 - 172) * p);
+    } else {
+      const p = (t - 0.5) / 0.5;
+      r = Math.round(34 + (0 - 34) * p);
+      g = Math.round(211 + (191 - 211) * p);
+      b = Math.round(238 + (255 - 238) * p);
+    }
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  private getPowerColor(value: number): string {
+    const clampedValue = Math.max(0, Math.min(3, value));
+    if (clampedValue <= 2.4) return this.getRadiantColor(clampedValue);
+
+    const powerUp = Math.max(0, Math.min(1, (clampedValue - 2.4) / 0.6));
+    const intensity = powerUp * powerUp;
+    const match = this.getRadiantColor(2.4).match(/\d+/g)!;
+    const startR = Number(match[0]);
+    const startG = Number(match[1]);
+    const startB = Number(match[2]);
+    const targetR = 120;
+    const targetG = 241;
+    const targetB = 255;
+    const r = Math.round(startR + (targetR - startR) * intensity);
+    const g = Math.round(startG + (targetG - startG) * intensity);
+    const b = Math.round(startB + (targetB - startB) * intensity);
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  private getGlow(value: number): { shadowBlur: number; shadowColor: string } {
+    const clampedValue = Math.max(0, Math.min(3, value));
+    if (clampedValue <= 2.4) {
+      const intensity = clampedValue / 2.4;
+      return {
+        shadowBlur: 5 + intensity * 10,
+        shadowColor: this.getPowerColor(clampedValue),
+      };
+    }
+
+    const powerUp = (clampedValue - 2.4) / 0.6;
+    const intensity = powerUp * powerUp * powerUp;
+    return {
+      shadowBlur: 15 + intensity * 60,
+      shadowColor: this.getPowerColor(clampedValue),
+    };
+  }
+
+  private disposeTradeGauges(): void {
+    this.gaugeResizeObservers.forEach(observer => observer.disconnect());
+    this.gaugeResizeObservers.clear();
+    this.gaugeCharts.forEach(chart => chart.dispose());
+    this.gaugeCharts.clear();
+    this.gaugeValues.clear();
   }
 
   getTradeR(trade: Table): number {
@@ -532,16 +715,6 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
     const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
     return Number.isFinite(reportedR) ? reportedR : 0;
-  }
-
-  getTradeGaugeColor(trade: Table): string {
-    return this.getTradeProfit(trade) < 0 ? '#ef4444' : '#10b981';
-  }
-
-  getTradeGaugeTransform(trade: Table): string {
-    return this.getTradeProfit(trade) < 0
-      ? 'rotate(90 50 50) scale(-1 1) translate(-100 0)'
-      : 'rotate(-90 50 50)';
   }
 
   getTradePnLClass(trade: Table): string {
