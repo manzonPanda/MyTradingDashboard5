@@ -1,0 +1,61 @@
+:host {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /*
+   * INTENTIONALLY NO z-index, NO isolation, NO transform, NO opacity<1, NO
+   * filter, NO will-change here. Any of those would create a new stacking
+   * context and ISOLATE the video's mix-blend-mode:screen from the ECharts
+   * canvas below — breaking the additive compositing. The <video> elements
+   * inside must blend directly with the chart canvas, which is a sibling
+   * positioned element (z-index:1) in the same .pf-equity-chart container.
+   */
+}
+
+/*
+ * Each video is a direct child of :host (which fills .pf-equity-chart).
+ * They are positioned over the left ~38% of the chart, anchored bottom-left,
+ * preserving aspect ratio. mix-blend-mode:screen makes the pure-black video
+ * background disappear (black + screen = no contribution) while the blue/cyan
+ * energy/aura/lightning/particles add brightly over the chart.
+ */
+.warrior-video {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 38%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left bottom;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  background: transparent;
+  opacity: 0;
+  /*
+   * PURE OPACITY CROSSFADE — the only property that animates is opacity.
+   * No transform, no filter, no drop-shadow, no brightness/saturation change.
+   * The warrior stays exactly the same size and position throughout.
+   */
+  transition: opacity 800ms ease-in-out;
+}
+
+/* ---------- Responsive: the equity chart always stays the priority ---------- */
+@media (max-width: 1100px) {
+  .warrior-video {
+    width: 34%;
+  }
+}
+
+@media (max-width: 768px) {
+  .warrior-video {
+    width: 30%;
+  }
+}
+
+@media (max-width: 560px) {
+  .warrior-video {
+    display: none; /* hide on small screens so the chart stays fully usable */
+  }
+}
+

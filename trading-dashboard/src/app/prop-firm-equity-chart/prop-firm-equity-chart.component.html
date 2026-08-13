@@ -5,12 +5,12 @@
 >
   <div #chartEl class="pf-chart-canvas"></div>
 
-  <!-- Goku mascot on the left side of the chart -->
-  <img
-    class="pf-goku"
-    src="/assets/images/goku.png"
-    alt="Goku" aria-hidden="true"
-  />
+  <!-- Warrior performance overlay on the left side of the chart (replaces the
+       static Goku image). Reacts to the LIVE OPEN-TRADE floating P&L percentage
+       and never blocks chart interaction (pointer-events: none). -->
+  <app-warrior-performance-overlay
+    [performancePercent]="openTradePnlPercent"
+  ></app-warrior-performance-overlay>
 
 
   <!-- Polished empty state -->

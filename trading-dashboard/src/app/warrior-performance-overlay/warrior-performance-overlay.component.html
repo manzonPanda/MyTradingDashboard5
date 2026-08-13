@@ -1,0 +1,28 @@
+<!--
+  TWO looping <video> layers (A = active stage, B = incoming stage) enable a
+  smooth ~800ms crossfade when the transformation stage changes. Both are direct
+  children of :host (which fills .pf-equity-chart with no stacking context), so
+  mix-blend-mode:screen composites them directly over the ECharts canvas
+  sibling — genuine additive blending so the pure-black video background
+  disappears while the blue/cyan energy remains. Only one layer is fully
+  opaque at a time; the other is faded out during a transition.
+-->
+<video
+  #layer
+  class="warrior-video"
+  autoplay
+  muted
+  loop
+  playsinline
+  preload="auto"
+></video>
+<video
+  #layer
+  class="warrior-video"
+  autoplay
+  muted
+  loop
+  playsinline
+  preload="auto"
+></video>
+

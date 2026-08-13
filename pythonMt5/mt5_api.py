@@ -495,6 +495,23 @@ def full_history():
 
     # 🧾 Combine both
     all_trades = df_closed + df_open
+
+    # pandas coerces missing values into float('nan') inside the DataFrame, and
+    # Flask's jsonify would serialize those as the literal `NaN` (invalid JSON).
+    # That breaks the frontend's JSON.parse and aborts the entire history load.
+    # Replace non-finite floats / pandas NaT with JSON null so every trade
+    # (including the last object) round-trips cleanly.
+    def sanitize_value(value):
+        if isinstance(value, float) and not np.isfinite(value):
+            return None
+        if isinstance(value, str) and value == 'NaT':
+            return None
+        return value
+
+    all_trades = [
+        {key: sanitize_value(val) for key, val in trade.items()}
+        for trade in all_trades
+    ]
     return jsonify(all_trades)
 
 @app.route("/api/health", methods=["GET"])

@@ -3224,6 +3224,26 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return diffDays;
   }
 
+  /**
+   * LIVE OPEN-TRADE floating/unrealized P&L percentage — the sole source for
+   * the warrior transformation. Sums `trade.profit` across currently OPEN MT5
+   * trades (getCurrentMt5LiveTrades) divided by the account starting balance.
+   * Closed trades and total account performance are intentionally excluded.
+   * Returns 0 (→ Stage 1 / idle) when there are no open trades.
+   */
+  get warriorOpenTradePnlPercent(): number {
+    const openTrades = this.getCurrentMt5LiveTrades();
+    const accountSize = this.mt5AccountInfo?.startingBalance ?? 0;
+    if (!openTrades.length || accountSize <= 0) {
+      return 0;
+    }
+    const floatingPnL = openTrades.reduce(
+      (sum, t) => sum + (parseFloat(t.profit) || 0),
+      0,
+    );
+    return (floatingPnL / accountSize) * 100;
+  }
+
   calculateTotalPercentageGain(): number {
     const totalPnL = this.calculateTotalPnL();
     const startingBalance = this.mt5AccountInfo?.startingBalance
@@ -4181,14 +4201,17 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         swap: mt5Trade.swap ?? trade.swap
       };
     });
-    const mt5OnlyOpenTrades = mt5History.filter(trade =>
-      String(trade?.status).toLowerCase() === 'open' &&
+    // Include ANY MT5 trade (open OR closed) that is not yet in Supabase.
+    // Closed trades only reach Supabase via the manual "Sync" button, so without
+    // this the newest closed trade ("last object" of the /api/history JSON) would
+    // be silently dropped from the UI until the user runs a manual sync.
+    const mt5OnlyTrades = mt5History.filter(trade =>
       trade?.position_id !== undefined &&
       trade?.position_id !== null &&
       !supabasePositionIds.has(String(trade.position_id))
     );
 
-    return [...reconciledSupabaseTrades, ...mt5OnlyOpenTrades];
+    return [...reconciledSupabaseTrades, ...mt5OnlyTrades];
   }
 
   private async getSupabaseTrades(): Promise<any[]> {

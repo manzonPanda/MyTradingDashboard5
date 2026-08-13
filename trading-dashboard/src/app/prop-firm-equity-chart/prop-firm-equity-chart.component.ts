@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import * as echarts from 'echarts';
+import { WarriorPerformanceOverlayComponent } from '../warrior-performance-overlay/warrior-performance-overlay.component';
 
 /**
  * Normalized account-equity data point.
@@ -90,7 +91,7 @@ const DARK: AuraPalette = {
 @Component({
   selector: 'app-prop-firm-equity-chart',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WarriorPerformanceOverlayComponent],
   templateUrl: './prop-firm-equity-chart.component.html',
   styleUrls: ['./prop-firm-equity-chart.component.scss'],
 })
@@ -109,6 +110,14 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     hasLiveTrade: false,
   };
   @Input() mode: ChartDisplayMode = 'trades';
+
+  /**
+   * LIVE OPEN-TRADE floating/unrealized P&L percentage, fed straight through to
+   * the warrior overlay. Computed by the dashboard from the currently OPEN MT5
+   * trades (sum of trade.profit / startingBalance * 100). Closed trades and
+   * total account performance are NOT used. 0 when no trade is open → Stage 1.
+   */
+  @Input() openTradePnlPercent = 0;
 
   @ViewChild('chartEl', { static: true }) chartEl!: ElementRef<HTMLDivElement>;
 
