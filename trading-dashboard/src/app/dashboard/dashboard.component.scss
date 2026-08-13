@@ -13175,6 +13175,10 @@ table.simple-table {
       color: #f8fafc;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
 
+      strong {
+        color: #f8fafc;
+      }
+
       > mat-icon:first-child {
         color: #ffffff;
         background: #7c3aed;
