@@ -10180,8 +10180,8 @@ table.simple-table {
   transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 
   &.dashboard-navigation-open {
-    width: calc(100% - 14rem);
-    margin-left: 14rem;
+    width: calc(100% - 12rem);
+    margin-left: 12rem;
   }
 
   &.workspace-view {
@@ -10248,7 +10248,7 @@ table.simple-table {
   transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
 
   &.is-expanded {
-    width: 14rem;
+    width: 12rem;
     padding: 1rem 0.8rem;
     overflow-y: auto;
     box-shadow: 10px 0 24px rgba(15, 23, 42, 0.08);
