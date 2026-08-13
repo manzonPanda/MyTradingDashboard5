@@ -135,8 +135,9 @@
         [attr.aria-pressed]="isDarkTheme"
         [title]="isDarkTheme ? 'Light theme' : 'Dark theme'"
         (click)="toggleTheme()">
-        <mat-icon>{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
-        <span><strong>{{ isDarkTheme ? 'Light' : 'Dark' }}</strong></span>
+        <span class="theme-switch-track" aria-hidden="true">
+          <span class="theme-switch-thumb"></span>
+        </span>
       </button>
     </div>
 
