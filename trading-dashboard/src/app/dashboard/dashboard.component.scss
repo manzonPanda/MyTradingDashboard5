@@ -10180,8 +10180,8 @@ table.simple-table {
   transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 
   &.dashboard-navigation-open {
-    width: calc(100% - 14rem);
-    margin-left: 14rem;
+    width: calc(100% - 12rem);
+    margin-left: 12rem;
   }
 
   &.workspace-view {
@@ -10248,7 +10248,7 @@ table.simple-table {
   transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
 
   &.is-expanded {
-    width: 14rem;
+    width: 12rem;
     padding: 1rem 0.8rem;
     overflow-y: auto;
     box-shadow: 10px 0 24px rgba(15, 23, 42, 0.08);
@@ -12052,9 +12052,14 @@ table.simple-table {
     }
 
     &.is-active {
-      border-color: #d6d9e3;
-      background: #fff;
+      border-color: #c4b5fd;
+      background: #ede9fe;
+      color: #4c1d95;
       box-shadow: 0 2px 8px rgba(31, 41, 55, 0.04);
+
+      strong {
+        color: #4c1d95;
+      }
 
       > mat-icon:first-child {
         color: #fff;
@@ -12142,6 +12147,74 @@ table.simple-table {
 
   .navigation-utility-link {
     width: 100%;
+  }
+}
+
+.navigation-footer .navigation-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  min-height: 2rem;
+  padding: 0.25rem;
+  border: 1px solid #d6d9e3;
+  border-radius: 999px;
+  background: #f4f5f8;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+
+  .theme-switch-track {
+    position: relative;
+    display: block;
+    width: 2.15rem;
+    height: 1.1rem;
+    border-radius: 999px;
+    background: #cbd5e1;
+    transition: background 0.18s ease;
+  }
+
+  .theme-switch-thumb {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(31, 41, 55, 0.28);
+    transition: transform 0.18s ease;
+
+    mat-icon {
+      width: 0.58rem;
+      height: 0.58rem;
+      font-size: 0.58rem;
+      line-height: 0.58rem;
+    }
+  }
+
+  &[aria-pressed='true'] {
+    border-color: #c4b5fd;
+    background: #ede9fe;
+    color: #4c1d95;
+
+    .theme-switch-track {
+      background: #7c3aed;
+    }
+
+    .theme-switch-thumb {
+      transform: translateX(1.15rem);
+    }
+  }
+
+  &:hover {
+    border-color: #a78bfa;
+    background: #f5f3ff;
+    color: #4c1d95;
+    transform: none;
   }
 }
 
@@ -13175,6 +13248,10 @@ table.simple-table {
       color: #f8fafc;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
 
+      strong {
+        color: #f8fafc;
+      }
+
       > mat-icon:first-child {
         color: #ffffff;
         background: #7c3aed;
@@ -13191,6 +13268,32 @@ table.simple-table {
   .navigation-card-label {
     border-bottom-color: #3f4f66;
     color: #dbe4f2;
+  }
+
+  .navigation-footer .navigation-theme-toggle {
+    border-color: #475569;
+    background: #1e293b;
+    color: #cbd5e1;
+
+    .theme-switch-track {
+      background: #475569;
+    }
+
+    &[aria-pressed='true'] {
+      border-color: #7c3aed;
+      background: #312e81;
+      color: #f8fafc;
+
+      .theme-switch-track {
+        background: #7c3aed;
+      }
+    }
+
+    &:hover {
+      border-color: #64748b;
+      background: #243047;
+      color: #f8fafc;
+    }
   }
 
   .navigation-display-trigger {
