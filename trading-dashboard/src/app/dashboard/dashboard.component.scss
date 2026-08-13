@@ -12150,13 +12150,13 @@ table.simple-table {
   }
 }
 
-.navigation-theme-toggle {
+.navigation-footer .navigation-theme-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 2.75rem;
   min-height: 2rem;
-  padding: 0.35rem 0.55rem;
+  padding: 0.25rem;
   border: 1px solid #d6d9e3;
   border-radius: 999px;
   background: #f4f5f8;
@@ -12167,8 +12167,8 @@ table.simple-table {
   .theme-switch-track {
     position: relative;
     display: block;
-    width: 2.35rem;
-    height: 1.35rem;
+    width: 1.9rem;
+    height: 1.1rem;
     border-radius: 999px;
     background: #cbd5e1;
     transition: background 0.18s ease;
@@ -12176,14 +12176,24 @@ table.simple-table {
 
   .theme-switch-thumb {
     position: absolute;
-    top: 0.15rem;
-    left: 0.15rem;
-    width: 1.05rem;
-    height: 1.05rem;
+    top: 0.125rem;
+    left: 0.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85rem;
+    height: 0.85rem;
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 1px 3px rgba(31, 41, 55, 0.28);
     transition: transform 0.18s ease;
+
+    mat-icon {
+      width: 0.58rem;
+      height: 0.58rem;
+      font-size: 0.58rem;
+      line-height: 0.58rem;
+    }
   }
 
   &[aria-pressed='true'] {
@@ -13260,7 +13270,7 @@ table.simple-table {
     color: #dbe4f2;
   }
 
-  .navigation-theme-toggle {
+  .navigation-footer .navigation-theme-toggle {
     border-color: #475569;
     background: #1e293b;
     color: #cbd5e1;
