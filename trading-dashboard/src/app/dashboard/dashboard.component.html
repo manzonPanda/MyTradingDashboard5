@@ -457,6 +457,20 @@
     </div>
   </header>
 
+  <!-- MT5 <-> UI account mismatch safety banner -->
+  <div
+    class="mt5-account-mismatch-banner"
+    *ngIf="mt5AccountMismatch"
+    role="alert"
+  >
+    <mat-icon class="banner-icon">warning</mat-icon>
+    <span class="banner-text">
+      MT5 is connected to account <strong>{{ mt5ConnectedAccount }}</strong>, but you are viewing
+      <strong>{{ selectedAccount?.name }}</strong>. Live MT5 trades are hidden so data from the
+      wrong account is never mixed into this dashboard.
+    </span>
+  </div>
+
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
@@ -1611,7 +1625,8 @@
   <section class="calendar-section">
     <app-trading-calendar
       [tableData]="tableData"
-      [viewDate]="viewDate">
+      [viewDate]="viewDate"
+      [accountId]="selectedAccount?.id ?? null">
     </app-trading-calendar>
   </section>
 

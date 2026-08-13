@@ -283,6 +283,7 @@ interface WeekSummary {
 export class TradingCalendarComponent implements OnInit, OnChanges {
   @Input() tableData: Table[] = [];
   @Input() viewDate: Date = new Date();
+  @Input() accountId: string | null = null;
 
   currentDate: Date = new Date();
   calendarDays: CalendarDay[] = [];
@@ -310,7 +311,11 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['tableData'] || changes['viewDate']) {
+    // Regenerate whenever the table data, the viewed month, OR the active account
+    // changes. Watching accountId guarantees the calendar always refreshes when
+    // the user switches/previews a different prop-firm account in the UI, even if
+    // tableData's reference doesn't change (e.g. two accounts with no trades).
+    if (changes['tableData'] || changes['viewDate'] || changes['accountId']) {
       if (changes['viewDate'] && changes['viewDate'].currentValue) {
         this.currentDate = new Date(changes['viewDate'].currentValue);
       }

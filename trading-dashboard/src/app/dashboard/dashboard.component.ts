@@ -767,6 +767,24 @@ mt5AccountInfo: AccountSettings = {
   private isMt5LiveSnapshotAvailable = false;
   private mt5AccountLogin: string | null = null;
   private mt5DataLoadVersion = 0;
+
+  /** True when the MT5 /api/history endpoint answered recently (terminal reachable). */
+  private mt5HistoryAvailable = false;
+
+  /**
+   * SAFETY FLAG: true when MT5 is reachable AND logged into a DIFFERENT
+   * prop-firm account than the one selected in the UI. Computed live (a getter)
+   * so the warning banner can never go stale regardless of when change detection
+   * runs.
+   */
+  get mt5AccountMismatch(): boolean {
+    return this.mt5HistoryAvailable && this.mt5AccountLogin !== null && !this.isActiveMt5Account();
+  }
+
+  /** MT5 terminal login number (public, used by the mismatch safety banner). */
+  get mt5ConnectedAccount(): string | null {
+    return this.mt5AccountLogin;
+  }
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
   mt5ImportMessage = '';
@@ -2188,6 +2206,7 @@ mt5AccountInfo: AccountSettings = {
         this.mt5AccountInfo.balance = balance;
         this.generateTradingChartData();
       }
+      this.mt5HistoryAvailable = true; // socket account_info ⇒ terminal reachable
       if (!this.isActiveMt5Account()) {
         this.mt5LiveTrades = [];
         this.recentlyAddedTrades = [];
@@ -4037,18 +4056,26 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return Number.isFinite(numberValue) ? numberValue : 0;
   }
 
+  /** Prevents overlapping auto-sync runs from concurrent loadMT5Data() calls. */
+  private autoSyncInFlight = false;
+
   async loadMT5Data(): Promise<void> {
     const loadVersion = ++this.mt5DataLoadVersion;
     const accountId = this.selectedAccount?.id ?? null;
     this.isLoadingMT5Data = true;
     let response: any[] = [];
+    // Hoisted so the post-load auto-sync (below) can use them after the try block.
+    let supabaseTrades: any[] = [];
+    let mt5History: any[] | null = null;
 
     try {
-      const [supabaseTrades, mt5History] = await Promise.all([
+      [supabaseTrades, mt5History] = await Promise.all([
         this.getSupabaseTrades(),
         this.getMt5API()
       ]);
-      this.isMt5LiveSnapshotAvailable = mt5History !== null && this.isActiveMt5Account();
+      const mt5AccountMatches = this.isActiveMt5Account();
+      this.isMt5LiveSnapshotAvailable = mt5History !== null && mt5AccountMatches;
+      this.mt5HistoryAvailable = mt5History !== null;
       this.mt5OpenPositionIds = this.isMt5LiveSnapshotAvailable
         ? new Set(
             (mt5History ?? [])
@@ -4056,10 +4083,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
               .map((trade: any) => String(trade.position_id))
           )
         : null;
-      if (accountId && mt5History !== null) {
+      if (accountId && mt5History !== null && mt5AccountMatches) {
         await this.syncClosedMt5Trades(supabaseTrades, mt5History, accountId);
       }
-      response = this.reconcileMt5Statuses(supabaseTrades, mt5History);
+      // SAFETY: Never merge MT5 history into the displayed data unless MT5 is
+      // connected to the same account selected in the UI — otherwise a mismatched
+      // MT5 account's trades/data would leak into the selected account's view.
+      response = mt5AccountMatches
+        ? this.reconcileMt5Statuses(supabaseTrades, mt5History)
+        : supabaseTrades;
       console.log('🗄️ Supabase history loaded:', response.length, 'trades');
     } finally {
       if (loadVersion === this.mt5DataLoadVersion) {
@@ -4111,6 +4143,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.mt5LiveTrades = mt5Trades;
     this.mt5LiveTradesAccountId = accountId;
     this.recentlyAddedTrades = mt5Trades.filter(trade => this.mt5OpenPositionIds?.has(String(trade.position)));
+
+    // Auto-sync MT5 trades not yet persisted to Supabase — but ONLY when the MT5
+    // terminal is connected to the same prop-firm account that is open in the UI
+    // (login matches the selected account's account_number). Never write MT5
+    // trades into a different selected account.
+    if (accountId && mt5History !== null && this.isActiveMt5Account()) {
+      void this.autoSyncMt5TradesToSupabase(this.mt5LiveTrades, supabaseTrades, accountId);
+    }
+
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
@@ -4177,6 +4218,40 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       .filter((update): update is Promise<Trade | null> => update !== null);
 
     if (updates.length) await Promise.all(updates);
+  }
+
+  /**
+   * Auto-persists MT5 trades that are NOT yet in Supabase. The caller must only
+   * invoke this while the MT5 terminal is connected to the SAME prop-firm
+   * account that is open in the UI (see isActiveMt5Account()) — otherwise MT5
+   * trades would be written into a different selected account. Previously, closed
+   * trades only reached Supabase when the user clicked the manual "Sync to
+   * Supabase" button or when a live trade_opened/trade_closed socket event fired
+   * — so the full history (e.g. trades that closed while the app was offline)
+   * was never persisted automatically. This closes that gap.
+   */
+  private async autoSyncMt5TradesToSupabase(
+    mt5Trades: Table[],
+    supabaseTrades: any[],
+    accountId: string
+  ): Promise<void> {
+    // Guard against concurrent loadMT5Data() calls (ngOnInit + socket connect)
+    // both trying to create the same missing trades at the same time.
+    if (this.autoSyncInFlight || !accountId || !mt5Trades.length) return;
+
+    const existingIds = new Set(supabaseTrades.map(t => String(t.position_id)));
+    const newTrades = mt5Trades.filter(t => !existingIds.has(String(t.position)));
+    if (!newTrades.length) return;
+
+    this.autoSyncInFlight = true;
+    try {
+      const trades = newTrades.map(t => this.mapMt5TradeForSupabase(t));
+      await this.supabaseService.syncTradesToAccount(trades, accountId);
+    } catch (error) {
+      console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
+    } finally {
+      this.autoSyncInFlight = false;
+    }
   }
 
   private reconcileMt5Statuses(supabaseTrades: any[], mt5History: any[] | null): any[] {

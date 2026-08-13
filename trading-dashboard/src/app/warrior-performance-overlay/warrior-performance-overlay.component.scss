@@ -15,23 +15,39 @@
 
 /*
  * Each video is a direct child of :host (which fills .pf-equity-chart).
- * They are anchored bottom-left at a medium size (a bit larger than half the
- * chart — width: 55% / height: 65%), preserving aspect ratio via
- * object-fit:contain. mix-blend-mode:screen makes the pure-black video
- * background disappear (black + screen = no contribution) while the blue/cyan
+ * They are anchored bottom-left at a medium size — width: 60% / height: 75%
+ * of the chart — preserving aspect ratio via object-fit:contain.
+ * mix-blend-mode:screen makes the pure-black video background disappear
+ * (black + screen = no contribution) while the blue/cyan
  * energy/aura/lightning/particles add brightly over the chart.
  */
 .warrior-video {
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 55%;
-  height: 65%;
+  width: 60%;
+  height: 75%;
   object-fit: contain;
   object-position: left bottom;
   mix-blend-mode: screen;
   pointer-events: none;
   background: transparent;
+  /* Feather the outermost edges to transparent so the video frame / its
+     letterboxed outline never shows up as a hard rectangle over the chart.
+     Four linear-gradient mask layers (top / right / bottom / left) are
+     intersected, keeping the interior fully visible but fading every edge. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 8%),
+    linear-gradient(to left, transparent 0%, #000 8%),
+    linear-gradient(to top, transparent 0%, #000 8%),
+    linear-gradient(to right, transparent 0%, #000 8%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 8%),
+    linear-gradient(to left, transparent 0%, #000 8%),
+    linear-gradient(to top, transparent 0%, #000 8%),
+    linear-gradient(to right, transparent 0%, #000 8%);
+  mask-composite: intersect;
   opacity: 0;
   /*
    * PURE OPACITY CROSSFADE — the only property that animates is opacity.
@@ -44,13 +60,13 @@
 /* ---------- Responsive: the equity chart always stays the priority ---------- */
 @media (max-width: 1100px) {
   .warrior-video {
-    width: 48%;
+    width: 52%;
   }
 }
 
 @media (max-width: 768px) {
   .warrior-video {
-    width: 42%;
+    width: 46%;
   }
 }
 

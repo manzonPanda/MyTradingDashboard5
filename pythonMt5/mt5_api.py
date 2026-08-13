@@ -46,10 +46,43 @@ seen_orders = set()
 # Keep track of currently open position tickets
 last_positions = {}
 
+# Login of the MT5 account currently known to the UI. The account watcher
+# compares this against mt5.account_info().login to detect when the user
+# switches to a different account inside the MT5 terminal.
+last_account_login = None
+
 SUPABASE_URL = os.getenv('SUPABASE_URL', '').rstrip('/')
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'trade-screenshots')
 MT5_WINDOW_TITLE = os.getenv('MT5_WINDOW_TITLE', 'MetaTrader 5')
+# How often (seconds) the account watcher polls MT5 for login changes so the
+# UI auto-refreshes when the user switches accounts in the MT5 terminal.
+ACCOUNT_POLL_INTERVAL = float(os.getenv('ACCOUNT_POLL_INTERVAL', '5'))
+
+
+def build_account_payload(info):
+    """Build the account_info payload used by the account watcher and the
+    /api/account_info REST endpoint. Mirrors the structure emitted by the
+    on_connect and reconnect_mt5 handlers so the Angular UI always receives a
+    consistent object."""
+    if not info:
+        # Send empty but defined values so Angular never sees "undefined"
+        return {
+            'login': None,
+            'name': None,
+            'server': None,
+            'balance': 0,
+            'starting_balance': 0,
+            'info': {}
+        }
+    return {
+        'login': info.login,
+        'name': info.name,
+        'server': info.server,
+        'balance': info.balance,
+        'starting_balance': info.balance,
+        'info': info._asdict()
+    }
 
 
 def find_mt5_window():
@@ -355,6 +388,48 @@ def watch_trades():
 # Start background thread
 threading.Thread(target=watch_trades, daemon=True).start()
 
+
+def watch_account():
+    """Detect when the MT5 login account changes and push the update to clients.
+
+    MetaTrader5.account_info() always reflects whatever account the local MT5
+    terminal is currently logged into. By polling it every ACCOUNT_POLL_INTERVAL
+    seconds and comparing the login to the last value we emitted, we push a
+    fresh `account_info` event to every connected client the moment the user
+    switches accounts in the MT5 terminal — no page refresh required.
+    """
+    global last_account_login
+    print(f"✅ Account watcher thread started... (poll interval: {ACCOUNT_POLL_INTERVAL}s)")
+
+    while True:
+        try:
+            info = mt5.account_info()
+            if info is None:
+                # Terminal not reachable. Reset the known login so the next
+                # valid account is treated as a change (covers logout -> new
+                # account). Notify clients so the UI clears the stale card.
+                if last_account_login is not None:
+                    last_account_login = None
+                    socketio.emit('account_info', build_account_payload(None))
+                    print("🔌 MT5 terminal became unreachable; notified clients")
+            else:
+                if last_account_login != info.login:
+                    previous_login = last_account_login
+                    last_account_login = info.login
+                    if previous_login is None:
+                        print(f"✅ MT5 terminal reached; account login={info.login} "
+                              f"({info.name}) on server '{info.server}'")
+                    else:
+                        print(f"🔄 MT5 account changed -> login={info.login} "
+                              f"({info.name}) on server '{info.server}'")
+                    socketio.emit('account_info', build_account_payload(info))
+        except Exception as error:
+            print(f"⚠️ Account watcher error: {error}")
+        time.sleep(ACCOUNT_POLL_INTERVAL)
+
+
+threading.Thread(target=watch_account, daemon=True).start()
+
 @app.route("/api/open_trades", methods=["GET"])
 def get_open_trades():
     positions = mt5.positions_get()
@@ -529,7 +604,7 @@ def health_check():
 
 
 def reconnect_mt5():
-    global reconnect_in_progress
+    global reconnect_in_progress, last_account_login
 
     if reconnect_in_progress:
         return False
@@ -543,14 +618,12 @@ def reconnect_mt5():
 
         info = mt5.account_info()
         if info:
-            socketio.emit('account_info', {
-                'login': info.login,
-                'name': info.name,
-                'server': info.server,
-                'balance': info.balance,
-                'starting_balance': info.balance,
-                'info': info._asdict()
-            })
+            socketio.emit('account_info', build_account_payload(info))
+            # Keep the watcher in sync with the freshly reconnected account so
+            # it does not immediately emit a duplicate "account changed" event.
+            last_account_login = info.login
+            print(f"✅ Reconnected to MT5 account login={info.login} ({info.name}) "
+                  f"on server '{info.server}'")
         return True
     finally:
         reconnect_in_progress = False
@@ -559,6 +632,24 @@ def reconnect_mt5():
 def start_reconnect():
     eventlet.spawn_n(reconnect_mt5)
     return jsonify({"message": "MT5 reconnection started"})
+
+
+@app.route("/api/account_info", methods=["GET"])
+def get_account_info():
+    """Return the current MT5 account info as a plain HTTP response.
+
+    Mirrors the `account_info` socket event so the Angular "Connected services"
+    section can refresh account details on its own polling schedule — right
+    after the user switches accounts in the MT5 terminal — without having to
+    tear down and re-establish the WebSocket connection.
+    """
+    info = mt5.account_info()
+    if not info:
+        return jsonify(build_account_payload(None)), 200
+    return jsonify(build_account_payload(info))
+
+
+
 
 def close_position(position):
     symbol_info = mt5.symbol_info(position.symbol)

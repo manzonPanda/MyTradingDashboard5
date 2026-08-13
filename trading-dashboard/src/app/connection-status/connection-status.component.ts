@@ -121,7 +121,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     });
   }
 
-  private async checkAllServerStatus(): Promise<void> {
+    private async checkAllServerStatus(): Promise<void> {
      await Promise.all(
     this.servers.map(async (server) => {
       try {
@@ -137,11 +137,21 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         if (response?.status === 'healthy' && response.mt5_connected) {
           server.status = 'online';
           server.detail = '';
+          // Refresh the MT5 account details shown in the "Connected services"
+          // card. This picks up account switches performed inside the MT5
+          // terminal even when the real-time socket push (handled in
+          // connectToMT5Updates) was missed for any reason.
+          await this.refreshMT5Account(server);
         } else if (server.status === 'reconnecting') {
           server.detail = 'Reconnecting…';
         } else {
           server.status = 'offline';
           server.detail = 'Disconnected';
+          // Clear any stale account so the card doesn't keep showing a
+          // logged-in account after the terminal went offline.
+          if (server.name === 'MT5 API') {
+            server.account = undefined;
+          }
         }
 
       } catch (error) {
@@ -154,6 +164,41 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
       server.lastChecked = new Date();
     })
   );
+  }
+
+  /**
+   * Pull the current MT5 account info from the REST endpoint and update the
+   * server card. Complements the real-time socket `account_info` event so the
+   * connected-services section auto-refreshes when the user changes the login
+   * account inside the MT5 terminal.
+   */
+  private async refreshMT5Account(server: ServerStatus): Promise<void> {
+    if (server.name !== 'MT5 API') return;
+    try {
+      const account = await firstValueFrom(
+        this.http.get<MT5AccountInfo>(`${environment.backendUrlMt5}/api/account_info`).pipe(
+          catchError(error => {
+            console.warn('Failed to refresh MT5 account info:', error);
+            return of(null);
+          })
+        )
+      );
+
+      if (account?.login != null && account?.login !== undefined) {
+        server.account = {
+          login: account.login,
+          name: account.name ?? null,
+          server: account.server ?? null,
+          balance: Number.isFinite(Number(account.balance)) ? Number(account.balance) : null
+        };
+        server.status = 'online';
+        server.detail = '';
+      } else {
+        server.account = undefined;
+      }
+    } catch {
+      // Swallow errors — the periodic health check keeps the status honest.
+    }
   }
 
   getServerTooltip(server: ServerStatus): string {
