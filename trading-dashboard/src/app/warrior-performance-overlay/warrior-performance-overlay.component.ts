@@ -17,8 +17,9 @@ import { CommonModule } from '@angular/common';
  * visual intensity. Everything else derives from these.
  */
 
-/** Looping video per stage, index-aligned: index 0 = Stage 1 … index 5 = Stage 6. */
+/** Looping video per stage, index-aligned: index 0 = Stage 0 … index 6 = Stage 6. */
 export const WARRIOR_VIDEO_SOURCES: readonly string[] = [
+  'assets/warrior/stage-00.mp4', // Stage 0 — Base / default (plays whenever P&L <= 0%)
   'assets/warrior/stage-01.mp4', // Stage 1 — Normal / Awakening
   'assets/warrior/stage-02.mp4', // Stage 2 — Awakening
   'assets/warrior/stage-03.mp4', // Stage 3 — Blue Awakening
@@ -29,13 +30,14 @@ export const WARRIOR_VIDEO_SOURCES: readonly string[] = [
 
 /**
  * P&L% thresholds that advance to the next stage.
- * P&L < 0.5      → Stage 1
+ * P&L ≤ 0        → Stage 0 (stage-00.mp4) — default / no open trade / loss
+ * 0 < P&L < 0.5  → Stage 1
  * P&L >= 0.5     → Stage 2
  * P&L >= 1.0     → Stage 3
  * P&L >= 1.5     → Stage 4
  * P&L >= 2.0     → Stage 5
  * P&L >= 2.5     → Stage 6 (MAX POWER)
- * Any negative P&L stays on Stage 1 (never powers up on losses).
+ * Any P&L <= 0 plays stage-00.mp4 — the warrior never powers up on losses.
  */
 export const WARRIOR_STAGE_THRESHOLDS: readonly number[] = [0.5, 1.0, 1.5, 2.0, 2.5];
 
@@ -43,23 +45,26 @@ export const WARRIOR_STAGE_THRESHOLDS: readonly number[] = [0.5, 1.0, 1.5, 2.0, 
 export const WARRIOR_CROSSFADE_MS = 800;
 
 /**
- * Maps a live P&L percentage to a 0-based transformation stage index.
- *   0 → 0.00% – <0.50%   (stage-1.mp4)
- *   1 → 0.50% – <1.00%   (stage-2.mp4)
- *   2 → 1.00% – <1.50%   (stage-3.mp4)
- *   3 → 1.50% – <2.00%   (stage-4.mp4)
- *   4 → 2.00% – <2.50%   (stage-5.mp4)
- *   5 → >=2.50%          (stage-6.mp4, MAX POWER)
- * Any P&L <= 0 returns 0 (stage-1.mp4) — the warrior never powers up on losses.
+ * Maps a live P&L percentage to a transformation stage index.
+ *   ≤ 0%                 → 0 (stage-00.mp4, base / default / loss state)
+ *   0% – <0.50%          → 1 (stage-01.mp4)
+ *   0.50% – <1.00%       → 2 (stage-02.mp4)
+ *   1.00% – <1.50%       → 3 (stage-03.mp4)
+ *   1.50% – <2.00%       → 4 (stage-04.mp4)
+ *   2.00% – <2.50%       → 5 (stage-05.mp4)
+ *   >=2.50%              → 6 (stage-06.mp4, MAX POWER)
+ * Any P&L <= 0 returns 0 — stage-00.mp4 is the default/base video (shown when
+ * there is no open trade, i.e. P&L = 0%) and the "P&L < 0%" loss state.
+ * The warrior never powers up on losses.
  */
 export function getTransformationStage(pnlPercent: number): number {
   if (!Number.isFinite(pnlPercent) || pnlPercent <= 0) {
-    return 0;
+    return 0; // stage-00.mp4 — default base video & the "P&L <= 0%" state.
   }
-  let stage = 0;
+  let stage = 1; // stage-01.mp4 for 0% < P&L < 0.5%
   for (let i = 0; i < WARRIOR_STAGE_THRESHOLDS.length; i++) {
     if (pnlPercent >= WARRIOR_STAGE_THRESHOLDS[i]) {
-      stage = i + 1;
+      stage = i + 2; // thresholds[0]=0.5 → index 2 (stage-02) … thresholds[4]=2.5 → index 6 (stage-06)
     } else {
       break;
     }
@@ -92,7 +97,7 @@ export const warriorStageForPnl = getTransformationStage;
   styleUrls: ['./warrior-performance-overlay.component.scss'],
 })
 export class WarriorPerformanceOverlayComponent implements AfterViewInit, OnChanges, OnDestroy {
-  /** Live account P&L percentage, e.g. 1.72. Negative values stay on Stage 1. */
+  /** Live account P&L percentage, e.g. 1.72. Values <= 0 (no open trade or loss) play stage-00 (Stage 0). */
   @Input() performancePercent = 0;
 
   /** 0-based transformation stage currently displayed (-1 = not evaluated yet). */
@@ -190,6 +195,15 @@ export class WarriorPerformanceOverlayComponent implements AfterViewInit, OnChan
    * Performs a smooth ~800ms crossfade from the currently active layer to the
    * other layer, loading the new stage's video into the incoming layer and
    * starting it once it is ready to play.
+   *
+   * Smoothness guarantees:
+   * - The fade is only triggered from inside requestAnimationFrame after the
+   *   browser has painted the incoming layer at opacity:0 (otherwise both style
+   *   writes land in the same frame and the CSS transition never animates).
+   * - The fade only starts once the incoming video can actually play (no
+   *   dipping to an unloaded/blank frame).
+   * - The finalize timer is measured from when the fade actually starts, so the
+   *   transition is never cut short mid-fade.
    */
   private startCrossfade(toStage: number): void {
     const videos = this.layers?.toArray().map((l) => l.nativeElement) ?? [];
@@ -226,47 +240,93 @@ export class WarriorPerformanceOverlayComponent implements AfterViewInit, OnChan
     this.loadAndPlay(incomingVideo, toStage);
     incomingVideo.style.opacity = '0';
 
-    // Begin the crossfade once the incoming video is ready to play.
+    // Crossfade the layers. The writes are deferred to the next animation frame
+    // so the browser repaints the incoming layer at opacity:0 first, letting the
+    // CSS opacity transition actually animate (otherwise the two writes are
+    // batched into one frame and the swap is instant / jumpy).
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
     const beginFade = () => {
-      // Re-check: the target may have changed again while we waited for canplay.
-      if (this.targetStage !== toStage) {
-        return;
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
       }
-      incomingVideo.style.opacity = '1';
-      activeVideo.style.opacity = '0';
+      requestAnimationFrame(() => {
+        // Re-check: the target may have changed again while we waited.
+        if (this.targetStage !== toStage) {
+          return;
+        }
+        incomingVideo.style.opacity = '1';
+        activeVideo.style.opacity = '0';
+
+        // Finalize only once the ~800ms crossfade has fully completed, measured
+        // from when the fade actually starts (not when loading began) — otherwise
+        // the finalize would reset the outgoing video mid-fade and cause a jump.
+        if (this.transitionTimer) {
+          clearTimeout(this.transitionTimer);
+        }
+        this.transitionTimer = setTimeout(
+          () => this.finalizeTransition(toStage, incomingLayer, activeVideo),
+          WARRIOR_CROSSFADE_MS,
+        );
+      });
     };
 
     // If the video is already ready (e.g. cached / same src), fade immediately.
     if (incomingVideo.readyState >= 2) {
       beginFade();
-    } else {
-      this.attachCanplay(incomingVideo, beginFade);
-      // Safety fallback: start the fade after a short delay even if canplay
-      // never fires, so the warrior never gets stuck invisible.
-      setTimeout(beginFade, 250);
+      return;
     }
 
-    // Finalize the transition after the crossfade duration.
-    this.transitionTimer = setTimeout(() => {
-      this.transitioning = false;
-      this.transitionTimer = null;
+    this.attachCanplay(incomingVideo, beginFade);
 
-      // If another stage change arrived during the fade, transition again from
-      // the now-active visual state to the newest requested stage.
+    // Safety fallback: poll briefly until the incoming video can actually play,
+    // so we never fade in an unloaded/blank frame. If it still isn't ready after
+    // a generous timeout, fade anyway so the warrior never gets stuck invisible.
+    const pollStart = Date.now();
+    pollTimer = setInterval(() => {
       if (this.targetStage !== toStage) {
-        this.stage = toStage; // intermediate state is now the visual baseline
-        this.activeLayer = incomingLayer;
-        this.detachCanplay(activeVideo);
-        this.resetLayer(activeVideo);
-        this.startCrossfade(this.targetStage);
+        clearInterval(pollTimer!);
+        pollTimer = null;
         return;
       }
+      if (incomingVideo.readyState >= 2) {
+        clearInterval(pollTimer!);
+        pollTimer = null;
+        beginFade();
+        return;
+      }
+      if (Date.now() - pollStart > 3000) {
+        clearInterval(pollTimer!);
+        pollTimer = null;
+        beginFade();
+      }
+    }, 100);
+  }
 
-      this.stage = toStage;
+  /** Finalizes a completed crossfade and swaps which layer is "active". */
+  private finalizeTransition(
+    toStage: number,
+    incomingLayer: number,
+    activeVideo: HTMLVideoElement,
+  ): void {
+    this.transitioning = false;
+    this.transitionTimer = null;
+
+    // If another stage change arrived during the fade, transition again from
+    // the now-active visual state to the newest requested stage.
+    if (this.targetStage !== toStage) {
+      this.stage = toStage; // intermediate state is now the visual baseline
       this.activeLayer = incomingLayer;
       this.detachCanplay(activeVideo);
       this.resetLayer(activeVideo);
-    }, WARRIOR_CROSSFADE_MS);
+      this.startCrossfade(this.targetStage);
+      return;
+    }
+
+    this.stage = toStage;
+    this.activeLayer = incomingLayer;
+    this.detachCanplay(activeVideo);
+    this.resetLayer(activeVideo);
   }
 
   /** Loads `src` into `video`, resets to start, and begins muted looping playback. */

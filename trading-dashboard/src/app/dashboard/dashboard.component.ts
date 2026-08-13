@@ -3229,7 +3229,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
    * the warrior transformation. Sums `trade.profit` across currently OPEN MT5
    * trades (getCurrentMt5LiveTrades) divided by the account starting balance.
    * Closed trades and total account performance are intentionally excluded.
-   * Returns 0 (→ Stage 1 / idle) when there are no open trades.
+   * Returns 0 (→ Stage 0 / stage-00.mp4, the default idle video) when there are
+   * no open trades.
    */
   get warriorOpenTradePnlPercent(): number {
     const openTrades = this.getCurrentMt5LiveTrades();

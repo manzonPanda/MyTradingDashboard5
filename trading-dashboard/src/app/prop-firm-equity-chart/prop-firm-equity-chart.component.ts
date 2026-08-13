@@ -115,7 +115,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
    * LIVE OPEN-TRADE floating/unrealized P&L percentage, fed straight through to
    * the warrior overlay. Computed by the dashboard from the currently OPEN MT5
    * trades (sum of trade.profit / startingBalance * 100). Closed trades and
-   * total account performance are NOT used. 0 when no trade is open → Stage 1.
+   * total account performance are NOT used. 0 when no trade is open → Stage 0
+   * (stage-00.mp4, the default idle video).
    */
   @Input() openTradePnlPercent = 0;
 
