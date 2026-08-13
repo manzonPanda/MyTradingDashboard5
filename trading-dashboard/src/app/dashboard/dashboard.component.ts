@@ -1354,7 +1354,7 @@ mt5AccountInfo: AccountSettings = {
     return new Date(nowUtc.getTime() + 8 * 60 * 60 * 1000);
   }
 
-  private getCurrentSessionStart(): Date {
+          private getCurrentSessionStart(): Date {
     const phtNow = this.getPhilippinesNow();
     const sessionStart = new Date(phtNow);
     sessionStart.setHours(15, 0, 0, 0); // 3:00 PM PHT
@@ -1365,6 +1365,42 @@ mt5AccountInfo: AccountSettings = {
     // Convert back to UTC timestamp
     return new Date(sessionStart.getTime() - 8 * 60 * 60 * 1000);
   }
+
+  /**
+   * Total realized balance at the start of the current trading session.
+   *
+   * The session boundary is the most recent 3 PM PHT reset — the same instant
+   * the resetCountdown counts down to. The balance at that instant is the
+   * original starting balance plus the realized P&L of every closed trade that
+   * settled on or before the reset (i.e. "yesterday's" total balance). Using
+   * this value (instead of the original account size) for the daily-loss
+   * reference levels makes them track the live account value as it grows.
+   *
+   * Uses the same getSessionWindowUtc() / parseOpenDate() primitives as the
+   * daily-P&L calculation so the comparison stays in the same time frame.
+   */
+  private getSessionStartBalance(): number {
+    const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
+    const sessionStartUtc = this.getSessionWindowUtc().start;
+
+    let realizedBeforeSession = 0;
+    for (const t of this.tableData) {
+      const status = String(t.mt5status || '').toLowerCase();
+      const isOpenPosition =
+        status === 'open' || status === 'live' || status === 'position' || t.closeDate === '-';
+      if (isOpenPosition || !t.closeDate || t.closeDate === '-') continue;
+
+      const closeTime = this.parseOpenDate(t.closeDate);
+      if (!closeTime || isNaN(closeTime.getTime())) continue;
+      if (closeTime.getTime() <= sessionStartUtc.getTime()) {
+        realizedBeforeSession += this.getSafeNumber(t.netProfit);
+      }
+    }
+
+    const balance = startingBalance + realizedBeforeSession;
+    return Math.round(balance * 100) / 100;
+  }
+
 
   private parseOpenDate(str: string): Date | null {
     // Accept multiple formats, including:
@@ -1459,8 +1495,11 @@ mt5AccountInfo: AccountSettings = {
       }
     }
 
-    this.dailyPnL = pnl;
-    const startBal = this.mt5AccountInfo?.startingBalance || 0;
+                this.dailyPnL = pnl;
+    // Base the daily loss budget on yesterday's session-start balance (the most
+    // recent 3 PM PHT reset) rather than the original account size, so the
+    // budget — and therefore the doughnut — tracks the live account value.
+    const startBal = this.getSessionStartBalance() || 0;
     this.dailyPnLPercent = startBal > 0 ? (pnl / startBal) * 100 : 0;
     this.dailyWinsAmount = winSum;
     this.dailyWinsPercent = startBal > 0 ? (winSum / startBal) * 100 : 0;
@@ -2932,10 +2971,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const maxDDPct = this.mt5AccountInfo?.maxTotalDrawdown ?? 0;
     const dailyLossPct = this.mt5AccountInfo?.dailyLossLimit ?? 0;
 
-    // Reference levels derived from account config (never hard-coded).
+                // Reference levels derived from account config (never hard-coded).
     const profitTarget = startingBalance * (1 + profitTargetPct / 100);
     const maxDrawdown = startingBalance * (1 - maxDDPct / 100);
-    const dailyLossLimit = startingBalance * (1 - dailyLossPct / 100);
+    // The daily-loss threshold is measured from the balance at the start of the
+    // current trading session (the most recent 3 PM PHT reset that
+    // resetCountdown counts down to) — i.e. "yesterday's" total balance — not
+    // from the original account size, so the line tracks the live account value.
+    const sessionStartBalance = this.getSessionStartBalance();
+    const dailyLossLimit = sessionStartBalance * (1 - dailyLossPct / 100);
 
     // Floating (unrealized) P&L of currently open/live MT5 trades.
     const openTrades = this.getCurrentMt5LiveTrades();
