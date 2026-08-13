@@ -12052,9 +12052,14 @@ table.simple-table {
     }
 
     &.is-active {
-      border-color: #d6d9e3;
-      background: #fff;
+      border-color: #c4b5fd;
+      background: #ede9fe;
+      color: #4c1d95;
       box-shadow: 0 2px 8px rgba(31, 41, 55, 0.04);
+
+      strong {
+        color: #4c1d95;
+      }
 
       > mat-icon:first-child {
         color: #fff;
