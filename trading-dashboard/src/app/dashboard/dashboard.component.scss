@@ -1019,18 +1019,53 @@ table.simple-table {
       opacity: 1;
     }
 
+    .time-group-container {
+      border-color: #52637b;
+    }
+
     .time-group-header,
     .single-event .event-content,
     .multiple-events .summary-content,
     .multiple-events .expanded-event {
-      background: rgba(30, 41, 59, 0.82);
+      background: #243047;
+    }
+
+    .time-group-header {
+      border-bottom-color: #52637b;
+
+      .time-display {
+        color: #e9d5ff;
+      }
+
+      .mini-currency-badge {
+        color: #fff;
+        text-shadow: 0 1px 1px rgba(15, 23, 42, 0.45);
+
+        &.currency-eur { background: #c2410c; }
+        &.currency-gbp { background: #7e22ce; }
+        &.currency-jpy { background: #b91c1c; }
+        &.currency-aud { background: #15803d; }
+        &.currency-cad { background: #0f766e; }
+      }
+    }
+
+    .single-event .event-title,
+    .multiple-events .expanded-event .event-title {
+      color: #f8fafc;
+      font-weight: 600;
+    }
+
+    .multiple-events .summary-text,
+    .no-news .no-news-text {
+      color: #e2e8f0;
+      font-weight: 600;
     }
 
     .time-group-header.clickable:hover,
     .single-event .event-content:hover,
     .multiple-events .summary-content:hover,
     .multiple-events .expanded-event:hover {
-      background: #243047;
+      background: #2d3b50;
     }
 
     .single-event .event-content.news-ended,
@@ -13609,4 +13644,3 @@ table.simple-table {
     font-size: 0.85rem;
   }
 }
-
