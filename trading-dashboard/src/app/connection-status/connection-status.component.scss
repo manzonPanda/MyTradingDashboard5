@@ -156,7 +156,8 @@
 .reconnect-icon-btn {
   position: absolute;
   top: -6px;
-  right: -24px;
+  right: auto;
+  left: -24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -278,10 +279,13 @@
   }
 
   .reconnect-icon-btn {
-    position: static;
+    position: absolute;
+    top: -5px;
+    right: auto;
+    left: -24px;
     width: 22px;
     height: 22px;
-    margin-left: 0.35rem;
+    margin-left: 0;
     font-size: 13px;
     border-width: 1.5px;
   }

@@ -9,27 +9,23 @@
 
   &.anniversary-month {
     animation: celebrationGlow 3s ease-in-out infinite;
-
-    .time-units {
-      animation: gentleBounce 4s ease-in-out infinite;
-    }
   }
 
   .start-date-horizontal {
-    color: rgba(99, 102, 241, 0.8);
-    background: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.15);
-    border-radius: 6px;
-    padding: 4px 8px;
-    text-align: center;
-    letter-spacing: 0.2px;
-    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
     gap: 1px;
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.08);
+    color: rgba(99, 102, 241, 0.8);
+    letter-spacing: 0.2px;
+    text-align: center;
+    backdrop-filter: blur(10px);
 
     .date-line {
       font-weight: 600;
@@ -38,147 +34,183 @@
 
     .time-line {
       font-weight: 500;
-      opacity: 0.8;
       line-height: 1;
+      opacity: 0.8;
     }
 
     .anniversary-badge {
-      font-size: 9px;
-      color: #ff6b6b;
+      margin-top: 2px;
       background: linear-gradient(135deg, #ff6b6b, #ffa726, #ffeb3b);
       background-size: 200% 200%;
+      color: #ff6b6b;
+      font-size: 9px;
+      line-height: 1;
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       animation: gradientShift 2s ease-in-out infinite, pulse 1.5s ease-in-out infinite;
-      text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-      margin-top: 2px;
-      line-height: 1;
     }
   }
 
   .time-units {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 8px 12px;
-    background: linear-gradient(135deg,
-      rgba(99, 102, 241, 0.08) 0%,
-      rgba(139, 92, 246, 0.08) 50%,
-      rgba(59, 130, 246, 0.08) 100%);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-    box-shadow:
-      0 2px 8px rgba(99, 102, 241, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    min-width: 80px;
     flex: 1;
+    flex-direction: column;
     justify-content: center;
+    gap: 8px;
+    min-width: 80px;
+    padding: 8px 12px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08) 50%, rgba(59, 130, 246, 0.08));
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
 
-    .time-unit {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 4px;
-      border-left: 2px solid transparent;
-      transition: all 0.2s ease;
+  .experience-duration {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 8px;
+  }
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.06);
-        transform: translateX(1px);
-      }
+  .time-unit {
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 
-      .value {
-        font-size: 24px;
-        font-weight: 600;
-        line-height: 1;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      }
-
-      .label {
-        font-size: 14px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        opacity: 0.7;
-      }
-
-      // Beautiful colors for each unit
-      &:nth-child(1) {
-        border-left-color: #8b5cf6;
-        .value { color: #8b5cf6; }
-        .label { color: #a78bfa; }
-      }
-
-      &:nth-child(2) {
-        border-left-color: #6366f1;
-        .value { color: #6366f1; }
-        .label { color: #818cf8; }
-      }
-
-      &:nth-child(3) {
-        border-left-color: #3b82f6;
-        .value { color: #3b82f6; }
-        .label { color: #60a5fa; }
-      }
-
-      &:nth-child(4) {
-        border-left-color: #10b981;
-        .value { color: #10b981; }
-        .label { color: #34d399; }
-      }
-
-      &:nth-child(5) {
-        border-left-color: #f59e0b;
-        .value { color: #f59e0b; }
-        .label { color: #fbbf24; }
-      }
-
-      &:nth-child(6) {
-        border-left-color: #ef4444;
-        .value { color: #ef4444; }
-        .label { color: #f87171; }
-      }
+    &:hover {
+      transform: translateY(-1px);
     }
+
+    .value {
+      display: block;
+      font-weight: 700;
+      line-height: 0.88;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .label {
+      display: block;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+  }
+
+  .years-spotlight {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 88px;
+    padding: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.28);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(99, 102, 241, 0.08));
+    box-shadow: inset 3px 0 #8b5cf6;
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.24), rgba(99, 102, 241, 0.12));
+      box-shadow: inset 3px 0 #8b5cf6, 0 4px 12px rgba(139, 92, 246, 0.12);
+    }
+
+    .duration-kicker {
+      color: #8b5cf6;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .duration-reading {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .value {
+      color: #8b5cf6;
+      font-size: clamp(2.25rem, 5vw, 3.5rem);
+      letter-spacing: -0.07em;
+    }
+
+    .label {
+      padding-bottom: 4px;
+      color: #a78bfa;
+      font-size: 12px;
+    }
+  }
+
+  .duration-details {
+    display: grid;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .time-unit--months,
+  .time-unit--days {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+
+    .value {
+      font-size: 22px;
+    }
+
+    .label {
+      font-size: 9px;
+      text-align: right;
+    }
+  }
+
+  .time-unit--months {
+    box-shadow: inset 3px 0 #6366f1;
+
+    .value { color: #6366f1; }
+    .label { color: #818cf8; }
+  }
+
+  .time-unit--days {
+    box-shadow: inset 3px 0 #3b82f6;
+
+    .value { color: #3b82f6; }
+    .label { color: #60a5fa; }
   }
 }
 
-
-
-// 📱 Responsive compact layout
 @media (max-width: 1200px) {
   .dream-time-minimal {
     gap: 6px;
 
-    .start-date-vertical {
-      font-size: 16px;
-      padding: 4px 2px;
-    }
-
     .time-units {
       gap: 2px;
-      padding: 6px 8px;
       min-width: 70px;
+      padding: 6px 8px;
+    }
 
-      .time-unit:nth-child(5),
-      .time-unit:nth-child(6) {
-        display: none; // Hide minutes and seconds
-      }
+    .experience-duration,
+    .duration-details {
+      gap: 2px;
+    }
 
-      .time-unit {
-        padding: 1px 4px;
+    .years-spotlight,
+    .time-unit--months,
+    .time-unit--days {
+      padding: 4px;
+    }
 
-        .value {
-          font-size: 20px;
-        }
+    .years-spotlight .value,
+    .time-unit--months .value,
+    .time-unit--days .value {
+      font-size: 20px;
+    }
 
-        .label {
-          font-size: 12px;
-        }
-      }
+    .time-unit .label {
+      font-size: 12px;
     }
   }
 }
@@ -187,31 +219,31 @@
   .dream-time-minimal {
     gap: 4px;
 
-    .start-date-vertical {
-      font-size: 14px;
-      padding: 3px 2px;
-    }
-
     .time-units {
       gap: 1px;
-      padding: 4px 6px;
       min-width: 60px;
+      padding: 4px 6px;
+    }
 
-      .time-unit:nth-child(n+4) {
-        display: none; // Only show years, months, days
-      }
+    .experience-duration,
+    .duration-details {
+      gap: 1px;
+    }
 
-      .time-unit {
-        padding: 1px 3px;
+    .years-spotlight,
+    .time-unit--months,
+    .time-unit--days {
+      padding: 3px;
+    }
 
-        .value {
-          font-size: 18px;
-        }
+    .years-spotlight .value,
+    .time-unit--months .value,
+    .time-unit--days .value {
+      font-size: 18px;
+    }
 
-        .label {
-          font-size: 11px;
-        }
-      }
+    .time-unit .label {
+      font-size: 11px;
     }
   }
 }
@@ -285,14 +317,11 @@
   }
 }
 
-.sparkle {
-  position: absolute;
-  top: 10%;
-  font-size: 12px;
-  animation: sparkleFloat 3s ease-in-out infinite;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+@for $index from 1 through 25 {
+  .confetti-delay-#{$index} {
+    animation-delay: #{($index - 1) * 0.1}s;
+  }
 }
-
 
 // 🌟 MAGICAL KEYFRAME ANIMATIONS 🌟
 @keyframes confettiFall {
@@ -306,18 +335,6 @@
   }
 }
 
-@keyframes sparkleFloat {
-  0%, 100% {
-    transform: translateY(0px) scale(0.8);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-15px) scale(1.2);
-    opacity: 1;
-  }
-}
-
-
 @keyframes celebrationGlow {
   0%, 100% {
     box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
@@ -330,14 +347,6 @@
   }
 }
 
-@keyframes gentleBounce {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
 
 // Enhanced anniversary month styling
 .anniversary-month {

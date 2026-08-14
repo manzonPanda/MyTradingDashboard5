@@ -10496,9 +10496,6 @@ table.simple-table {
       padding: 0.35rem;
 
       .time-units {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: stretch;
         gap: 0.3rem;
         min-width: 0;
         padding: 0;
@@ -10509,80 +10506,88 @@ table.simple-table {
       }
 
       .start-date-horizontal {
-        flex: 0 0 100%;
         margin-bottom: 0.15rem;
         padding: 0.35rem 0.45rem;
         font-size: 0.68rem;
+        color: #64748B !important;
+        background: #FAF9FF !important;
+        border-color: #E9E5F5 !important;
       }
 
-      .time-unit {
-        display: flex;
-        flex: 1 1 0;
+      .experience-duration {
         min-width: 0;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.05rem;
-        padding: 0.25rem 0.2rem;
-        text-align: center;
+        gap: 0.3rem;
+      }
+
+      .duration-details {
+        min-width: 0;
+        gap: 0.3rem;
+      }
+
+      .years-spotlight {
+        min-height: 4.4rem;
+        padding: 0.4rem 0.45rem;
+        border-color: #DDD6FE;
+        background: linear-gradient(135deg, #F5F3FF, #FAF9FF);
+        box-shadow: inset 3px 0 #7C3AED;
+
+        .duration-kicker {
+          color: #7C3AED;
+          font-size: clamp(0.32rem, 3.4cqw, 0.42rem);
+        }
+
+        .duration-reading {
+          gap: 0.25rem;
+        }
 
         .value {
-          font-size: clamp(0.62rem, 7cqw, 0.85rem);
-          line-height: 1;
+          color: #7C3AED !important;
+          font-size: clamp(1.5rem, 14cqw, 2.4rem);
+          text-shadow: none !important;
+          -webkit-text-fill-color: #7C3AED !important;
         }
 
         .label {
-          font-size: clamp(0.38rem, 4.5cqw, 0.45rem);
-          line-height: 1.1;
-          letter-spacing: 0;
-          white-space: nowrap;
+          padding-bottom: 0.15rem;
+          color: #7C3AED !important;
+          font-size: clamp(0.42rem, 4cqw, 0.52rem);
         }
+      }
+
+      .time-unit--months,
+      .time-unit--days {
+        min-width: 0;
+        padding: 0.35rem;
+        border-color: #E9E5F5;
+        background: #FAF9FF;
+
+        .value {
+          color: #7C3AED !important;
+          font-size: clamp(0.74rem, 7cqw, 1rem);
+          text-shadow: none !important;
+          -webkit-text-fill-color: #7C3AED !important;
+        }
+
+        .label {
+          min-width: 0;
+          max-width: 100%;
+          color: #64748B !important;
+          font-size: clamp(0.32rem, 3.5cqw, 0.43rem);
+          line-height: 1;
+          letter-spacing: 0;
+          overflow-wrap: anywhere;
+          text-align: right;
+        }
+      }
+
+      .time-unit--months {
+        box-shadow: inset 2px 0 #A78BFA;
+      }
+
+      .time-unit--days {
+        box-shadow: inset 2px 0 #818CF8;
       }
     }
-
-      .dream-time-minimal {
-        .start-date-horizontal {
-          color: #64748B !important;
-          background: #FAF9FF !important;
-          border-color: #E9E5F5 !important;
-        }
-
-        .time-units {
-          background: #FAF9FF !important;
-          border-color: #E9E5F5 !important;
-          box-shadow: none !important;
-
-          .time-unit,
-          .time-unit:nth-child(1),
-          .time-unit:nth-child(2),
-          .time-unit:nth-child(3),
-          .time-unit:nth-child(4),
-          .time-unit:nth-child(5),
-          .time-unit:nth-child(6) {
-            border-left-color: #DDD6FE !important;
-
-            .value {
-              background: none;
-              color: #7C3AED !important;
-              -webkit-text-fill-color: #7C3AED !important;
-              text-shadow: none !important;
-            }
-
-            .label,
-            &:nth-child(1) .label,
-            &:nth-child(2) .label,
-            &:nth-child(3) .label,
-            &:nth-child(4) .label,
-            &:nth-child(5) .label,
-            &:nth-child(6) .label {
-              border-color: transparent;
-              background: transparent !important;
-              color: #64748B !important;
-              text-shadow: none !important;
-            }
-          }
-        }
-      }
   }
 }
 
@@ -10595,35 +10600,43 @@ table.simple-table {
         border-color: #475569 !important;
       }
 
-      .time-units {
-        background: #172033 !important;
-        border-color: #475569 !important;
+      .years-spotlight {
+        border-color: #4c3a70;
+        background: linear-gradient(135deg, #2d2443, #1e293b);
+        box-shadow: inset 3px 0 #a78bfa;
 
-        .time-unit,
-        .time-unit:nth-child(1),
-        .time-unit:nth-child(2),
-        .time-unit:nth-child(3),
-        .time-unit:nth-child(4),
-        .time-unit:nth-child(5),
-        .time-unit:nth-child(6) {
-          border-left-color: #475569 !important;
-
-          .value {
-            color: #c4b5fd !important;
-            -webkit-text-fill-color: #c4b5fd !important;
-          }
-
-          .label,
-          &:nth-child(1) .label,
-          &:nth-child(2) .label,
-          &:nth-child(3) .label,
-          &:nth-child(4) .label,
-          &:nth-child(5) .label,
-          &:nth-child(6) .label {
-            background: transparent !important;
-            color: #94a3b8 !important;
-          }
+        .duration-kicker,
+        .label {
+          color: #c4b5fd !important;
         }
+
+        .value {
+          color: #ddd6fe !important;
+          -webkit-text-fill-color: #ddd6fe !important;
+        }
+      }
+
+      .time-unit--months,
+      .time-unit--days {
+        border-color: #475569;
+        background: #1e293b;
+
+        .value {
+          color: #c4b5fd !important;
+          -webkit-text-fill-color: #c4b5fd !important;
+        }
+
+        .label {
+          color: #94a3b8 !important;
+        }
+      }
+
+      .time-unit--months {
+        box-shadow: inset 2px 0 #a78bfa;
+      }
+
+      .time-unit--days {
+        box-shadow: inset 2px 0 #818cf8;
       }
     }
   }
@@ -10656,6 +10669,10 @@ table.simple-table {
     .server-status-item {
       min-width: 0;
       padding: 0.2rem;
+    }
+
+    .server-status-item.status-offline {
+      padding-left: 1.5rem;
     }
 
     .server-label {
