@@ -115,9 +115,9 @@
     }
 
     .target-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.2rem;
@@ -249,7 +249,8 @@
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        font-size: 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
       }
     }
 
@@ -279,7 +280,7 @@
     }
 
     .target-amount {
-      font-size: 0.65rem;
+      font-size: 0.72rem;
       font-weight: 600;
       color: #64748b;
       opacity: 0.9;
@@ -301,8 +302,8 @@
       }
 
       .target-amount {
-        font-size: 0.7rem;
-        font-weight: 500;
+        font-size: 0.72rem;
+        font-weight: 600;
         opacity: 0.8;
       }
     }
@@ -374,12 +375,12 @@
     }
 
     .stat-label {
-      font-size: 0.6rem;
-      font-weight: 600;
-      color: #64748b;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      line-height: 1;
+      line-height: 1.1;
       margin: 0 0 0.2rem 0;
       white-space: nowrap;
     }
@@ -527,14 +528,15 @@
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        font-size: 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
         .mode-icon { font-size: 10px; height: 10px; width: 10px; }
       }
 
 
       .mat-button-toggle {
-        font-size: 0.65rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 700;
         min-height: 24px;
         line-height: 24px;
         color: var(--tf-text-secondary);
@@ -566,7 +568,7 @@
 :host ::ng-deep .chart-mode-toggle .mdc-switch__icon { display: none; }
 :host ::ng-deep .chart-mode-toggle .mdc-switch__track { height: 16px; }
 :host ::ng-deep .chart-mode-toggle .mdc-switch__handle { width: 16px; height: 16px; }
-:host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.7rem; color: var(--tf-text-primary); font-weight: 600; }
+:host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.78rem; color: var(--tf-text-primary); font-weight: 700; }
 
 /* reusable gradient text utility for this component */
 .gradient-text {
@@ -889,6 +891,9 @@ table.simple-table {
   --tf-text-primary: #334155;
   --tf-text-secondary: #64748B;
   --tf-text-muted: #94A3B8;
+  --tf-news-surface: #FFFFFF;
+  --tf-news-surface-hover: #F8FAFC;
+  --tf-news-time: #5B21B6;
 
   --tf-accent-primary: #7C3AED;
   --tf-accent-secondary: #8B5CF6;
@@ -921,6 +926,9 @@ table.simple-table {
   --tf-text-primary: #e2e8f0;
   --tf-text-secondary: #cbd5e1;
   --tf-text-muted: #a8b5c7;
+  --tf-news-surface: #0f172a;
+  --tf-news-surface-hover: #1e293b;
+  --tf-news-time: #ddd6fe;
   --tf-border-primary: #3f4f66;
   --tf-border-secondary: #64748b;
 }
@@ -1012,7 +1020,7 @@ table.simple-table {
 
   .dashboard-header {
     .day-column.past {
-      opacity: 0.95;
+      opacity: 1;
     }
 
     .day-column.future {
@@ -1023,20 +1031,20 @@ table.simple-table {
     .single-event .event-content,
     .multiple-events .summary-content,
     .multiple-events .expanded-event {
-      background: rgba(30, 41, 59, 0.82);
+      background: var(--tf-news-surface);
     }
 
     .time-group-header.clickable:hover,
     .single-event .event-content:hover,
     .multiple-events .summary-content:hover,
     .multiple-events .expanded-event:hover {
-      background: #243047;
+      background: var(--tf-news-surface-hover);
     }
 
     .single-event .event-content.news-ended,
     .multiple-events .expanded-event.news-ended {
       background: rgba(71, 85, 105, 0.42);
-      opacity: 0.82;
+      opacity: 0.9;
     }
   }
 }
@@ -1136,12 +1144,9 @@ table.simple-table {
           flex: 1.25 1 0;
         }
 
-        &.past {
-          opacity: 0.75;
-        }
-
+        &.past,
         &.future {
-          opacity: 0.85;
+          opacity: 1;
         }
 
         .enhanced-day-header {
@@ -1317,7 +1322,7 @@ table.simple-table {
               justify-content: space-between;
               align-items: center;
               padding: 0.3rem 0.5rem;
-              background: rgba(255, 255, 255, 0.5);
+              background: var(--tf-news-surface);
               border-bottom: 1px solid var(--tf-border-primary);
               transition: all 0.3s ease;
 
@@ -1326,12 +1331,12 @@ table.simple-table {
                 user-select: none;
 
                 &:hover {
-                  background: rgba(255, 255, 255, 0.8);
+                  background: var(--tf-news-surface-hover);
                   transform: scale(1.02);
                 }
 
                 &:active {
-                  background: rgba(255, 255, 255, 0.9);
+                  background: var(--tf-news-surface-hover);
                   transform: scale(0.98);
                 }
               }
@@ -1342,9 +1347,9 @@ table.simple-table {
                 gap: 0.5rem;
 
                 .time-display {
-                  font-size: 0.7rem;
+                  font-size: 0.75rem;
                   font-weight: 700;
-                  color: var(--tf-accent-primary);
+                  color: var(--tf-news-time);
                   font-family: 'Monaco', 'Menlo', monospace;
                 }
 
@@ -1382,11 +1387,11 @@ table.simple-table {
                 gap: 0.3rem;
                 padding: 0.25rem 0.4rem;
                 border-radius: 6px;
-                background: rgba(255, 255, 255, 0.7);
+                background: var(--tf-news-surface);
                 transition: all 0.3s ease;
 
                 &:hover {
-                  background: rgba(255, 255, 255, 0.9);
+                  background: var(--tf-news-surface-hover);
                   transform: translateY(-1px);
                 }
 
@@ -1423,10 +1428,10 @@ table.simple-table {
                 }
 
                 .event-title {
-                  font-size: 0.68rem;
+                  font-size: 0.75rem;
                   color: var(--tf-text-primary);
-                  line-height: 1.2;
-                  font-weight: 500;
+                  line-height: 1.25;
+                  font-weight: 600;
                   word-wrap: break-word;
                   overflow-wrap: break-word;
                   hyphens: auto;
@@ -1443,12 +1448,12 @@ table.simple-table {
                   justify-content: space-between;
                   align-items: center;
                   padding: 0.375rem 0.5rem;
-                  background: rgba(255, 255, 255, 0.7);
+                  background: var(--tf-news-surface);
                   border-radius: 6px;
                   border: 1px solid rgba(16, 185, 129, 0.2);
 
                   .summary-text {
-                    font-size: 0.7rem;
+                    font-size: 0.75rem;
                     color: var(--tf-text-secondary);
                     font-weight: 600;
                   }
@@ -1515,13 +1520,13 @@ table.simple-table {
                   align-items: center;
                   gap: 0.5rem;
                   padding: 0.375rem 0.5rem;
-                  background: rgba(255, 255, 255, 0.8);
+                  background: var(--tf-news-surface);
                   border-radius: 6px;
                   transition: all 0.3s ease;
                   animation: slide-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
 
                   &:hover {
-                    background: rgba(255, 255, 255, 0.95);
+                    background: var(--tf-news-surface-hover);
                     transform: translateY(-1px) translateX(2px);
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
                   }
@@ -1554,10 +1559,10 @@ table.simple-table {
                   }
 
                   .event-title {
-                    font-size: 0.7rem;
+                    font-size: 0.75rem;
                     color: var(--tf-text-primary);
                     line-height: 1.3;
-                    font-weight: 500;
+                    font-weight: 600;
                     word-wrap: break-word;
                     overflow-wrap: break-word;
                     hyphens: auto;
@@ -1595,8 +1600,8 @@ table.simple-table {
               gap: 0.3rem;
               margin-bottom: 0.25rem;
               color: var(--tf-text-secondary);
-              font-size: 0.75rem;
-              font-weight: 500;
+              font-size: 0.8rem;
+              font-weight: 600;
               letter-spacing: 0.5px;
             }
 
@@ -3196,8 +3201,8 @@ table.simple-table {
   }
 
   .metric-title {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--tf-text-secondary);
     margin: 0;
     text-transform: uppercase;
@@ -3215,11 +3220,11 @@ table.simple-table {
   }
 
   .metric-icon {
-    color: var(--tf-text-muted);
-    opacity: 0.7;
-    font-size: 0.9rem;
-    width: 0.9rem;
-    height: 0.9rem;
+    color: var(--tf-text-secondary);
+    opacity: 1;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
   }
 
   .metric-value {
@@ -3505,9 +3510,9 @@ table.simple-table {
     }
 
     .bar-title {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--tf-text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--tf-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       text-align: center;
@@ -3573,12 +3578,12 @@ table.simple-table {
     }
 
     .stat-label {
-      font-size: 0.65rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--tf-text-muted);
-      line-height: 1;
+      color: var(--tf-text-secondary);
+      line-height: 1.1;
     }
   }
 
@@ -3857,8 +3862,8 @@ table.simple-table {
           }
 
           .indicator-text {
-            font-size: 0.6rem;
-            font-weight: 600;
+            font-size: 0.72rem;
+            font-weight: 700;
             color: var(--tf-text-muted);
             transition: color 0.3s ease;
           }
@@ -3983,12 +3988,12 @@ table.simple-table {
     }
 
     .stat-label {
-      font-size: 0.65rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--tf-text-muted);
-      line-height: 1;
+      color: var(--tf-text-secondary);
+      line-height: 1.1;
     }
 
     .activity-chart {
@@ -4059,9 +4064,9 @@ table.simple-table {
     }
 
     .bar-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--tf-text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--tf-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       text-align: center;
@@ -9401,7 +9406,8 @@ table.simple-table {
 .trading-chart-container .chart-header .target-label {
   overflow: hidden;
   width: 100%;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -10428,8 +10434,8 @@ table.simple-table {
 
 .navigation-panel-heading {
   justify-content: space-between;
-  color: var(--tf-text-muted);
-  font-size: 0.67rem;
+  color: var(--tf-text-secondary);
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -10471,9 +10477,9 @@ table.simple-table {
   gap: 0.3rem;
   padding: 0.35rem 0.45rem;
   border-bottom: 1px solid var(--tf-border-primary);
-  color: var(--tf-text-secondary);
-  font-size: 0.71rem;
-  font-weight: 750;
+  color: var(--tf-text-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
 
   mat-icon {
     width: 1rem;
@@ -10807,8 +10813,8 @@ table.simple-table {
   white-space: nowrap;
 }
 
-.navigation-profile-copy strong { font-size: 0.72rem; }
-.navigation-profile-copy small { color: rgba(255, 255, 255, 0.72); font-size: 0.62rem; }
+.navigation-profile-copy strong { font-size: 0.8rem; font-weight: 700; }
+.navigation-profile-copy small { color: rgba(255, 255, 255, 0.82); font-size: 0.7rem; font-weight: 600; }
 .navigation-profile-signout { display: grid; width: 1.7rem; height: 1.7rem; place-items: center; padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; }
 .navigation-profile-signout mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 
@@ -13431,7 +13437,8 @@ table.simple-table {
 
   .metrics-section .trading-chart-container .chart-header .stat-label,
   .metrics-section .trading-chart-container .chart-header .target-label {
-    font-size: 0.7rem;
+    font-size: 0.74rem;
+    font-weight: 700;
   }
 
   .metrics-section .trading-chart-container .chart-header .stat-value,
@@ -13609,4 +13616,3 @@ table.simple-table {
     font-size: 0.85rem;
   }
 }
-
