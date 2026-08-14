@@ -115,9 +115,9 @@
     }
 
     .target-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.2rem;
@@ -249,7 +249,8 @@
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        font-size: 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
       }
     }
 
@@ -279,7 +280,7 @@
     }
 
     .target-amount {
-      font-size: 0.65rem;
+      font-size: 0.72rem;
       font-weight: 600;
       color: #64748b;
       opacity: 0.9;
@@ -301,8 +302,8 @@
       }
 
       .target-amount {
-        font-size: 0.7rem;
-        font-weight: 500;
+        font-size: 0.72rem;
+        font-weight: 600;
         opacity: 0.8;
       }
     }
@@ -374,12 +375,12 @@
     }
 
     .stat-label {
-      font-size: 0.6rem;
-      font-weight: 600;
-      color: #64748b;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      line-height: 1;
+      line-height: 1.1;
       margin: 0 0 0.2rem 0;
       white-space: nowrap;
     }
@@ -527,14 +528,15 @@
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        font-size: 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
         .mode-icon { font-size: 10px; height: 10px; width: 10px; }
       }
 
 
       .mat-button-toggle {
-        font-size: 0.65rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 700;
         min-height: 24px;
         line-height: 24px;
         color: var(--tf-text-secondary);
@@ -566,7 +568,7 @@
 :host ::ng-deep .chart-mode-toggle .mdc-switch__icon { display: none; }
 :host ::ng-deep .chart-mode-toggle .mdc-switch__track { height: 16px; }
 :host ::ng-deep .chart-mode-toggle .mdc-switch__handle { width: 16px; height: 16px; }
-:host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.7rem; color: var(--tf-text-primary); font-weight: 600; }
+:host ::ng-deep .chart-mode-toggle .mdc-label { font-size: 0.78rem; color: var(--tf-text-primary); font-weight: 700; }
 
 /* reusable gradient text utility for this component */
 .gradient-text {
@@ -3199,8 +3201,8 @@ table.simple-table {
   }
 
   .metric-title {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--tf-text-secondary);
     margin: 0;
     text-transform: uppercase;
@@ -3218,11 +3220,11 @@ table.simple-table {
   }
 
   .metric-icon {
-    color: var(--tf-text-muted);
-    opacity: 0.7;
-    font-size: 0.9rem;
-    width: 0.9rem;
-    height: 0.9rem;
+    color: var(--tf-text-secondary);
+    opacity: 1;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
   }
 
   .metric-value {
@@ -3508,9 +3510,9 @@ table.simple-table {
     }
 
     .bar-title {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--tf-text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--tf-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       text-align: center;
@@ -3576,12 +3578,12 @@ table.simple-table {
     }
 
     .stat-label {
-      font-size: 0.65rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--tf-text-muted);
-      line-height: 1;
+      color: var(--tf-text-secondary);
+      line-height: 1.1;
     }
   }
 
@@ -3860,8 +3862,8 @@ table.simple-table {
           }
 
           .indicator-text {
-            font-size: 0.6rem;
-            font-weight: 600;
+            font-size: 0.72rem;
+            font-weight: 700;
             color: var(--tf-text-muted);
             transition: color 0.3s ease;
           }
@@ -3986,12 +3988,12 @@ table.simple-table {
     }
 
     .stat-label {
-      font-size: 0.65rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--tf-text-muted);
-      line-height: 1;
+      color: var(--tf-text-secondary);
+      line-height: 1.1;
     }
 
     .activity-chart {
@@ -4062,9 +4064,9 @@ table.simple-table {
     }
 
     .bar-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--tf-text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--tf-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       text-align: center;
@@ -9404,7 +9406,8 @@ table.simple-table {
 .trading-chart-container .chart-header .target-label {
   overflow: hidden;
   width: 100%;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -10431,8 +10434,8 @@ table.simple-table {
 
 .navigation-panel-heading {
   justify-content: space-between;
-  color: var(--tf-text-muted);
-  font-size: 0.67rem;
+  color: var(--tf-text-secondary);
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -10474,9 +10477,9 @@ table.simple-table {
   gap: 0.3rem;
   padding: 0.35rem 0.45rem;
   border-bottom: 1px solid var(--tf-border-primary);
-  color: var(--tf-text-secondary);
-  font-size: 0.71rem;
-  font-weight: 750;
+  color: var(--tf-text-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
 
   mat-icon {
     width: 1rem;
@@ -10810,8 +10813,8 @@ table.simple-table {
   white-space: nowrap;
 }
 
-.navigation-profile-copy strong { font-size: 0.72rem; }
-.navigation-profile-copy small { color: rgba(255, 255, 255, 0.72); font-size: 0.62rem; }
+.navigation-profile-copy strong { font-size: 0.8rem; font-weight: 700; }
+.navigation-profile-copy small { color: rgba(255, 255, 255, 0.82); font-size: 0.7rem; font-weight: 600; }
 .navigation-profile-signout { display: grid; width: 1.7rem; height: 1.7rem; place-items: center; padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; }
 .navigation-profile-signout mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 
@@ -13434,7 +13437,8 @@ table.simple-table {
 
   .metrics-section .trading-chart-container .chart-header .stat-label,
   .metrics-section .trading-chart-container .chart-header .target-label {
-    font-size: 0.7rem;
+    font-size: 0.74rem;
+    font-weight: 700;
   }
 
   .metrics-section .trading-chart-container .chart-header .stat-value,
