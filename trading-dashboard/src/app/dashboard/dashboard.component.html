@@ -761,7 +761,7 @@
                   <div class="chart-bars">
                     <div class="bar-wrapper">
                       <div class="bar-segment best-profit-bar"
-                           [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
+                           [style.height.%]="getPerformanceBarHeight(calculateBestProfit(), calculateBestProfit(), mathAbs(calculateBestLoss()))">
                         <span class="bar-label">
                           {{ (calculateBestProfitPercentage() >= 0 ? '+' : '') + (calculateBestProfitPercentage() | number:'1.0-1') + '%' }}<br>
                           {{ calculateBestProfit() | currency:'USD':'symbol':'1.0-0' }}
@@ -771,7 +771,7 @@
                     </div>
                     <div class="bar-wrapper">
                       <div class="bar-segment worst-loss-bar"
-                           [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))" style="width: -webkit-fill-available;">
+                           [style.height.%]="getPerformanceBarHeight(mathAbs(calculateBestLoss()), calculateBestProfit(), mathAbs(calculateBestLoss()))">
                         <span class="bar-label">
                           {{ '-' + (calculateBestLossPercentage() | number:'1.0-1') + '%' }}<br>
                           {{ calculateBestLoss() | currency:'USD':'symbol':'1.0-0' }}
