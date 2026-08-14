@@ -18,6 +18,8 @@ interface TimeElapsed {
 export class DreamTimelineComponent implements OnInit, OnDestroy {
   dreamStartDate = new Date('2023-08-11T06:41:00');
   timeElapsed: TimeElapsed = { years: 0, months: 0, days: 0 };
+  confettiPieces = Array.from({ length: 25 });
+  sparkles = Array.from({ length: 15 });
   private timerSubscription?: Subscription;
   isAnniversaryMonth = false;
   showConfetti = false;
