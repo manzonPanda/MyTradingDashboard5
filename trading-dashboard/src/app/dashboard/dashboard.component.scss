@@ -1019,19 +1019,24 @@ table.simple-table {
       opacity: 1;
     }
 
+    .enhanced-news-list,
+    .enhanced-news-list.empty-news-list {
+      background: transparent;
+    }
+
     .time-group-container {
-      border-color: #52637b;
+      border-color: rgba(167, 139, 250, 0.5);
     }
 
     .time-group-header,
     .single-event .event-content,
     .multiple-events .summary-content,
     .multiple-events .expanded-event {
-      background: #243047;
+      background: transparent;
     }
 
     .time-group-header {
-      border-bottom-color: #52637b;
+      border-bottom-color: rgba(167, 139, 250, 0.5);
 
       .time-display {
         color: #e9d5ff;
@@ -1065,7 +1070,7 @@ table.simple-table {
     .single-event .event-content:hover,
     .multiple-events .summary-content:hover,
     .multiple-events .expanded-event:hover {
-      background: #2d3b50;
+      background: rgba(124, 58, 237, 0.2);
     }
 
     .single-event .event-content.news-ended,
@@ -1222,6 +1227,7 @@ table.simple-table {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 0;
+          background: transparent;
 
           // For single time group, center it
           .time-group-container:only-child {
@@ -1352,7 +1358,7 @@ table.simple-table {
               justify-content: space-between;
               align-items: center;
               padding: 0.3rem 0.5rem;
-              background: rgba(255, 255, 255, 0.5);
+              background: transparent;
               border-bottom: 1px solid var(--tf-border-primary);
               transition: all 0.3s ease;
 
@@ -1361,12 +1367,12 @@ table.simple-table {
                 user-select: none;
 
                 &:hover {
-                  background: rgba(255, 255, 255, 0.8);
+                  background: rgba(124, 58, 237, 0.12);
                   transform: scale(1.02);
                 }
 
                 &:active {
-                  background: rgba(255, 255, 255, 0.9);
+                  background: rgba(124, 58, 237, 0.18);
                   transform: scale(0.98);
                 }
               }
@@ -1417,18 +1423,17 @@ table.simple-table {
                 gap: 0.3rem;
                 padding: 0.25rem 0.4rem;
                 border-radius: 6px;
-                background: rgba(255, 255, 255, 0.7);
+                background: transparent;
                 transition: all 0.3s ease;
 
                 &:hover {
-                  background: rgba(255, 255, 255, 0.9);
+                  background: rgba(124, 58, 237, 0.12);
                   transform: translateY(-1px);
                 }
 
                 &.news-ended {
-                  background: rgba(148, 163, 184, 0.16);
-                  filter: grayscale(1);
-                  opacity: 0.65;
+                  background: transparent;
+                  opacity: 0.8;
                 }
 
                 .event-meta {
@@ -1478,7 +1483,7 @@ table.simple-table {
                   justify-content: space-between;
                   align-items: center;
                   padding: 0.375rem 0.5rem;
-                  background: rgba(255, 255, 255, 0.7);
+                  background: transparent;
                   border-radius: 6px;
                   border: 1px solid rgba(16, 185, 129, 0.2);
 
@@ -1550,21 +1555,20 @@ table.simple-table {
                   align-items: center;
                   gap: 0.5rem;
                   padding: 0.375rem 0.5rem;
-                  background: rgba(255, 255, 255, 0.8);
+                  background: transparent;
                   border-radius: 6px;
                   transition: all 0.3s ease;
                   animation: slide-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
 
                   &:hover {
-                    background: rgba(255, 255, 255, 0.95);
+                    background: rgba(124, 58, 237, 0.12);
                     transform: translateY(-1px) translateX(2px);
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
                   }
 
                   &.news-ended {
-                    background: rgba(148, 163, 184, 0.16);
-                    filter: grayscale(1);
-                    opacity: 0.65;
+                    background: transparent;
+                    opacity: 0.8;
                   }
 
                   .event-meta {
