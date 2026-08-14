@@ -3432,12 +3432,11 @@ table.simple-table {
     grid-template-rows: auto 1fr;
 
     .metric-content {
-      padding: 0;
+      padding: 0 0 2.25rem;
       align-items: center;
       gap: 0.5rem;
       align-self: end;
       margin-top: 0;
-      padding-bottom: 1.25rem;
     }
 
 
@@ -3476,7 +3475,7 @@ table.simple-table {
     }
 
     .bar-segment {
-      width: 32px;
+      width: -webkit-fill-available;
       min-height: 40px;
       display: flex;
       align-items: center;
@@ -3906,7 +3905,7 @@ table.simple-table {
         .ratio-display {
           font-size: 0.85rem;
           font-weight: 600;
-          color: var(--tf-accent-primary);
+          color: var(--tf-text-primary);
           background: rgba(107, 70, 193, 0.08);
           padding: 0.2rem 0.4rem;
           border-radius: 4px;

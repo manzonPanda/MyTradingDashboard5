@@ -35,7 +35,7 @@
 }
 
 .live-trades-maximize-button:focus-visible {
-  outline: 2px solid var(--tf-positive);
+  outline: 2px solid var(--tf-accent-primary);
   outline-offset: 2px;
 }
 
@@ -115,7 +115,7 @@
   position: absolute;
   border-radius: 50%;
   animation: float 8s ease-in-out infinite;
-  background: radial-gradient(circle, var(--tf-positive), transparent);
+  background: radial-gradient(circle, var(--tf-accent-primary), transparent);
 
   &.orb-1 {
     width: 200px;
@@ -176,7 +176,7 @@
   font-size: 44px;
   width: 44px;
   height: 44px;
-  color: var(--tf-positive);
+  color: var(--tf-accent-primary);
   animation: icon-float 3s ease-in-out infinite;
 
   @media (max-width: 768px) {
@@ -203,7 +203,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 2px solid var(--tf-positive);
+  border: 2px solid var(--tf-accent-primary);
   opacity: 0;
   animation: pulse-ring 2s ease-out infinite;
 
@@ -221,7 +221,7 @@
     width: 65px;
     height: 65px;
     border-radius: 50%;
-    border: 1px solid var(--tf-positive);
+    border: 1px solid var(--tf-accent-primary);
     opacity: 0;
     animation: pulse-ring-inner 2s ease-out infinite;
 
@@ -294,7 +294,7 @@
   font-weight: 700;
   color: var(--tf-text-primary);
   margin: 0;
-  background: linear-gradient(135deg, var(--tf-positive), #34d399);
+  background: linear-gradient(135deg, var(--tf-accent-primary), var(--tf-accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -329,14 +329,14 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
   border-radius: 6px;
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(16, 185, 129, 0.12);
-    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(124, 58, 237, 0.12);
+    border-color: rgba(124, 58, 237, 0.4);
     transform: translateX(2px);
   }
 
@@ -344,7 +344,7 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
-    color: var(--tf-positive);
+    color: var(--tf-accent-primary);
     font-weight: 600;
     flex-shrink: 0;
   }
