@@ -10515,10 +10515,12 @@ table.simple-table {
       }
 
       .experience-duration {
+        min-width: 0;
         gap: 0.3rem;
       }
 
       .duration-details {
+        min-width: 0;
         gap: 0.3rem;
       }
 
@@ -10567,9 +10569,14 @@ table.simple-table {
         }
 
         .label {
+          min-width: 0;
+          max-width: 100%;
           color: #64748B !important;
           font-size: clamp(0.32rem, 3.5cqw, 0.43rem);
+          line-height: 1;
           letter-spacing: 0;
+          overflow-wrap: anywhere;
+          text-align: right;
         }
       }
 
