@@ -3903,22 +3903,50 @@ table.simple-table {
         }
 
         .ratio-display {
-          font-size: 0.85rem;
-          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          min-width: 7rem;
+          padding: 0.35rem 0.65rem;
+          border: 1px solid rgba(107, 70, 193, 0.25);
+          border-radius: 999px;
           color: var(--tf-text-primary);
-          background: rgba(107, 70, 193, 0.08);
-          padding: 0.2rem 0.4rem;
-          border-radius: 4px;
-          border: 1px solid rgba(107, 70, 193, 0.15);
+          background: linear-gradient(135deg, rgba(107, 70, 193, 0.16), rgba(139, 92, 246, 0.06));
+          box-shadow: 0 4px 12px rgba(107, 70, 193, 0.12);
           text-align: center;
           transition: all 0.3s ease;
-          display: inline-block;
-          min-width: auto;
+
+          .ratio-label {
+            color: var(--tf-accent-primary);
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+          }
+
+          .ratio-divider {
+            width: 1px;
+            height: 1rem;
+            background: rgba(107, 70, 193, 0.3);
+          }
+
+          .ratio-value {
+            font-size: 0.95rem;
+            font-variant-numeric: tabular-nums;
+            font-weight: 800;
+            line-height: 1;
+          }
+
+          .ratio-unit {
+            color: var(--tf-accent-primary);
+            font-size: 0.72rem;
+            font-weight: 700;
+          }
 
           &:hover {
-            background: rgba(107, 70, 193, 0.12);
-            border-color: rgba(107, 70, 193, 0.25);
-            transform: scale(1.02);
+            background: linear-gradient(135deg, rgba(107, 70, 193, 0.22), rgba(139, 92, 246, 0.1));
+            border-color: rgba(107, 70, 193, 0.4);
+            box-shadow: 0 6px 16px rgba(107, 70, 193, 0.2);
+            transform: translateY(-1px) scale(1.02);
           }
         }
       }
