@@ -3266,25 +3266,47 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   calculateDaysSinceFirstTrade(): number {
-    if (!this.tableData || this.tableData.length === 0) return 0;
+    const accountStartDate = this.parseAccountStartDate(this.selectedAccount?.start_date);
+    if (!accountStartDate || !this.tableData || this.tableData.length === 0) return 0;
 
-    // Find the earliest trade date
-    const earliestDate = this.tableData.reduce((earliest, trade) => {
-      const tradeDate = new Date(trade.openDate || '');
-      if (!earliest || tradeDate < earliest) {
-        return tradeDate;
-      }
-      return earliest;
+    const lastTradeDate = this.tableData.reduce((latest, trade) => {
+      const tradeDate = this.parseOpenDate(trade.openDate);
+      if (!tradeDate) return latest;
+      return !latest || tradeDate > latest ? tradeDate : latest;
     }, null as Date | null);
 
-    if (!earliestDate || isNaN(earliestDate.getTime())) return 0;
+    if (!lastTradeDate) return 0;
 
-    // Calculate days between first trade and now
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - earliestDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const startDate = this.toCalendarDate(accountStartDate);
+    const endDate = this.toCalendarDate(lastTradeDate);
+    const diffTime = endDate.getTime() - startDate.getTime();
 
-    return diffDays;
+    return diffTime < 0 ? 0 : Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  }
+
+  private parseAccountStartDate(startDate: string | null | undefined): Date | null {
+    if (!startDate) return null;
+
+    const datePart = startDate.slice(0, 10);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+    if (match) {
+      const [, year, month, day] = match;
+      const date = new Date(Number(year), Number(month) - 1, Number(day));
+      if (
+        date.getFullYear() === Number(year) &&
+        date.getMonth() === Number(month) - 1 &&
+        date.getDate() === Number(day)
+      ) {
+        return date;
+      }
+      return null;
+    }
+
+    return this.parseOpenDate(startDate);
+  }
+
+  private toCalendarDate(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
   /**
