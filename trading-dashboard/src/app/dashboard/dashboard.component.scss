@@ -3936,12 +3936,6 @@ table.simple-table {
             line-height: 1;
           }
 
-          .ratio-unit {
-            color: var(--tf-accent-primary);
-            font-size: 0.72rem;
-            font-weight: 700;
-          }
-
           &:hover {
             background: linear-gradient(135deg, rgba(107, 70, 193, 0.22), rgba(139, 92, 246, 0.1));
             border-color: rgba(107, 70, 193, 0.4);
