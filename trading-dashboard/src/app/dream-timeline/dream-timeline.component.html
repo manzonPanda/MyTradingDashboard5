@@ -5,9 +5,6 @@
       @for (piece of confettiPieces; track $index) {
         <div [class]="'confetti-piece confetti-' + (($index % 6) + 1) + ' confetti-delay-' + ($index + 1)"></div>
       }
-      @for (sparkle of sparkles; track $index) {
-        <div [class]="'sparkle sparkle-position-' + ($index + 1) + ' sparkle-delay-' + ($index + 1) + ' sparkle-duration-' + (($index % 3) + 1)">⭐</div>
-      }
     </div>
   }
 

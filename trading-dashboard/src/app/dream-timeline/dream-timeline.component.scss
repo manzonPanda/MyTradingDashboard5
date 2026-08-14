@@ -321,33 +321,11 @@
   }
 }
 
-.sparkle {
-  position: absolute;
-  top: 10%;
-  font-size: 12px;
-  animation: sparkleFloat 3s ease-in-out infinite;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-}
-
 @for $index from 1 through 25 {
   .confetti-delay-#{$index} {
     animation-delay: #{($index - 1) * 0.1}s;
   }
 }
-
-@for $index from 1 through 15 {
-  .sparkle-position-#{$index} {
-    left: ($index - 1) * 6.67%;
-  }
-
-  .sparkle-delay-#{$index} {
-    animation-delay: #{($index - 1) * 0.15}s;
-  }
-}
-
-.sparkle-duration-1 { animation-duration: 2s; }
-.sparkle-duration-2 { animation-duration: 3s; }
-.sparkle-duration-3 { animation-duration: 4s; }
 
 // 🌟 MAGICAL KEYFRAME ANIMATIONS 🌟
 @keyframes confettiFall {
@@ -360,18 +338,6 @@
     opacity: 0;
   }
 }
-
-@keyframes sparkleFloat {
-  0%, 100% {
-    transform: translateY(0px) scale(0.8);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-15px) scale(1.2);
-    opacity: 1;
-  }
-}
-
 
 @keyframes celebrationGlow {
   0%, 100% {
