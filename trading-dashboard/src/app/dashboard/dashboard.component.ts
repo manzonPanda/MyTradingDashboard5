@@ -2074,7 +2074,8 @@ mt5AccountInfo: AccountSettings = {
       if (this.roiReceiptFile) {
         const transactionAccount = this.getAccountById(this.roiForm.account_id);
         if (this.roiForm.transaction_type === 'expense') {
-          imageUrl = await this.supabaseService.uploadRoiExpenseFile(this.roiReceiptFile, transactionAccount?.name || 'Independent account');
+          const expenseFirmName = transactionAccount ? this.getFirmNameForAccount(transactionAccount) : 'Independent firm';
+          imageUrl = await this.supabaseService.uploadRoiExpenseFile(this.roiReceiptFile, expenseFirmName);
         } else {
           const payoutFirmName = transactionAccount ? this.getFirmNameForAccount(transactionAccount) : 'Independent firm';
           imageUrl = await this.supabaseService.uploadRoiPayoutFile(this.roiReceiptFile, payoutFirmName);
