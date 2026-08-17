@@ -378,6 +378,18 @@ export class SupabaseService {
     return filePath;
   }
 
+  async uploadRoiExpenseFile(file: File, accountName: string): Promise<string> {
+    const userId = await this.getAuthenticatedUserId();
+    const accountFolder = accountName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-account';
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+    const filePath = `${userId}-${accountFolder}-expenses/${Date.now()}-${safeFileName}`;
+    const { error } = await this.supabase.storage
+      .from('certificates')
+      .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
+    if (error) throw new Error(`Expense image upload failed: ${error.message}`);
+    return filePath;
+  }
+
   async getPayouts(userId: string): Promise<Payout[]> {
     const { data, error } = await this.supabase
       .from('payouts')

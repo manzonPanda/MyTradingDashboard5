@@ -2034,9 +2034,13 @@ mt5AccountInfo: AccountSettings = {
       if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
       let imageUrl = this.roiForm.image_url.trim() || null;
       if (this.roiReceiptFile) {
-        const payoutAccount = this.getAccountById(this.roiForm.account_id);
-        const payoutFirmName = payoutAccount ? this.getFirmNameForAccount(payoutAccount) : 'Independent firm';
-        imageUrl = await this.supabaseService.uploadRoiPayoutFile(this.roiReceiptFile, payoutFirmName);
+        const transactionAccount = this.getAccountById(this.roiForm.account_id);
+        if (this.roiForm.transaction_type === 'expense') {
+          imageUrl = await this.supabaseService.uploadRoiExpenseFile(this.roiReceiptFile, transactionAccount?.name || 'Independent account');
+        } else {
+          const payoutFirmName = transactionAccount ? this.getFirmNameForAccount(transactionAccount) : 'Independent firm';
+          imageUrl = await this.supabaseService.uploadRoiPayoutFile(this.roiReceiptFile, payoutFirmName);
+        }
       }
       const transactionData = {
         transaction_type: this.roiForm.transaction_type,
