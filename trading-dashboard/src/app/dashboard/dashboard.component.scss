@@ -1326,20 +1326,6 @@ table.simple-table {
               border-bottom: 1px solid var(--tf-border-primary);
               transition: all 0.3s ease;
 
-              &.clickable {
-                cursor: pointer;
-                user-select: none;
-
-                &:hover {
-                  background: var(--tf-news-surface-hover);
-                  transform: scale(1.02);
-                }
-
-                &:active {
-                  background: var(--tf-news-surface-hover);
-                  transform: scale(0.98);
-                }
-              }
 
               .time-info {
                 display: flex;
@@ -1442,6 +1428,21 @@ table.simple-table {
             .multiple-events {
               .events-summary {
                 padding: 0.3rem 0.5rem;
+
+                &.clickable {
+                  cursor: pointer;
+                  user-select: none;
+
+                  &:hover .summary-content {
+                    background: var(--tf-news-surface-hover);
+                    transform: scale(1.02);
+                  }
+
+                  &:active .summary-content {
+                    background: var(--tf-news-surface-hover);
+                    transform: scale(0.98);
+                  }
+                }
 
                 .summary-content {
                   display: flex;

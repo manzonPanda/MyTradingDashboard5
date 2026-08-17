@@ -222,9 +222,7 @@
                      [ngClass]="getCurrencyBackgroundClass(timeGroup.dominantCurrency)">
 
                   <!-- Time Group Header -->
-                  <div class="time-group-header"
-                       [ngClass]="{clickable: timeGroup.isMultiple}"
-                       (click)="onTimeGroupClick(timeGroup)">
+                  <div class="time-group-header">
                     <div class="time-info">
                       <span class="time-display">{{ timeGroup.time }}</span>
                       <div class="currency-badges">
@@ -254,7 +252,7 @@
 
                   <!-- Multiple Events (shows summary only, opens modal on click) -->
                   <div *ngIf="timeGroup.isMultiple" class="multiple-events">
-                    <div class="events-summary">
+                    <div class="events-summary clickable" (click)="onTimeGroupClick(timeGroup)">
                       <div class="summary-content">
                         <span class="summary-text">{{ timeGroup.events.length }} events</span>
                         <div class="summary-impacts">
