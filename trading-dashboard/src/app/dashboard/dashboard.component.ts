@@ -3009,8 +3009,32 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       );
       return Array.isArray(response) ? response : [];
     } catch (error) {
-      console.warn('MT5 history unavailable; live positions are hidden until the connection recovers.', error);
-      return null;
+      console.warn('MT5 history unavailable; loading current open positions instead.', error);
+      try {
+        const openTrades = await firstValueFrom(
+          this.http.get<any[]>(`${this.BACKEND_URL_MT5}/api/open_trades`)
+        );
+        return (Array.isArray(openTrades) ? openTrades : []).map(trade => ({
+          position_id: trade.ticket,
+          symbol: trade.symbol || '',
+          volume: trade.volume ?? 0,
+          trade_type: trade.type ?? 0,
+          entry_price: trade.price_open ?? 0,
+          exit_price: null,
+          profit: trade.profit ?? 0,
+          commission: 0,
+          sl: trade.sl ?? 0,
+          tp: trade.tp ?? 0,
+          risk_usd: null,
+          reward_risk_ratio: null,
+          time_open: new Date(Number(trade.time) * 1000).toISOString().slice(0, 19).replace('T', ' '),
+          time_close: null,
+          status: 'open'
+        }));
+      } catch (fallbackError) {
+        console.warn('MT5 open positions unavailable.', fallbackError);
+        return null;
+      }
     }
   }
 
@@ -4186,6 +4210,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   async loadMT5Data(): Promise<void> {
     const loadVersion = ++this.mt5DataLoadVersion;
+    await this.refreshMt5AccountLogin();
     const accountId = this.selectedAccount?.id ?? null;
     this.isLoadingMT5Data = true;
     let response: any[] = [];
@@ -4501,6 +4526,18 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   private normalizeAccountNumber(value: unknown): string | null {
     const normalized = String(value ?? '').trim();
     return normalized || null;
+  }
+
+  private async refreshMt5AccountLogin(): Promise<void> {
+    try {
+      const account = await firstValueFrom(
+        this.http.get<any>(`${this.BACKEND_URL_MT5}/api/account_info`)
+      );
+      const login = this.normalizeAccountNumber(account?.login ?? account?.info?.login);
+      if (login) this.mt5AccountLogin = login;
+    } catch (error) {
+      console.warn('Unable to refresh MT5 account identity.', error);
+    }
   }
 
   private isActiveMt5Account(): boolean {
