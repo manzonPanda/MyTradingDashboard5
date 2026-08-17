@@ -849,6 +849,7 @@ mt5AccountInfo: AccountSettings = {
   timeGroupStates: { [key: string]: boolean } = {}; // Track expanded states
   showNewsModal: boolean = false;
   selectedTimeGroup: any = null;
+  newsModalPosition = { top: 0, left: 0 };
 
   // Simple pagination properties
   currentPage: number = 1;
@@ -3754,9 +3755,17 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     );
   }
 
-  onTimeGroupClick(timeGroup: any): void {
+  onTimeGroupClick(timeGroup: any, event: MouseEvent): void {
     if (timeGroup.isMultiple) {
-      // Show modal with grouped news details
+      const triggerRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const viewportPadding = 12;
+      const modalWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
+      const maxLeft = Math.max(viewportPadding, window.innerWidth - modalWidth - viewportPadding);
+
+      this.newsModalPosition = {
+        top: triggerRect.bottom + 8,
+        left: Math.min(Math.max(viewportPadding, triggerRect.left), maxLeft)
+      };
       this.selectedTimeGroup = timeGroup;
       this.showNewsModal = true;
       this.cdr.detectChanges();

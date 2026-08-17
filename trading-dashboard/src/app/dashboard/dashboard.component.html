@@ -252,7 +252,7 @@
 
                   <!-- Multiple Events (shows summary only, opens modal on click) -->
                   <div *ngIf="timeGroup.isMultiple" class="multiple-events">
-                    <div class="events-summary clickable" (click)="onTimeGroupClick(timeGroup)">
+                    <div class="events-summary clickable" (click)="onTimeGroupClick(timeGroup, $event)">
                       <div class="summary-content">
                         <span class="summary-text">{{ timeGroup.events.length }} events</span>
                         <div class="summary-impacts">
@@ -305,7 +305,10 @@
 
         <!-- News Modal Overlay -->
         <div *ngIf="showNewsModal" class="news-modal-overlay" (click)="closeNewsModal()">
-          <div class="news-modal-container" (click)="$event.stopPropagation()">
+          <div class="news-modal-container"
+               [style.top.px]="newsModalPosition.top"
+               [style.left.px]="newsModalPosition.left"
+               (click)="$event.stopPropagation()">
             <!-- Modal Header -->
             <div class="modal-header" [ngClass]="getCurrencyBackgroundClass(selectedTimeGroup?.dominantCurrency)">
               <div class="modal-title">
