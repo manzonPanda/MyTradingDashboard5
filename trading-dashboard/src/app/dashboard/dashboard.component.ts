@@ -4232,7 +4232,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const currentTradesByPosition = this.mt5LiveTradesAccountId === accountId
       ? new Map(this.mt5LiveTrades.map(trade => [String(trade.position), trade]))
       : new Map<string, Table>();
-    const mt5Trades = (response || []).map((trade: any) => {
+    const mappedMt5Trades = (response || []).map((trade: any) => {
       const cachedExtremes = this.getLiveExtremes(trade.position_id);
       const currentTrade = currentTradesByPosition.get(String(trade.position_id));
       const mfe = Math.max(Number(trade.mfe) || 0, cachedExtremes.mfe, Number(currentTrade?.mfe) || 0);
@@ -4264,6 +4264,12 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
       } as Table;
     });
+
+    const mappedPositionIds = new Set(mappedMt5Trades.map(trade => String(trade.position)));
+    const liveTradesMissingFromRefresh = [...currentTradesByPosition.values()].filter(
+      trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !mappedPositionIds.has(String(trade.position))
+    );
+    const mt5Trades = [...mappedMt5Trades, ...liveTradesMissingFromRefresh];
 
     this.mt5LiveTrades = mt5Trades;
     this.mt5LiveTradesAccountId = accountId;
@@ -4635,7 +4641,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
-      this.mt5OpenPositionIds?.add(String(newTrade.position));
+      this.isMt5LiveSnapshotAvailable = true;
+      this.mt5OpenPositionIds ??= new Set<string>();
+      this.mt5OpenPositionIds.add(String(newTrade.position));
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
