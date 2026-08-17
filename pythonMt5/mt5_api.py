@@ -498,7 +498,9 @@ def full_history():
             return data.get('sl', 0), data.get('tp', 0)
 
         df_merged['order'] = df_merged['position_id']
-        df_merged[['sl', 'tp']] = df_merged['order'].apply(lambda oid: pd.Series(get_order_sl_tp(oid)))
+        sl_tp_values = df_merged['order'].map(get_order_sl_tp)
+        df_merged['sl'] = sl_tp_values.map(lambda values: values[0])
+        df_merged['tp'] = sl_tp_values.map(lambda values: values[1])
 
         def compute_risk_usd(row):
             entry = row['entry_price']

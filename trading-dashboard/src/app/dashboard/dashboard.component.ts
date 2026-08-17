@@ -262,9 +262,42 @@ export class DashboardComponent implements AfterViewInit {
 
   @HostListener('document:click', ['$event'])
   closeNavigationDisplayMenuOnOutsideClick(event: MouseEvent): void {
+    this.unlockGaugeAudio();
     const target = event.target as Element;
     if (!target.closest('.navigation-display-control')) {
       this.isNavigationDisplayMenuOpen = false;
+    }
+  }
+
+  private unlockGaugeAudio(): void {
+    if (this.gaugeAudioUnlocked) return;
+
+    const primer = new Audio(this.gaugeAlertSoundUrl);
+    primer.muted = true;
+    void primer.play().then(() => {
+      this.gaugeAudioUnlocked = true;
+      primer.pause();
+      primer.currentTime = 0;
+      this.playPendingGaugeSounds();
+    }).catch(() => {
+      primer.pause();
+    });
+  }
+
+  private playPendingGaugeSounds(): void {
+    for (const [ticket, pending] of this.pendingGaugeSounds) {
+      const { sound, level } = pending;
+      sound.loop = true;
+      sound.muted = false;
+      sound.volume = this.liveTradeSoundSettings.volume;
+      const soundMap = level === 'high' ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
+      soundMap.set(ticket, sound);
+      this.activeGaugeAlertLevels.set(ticket, level);
+      this.pendingGaugeSounds.delete(ticket);
+      void sound.play().catch(error => {
+        this.stopGaugeAlert(ticket);
+        console.warn('Unable to play pending gauge alert sound:', error);
+      });
     }
   }
 
@@ -519,7 +552,9 @@ export class DashboardComponent implements AfterViewInit {
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly pendingGaugeSounds = new Map<string, { sound: HTMLAudioElement; level: 'normal' | 'high' }>();
   private readonly activeGaugeAlertLevels = new Map<string, 'normal' | 'high'>();
+  private gaugeAudioUnlocked = false;
   private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
   private mt5LiveTradesAccountId: string | null = null;
@@ -3009,8 +3044,32 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       );
       return Array.isArray(response) ? response : [];
     } catch (error) {
-      console.warn('MT5 history unavailable; live positions are hidden until the connection recovers.', error);
-      return null;
+      console.warn('MT5 history unavailable; loading current open positions instead.', error);
+      try {
+        const openTrades = await firstValueFrom(
+          this.http.get<any[]>(`${this.BACKEND_URL_MT5}/api/open_trades`)
+        );
+        return (Array.isArray(openTrades) ? openTrades : []).map(trade => ({
+          position_id: trade.ticket,
+          symbol: trade.symbol || '',
+          volume: trade.volume ?? 0,
+          trade_type: trade.type ?? 0,
+          entry_price: trade.price_open ?? 0,
+          exit_price: null,
+          profit: trade.profit ?? 0,
+          commission: 0,
+          sl: trade.sl ?? 0,
+          tp: trade.tp ?? 0,
+          risk_usd: null,
+          reward_risk_ratio: null,
+          time_open: new Date(Number(trade.time) * 1000).toISOString().slice(0, 19).replace('T', ' '),
+          time_close: null,
+          status: 'open'
+        }));
+      } catch (fallbackError) {
+        console.warn('MT5 open positions unavailable.', fallbackError);
+        return null;
+      }
     }
   }
 
@@ -4186,6 +4245,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   async loadMT5Data(): Promise<void> {
     const loadVersion = ++this.mt5DataLoadVersion;
+    await this.refreshMt5AccountLogin();
     const accountId = this.selectedAccount?.id ?? null;
     this.isLoadingMT5Data = true;
     let response: any[] = [];
@@ -4232,7 +4292,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const currentTradesByPosition = this.mt5LiveTradesAccountId === accountId
       ? new Map(this.mt5LiveTrades.map(trade => [String(trade.position), trade]))
       : new Map<string, Table>();
-    const mt5Trades = (response || []).map((trade: any) => {
+    const mappedMt5Trades = (response || []).map((trade: any) => {
       const cachedExtremes = this.getLiveExtremes(trade.position_id);
       const currentTrade = currentTradesByPosition.get(String(trade.position_id));
       const mfe = Math.max(Number(trade.mfe) || 0, cachedExtremes.mfe, Number(currentTrade?.mfe) || 0);
@@ -4264,6 +4324,12 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         screenshotUrls: trade.screenshot_url ? [trade.screenshot_url] : []
       } as Table;
     });
+
+    const mappedPositionIds = new Set(mappedMt5Trades.map(trade => String(trade.position)));
+    const liveTradesMissingFromRefresh = [...currentTradesByPosition.values()].filter(
+      trade => this.mt5OpenPositionIds?.has(String(trade.position)) && !mappedPositionIds.has(String(trade.position))
+    );
+    const mt5Trades = [...mappedMt5Trades, ...liveTradesMissingFromRefresh];
 
     this.mt5LiveTrades = mt5Trades;
     this.mt5LiveTradesAccountId = accountId;
@@ -4497,6 +4563,18 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return normalized || null;
   }
 
+  private async refreshMt5AccountLogin(): Promise<void> {
+    try {
+      const account = await firstValueFrom(
+        this.http.get<any>(`${this.BACKEND_URL_MT5}/api/account_info`)
+      );
+      const login = this.normalizeAccountNumber(account?.login ?? account?.info?.login);
+      if (login) this.mt5AccountLogin = login;
+    } catch (error) {
+      console.warn('Unable to refresh MT5 account identity.', error);
+    }
+  }
+
   private isActiveMt5Account(): boolean {
     const selectedAccountNumber = this.normalizeAccountNumber(this.selectedAccount?.account_number);
     return Boolean(selectedAccountNumber && this.mt5AccountLogin && selectedAccountNumber === this.mt5AccountLogin);
@@ -4635,7 +4713,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     console.log('🔄 Adding MT5 live trade:', newTrade, 'Existing index:', existingIndex);
     if (existingIndex == -1) {
       this.mt5LiveTrades = [...this.mt5LiveTrades, newTrade];
-      this.mt5OpenPositionIds?.add(String(newTrade.position));
+      this.isMt5LiveSnapshotAvailable = true;
+      this.mt5OpenPositionIds ??= new Set<string>();
+      this.mt5OpenPositionIds.add(String(newTrade.position));
       console.log('🔴 mt5LiveTrades after add:', this.mt5LiveTrades.length);
 
       this.updateTableData();
@@ -4749,7 +4829,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.activeGaugeAlertLevels.set(ticket, nextAlertLevel);
     sound.play().catch(error => {
       this.stopGaugeAlert(ticket);
-      console.warn('Unable to play gauge percentage alert sound:', error);
+      this.pendingGaugeSounds.set(ticket, { sound, level: nextAlertLevel });
+      console.warn('Unable to play gauge percentage alert sound; waiting for user interaction.', error);
     });
 
     if (!this.gaugeAlertNotifiedTickets.has(ticket)) {
@@ -4760,6 +4841,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   private stopGaugeAlert(ticket: string): void {
     this.activeGaugeAlertLevels.delete(ticket);
+    const pending = this.pendingGaugeSounds.get(ticket);
+    pending?.sound.pause();
+    this.pendingGaugeSounds.delete(ticket);
     for (const soundMap of [this.gaugeAlertSounds, this.highGaugeAlertSounds]) {
       const sound = soundMap.get(ticket);
       if (!sound) continue;
@@ -4773,7 +4857,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const tickets = new Set([
       ...this.activeGaugeAlertLevels.keys(),
       ...this.gaugeAlertSounds.keys(),
-      ...this.highGaugeAlertSounds.keys()
+      ...this.highGaugeAlertSounds.keys(),
+      ...this.pendingGaugeSounds.keys()
     ]);
     tickets.forEach(ticket => this.stopGaugeAlert(ticket));
   }

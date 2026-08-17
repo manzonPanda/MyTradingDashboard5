@@ -67,6 +67,8 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
     this.chart.setOption({
       animationDuration: 600,
       animationEasing: 'cubicOut',
+      animationDurationUpdate: 700,
+      animationEasingUpdate: 'cubicOut',
       series: [{
         type: 'gauge',
         startAngle: 180,
@@ -137,7 +139,7 @@ export class ProfitFactorGaugeComponent implements OnInit, OnChanges, OnDestroy 
         data: [{ value: displayedValue, name: status }],
         silent: true,
       }],
-    }, { notMerge: true });
+    });
   }
 
   private getStatus(value: number): string {
