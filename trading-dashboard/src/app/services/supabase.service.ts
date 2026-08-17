@@ -378,11 +378,11 @@ export class SupabaseService {
     return filePath;
   }
 
-  async uploadRoiExpenseFile(file: File, accountName: string): Promise<string> {
+  async uploadRoiExpenseFile(file: File, firmName: string): Promise<string> {
     const userId = await this.getAuthenticatedUserId();
-    const accountFolder = accountName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-account';
+    const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
     const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
-    const filePath = `${userId}-${accountFolder}-expenses/${Date.now()}-${safeFileName}`;
+    const filePath = `${userId}-${firmFolder}-expenses/${Date.now()}-${safeFileName}`;
     const { error } = await this.supabase.storage
       .from('certificates')
       .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
