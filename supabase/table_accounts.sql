@@ -1,6 +1,7 @@
 create table public.accounts (
   id uuid not null default gen_random_uuid (),
   name text not null,
+  platform text not null default 'MT5'::text,
   account_number text null,
   initial_balance numeric null,
   profit_target_percent numeric null,
@@ -21,6 +22,13 @@ create table public.accounts (
     (
       phase = any (
         array['phase1'::text, 'phase2'::text, 'funded'::text]
+      )
+    )
+  ),
+  constraint accounts_platform_check check (
+    (
+      platform = any (
+        array['MT5'::text, 'Tradovate'::text, 'Wealthcharts'::text]
       )
     )
   )

@@ -235,6 +235,9 @@ export class DashboardComponent implements AfterViewInit {
   roiPage = 1;
   readonly roiPageSize = 5;
   roiReceiptFile: File | null = null;
+  roiImagePreviewUrl: string | null = null;
+  private roiImageObjectUrl: string | null = null;
+  private roiImagePreviewRequestId = 0;
   roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
     transaction_type: 'expense',
     transaction_date: new Date().toISOString().slice(0, 10),
@@ -613,6 +616,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = null;
     this.accountEditForm = {
       name: '',
+      platform: null,
       prop_firm_id: this.propFirms.find(firm => firm.name === this.selectedFirm)?.id || null,
       account_number: '',
       initial_balance: null,
@@ -631,6 +635,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = account.id;
     this.accountEditForm = {
       name: account.name,
+      platform: account.platform ?? null,
       prop_firm_id: account.prop_firm_id ?? null,
       account_number: account.account_number ?? '',
       initial_balance: account.initial_balance ?? this.inferAccountSize(account),
@@ -701,11 +706,14 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   async saveAccountEdit(): Promise<void> {
-    if (!this.accountEditForm.name?.trim()) return;
+    const name = this.accountEditForm.name?.trim();
+    const platform = this.accountEditForm.platform;
+    if (!name || !platform) return;
 
     this.isSavingAccount = true;
     const accountData = {
-      name: this.accountEditForm.name.trim(),
+      name,
+      platform,
       prop_firm_id: this.accountEditForm.prop_firm_id || null,
       account_number: this.accountEditForm.account_number?.trim() || null,
       initial_balance: Number(this.accountEditForm.initial_balance) || 0,
@@ -1640,6 +1648,7 @@ mt5AccountInfo: AccountSettings = {
 
   openRoiEntryModal(): void {
     this.editingRoiTransactionId = null;
+    this.clearRoiImagePreview();
     this.roiReceiptFile = null;
     this.roiForm = {
       transaction_type: 'expense',
@@ -1654,6 +1663,7 @@ mt5AccountInfo: AccountSettings = {
 
   editRoiTransaction(transaction: RoiTransaction): void {
     this.editingRoiTransactionId = transaction.id;
+    this.clearRoiImagePreview();
     this.roiReceiptFile = null;
     this.roiForm = {
       transaction_type: transaction.transaction_type,
@@ -1663,11 +1673,39 @@ mt5AccountInfo: AccountSettings = {
       account_id: transaction.account_id ?? '',
       image_url: transaction.image_url ?? ''
     };
+    void this.loadRoiImagePreview(transaction.image_url ?? '');
     this.isRoiEntryModalOpen = true;
   }
 
   closeRoiEntryModal(): void {
-    if (!this.isSavingRoi && !this.isDeletingRoi) this.isRoiEntryModalOpen = false;
+    if (this.isSavingRoi || this.isDeletingRoi) return;
+    this.clearRoiImagePreview();
+    this.isRoiEntryModalOpen = false;
+  }
+
+  private clearRoiImagePreview(): void {
+    this.roiImagePreviewRequestId += 1;
+    this.roiImagePreviewUrl = null;
+    if (this.roiImageObjectUrl) {
+      URL.revokeObjectURL(this.roiImageObjectUrl);
+      this.roiImageObjectUrl = null;
+    }
+  }
+
+  private async loadRoiImagePreview(imageReference: string): Promise<void> {
+    const requestId = ++this.roiImagePreviewRequestId;
+    if (!imageReference) {
+      this.roiImagePreviewUrl = null;
+      return;
+    }
+
+    if (imageReference.startsWith('http://') || imageReference.startsWith('https://')) {
+      if (requestId === this.roiImagePreviewRequestId) this.roiImagePreviewUrl = imageReference;
+      return;
+    }
+
+    const signedUrl = await this.supabaseService.getCertificateFileUrl(imageReference);
+    if (requestId === this.roiImagePreviewRequestId) this.roiImagePreviewUrl = signedUrl;
   }
 
   get filteredRoiTransactions(): RoiTransaction[] {
@@ -1700,7 +1738,12 @@ mt5AccountInfo: AccountSettings = {
 
   onRoiReceiptSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
-    this.roiReceiptFile = file?.type.startsWith('image/') ? file : null;
+    if (!file || !file.type.startsWith('image/')) return;
+
+    this.clearRoiImagePreview();
+    this.roiReceiptFile = file;
+    this.roiImageObjectUrl = URL.createObjectURL(file);
+    this.roiImagePreviewUrl = this.roiImageObjectUrl;
   }
 
   get roiExpenses(): number {
@@ -2029,9 +2072,13 @@ mt5AccountInfo: AccountSettings = {
       if (!userId) throw new Error('You must be signed in to save an ROI transaction.');
       let imageUrl = this.roiForm.image_url.trim() || null;
       if (this.roiReceiptFile) {
-        const payoutAccount = this.getAccountById(this.roiForm.account_id);
-        const payoutFirmName = payoutAccount ? this.getFirmNameForAccount(payoutAccount) : 'Independent firm';
-        imageUrl = await this.supabaseService.uploadRoiPayoutFile(this.roiReceiptFile, payoutFirmName);
+        const transactionAccount = this.getAccountById(this.roiForm.account_id);
+        if (this.roiForm.transaction_type === 'expense') {
+          imageUrl = await this.supabaseService.uploadRoiExpenseFile(this.roiReceiptFile, transactionAccount?.name || 'Independent account');
+        } else {
+          const payoutFirmName = transactionAccount ? this.getFirmNameForAccount(transactionAccount) : 'Independent firm';
+          imageUrl = await this.supabaseService.uploadRoiPayoutFile(this.roiReceiptFile, payoutFirmName);
+        }
       }
       const transactionData = {
         transaction_type: this.roiForm.transaction_type,
@@ -2051,6 +2098,7 @@ mt5AccountInfo: AccountSettings = {
       this.roiPage = editingId ? Math.min(this.roiPage, this.roiTotalPages) : 1;
       this.editingRoiTransactionId = null;
       this.roiReceiptFile = null;
+      this.clearRoiImagePreview();
       this.isRoiEntryModalOpen = false;
       if (!editingId && savedTransaction.transaction_type === 'payout') this.confetti.celebratePayout();
       this.snackBar.open(editingId ? 'ROI transaction updated.' : 'ROI transaction saved.', 'Dismiss', { duration: 3000 });
@@ -2383,6 +2431,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
   ngOnDestroy(): void {
+    this.clearRoiImagePreview();
     if (this.liveExtremesCacheTimer) {
       window.clearTimeout(this.liveExtremesCacheTimer);
     }

@@ -10,9 +10,12 @@ export interface PropFirm {
   created_at?: string;
 }
 
+export type AccountPlatform = 'MT5' | 'Tradovate' | 'Wealthcharts';
+
 export interface Account {
   id: string;
   name: string;
+  platform?: AccountPlatform | null;
   prop_firm_id?: string | null;
   account_number?: string | null;
   initial_balance?: number | null;
@@ -229,7 +232,7 @@ export class SupabaseService {
   async getAccounts(): Promise<Account[]> {
     const { data, error } = await this.supabase
       .from('accounts')
-      .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at')
+      .select('id, name, platform, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at')
       .order('created_at', { ascending: false, nullsFirst: false });
     if (error) throw new Error(`Account loading failed: ${error.message}`);
     return (data as Account[]) || [];
@@ -244,7 +247,7 @@ export class SupabaseService {
       const { data, error } = await this.supabase
         .from('accounts')
         .insert({ ...account, user_id: userId })
-        .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
+        .select('id, name, platform, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
         .abortSignal(controller.signal)
         .single();
       if (error) {
@@ -269,7 +272,7 @@ export class SupabaseService {
       .from('accounts')
       .update(updates)
       .eq('id', id)
-      .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
+      .select('id, name, platform, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
       .single();
     if (error) throw new Error(`Account update failed: ${error.message}`);
     return data as Account;
@@ -375,6 +378,18 @@ export class SupabaseService {
     return filePath;
   }
 
+  async uploadRoiExpenseFile(file: File, accountName: string): Promise<string> {
+    const userId = await this.getAuthenticatedUserId();
+    const accountFolder = accountName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-account';
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
+    const filePath = `${userId}-${accountFolder}-expenses/${Date.now()}-${safeFileName}`;
+    const { error } = await this.supabase.storage
+      .from('certificates')
+      .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
+    if (error) throw new Error(`Expense image upload failed: ${error.message}`);
+    return filePath;
+  }
+
   async getPayouts(userId: string): Promise<Payout[]> {
     const { data, error } = await this.supabase
       .from('payouts')
@@ -418,8 +433,44 @@ export class SupabaseService {
     return data as RoiTransaction;
   }
 
+  private getCertificateStoragePath(fileReference: string | null | undefined): string | null {
+    if (!fileReference) return null;
+    if (!/^https?:\/\//i.test(fileReference)) return fileReference;
+
+    try {
+      const fileUrl = new URL(fileReference);
+      const supabaseUrl = new URL(environment.supabase.url);
+      if (fileUrl.origin !== supabaseUrl.origin) return null;
+
+      const objectPrefix = '/storage/v1/object/';
+      if (!fileUrl.pathname.startsWith(objectPrefix)) return null;
+      const [accessType, bucket, ...pathSegments] = fileUrl.pathname.slice(objectPrefix.length).split('/');
+      if (!['public', 'sign', 'authenticated'].includes(accessType) || bucket !== 'certificates' || !pathSegments.length) return null;
+
+      return pathSegments.map(segment => decodeURIComponent(segment)).join('/');
+    } catch {
+      return null;
+    }
+  }
+
   async deleteRoiTransaction(id: string): Promise<void> {
     const userId = await this.getAuthenticatedUserId();
+    const { data: transaction, error: lookupError } = await this.supabase
+      .from('roi_transactions')
+      .select('image_url')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (lookupError) throw new Error(`ROI transaction lookup failed: ${lookupError.message}`);
+
+    const storagePath = this.getCertificateStoragePath(transaction?.image_url);
+    if (storagePath) {
+      const { error: storageError } = await this.supabase.storage
+        .from('certificates')
+        .remove([storagePath]);
+      if (storageError) throw new Error(`Payout receipt deletion failed: ${storageError.message}`);
+    }
+
     const { error } = await this.supabase
       .from('roi_transactions')
       .delete()
@@ -469,7 +520,7 @@ export class SupabaseService {
     const accountNumber = accountName.match(/#(\d+)/)?.[1] ?? null;
     const { data, error } = await this.supabase
       .from('accounts')
-      .insert({ name: accountName, account_number: accountNumber, user_id: userId })
+      .insert({ name: accountName, account_number: accountNumber, platform: 'MT5', user_id: userId })
       .select('id')
       .single();
     if (error) throw new Error(`Account creation failed: ${error.message}`);
