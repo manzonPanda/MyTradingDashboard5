@@ -382,7 +382,7 @@ export class SupabaseService {
     const userId = await this.getAuthenticatedUserId();
     const firmFolder = firmName.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'independent-firm';
     const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
-    const filePath = `${userId}-${firmFolder}-expenses/${Date.now()}-${safeFileName}`;
+    const filePath = `expenses/${userId}-${firmFolder}-expenses-${safeFileName}`;
     const { error } = await this.supabase.storage
       .from('certificates')
       .upload(filePath, file, { contentType: file.type || undefined, upsert: false });
