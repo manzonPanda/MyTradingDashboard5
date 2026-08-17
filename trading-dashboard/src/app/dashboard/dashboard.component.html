@@ -1081,7 +1081,6 @@
                     <p class="certificate-program">{{ getCertificateAccount(certificate)?.name || 'Account not linked' }}</p>
                     <p class="certificate-phase-badge">{{ getCertificateAccountPhase(certificate) }}</p>
                     @if (getCertificateAccountSize(certificate)) { <strong class="certificate-size">{{ getCertificateAccountSize(certificate) | currency:'USD':'symbol':'1.0-0' }}</strong> }
-                    @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
                     <div class="certificate-card-actions">
                       <button class="certificate-edit-button" type="button" (click)="editCertificate(certificate)"><mat-icon>edit</mat-icon><span>Edit</span></button>
                       @if (certificateDeleteConfirmationId === certificate.id) {
@@ -1103,6 +1102,7 @@
                     }
                   </div>
                 </div>
+                @if (certificate.notes) { <p class="certificate-notes">{{ certificate.notes }}</p> }
               </article>
             }
           </div>
@@ -1124,7 +1124,6 @@
                       @if (getPayoutAccountName(payout); as accountName) { <p class="payout-account-name">{{ accountName }}</p> }
                       <p class="certificate-phase-badge">{{ getPayoutAccountPhase(payout) }}</p>
                       <strong class="payout-certificate-amount">+{{ payout.amount | currency:'PHP':'symbol':'1.0-0' }}</strong>
-                      @if (payout.notes) { <p class="certificate-notes">{{ payout.notes }}</p> }
                     </div>
                     <div class="certificate-card-media payout-certificate-media">
                       @if (getPayoutProofUrl(payout); as proofUrl) {
@@ -1137,6 +1136,7 @@
                       }
                     </div>
                   </div>
+                  @if (payout.notes) { <p class="certificate-notes">{{ payout.notes }}</p> }
                 </article>
               }
             </div>

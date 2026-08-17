@@ -13164,7 +13164,8 @@ table.simple-table {
 .certificate-card-media .certificate-seal { margin: 0; }
 .certificate-type { margin: 0; color: var(--tf-text-muted); font-size: 0.72rem; text-transform: uppercase; }
 .certificate-card h3 { margin: 0.25rem 0; font-size: 1.2rem; }
-.certificate-program, .certificate-notes { margin: 0.2rem 0; color: var(--tf-text-secondary); font-size: 0.82rem; }
+.certificate-program { margin: 0.2rem 0; color: var(--tf-text-secondary); font-size: 0.82rem; }
+.certificate-card > .certificate-notes { position: relative; z-index: 1; margin: 0.8rem 0 0; padding-top: 0.75rem; border-top: 1px solid var(--tf-border-primary); color: var(--tf-text-secondary); font-size: 0.78rem; line-height: 1.45; }
 .certificate-phase-badge { display: inline-flex; align-items: center; min-height: 1.4rem; margin: 0.65rem 0 0.15rem; border-radius: 3px; padding: 0.2rem 0.5rem; background: var(--tf-accent-primary); color: #fff; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.04em; line-height: 1; text-transform: uppercase; }
 .certificate-size { display: block; margin-top: 0.8rem; font-size: 0.9rem; }
 .certificate-file { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 1rem; color: var(--tf-positive); font-size: 0.74rem; font-weight: 700; }
