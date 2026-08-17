@@ -10,9 +10,12 @@ export interface PropFirm {
   created_at?: string;
 }
 
+export type AccountPlatform = 'MT5' | 'Tradovate' | 'Wealthcharts';
+
 export interface Account {
   id: string;
   name: string;
+  platform?: AccountPlatform | null;
   prop_firm_id?: string | null;
   account_number?: string | null;
   initial_balance?: number | null;
@@ -229,7 +232,7 @@ export class SupabaseService {
   async getAccounts(): Promise<Account[]> {
     const { data, error } = await this.supabase
       .from('accounts')
-      .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at')
+      .select('id, name, platform, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at')
       .order('created_at', { ascending: false, nullsFirst: false });
     if (error) throw new Error(`Account loading failed: ${error.message}`);
     return (data as Account[]) || [];
@@ -244,7 +247,7 @@ export class SupabaseService {
       const { data, error } = await this.supabase
         .from('accounts')
         .insert({ ...account, user_id: userId })
-        .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
+        .select('id, name, platform, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
         .abortSignal(controller.signal)
         .single();
       if (error) {
@@ -269,7 +272,7 @@ export class SupabaseService {
       .from('accounts')
       .update(updates)
       .eq('id', id)
-      .select('id, name, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
+      .select('id, name, platform, prop_firm_id, account_number, initial_balance, profit_target_percent, max_total_drawdown_percent, daily_loss_limit_percent, start_date, status, phase, created_at, updated_at')
       .single();
     if (error) throw new Error(`Account update failed: ${error.message}`);
     return data as Account;
@@ -469,7 +472,7 @@ export class SupabaseService {
     const accountNumber = accountName.match(/#(\d+)/)?.[1] ?? null;
     const { data, error } = await this.supabase
       .from('accounts')
-      .insert({ name: accountName, account_number: accountNumber, user_id: userId })
+      .insert({ name: accountName, account_number: accountNumber, platform: 'MT5', user_id: userId })
       .select('id')
       .single();
     if (error) throw new Error(`Account creation failed: ${error.message}`);

@@ -1250,6 +1250,7 @@
                 <tr>
                   <th scope="col">Account</th>
                   <th scope="col">Account number</th>
+                  <th scope="col">Platform</th>
                   <th scope="col">Balance</th>
                   <th scope="col">Stage</th>
                   <th scope="col">Status</th>
@@ -1270,6 +1271,7 @@
                       </div>
                     </td>
                     <td data-label="Account number"><span class="account-table-value">{{ account.account_number ? '#' + account.account_number : '—' }}</span></td>
+                    <td data-label="Platform"><span class="account-table-value">{{ account.platform || '—' }}</span></td>
                     <td data-label="Balance"><span class="account-table-value account-balance">{{ account.initial_balance | currency:'USD':'symbol':'1.0-0' }}</span></td>
                     <td data-label="Stage"><span class="account-phase" [class]="'account-phase phase-' + (account.phase || 'phase1')"><mat-icon>{{ account.phase === 'funded' ? 'workspace_premium' : 'trending_up' }}</mat-icon>{{ account.phase === 'funded' ? 'Funded' : account.phase === 'phase2' ? 'Phase 2' : 'Phase 1' }}</span></td>
                     <td data-label="Status"><span class="account-status" [class]="'account-status status-' + (account.status || 'active').toLowerCase()">{{ account.status || 'Active' }}</span></td>
@@ -1323,107 +1325,117 @@
       }
       </div>
 
-      @if (editingAccountId || isCreatingAccount) {
-        <div class="account-modal-backdrop" role="presentation">
-          <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title">
-            <div class="account-edit-heading">
-              <div>
-                <p class="account-edit-kicker">{{ isCreatingAccount ? 'New trading account' : 'Account settings' }}</p>
-                <h3 id="account-edit-title">{{ isCreatingAccount ? 'Add an account' : 'Edit account details' }}</h3>
-                <p class="account-edit-subtitle">{{ isCreatingAccount ? 'Add the account details you use to track performance and risk.' : 'Keep your trading limits and account identity in sync.' }}</p>
-              </div>
-            </div>
-            <div class="account-edit-fields">
-              <label class="account-edit-field account-edit-field-wide">
-                <span>Account name</span>
-                <input type="text" [(ngModel)]="accountEditForm.name" placeholder="e.g. 5ers 2.5K" />
-              </label>
-              <label class="account-edit-field">
-                <span>Firm</span>
-                <select [(ngModel)]="accountEditForm.prop_firm_id" name="account-firm">
-                  <option [ngValue]="null">Independent accounts</option>
-                  @for (firm of firmOptions; track firm.id) {
-                    <option [ngValue]="firm.id">{{ firm.name }}</option>
-                  }
-                </select>
-              </label>
-              <label class="account-edit-field">
-                <span>Account number</span>
-                <input type="text" [(ngModel)]="accountEditForm.account_number" placeholder="Optional" />
-              </label>
-              <label class="account-edit-field">
-                <span>Starting balance</span>
-                <input type="number" min="0" [(ngModel)]="accountEditForm.initial_balance" />
-              </label>
-              <label class="account-edit-field">
-                <span>Start date</span>
-                <input type="date" [(ngModel)]="accountEditForm.start_date" />
-              </label>
-              <label class="account-edit-field">
-                <span>Stage</span>
-                <select [(ngModel)]="accountEditForm.phase">
-                  <option value="phase1">Phase 1</option>
-                  <option value="phase2">Phase 2</option>
-                  <option value="funded">Funded</option>
-                </select>
-              </label>
-              <label class="account-edit-field">
-                <span>Status</span>
-                <select [(ngModel)]="accountEditForm.status">
-                  <option value="active">Active</option>
-                  <option value="paused">Paused</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </label>
-              <label class="account-edit-field">
-                <span>Profit target %</span>
-                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.profit_target_percent" />
-              </label>
-              <label class="account-edit-field">
-                <span>Max drawdown %</span>
-                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.max_total_drawdown_percent" />
-              </label>
-              <label class="account-edit-field">
-                <span>Daily loss limit %</span>
-                <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.daily_loss_limit_percent" />
-              </label>
-            </div>
-            <div class="account-edit-actions">
-              <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">Cancel</button>
-              <button type="button" class="account-edit-save" [disabled]="isSavingAccount || !accountEditForm.name?.trim()" (click)="saveAccountEdit()">
-                <mat-icon>{{ isSavingAccount ? 'sync' : isCreatingAccount ? 'add' : 'save' }}</mat-icon>
-                {{ isSavingAccount ? (isCreatingAccount ? 'Adding…' : 'Saving…') : (isCreatingAccount ? 'Add account' : 'Save changes') }}
-              </button>
-            </div>
-          </section>
-        </div>
-      }
-
-      @if (accountPendingDeletion) {
-        <div class="account-modal-backdrop account-delete-backdrop" role="presentation" (click)="cancelAccountDeletion()">
-          <section class="account-delete-modal" role="dialog" aria-modal="true" aria-labelledby="account-delete-title" (click)="$event.stopPropagation()">
-            <div class="account-delete-icon"><mat-icon>delete_outline</mat-icon></div>
-            <div class="account-delete-copy">
-              <p class="account-delete-kicker">Remove account</p>
-              <h3 id="account-delete-title">Delete {{ accountPendingDeletion.name }}?</h3>
-              <p>This will remove the account from your workspace. This action cannot be undone.</p>
-            </div>
-            <div class="account-delete-actions">
-              <button type="button" class="account-delete-cancel" [disabled]="isDeletingAccount" (click)="cancelAccountDeletion()">Keep account</button>
-              <button type="button" class="account-delete-confirm" [disabled]="isDeletingAccount" (click)="confirmAccountDeletion()">
-                <mat-icon>{{ isDeletingAccount ? 'sync' : 'delete_outline' }}</mat-icon>
-                {{ isDeletingAccount ? 'Deleting…' : 'Delete account' }}
-              </button>
-            </div>
-          </section>
-        </div>
-      }
     } @else {
       <div class="accounts-empty">
         <mat-icon>account_balance_wallet</mat-icon>
         <h2>No accounts yet</h2>
         <p>Create your first trading account to start tracking performance and risk.</p>
         <button type="button" class="account-add-button" (click)="openAccountCreator()"><mat-icon>add</mat-icon><span>Add your first account</span></button>
+      </div>
+    }
+
+    @if (editingAccountId || isCreatingAccount) {
+      <div class="account-modal-backdrop" role="presentation">
+        <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title">
+          <div class="account-edit-heading">
+            <div>
+              <p class="account-edit-kicker">{{ isCreatingAccount ? 'New trading account' : 'Account settings' }}</p>
+              <h3 id="account-edit-title">{{ isCreatingAccount ? 'Add an account' : 'Edit account details' }}</h3>
+              <p class="account-edit-subtitle">{{ isCreatingAccount ? 'Add the account details you use to track performance and risk.' : 'Keep your trading limits and account identity in sync.' }}</p>
+            </div>
+          </div>
+          <div class="account-edit-fields">
+            <label class="account-edit-field account-edit-field-wide">
+              <span>Account name</span>
+              <input type="text" [(ngModel)]="accountEditForm.name" placeholder="e.g. 5ers 2.5K" />
+            </label>
+            <label class="account-edit-field">
+              <span>Firm</span>
+              <select [(ngModel)]="accountEditForm.prop_firm_id" name="account-firm">
+                <option [ngValue]="null">Independent accounts</option>
+                @for (firm of firmOptions; track firm.id) {
+                  <option [ngValue]="firm.id">{{ firm.name }}</option>
+                }
+              </select>
+            </label>
+            <label class="account-edit-field">
+              <span>Platform</span>
+              <select [(ngModel)]="accountEditForm.platform" name="account-platform" required>
+                <option [ngValue]="null" disabled>Select a platform</option>
+                <option value="MT5">MT5</option>
+                <option value="Tradovate">Tradovate</option>
+                <option value="Wealthcharts">Wealthcharts</option>
+              </select>
+            </label>
+            <label class="account-edit-field">
+              <span>Account number</span>
+              <input type="text" [(ngModel)]="accountEditForm.account_number" placeholder="Optional" />
+            </label>
+            <label class="account-edit-field">
+              <span>Starting balance</span>
+              <input type="number" min="0" [(ngModel)]="accountEditForm.initial_balance" />
+            </label>
+            <label class="account-edit-field">
+              <span>Start date</span>
+              <input type="date" [(ngModel)]="accountEditForm.start_date" />
+            </label>
+            <label class="account-edit-field">
+              <span>Stage</span>
+              <select [(ngModel)]="accountEditForm.phase">
+                <option value="phase1">Phase 1</option>
+                <option value="phase2">Phase 2</option>
+                <option value="funded">Funded</option>
+              </select>
+            </label>
+            <label class="account-edit-field">
+              <span>Status</span>
+              <select [(ngModel)]="accountEditForm.status">
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="closed">Closed</option>
+              </select>
+            </label>
+            <label class="account-edit-field">
+              <span>Profit target %</span>
+              <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.profit_target_percent" />
+            </label>
+            <label class="account-edit-field">
+              <span>Max drawdown %</span>
+              <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.max_total_drawdown_percent" />
+            </label>
+            <label class="account-edit-field">
+              <span>Daily loss limit %</span>
+              <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.daily_loss_limit_percent" />
+            </label>
+          </div>
+          <div class="account-edit-actions">
+            <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">Cancel</button>
+            <button type="button" class="account-edit-save" [disabled]="isSavingAccount || !accountEditForm.name?.trim() || !accountEditForm.platform" (click)="saveAccountEdit()">
+              <mat-icon>{{ isSavingAccount ? 'sync' : isCreatingAccount ? 'add' : 'save' }}</mat-icon>
+              {{ isSavingAccount ? (isCreatingAccount ? 'Adding…' : 'Saving…') : (isCreatingAccount ? 'Add account' : 'Save changes') }}
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (accountPendingDeletion) {
+      <div class="account-modal-backdrop account-delete-backdrop" role="presentation" (click)="cancelAccountDeletion()">
+        <section class="account-delete-modal" role="dialog" aria-modal="true" aria-labelledby="account-delete-title" (click)="$event.stopPropagation()">
+          <div class="account-delete-icon"><mat-icon>delete_outline</mat-icon></div>
+          <div class="account-delete-copy">
+            <p class="account-delete-kicker">Remove account</p>
+            <h3 id="account-delete-title">Delete {{ accountPendingDeletion.name }}?</h3>
+            <p>This will remove the account from your workspace. This action cannot be undone.</p>
+          </div>
+          <div class="account-delete-actions">
+            <button type="button" class="account-delete-cancel" [disabled]="isDeletingAccount" (click)="cancelAccountDeletion()">Keep account</button>
+            <button type="button" class="account-delete-confirm" [disabled]="isDeletingAccount" (click)="confirmAccountDeletion()">
+              <mat-icon>{{ isDeletingAccount ? 'sync' : 'delete_outline' }}</mat-icon>
+              {{ isDeletingAccount ? 'Deleting…' : 'Delete account' }}
+            </button>
+          </div>
+        </section>
       </div>
     }
   </section>

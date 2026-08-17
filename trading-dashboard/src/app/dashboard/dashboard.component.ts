@@ -613,6 +613,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = null;
     this.accountEditForm = {
       name: '',
+      platform: null,
       prop_firm_id: this.propFirms.find(firm => firm.name === this.selectedFirm)?.id || null,
       account_number: '',
       initial_balance: null,
@@ -631,6 +632,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = account.id;
     this.accountEditForm = {
       name: account.name,
+      platform: account.platform ?? null,
       prop_firm_id: account.prop_firm_id ?? null,
       account_number: account.account_number ?? '',
       initial_balance: account.initial_balance ?? this.inferAccountSize(account),
@@ -701,11 +703,14 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   async saveAccountEdit(): Promise<void> {
-    if (!this.accountEditForm.name?.trim()) return;
+    const name = this.accountEditForm.name?.trim();
+    const platform = this.accountEditForm.platform;
+    if (!name || !platform) return;
 
     this.isSavingAccount = true;
     const accountData = {
-      name: this.accountEditForm.name.trim(),
+      name,
+      platform,
       prop_firm_id: this.accountEditForm.prop_firm_id || null,
       account_number: this.accountEditForm.account_number?.trim() || null,
       initial_balance: Number(this.accountEditForm.initial_balance) || 0,
