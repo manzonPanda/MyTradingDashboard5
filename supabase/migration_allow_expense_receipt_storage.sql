@@ -8,7 +8,7 @@ for insert
 to authenticated
 with check (
   bucket_id = 'certificates'
-  and split_part(name, '/', 1) like ((select auth.uid()::text) || '-%-expenses')
+  and name like ((select auth.uid()::text) || '-%-expenses/%')
 );
 
 create policy "Users can view own expense images"
@@ -17,7 +17,7 @@ for select
 to authenticated
 using (
   bucket_id = 'certificates'
-  and split_part(name, '/', 1) like ((select auth.uid()::text) || '-%-expenses')
+  and name like ((select auth.uid()::text) || '-%-expenses/%')
 );
 
 create policy "Users can delete own expense images"
@@ -26,5 +26,5 @@ for delete
 to authenticated
 using (
   bucket_id = 'certificates'
-  and split_part(name, '/', 1) like ((select auth.uid()::text) || '-%-expenses')
+  and name like ((select auth.uid()::text) || '-%-expenses/%')
 );
