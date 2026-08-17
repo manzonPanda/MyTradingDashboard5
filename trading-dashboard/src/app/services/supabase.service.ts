@@ -421,8 +421,44 @@ export class SupabaseService {
     return data as RoiTransaction;
   }
 
+  private getCertificateStoragePath(fileReference: string | null | undefined): string | null {
+    if (!fileReference) return null;
+    if (!/^https?:\/\//i.test(fileReference)) return fileReference;
+
+    try {
+      const fileUrl = new URL(fileReference);
+      const supabaseUrl = new URL(environment.supabase.url);
+      if (fileUrl.origin !== supabaseUrl.origin) return null;
+
+      const objectPrefix = '/storage/v1/object/';
+      if (!fileUrl.pathname.startsWith(objectPrefix)) return null;
+      const [accessType, bucket, ...pathSegments] = fileUrl.pathname.slice(objectPrefix.length).split('/');
+      if (!['public', 'sign', 'authenticated'].includes(accessType) || bucket !== 'certificates' || !pathSegments.length) return null;
+
+      return pathSegments.map(segment => decodeURIComponent(segment)).join('/');
+    } catch {
+      return null;
+    }
+  }
+
   async deleteRoiTransaction(id: string): Promise<void> {
     const userId = await this.getAuthenticatedUserId();
+    const { data: transaction, error: lookupError } = await this.supabase
+      .from('roi_transactions')
+      .select('image_url')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (lookupError) throw new Error(`ROI transaction lookup failed: ${lookupError.message}`);
+
+    const storagePath = this.getCertificateStoragePath(transaction?.image_url);
+    if (storagePath) {
+      const { error: storageError } = await this.supabase.storage
+        .from('certificates')
+        .remove([storagePath]);
+      if (storageError) throw new Error(`Payout receipt deletion failed: ${storageError.message}`);
+    }
+
     const { error } = await this.supabase
       .from('roi_transactions')
       .delete()
