@@ -12592,6 +12592,9 @@ table.simple-table {
 .roi-entry-form { display: grid; gap: 1rem; padding: 1.35rem; }
 .roi-type-picker button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; }
 .roi-type-picker mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+.roi-entry-type-readonly { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.65rem 0.75rem; border: 1px solid var(--tf-border-primary); border-radius: 0.6rem; background: var(--tf-bg-primary); color: var(--tf-text-secondary); font-size: 0.75rem; font-weight: 700; }
+.roi-entry-type-readonly strong { display: inline-flex; align-items: center; gap: 0.4rem; color: #8b5cf6; }
+.roi-entry-type-readonly mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
 .roi-field { display: grid; gap: 0.38rem; color: var(--tf-text-secondary); font-size: 0.75rem; font-weight: 700; }
 .roi-field em, .roi-receipt-label em { color: var(--tf-text-muted); font-style: normal; font-weight: 500; }
 .roi-receipt-field { display: grid; gap: 0.38rem; }
