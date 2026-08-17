@@ -1035,6 +1035,12 @@
                     <span class="roi-receipt-copy"><strong>{{ roiReceiptFile?.name || (roiForm.image_url ? 'Existing image' : (roiForm.transaction_type === 'payout' ? 'Upload receipt image' : 'Upload expense image')) }}</strong><small>{{ roiReceiptFile ? (roiForm.transaction_type === 'payout' ? 'Ready to upload with this payout' : 'Ready to upload with this expense') : 'PNG, JPG, WEBP, or GIF' }}</small></span>
                     <span class="roi-receipt-browse">Browse</span>
                   </label>
+                  @if (roiImagePreviewUrl) {
+                    <div class="roi-image-preview">
+                      <img [src]="roiImagePreviewUrl" [alt]="roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview'">
+                      <span>{{ editingRoiTransactionId ? 'Current image' : 'Selected image' }}</span>
+                    </div>
+                  }
                 </div>
                 <button class="roi-save-button" type="submit" [disabled]="isSavingRoi || !roiForm.amount"><mat-icon>{{ isSavingRoi ? 'sync' : editingRoiTransactionId ? 'save' : 'add' }}</mat-icon>{{ isSavingRoi ? 'Saving…' : editingRoiTransactionId ? 'Update tracker' : 'Add to tracker' }}</button>
               </form>

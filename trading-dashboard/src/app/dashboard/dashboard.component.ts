@@ -235,6 +235,9 @@ export class DashboardComponent implements AfterViewInit {
   roiPage = 1;
   readonly roiPageSize = 5;
   roiReceiptFile: File | null = null;
+  roiImagePreviewUrl: string | null = null;
+  private roiImageObjectUrl: string | null = null;
+  private roiImagePreviewRequestId = 0;
   roiForm: { transaction_type: 'expense' | 'payout'; transaction_date: string; amount: number | null; note: string; account_id: string; image_url: string } = {
     transaction_type: 'expense',
     transaction_date: new Date().toISOString().slice(0, 10),
@@ -1645,6 +1648,7 @@ mt5AccountInfo: AccountSettings = {
 
   openRoiEntryModal(): void {
     this.editingRoiTransactionId = null;
+    this.clearRoiImagePreview();
     this.roiReceiptFile = null;
     this.roiForm = {
       transaction_type: 'expense',
@@ -1659,6 +1663,7 @@ mt5AccountInfo: AccountSettings = {
 
   editRoiTransaction(transaction: RoiTransaction): void {
     this.editingRoiTransactionId = transaction.id;
+    this.clearRoiImagePreview();
     this.roiReceiptFile = null;
     this.roiForm = {
       transaction_type: transaction.transaction_type,
@@ -1668,11 +1673,39 @@ mt5AccountInfo: AccountSettings = {
       account_id: transaction.account_id ?? '',
       image_url: transaction.image_url ?? ''
     };
+    void this.loadRoiImagePreview(transaction.image_url ?? '');
     this.isRoiEntryModalOpen = true;
   }
 
   closeRoiEntryModal(): void {
-    if (!this.isSavingRoi && !this.isDeletingRoi) this.isRoiEntryModalOpen = false;
+    if (this.isSavingRoi || this.isDeletingRoi) return;
+    this.clearRoiImagePreview();
+    this.isRoiEntryModalOpen = false;
+  }
+
+  private clearRoiImagePreview(): void {
+    this.roiImagePreviewRequestId += 1;
+    this.roiImagePreviewUrl = null;
+    if (this.roiImageObjectUrl) {
+      URL.revokeObjectURL(this.roiImageObjectUrl);
+      this.roiImageObjectUrl = null;
+    }
+  }
+
+  private async loadRoiImagePreview(imageReference: string): Promise<void> {
+    const requestId = ++this.roiImagePreviewRequestId;
+    if (!imageReference) {
+      this.roiImagePreviewUrl = null;
+      return;
+    }
+
+    if (imageReference.startsWith('http://') || imageReference.startsWith('https://')) {
+      if (requestId === this.roiImagePreviewRequestId) this.roiImagePreviewUrl = imageReference;
+      return;
+    }
+
+    const signedUrl = await this.supabaseService.getCertificateFileUrl(imageReference);
+    if (requestId === this.roiImagePreviewRequestId) this.roiImagePreviewUrl = signedUrl;
   }
 
   get filteredRoiTransactions(): RoiTransaction[] {
@@ -1705,7 +1738,12 @@ mt5AccountInfo: AccountSettings = {
 
   onRoiReceiptSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
-    this.roiReceiptFile = file?.type.startsWith('image/') ? file : null;
+    if (!file || !file.type.startsWith('image/')) return;
+
+    this.clearRoiImagePreview();
+    this.roiReceiptFile = file;
+    this.roiImageObjectUrl = URL.createObjectURL(file);
+    this.roiImagePreviewUrl = this.roiImageObjectUrl;
   }
 
   get roiExpenses(): number {
@@ -2060,6 +2098,7 @@ mt5AccountInfo: AccountSettings = {
       this.roiPage = editingId ? Math.min(this.roiPage, this.roiTotalPages) : 1;
       this.editingRoiTransactionId = null;
       this.roiReceiptFile = null;
+      this.clearRoiImagePreview();
       this.isRoiEntryModalOpen = false;
       if (!editingId && savedTransaction.transaction_type === 'payout') this.confetti.celebratePayout();
       this.snackBar.open(editingId ? 'ROI transaction updated.' : 'ROI transaction saved.', 'Dismiss', { duration: 3000 });
@@ -2392,6 +2431,7 @@ mt5AccountInfo: AccountSettings = {
   }
 
   ngOnDestroy(): void {
+    this.clearRoiImagePreview();
     if (this.liveExtremesCacheTimer) {
       window.clearTimeout(this.liveExtremesCacheTimer);
     }
