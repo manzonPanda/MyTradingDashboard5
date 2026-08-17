@@ -262,9 +262,42 @@ export class DashboardComponent implements AfterViewInit {
 
   @HostListener('document:click', ['$event'])
   closeNavigationDisplayMenuOnOutsideClick(event: MouseEvent): void {
+    this.unlockGaugeAudio();
     const target = event.target as Element;
     if (!target.closest('.navigation-display-control')) {
       this.isNavigationDisplayMenuOpen = false;
+    }
+  }
+
+  private unlockGaugeAudio(): void {
+    if (this.gaugeAudioUnlocked) return;
+
+    const primer = new Audio(this.gaugeAlertSoundUrl);
+    primer.muted = true;
+    void primer.play().then(() => {
+      this.gaugeAudioUnlocked = true;
+      primer.pause();
+      primer.currentTime = 0;
+      this.playPendingGaugeSounds();
+    }).catch(() => {
+      primer.pause();
+    });
+  }
+
+  private playPendingGaugeSounds(): void {
+    for (const [ticket, pending] of this.pendingGaugeSounds) {
+      const { sound, level } = pending;
+      sound.loop = true;
+      sound.muted = false;
+      sound.volume = this.liveTradeSoundSettings.volume;
+      const soundMap = level === 'high' ? this.highGaugeAlertSounds : this.gaugeAlertSounds;
+      soundMap.set(ticket, sound);
+      this.activeGaugeAlertLevels.set(ticket, level);
+      this.pendingGaugeSounds.delete(ticket);
+      void sound.play().catch(error => {
+        this.stopGaugeAlert(ticket);
+        console.warn('Unable to play pending gauge alert sound:', error);
+      });
     }
   }
 
@@ -519,7 +552,9 @@ export class DashboardComponent implements AfterViewInit {
   private readonly gaugeAlertNotifiedTickets = new Set<string>();
   private readonly gaugeAlertSounds = new Map<string, HTMLAudioElement>();
   private readonly highGaugeAlertSounds = new Map<string, HTMLAudioElement>();
+  private readonly pendingGaugeSounds = new Map<string, { sound: HTMLAudioElement; level: 'normal' | 'high' }>();
   private readonly activeGaugeAlertLevels = new Map<string, 'normal' | 'high'>();
+  private gaugeAudioUnlocked = false;
   private readonly screenshotLoadErrors = new Set<string>();
   private liveExtremesCacheTimer?: number;
   private mt5LiveTradesAccountId: string | null = null;
@@ -4794,7 +4829,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.activeGaugeAlertLevels.set(ticket, nextAlertLevel);
     sound.play().catch(error => {
       this.stopGaugeAlert(ticket);
-      console.warn('Unable to play gauge percentage alert sound:', error);
+      this.pendingGaugeSounds.set(ticket, { sound, level: nextAlertLevel });
+      console.warn('Unable to play gauge percentage alert sound; waiting for user interaction.', error);
     });
 
     if (!this.gaugeAlertNotifiedTickets.has(ticket)) {
@@ -4805,6 +4841,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   private stopGaugeAlert(ticket: string): void {
     this.activeGaugeAlertLevels.delete(ticket);
+    const pending = this.pendingGaugeSounds.get(ticket);
+    pending?.sound.pause();
+    this.pendingGaugeSounds.delete(ticket);
     for (const soundMap of [this.gaugeAlertSounds, this.highGaugeAlertSounds]) {
       const sound = soundMap.get(ticket);
       if (!sound) continue;
@@ -4818,7 +4857,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const tickets = new Set([
       ...this.activeGaugeAlertLevels.keys(),
       ...this.gaugeAlertSounds.keys(),
-      ...this.highGaugeAlertSounds.keys()
+      ...this.highGaugeAlertSounds.keys(),
+      ...this.pendingGaugeSounds.keys()
     ]);
     tickets.forEach(ticket => this.stopGaugeAlert(ticket));
   }
