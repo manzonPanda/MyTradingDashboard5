@@ -590,7 +590,7 @@ export class SupabaseService {
   async saveTradeForAccount(trade: Partial<Trade>, accountId: string): Promise<Trade | null> {
     const tradeForAccount = { ...trade, account_id: accountId };
     if (tradeForAccount.ticket !== undefined && tradeForAccount.ticket !== null) {
-      const existing = await this.getTradeByTicket(tradeForAccount.ticket);
+      const existing = await this.getTradeByTicket(tradeForAccount.ticket, accountId);
       if (existing?.id) return this.updateTrade(existing.id, tradeForAccount);
     }
     return this.createTrade(tradeForAccount);
@@ -611,7 +611,7 @@ export class SupabaseService {
         continue;
       }
 
-      const existing = await this.getTradeByTicket(accountTrade.ticket);
+      const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
         const updates = { ...accountTrade };
         const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;

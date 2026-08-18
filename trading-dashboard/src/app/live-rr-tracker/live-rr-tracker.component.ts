@@ -467,6 +467,10 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     return parseFloat(trade.profit || '0') || 0;
   }
 
+  getTradeNetProfit(trade: Table): number {
+    return parseFloat(trade.netProfit || '0') || 0;
+  }
+
   getTradePercent(trade: Table): number {
     return this.accountSize > 0
       ? (this.getTradeProfit(trade) / this.accountSize) * 100
@@ -515,10 +519,7 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   getTradeR(trade: Table): number {
     const risk = parseFloat(trade.riskPerTrade || '0') || 0;
-    if (risk > 0) return this.getTradeProfit(trade) / risk;
-
-    const reportedR = parseFloat(String(trade.rrr || '').replace('R', ''));
-    return Number.isFinite(reportedR) ? reportedR : 0;
+    return risk > 0 ? this.getTradeNetProfit(trade) / risk : 0;
   }
 
   getTradePnLClass(trade: Table): string {

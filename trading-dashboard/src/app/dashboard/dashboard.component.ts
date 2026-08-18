@@ -4208,11 +4208,11 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       time_close: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
-      pnl: this.toNumber(trade.netProfit),
+      pnl: this.toNumber(trade.profit),
       price_close: trade.exit === '-' ? undefined : this.toNumber(trade.exit),
       price_open: this.toNumber(trade.entry),
       risk_per_trade: this.toNumber(trade.riskPerTrade),
-      rrr: trade.rrr,
+      rrr: this.getRealizedR(trade.profit, trade.riskPerTrade, trade.rrr),
       sl: this.toNumber(trade.sL),
       swap: this.toNumber(trade.swap),
       tp: this.toNumber(trade.tP)
@@ -4238,6 +4238,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   private toNumber(value: string | number): number {
     const numberValue = Number(value);
     return Number.isFinite(numberValue) ? numberValue : 0;
+  }
+
+  private getNetProfit(profit: string | number, commission: string | number, swap: string | number): string {
+    return (this.toNumber(profit) + this.toNumber(commission) + this.toNumber(swap)).toString();
+  }
+
+  private getRealizedR(profit: string | number, risk: string | number, fallback: string): string {
+    const riskAmount = this.toNumber(risk);
+    return riskAmount > 0 ? `${(this.toNumber(profit) / riskAmount).toFixed(2)}R` : fallback;
   }
 
   /** Prevents overlapping auto-sync runs from concurrent loadMT5Data() calls. */
@@ -4314,9 +4323,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         commission: trade.commission ? trade.commission.toString() : '0',
         swap: trade.swap ? trade.swap.toString() : '0',
         profit: trade.profit ? trade.profit.toString() : '0',
-        netProfit: (trade.profit + trade.commission).toString(),
+        netProfit: this.getNetProfit(trade.profit, trade.commission, trade.swap),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-        rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
+        rrr: this.getRealizedR(trade.profit, trade.risk_usd, trade.reward_risk_ratio?.toString() || '0'),
         mt5status: trade.status || '',
         mfe: String(mfe),
         mae: String(mae),
@@ -4456,16 +4465,20 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const supabasePositionIds = new Set(supabaseTrades.map(trade => String(trade.position_id)));
     const reconciledSupabaseTrades = supabaseTrades.map(trade => {
       const mt5Trade = mt5ByPosition.get(String(trade.position_id));
-      if (!mt5Trade || String(mt5Trade.status).toLowerCase() === 'open') return trade;
+      if (!mt5Trade) return trade;
 
       return {
         ...trade,
         status: mt5Trade.status,
         time_close: mt5Trade.time_close || trade.time_close,
-        exit_price: mt5Trade.exit_price || trade.exit_price,
+        exit_price: mt5Trade.exit_price ?? trade.exit_price,
         profit: mt5Trade.profit ?? trade.profit,
         commission: mt5Trade.commission ?? trade.commission,
-        swap: mt5Trade.swap ?? trade.swap
+        swap: mt5Trade.swap ?? trade.swap,
+        risk_usd: mt5Trade.risk_usd ?? trade.risk_usd,
+        reward_risk_ratio: mt5Trade.reward_risk_ratio ?? trade.reward_risk_ratio,
+        sl: mt5Trade.sl ?? trade.sl,
+        tp: mt5Trade.tp ?? trade.tp
       };
     });
     // Include ANY MT5 trade (open OR closed) that is not yet in Supabase.
@@ -4691,11 +4704,11 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       tP: trade.tp ? trade.tp.toString() : 0,
       exit: "-",
       commission: trade.commission ? trade.commission.toString() : '0',
-      swap: "-",
+      swap: trade.swap ? trade.swap.toString() : '0',
       profit: trade.profit ? trade.profit.toString() : '0',
-      netProfit: trade.profit ? trade.profit.toString() : '0',
-      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
-      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
+      netProfit: this.getNetProfit(trade.profit, trade.commission, trade.swap),
+      riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
+      rrr: this.getRealizedR(trade.profit, trade.risk_usd, trade.reward_risk_ratio?.toString() || '0'),
       mt5status: trade.status || '',
       mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
       mae: String(Math.min(extremes.mae, Number(trade.mae) || 0)),
@@ -4763,10 +4776,17 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       const closedTrade = { ...this.mt5LiveTrades[liveIndex] };
       console.log('🔴 Found live trade to be close at:', closedTrade);
       // closedTrade.status= "Closed";
-      closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
-      closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
-      closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
-      closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
+      closedTrade.closeDate = trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
+      closedTrade.exit = trade.price_close ? trade.price_close.toString() : '0';
+      closedTrade.profit = trade.profit ? trade.profit.toString() : '0';
+      if (trade.commission !== undefined && trade.commission !== null) {
+        closedTrade.commission = trade.commission.toString();
+      }
+      if (trade.swap !== undefined && trade.swap !== null) {
+        closedTrade.swap = trade.swap.toString();
+      }
+      closedTrade.netProfit = this.getNetProfit(closedTrade.profit, closedTrade.commission, closedTrade.swap);
+      closedTrade.rrr = this.getRealizedR(closedTrade.profit, closedTrade.riskPerTrade, closedTrade.rrr);
       const closingProfit = Number(trade.profit);
       const finalMfe = Math.max(Number(closedTrade.mfe) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
       const finalMae = Math.min(Number(closedTrade.mae) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
@@ -4879,11 +4899,11 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
       // Update current profit values
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
-      trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      trade.netProfit = this.getNetProfit(trade.profit, trade.commission, trade.swap);
       this.notifyGaugePercentage(trade);
 
-      if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
-        trade.riskPerTrade = Math.abs(Number(priceData.sl_value)).toFixed(2);
+      if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.risk_usd !== undefined) {
+        trade.riskPerTrade = Math.abs(Number(priceData.risk_usd)).toFixed(2);
       }
 
       const currentMfe = Number(trade.mfe) || 0;
@@ -4915,7 +4935,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         type: Number(priceData.type ?? priceData.trade_type ?? 0),
         volume: Number(priceData.volume ?? 0),
         profit: Number(priceData.profit ?? 0),
-        risk_usd: Math.abs(Number(priceData.sl_value ?? priceData.risk_usd ?? 0)),
+        risk_usd: Math.abs(Number(priceData.risk_usd ?? 0)),
         status: 'open'
       });
     }
