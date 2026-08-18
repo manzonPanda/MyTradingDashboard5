@@ -4212,7 +4212,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       price_close: trade.exit === '-' ? undefined : this.toNumber(trade.exit),
       price_open: this.toNumber(trade.entry),
       risk_per_trade: this.toNumber(trade.riskPerTrade),
-      rrr: trade.rrr,
+      rrr: this.calculateRiskRewardRatio(trade),
       sl: this.toNumber(trade.sL),
       swap: this.toNumber(trade.swap),
       tp: this.toNumber(trade.tP)
@@ -4238,6 +4238,26 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   private toNumber(value: string | number): number {
     const numberValue = Number(value);
     return Number.isFinite(numberValue) ? numberValue : 0;
+  }
+
+  private calculateRiskRewardRatio(trade: Pick<Table, 'entry' | 'sL' | 'tP'>): string {
+    const entry = Number(trade.entry);
+    const stopLoss = Number(trade.sL);
+    const takeProfit = Number(trade.tP);
+    const risk = Math.abs(entry - stopLoss);
+    const reward = Math.abs(takeProfit - entry);
+
+    if (!Number.isFinite(risk) || !Number.isFinite(reward) || risk <= 0 || reward <= 0) {
+      return '0';
+    }
+
+    return (reward / risk).toFixed(2);
+  }
+
+  private isSameRiskRewardRatio(currentValue: string | number | null | undefined, expectedValue: string): boolean {
+    const current = Number(String(currentValue ?? '').replace(/R$/i, '').trim());
+    const expected = Number(expectedValue);
+    return Number.isFinite(current) && Number.isFinite(expected) && Math.abs(current - expected) < 0.005;
   }
 
   /** Prevents overlapping auto-sync runs from concurrent loadMT5Data() calls. */
@@ -4316,7 +4336,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         profit: trade.profit ? trade.profit.toString() : '0',
         netProfit: (trade.profit + trade.commission).toString(),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-        rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0',
+        rrr: '0',
         mt5status: trade.status || '',
         mfe: String(mfe),
         mae: String(mae),
@@ -4340,6 +4360,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     // (login matches the selected account's account_number). Never write MT5
     // trades into a different selected account.
     if (accountId && mt5History !== null && this.isActiveMt5Account()) {
+      void this.correctLiveTradeRiskRewardRatios(this.mt5LiveTrades, supabaseTrades, accountId).catch(error => {
+        console.warn('Unable to correct live trade R:R values:', error);
+      });
       void this.autoSyncMt5TradesToSupabase(this.mt5LiveTrades, supabaseTrades, accountId);
     }
 
@@ -4421,6 +4444,29 @@ async onPaste(event: ClipboardEvent): Promise<void> {
    * — so the full history (e.g. trades that closed while the app was offline)
    * was never persisted automatically. This closes that gap.
    */
+  private async correctLiveTradeRiskRewardRatios(
+    mt5Trades: Table[],
+    supabaseTrades: any[],
+    accountId: string
+  ): Promise<void> {
+    const persistedTrades = new Map(
+      supabaseTrades.map(trade => [String(trade.position_id), trade])
+    );
+    const updates = mt5Trades.flatMap(trade => {
+      if (!this.mt5OpenPositionIds?.has(String(trade.position))) return [];
+
+      const persistedTrade = persistedTrades.get(String(trade.position));
+      const rrr = this.calculateRiskRewardRatio(trade);
+      if (!persistedTrade || rrr === '0' || this.isSameRiskRewardRatio(persistedTrade.reward_risk_ratio, rrr)) {
+        return [];
+      }
+
+      return [this.supabaseService.updateTradeByTicket(trade.position, accountId, { rrr })];
+    });
+
+    if (updates.length) await Promise.all(updates);
+  }
+
   private async autoSyncMt5TradesToSupabase(
     mt5Trades: Table[],
     supabaseTrades: any[],
@@ -4695,7 +4741,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       profit: trade.profit ? trade.profit.toString() : '0',
       netProfit: trade.profit ? trade.profit.toString() : '0',
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
-      rrr: trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() :'0',
+      rrr: '0',
       mt5status: trade.status || '',
       mfe: String(Math.max(extremes.mfe, Number(trade.mfe) || 0)),
       mae: String(Math.min(extremes.mae, Number(trade.mae) || 0)),
@@ -4766,7 +4812,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
-      closedTrade.rrr= trade.reward_risk_ratio ? trade.reward_risk_ratio.toString() : '0';
+      closedTrade.rrr = this.calculateRiskRewardRatio(closedTrade);
       const closingProfit = Number(trade.profit);
       const finalMfe = Math.max(Number(closedTrade.mfe) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
       const finalMae = Math.min(Number(closedTrade.mae) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
