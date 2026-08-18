@@ -542,7 +542,6 @@ export class DashboardComponent implements AfterViewInit {
   ];
   selectedAccount: Account | null = null;
   selectedFirm: string | null = null;
-  private readonly selectedAccountStorageKey = 'trading-dashboard.selected-account-id';
   private readonly liveTradeSoundSettingsStorageKey = 'trading-dashboard.live-trade-sound-settings';
   private readonly liveTradeDisplayPreferencesStorageKey = 'trading-dashboard.live-trade-display-preferences';
   private readonly liveExtremesStorageKey = 'trading-dashboard.live-trade-extremes.v2';
@@ -716,11 +715,13 @@ export class DashboardComponent implements AfterViewInit {
 
       if (this.selectedAccount?.id === account.id) {
         this.selectedAccount = this.accounts[0] ?? null;
+        const userId = this.auth.user()?.id;
+        if (userId) {
+          await this.supabaseService.updateUserSettings(userId, { default_account_id: this.selectedAccount?.id ?? null });
+        }
         if (this.selectedAccount) {
-          localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
           this.selectedFirm = this.getFirmName(this.selectedAccount);
         } else {
-          localStorage.removeItem(this.selectedAccountStorageKey);
           this.selectedFirm = null;
         }
         this.applySelectedAccountSettings();
@@ -767,7 +768,10 @@ export class DashboardComponent implements AfterViewInit {
         const createdAccount = await this.supabaseService.createAccount(accountData);
         this.accounts = [createdAccount, ...this.accounts];
         this.selectedAccount = createdAccount;
-        localStorage.setItem(this.selectedAccountStorageKey, createdAccount.id);
+        const userId = this.auth.user()?.id;
+        if (userId) {
+          await this.supabaseService.updateUserSettings(userId, { default_account_id: createdAccount.id });
+        }
         this.selectedFirm = this.getFirmName(createdAccount);
         this.accountPage = 1;
         this.applySelectedAccountSettings();
@@ -2193,14 +2197,9 @@ mt5AccountInfo: AccountSettings = {
         : [null, null];
       this.profileDisplayName = profile?.display_name?.trim() || user?.user_metadata?.['display_name'] || user?.email?.split('@')[0] || 'Trader';
       this.profileAvatarUrl = profile?.avatar_url?.trim() || user?.user_metadata?.['avatar_url'] || '';
-      const savedAccountId = localStorage.getItem(this.selectedAccountStorageKey) || savedSettings?.default_account_id;
+      const savedAccountId = savedSettings?.default_account_id;
       this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
       if (savedSettings) this.applyPersistedUserSettings(savedSettings);
-      if (this.selectedAccount) {
-        localStorage.setItem(this.selectedAccountStorageKey, this.selectedAccount.id);
-      } else {
-        localStorage.removeItem(this.selectedAccountStorageKey);
-      }
       this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
       this.selectedFirm = this.selectedAccount ? this.getFirmName(this.selectedAccount) : null;
       this.applySelectedAccountSettings();
@@ -2283,8 +2282,11 @@ mt5AccountInfo: AccountSettings = {
       return;
     }
 
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+
+    await this.supabaseService.updateUserSettings(userId, { default_account_id: account.id });
     this.selectedAccount = account;
-    localStorage.setItem(this.selectedAccountStorageKey, account.id);
     this.mt5LiveTrades = [];
     this.recentlyAddedTrades = [];
     this.isMt5LiveSnapshotAvailable = false;
