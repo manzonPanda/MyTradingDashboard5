@@ -140,7 +140,9 @@ export interface Trade {
   commission?: number;
   daily_reflection?: string;
   time_open?: string;
+  time_open_ph?: string;
   time_close?: string;
+  time_close_ph?: string;
   held?: string;
   instrument?: string;
   lots?: number;
