@@ -32,8 +32,8 @@ export interface AccountEquityPoint {
   volume?: string;
   risk?: number;
   rr?: string;
-  openTime?: string;
-  closeTime?: string;
+  timeOpenPh?: string;
+  timeClosePh?: string;
   pnl?: number;
   dailyPnl?: number;
 }
@@ -356,15 +356,15 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     if (p.rr && p.rr !== '0' && p.rr !== '-') {
       rows.push(`<div class="pf-td-row"><span>R:R</span><b>${this.esc(p.rr)}</b></div>`);
     }
-    const openLabel = p.openTime ? this.compactTime(p.openTime) : '';
-    const closeLabel = p.closeTime ? this.compactTime(p.closeTime) : null;
+    const openLabel = p.timeOpenPh ? this.compactTime(p.timeOpenPh) : '';
+    const closeLabel = p.timeClosePh ? this.compactTime(p.timeClosePh) : null;
     if (openLabel) {
       const suffix = closeLabel ? ` → ${closeLabel}` : '';
       rows.push(`<div class="pf-td-row"><span>Open</span><b>${openLabel}${suffix}</b></div>`);
     } else if (closeLabel) {
       rows.push(`<div class="pf-td-row"><span>Close</span><b>${closeLabel}</b></div>`);
     }
-    const duration = this.tradeDuration(p.openTime, p.closeTime);
+    const duration = this.tradeDuration(p.timeOpenPh, p.timeClosePh);
     if (duration) {
       rows.push(`<div class="pf-td-row"><span>Duration</span><b>${duration}</b></div>`);
     }
@@ -393,6 +393,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     if (!raw) return '';
 
     const ts = raw.ts || raw.timestamp;
+    const headerTs = raw.tradeId && raw.timeOpenPh ? raw.timeOpenPh : ts;
     const equity = Number(raw.equity ?? raw.value?.[1]);
     const balance = Number(raw.balance ?? equity);
     const floating = Number(raw.floatingPnL ?? 0);
@@ -407,7 +408,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     return `
       <div class="pf-tooltip${isOpen || raw.tradeId ? ' pf-tooltip--trade' : ''}">
         <div class="pf-td-head">
-          <span>${this.fmtHeader(ts || '')}</span>
+          <span>${this.fmtHeader(headerTs || '')}</span>
         </div>
         <div class="pf-eq">${this.fmtUsdPlain(equity)}</div>
         <div class="pf-eq-label">Equity</div>
@@ -459,8 +460,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         volume: p.volume,
         risk: p.risk,
         rr: p.rr,
-        openTime: p.openTime,
-        closeTime: p.closeTime,
+        timeOpenPh: p.timeOpenPh,
+        timeClosePh: p.timeClosePh,
         pnl: p.pnl,
         dailyPnl: p.dailyPnl,
         isCurrent: isLast,

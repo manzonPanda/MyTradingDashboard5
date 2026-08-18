@@ -82,6 +82,7 @@ const DEFAULT_LIVE_TRADE_SOUND_SETTINGS: LiveTradeSoundSettings = {
 
 interface Table {
   openDate: string;
+  timeOpenPh?: string;
   tradeNotion: Trades[];
   status: string;
   position: string;
@@ -92,6 +93,7 @@ interface Table {
   sL: string;
   tP: string;
   closeDate: string;
+  timeClosePh?: string;
   exit: string;
   commission: string;
   swap: string;
@@ -3169,8 +3171,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           volume: trade.volume !== undefined ? String(trade.volume) : undefined,
           risk: riskAmt,
           rr: (trade.rrr && trade.rrr !== '0' && trade.rrr !== '-') ? trade.rrr : undefined,
-          openTime: ts,
-          closeTime: (trade.closeDate && trade.closeDate !== '-') ? trade.closeDate : undefined,
+          timeOpenPh: trade.timeOpenPh,
+          timeClosePh: trade.timeClosePh,
           pnl: Math.round(net * 100) / 100,
           dailyPnl: dayPnL[dayKeyOf(ts)] ? Math.round(dayPnL[dayKeyOf(ts)] * 100) / 100 : (isOpen ? Math.round(runningOpenTotal * 100) / 100 : undefined),
         });
@@ -3192,7 +3194,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         symbol: openTrades[0]?.symbol || undefined,
         type: openTrades[0]?.type || undefined,
         volume: openTrades[0]?.volume !== undefined ? String(openTrades[0].volume) : undefined,
-        openTime: now,
+        timeOpenPh: openTrades[0]?.timeOpenPh,
         pnl: floatingPnL,
         dailyPnl: floatingPnL,
       });
@@ -4320,7 +4322,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
       return {
         openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
+        timeOpenPh: trade.time_open_ph,
         closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
+        timeClosePh: trade.time_close_ph,
         tradeNotion: [],
         status: "",
         position: trade.position_id,
@@ -4545,7 +4549,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         status: trade.time_close ? 'closed' : 'open',
         symbol: trade.instrument ?? '',
         time_open: this.formatSupabaseDateForMt5(trade.time_open),
+        time_open_ph: trade.time_open_ph,
         time_close: trade.time_close ? this.formatSupabaseDateForMt5(trade.time_close) : '',
+        time_close_ph: trade.time_close_ph,
         tp: trade.tp ?? 0,
         trade_type: trade.buy_sell === 'Buy' ? 0 : 1,
         volume: trade.lots ?? 0,
@@ -4725,6 +4731,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const extremes = this.getLiveExtremes(trade.ticket);
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
+      timeOpenPh: trade.time_open_ph,
       closeDate: "-",
       tradeNotion: [],
       status: "",
@@ -4810,6 +4817,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       console.log('🔴 Found live trade to be close at:', closedTrade);
       // closedTrade.status= "Closed";
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
+      closedTrade.timeClosePh = trade.time_close_ph;
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr = this.calculateRiskRewardRatio(closedTrade);

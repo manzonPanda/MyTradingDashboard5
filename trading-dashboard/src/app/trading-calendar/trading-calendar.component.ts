@@ -6,6 +6,7 @@ import { SupabaseService } from '../services/supabase.service';
 
 interface Table {
   openDate: string;
+  timeOpenPh?: string;
   tradeNotion: any[];
   status: string;
   position: string;
@@ -16,6 +17,7 @@ interface Table {
   sL: string;
   tP: string;
   closeDate: string;
+  timeClosePh?: string;
   exit: string;
   commission: string;
   swap: string;
@@ -202,7 +204,7 @@ interface WeekSummary {
                   <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">{{ formatCurrency(getTradePnL(trade)) }}</strong>
                 </div>
                 <div class="day-trade-details">
-                  <span><mat-icon aria-hidden="true">schedule</mat-icon>{{ formatTradeTime(trade.openDate) }}<ng-container *ngIf="trade.closeDate && trade.closeDate !== '-'"> → {{ formatTradeTime(trade.closeDate) }}</ng-container></span>
+                  <span><mat-icon aria-hidden="true">schedule</mat-icon>{{ formatTradeTime(trade.timeOpenPh || trade.openDate) }}<ng-container *ngIf="trade.timeClosePh || (trade.closeDate && trade.closeDate !== '-')"> → {{ formatTradeTime(trade.timeClosePh || trade.closeDate) }}</ng-container></span>
                   <span><mat-icon aria-hidden="true">confirmation_number</mat-icon>#{{ trade.position || '—' }}</span>
                   <span *ngIf="trade.volume"><mat-icon aria-hidden="true">layers</mat-icon>{{ trade.volume }} lots</span>
                 </div>
@@ -420,27 +422,31 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   parseTradeDate(dateStr: string): Date | null {
     if (!dateStr) return null;
-    
+
     try {
-      // Handle MM.DD.YYYY HH:mm format
-      const [datePart, timePart] = dateStr.split(' ');
+      const [datePart, timePart] = dateStr.replace('T', ' ').split(' ');
       if (!datePart) return null;
 
-      const [month, day, year] = datePart.split('.');
-      if (month && day && year) {
-        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        if (timePart) {
-          const [hours, minutes] = timePart.split(':');
-          if (hours && minutes) {
-            date.setHours(parseInt(hours), parseInt(minutes));
-          }
+      const dateParts = datePart.split(/[.-]/);
+      if (dateParts.length !== 3) return null;
+      const [first, second, third] = dateParts.map(Number);
+      const year = dateParts[0].length === 4 ? first : third;
+      const month = dateParts[0].length === 4 ? second : first;
+      const day = dateParts[0].length === 4 ? third : second;
+      if (![year, month, day].every(Number.isFinite)) return null;
+
+      const date = new Date(year, month - 1, day);
+      if (timePart) {
+        const [hours, minutes] = timePart.split(':').map(Number);
+        if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+          date.setHours(hours, minutes);
         }
-        return date;
       }
+      return date;
     } catch (error) {
       console.error('Error parsing trade date:', error);
     }
-    
+
     return null;
   }
 
