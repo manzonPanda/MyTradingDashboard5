@@ -393,6 +393,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     if (!raw) return '';
 
     const ts = raw.ts || raw.timestamp;
+    const headerTs = raw.tradeId && raw.timeOpenPh ? raw.timeOpenPh : ts;
     const equity = Number(raw.equity ?? raw.value?.[1]);
     const balance = Number(raw.balance ?? equity);
     const floating = Number(raw.floatingPnL ?? 0);
@@ -407,7 +408,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     return `
       <div class="pf-tooltip${isOpen || raw.tradeId ? ' pf-tooltip--trade' : ''}">
         <div class="pf-td-head">
-          <span>${this.fmtHeader(ts || '')}</span>
+          <span>${this.fmtHeader(headerTs || '')}</span>
         </div>
         <div class="pf-eq">${this.fmtUsdPlain(equity)}</div>
         <div class="pf-eq-label">Equity</div>
