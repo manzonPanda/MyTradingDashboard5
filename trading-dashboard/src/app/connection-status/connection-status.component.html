@@ -3,9 +3,7 @@
     <div
       *ngFor="let server of servers"
       class="server-status-item"
-      [ngClass]="'status-' + server.status"
-      [matTooltip]="getServerTooltip(server)"
-      matTooltipPosition="below">
+      [ngClass]="'status-' + server.status">
 
       <div class="server-icon-container">
         <img

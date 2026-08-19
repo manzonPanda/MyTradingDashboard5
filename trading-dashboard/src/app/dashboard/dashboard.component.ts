@@ -835,6 +835,10 @@ mt5AccountInfo: AccountSettings = {
     return this.mt5ServiceConnected && this.mt5AccountLogin !== null && !this.isActiveMt5Account();
   }
 
+  get isProfitTargetHit(): boolean {
+    return this.hasCelebratedCurrentTarget;
+  }
+
   /** MT5 terminal login number (public, used by the mismatch safety banner). */
   get mt5ConnectedAccount(): string | null {
     return this.mt5AccountLogin;
@@ -1034,8 +1038,10 @@ mt5AccountInfo: AccountSettings = {
      private BACKEND_URL_MT5 = environment.backendUrlMt5;
 
   // Confetti celebration tracking
-  private lastCelebratedTarget: number = 0;
-  private hasCelebratedCurrentTarget: boolean = false;
+  private hasCelebratedCurrentTarget = false;
+  private observedProfitTarget: number | null = null;
+  private observedProfitTargetAccountId: string | null = null;
+  private previousProfitTargetPercentage: number | null = null;
 
   // Chart configuration for beautiful trading visualization
   public chartType: ChartType = 'line';
@@ -5155,10 +5161,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     // Set metrics loading to false when table data is updated
     this.isLoadingMetrics = false;
     this.generateTradingChartData();
-    this.cdr.detectChanges();
 
-    // Check for profit target achievement and celebrate! 🎉
     this.checkForProfitTargetCelebration();
+    this.cdr.detectChanges();
   }
 
   // Update chart with real-time trade data
@@ -5272,29 +5277,36 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return Number.isNaN(eventTime.getTime()) ? null : eventTime;
   }
 
-  // Check for profit target achievement and trigger celebration
   private checkForProfitTargetCelebration(): void {
+    const target = Number(this.mt5AccountInfo.profitTarget);
+    const accountId = this.selectedAccount?.id ?? null;
+
+    if (this.observedProfitTarget !== target || this.observedProfitTargetAccountId !== accountId) {
+      this.observedProfitTarget = target;
+      this.observedProfitTargetAccountId = accountId;
+      this.previousProfitTargetPercentage = null;
+      this.hasCelebratedCurrentTarget = false;
+      this.confetti.stopCurrentCelebration();
+    }
+
+    if (!Number.isFinite(target) || target <= 0) return;
+
     const currentPercentageGain = this.calculateTotalPercentageGain();
+    if (this.previousProfitTargetPercentage === null) {
+      this.previousProfitTargetPercentage = currentPercentageGain;
+      return;
+    }
 
-    // Show celebration whenever we're at or above target
-    if (currentPercentageGain >= this.mt5AccountInfo.profitTarget) {
-      // Only trigger if we haven't celebrated this target yet
-      if (!this.hasCelebratedCurrentTarget) {
-        // Mark as celebrated to prevent multiple triggers
-        this.hasCelebratedCurrentTarget = true;
-        this.lastCelebratedTarget = this.mt5AccountInfo.profitTarget;
+    const reachedTarget = this.previousProfitTargetPercentage < target && currentPercentageGain >= target;
+    this.previousProfitTargetPercentage = currentPercentageGain;
 
-        // Trigger the amazing persistent confetti celebration!
-        this.confetti.celebrateProfitTarget(this.mt5AccountInfo.profitTarget);
-
-        this.playProfitTargetMusic();
-      }
-    } else {
-      // If we fall below target, stop celebration and reset flag
-      if (this.hasCelebratedCurrentTarget) {
-        this.confetti.stopCurrentCelebration();
-        this.hasCelebratedCurrentTarget = false;
-      }
+    if (reachedTarget && !this.hasCelebratedCurrentTarget) {
+      this.hasCelebratedCurrentTarget = true;
+      this.confetti.celebrateProfitTarget(target);
+      this.playProfitTargetMusic();
+    } else if (currentPercentageGain < target && this.hasCelebratedCurrentTarget) {
+      this.confetti.stopCurrentCelebration();
+      this.hasCelebratedCurrentTarget = false;
     }
   }
 
