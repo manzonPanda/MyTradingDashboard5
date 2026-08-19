@@ -570,7 +570,7 @@ export class SupabaseService {
   async updateTradeByTicket(ticket: number | string, accountId: string, updates: Partial<Trade>): Promise<Trade | null> {
     const { data, error } = await this.supabase
       .from('trades')
-      .update(updates)
+      .update(this.withPhilippineCloseTimestamp(updates))
       .eq('ticket', ticket)
       .eq('account_id', accountId)
       .select()
@@ -580,9 +580,15 @@ export class SupabaseService {
   }
 
   async createTrade(trade: Partial<Trade>): Promise<Trade | null> {
+    const tradeToInsert = {
+      ...trade,
+      ...(trade.time_open_ph == null
+        ? { time_open_ph: this.getCurrentPhilippineTimestamp() }
+        : {})
+    };
     const { data, error } = await this.supabase
       .from('trades')
-      .insert(trade)
+      .insert(tradeToInsert)
       .select()
       .single();
     if (error) throw new Error(`Trade insert failed: ${error.message}`);
@@ -697,6 +703,26 @@ export class SupabaseService {
     return error instanceof Error && error.message.includes('duplicate key value violates unique constraint');
   }
 
+  private withPhilippineCloseTimestamp(updates: Partial<Trade>): Partial<Trade> {
+    if (updates.time_close === undefined || updates.time_close_ph != null) return updates;
+    return { ...updates, time_close_ph: this.getCurrentPhilippineTimestamp() };
+  }
+
+  private getCurrentPhilippineTimestamp(): string {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const value = (type: string): string => parts.find(part => part.type === type)?.value ?? '';
+    return `${value('year')}-${value('month')}-${value('day')} ${value('hour')}:${value('minute')}:${value('second')}`;
+  }
+
   private addThirteenHours(timestamp?: string): string | undefined {
     if (!timestamp) return undefined;
     const date = new Date(timestamp);
@@ -707,7 +733,7 @@ export class SupabaseService {
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {
     const { data, error } = await this.supabase
       .from('trades')
-      .update(updates)
+      .update(this.withPhilippineCloseTimestamp(updates))
       .eq('id', id)
       .select()
       .single();
