@@ -601,10 +601,21 @@ export class SupabaseService {
   async saveTradeForAccount(trade: Partial<Trade>, accountId: string): Promise<Trade | null> {
     const tradeForAccount = { ...trade, account_id: accountId };
     if (tradeForAccount.ticket !== undefined && tradeForAccount.ticket !== null) {
-      const existing = await this.getTradeByTicket(tradeForAccount.ticket, accountId);
+      const existing = await this.getTradeByTicket(tradeForAccount.ticket);
       if (existing?.id) return this.updateTrade(existing.id, tradeForAccount);
     }
-    return this.createTrade(tradeForAccount);
+
+    try {
+      return await this.createTrade(tradeForAccount);
+    } catch (error) {
+      if (!this.isDuplicateTradeError(error) || tradeForAccount.ticket === undefined || tradeForAccount.ticket === null) {
+        throw error;
+      }
+
+      const conflictingTrade = await this.getTradeByTicket(tradeForAccount.ticket);
+      if (!conflictingTrade?.id) throw error;
+      return this.updateTrade(conflictingTrade.id, tradeForAccount);
+    }
   }
 
   async syncTradesToAccount(
@@ -627,7 +638,7 @@ export class SupabaseService {
         continue;
       }
 
-      const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
+      const existing = await this.getTradeByTicket(accountTrade.ticket);
       if (existing?.id) {
         const updates = { ...accountTrade };
         const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;
@@ -659,17 +670,31 @@ export class SupabaseService {
         const saved = await this.updateTrade(existing.id, updates);
         if (saved) updated++;
       } else {
-        const saved = await this.createTrade({
-          ...accountTrade,
-          time_open: this.addThirteenHours(accountTrade.time_open),
-          time_close: this.addThirteenHours(accountTrade.time_close)
-        });
-        if (saved) created++;
+        try {
+          const saved = await this.createTrade({
+            ...accountTrade,
+            time_open: this.addThirteenHours(accountTrade.time_open),
+            time_close: this.addThirteenHours(accountTrade.time_close)
+          });
+          if (saved) created++;
+        } catch (error) {
+          if (!this.isDuplicateTradeError(error)) throw error;
+
+          const conflictingTrade = await this.getTradeByTicket(accountTrade.ticket);
+          if (!conflictingTrade?.id) throw error;
+
+          const saved = await this.updateTrade(conflictingTrade.id, accountTrade);
+          if (saved) updated++;
+        }
       }
       await onProgress?.(index + 1, trades.length, created, updated);
     }
 
     return { created, updated };
+  }
+
+  private isDuplicateTradeError(error: unknown): boolean {
+    return error instanceof Error && error.message.includes('duplicate key value violates unique constraint');
   }
 
   private addThirteenHours(timestamp?: string): string | undefined {
