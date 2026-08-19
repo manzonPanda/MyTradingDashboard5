@@ -81,6 +81,13 @@
           <span>Connected services</span>
         </div>
         <app-connection-status
+          [syncStatus]="mt5ConnectionSyncStatus"
+          [syncStatusMessage]="mt5ConnectionSyncStatusMessage"
+          [syncProgress]="mt5AutoSyncProgress"
+          [syncProcessed]="mt5AutoSyncProcessed"
+          [syncTotal]="mt5AutoSyncTotal"
+          [syncCreated]="mt5AutoSyncCreated"
+          [syncUpdated]="mt5AutoSyncUpdated"
           (reconnectRequested)="startReconnect()"
           (connectionStateChange)="onMt5ConnectionStateChange($event)">
         </app-connection-status>
@@ -473,37 +480,6 @@
       <strong>{{ selectedAccount?.name }}</strong>. Live MT5 trades are hidden so data from the
       wrong account is never mixed into this dashboard.
     </span>
-  </div>
-
-  <div
-    class="mt5-auto-sync-status"
-    *ngIf="mt5AutoSyncStatus !== 'idle'"
-    [ngClass]="'status-' + mt5AutoSyncStatus"
-    role="status"
-    aria-live="polite">
-    <div class="mt5-auto-sync-header">
-      <div class="mt5-auto-sync-title">
-        <mat-icon [class.spinning]="mt5AutoSyncStatus === 'syncing'">
-          {{ mt5AutoSyncStatus === 'syncing' ? 'sync' : mt5AutoSyncStatus === 'success' ? 'check_circle' : 'error' }}
-        </mat-icon>
-        <strong>{{ mt5AutoSyncStatus === 'syncing' ? 'MT5 sync in progress' : mt5AutoSyncStatus === 'success' ? 'MT5 sync complete' : 'MT5 sync needs attention' }}</strong>
-      </div>
-      <span class="mt5-auto-sync-progress-summary" *ngIf="mt5AutoSyncStatus === 'syncing' || mt5AutoSyncStatus === 'success'">
-        {{ mt5AutoSyncProgress }}% · {{ mt5AutoSyncProcessed }} / {{ mt5AutoSyncTotal }} trades
-      </span>
-    </div>
-    <mat-progress-bar
-      *ngIf="mt5AutoSyncStatus === 'syncing' || mt5AutoSyncStatus === 'success'"
-      class="mt5-auto-sync-progress-bar"
-      mode="determinate"
-      [value]="mt5AutoSyncProgress"
-      aria-label="Automatic MT5 sync progress">
-    </mat-progress-bar>
-    <div class="mt5-auto-sync-counts" *ngIf="mt5AutoSyncProcessed > 0">
-      <span>{{ mt5AutoSyncCreated }} created</span>
-      <span>{{ mt5AutoSyncUpdated }} updated</span>
-    </div>
-    <span class="mt5-auto-sync-message">{{ mt5AutoSyncStatusMessage }}</span>
   </div>
 
   <!-- Key Metrics Cards -->

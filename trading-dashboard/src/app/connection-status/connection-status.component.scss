@@ -153,6 +153,85 @@
   font-weight: 600;
 }
 
+.mt5-sync-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 3px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  color: #64748b;
+  font-size: 10px;
+}
+
+.mt5-sync-indicator-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mt5-sync-status-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.sync-status-syncing .mt5-sync-status-dot {
+  background: #f59e0b;
+  animation: checking-blink 1s infinite;
+}
+
+.sync-status-success .mt5-sync-status-dot {
+  background: #10b981;
+}
+
+.sync-status-error .mt5-sync-status-dot {
+  background: #ef4444;
+}
+
+.mt5-sync-indicator-header strong,
+.mt5-sync-progress-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mt5-sync-indicator-header strong {
+  color: #475569;
+  font-size: 10px;
+}
+
+.mt5-sync-progress-label {
+  margin-left: auto;
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.mt5-sync-indicator mat-progress-bar {
+  --mdc-linear-progress-track-height: 3px;
+  --mdc-linear-progress-active-indicator-height: 3px;
+}
+
+.mt5-sync-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 7px;
+  color: #64748b;
+  font-size: 9px;
+}
+
+.mt5-sync-message {
+  overflow: hidden;
+  color: #64748b;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .reconnect-icon-btn {
   position: absolute;
   top: -6px;

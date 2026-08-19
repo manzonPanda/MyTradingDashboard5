@@ -838,6 +838,19 @@ mt5AccountInfo: AccountSettings = {
   get mt5ConnectedAccount(): string | null {
     return this.mt5AccountLogin;
   }
+
+  get mt5ConnectionSyncStatus(): 'waiting' | 'syncing' | 'success' | 'error' {
+    return this.mt5AutoSyncStatus === 'idle' ? 'waiting' : this.mt5AutoSyncStatus;
+  }
+
+  get mt5ConnectionSyncStatusMessage(): string {
+    if (!this.mt5ServiceConnected) return 'Waiting for the MT5 service to connect.';
+    if (!this.selectedAccount) return 'Select a UI account to enable automatic sync.';
+    if (!this.isActiveMt5Account()) return 'Waiting for the selected UI account to match MT5.';
+    if (this.mt5AutoSyncStatus !== 'idle') return this.mt5AutoSyncStatusMessage;
+    return 'Connected and watching for new MT5 trades.';
+  }
+
   isLoadingMT5Data = false;
   isSyncingMT5Trades = false;
   mt5ImportMessage = '';

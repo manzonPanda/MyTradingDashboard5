@@ -2,12 +2,13 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { InternetStatusService } from '../internet-status.service';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../../src/environments/environment';
-import { EventEmitter, Output } from '@angular/core';
+import { EventEmitter, Input, Output } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 
 interface MT5AccountInfo {
@@ -41,9 +42,17 @@ interface MT5HealthResponse {
   templateUrl: './connection-status.component.html',
   styleUrls: ['./connection-status.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatTooltipModule, HttpClientModule],
+  imports: [CommonModule, MatTooltipModule, MatProgressBarModule, HttpClientModule],
 })
 export class ConnectionStatusComponent implements OnInit, OnDestroy {
+  @Input() syncStatus: 'waiting' | 'syncing' | 'success' | 'error' = 'waiting';
+  @Input() syncStatusMessage = 'Waiting for a matching MT5 account.';
+  @Input() syncProgress = 0;
+  @Input() syncProcessed = 0;
+  @Input() syncTotal = 0;
+  @Input() syncCreated = 0;
+  @Input() syncUpdated = 0;
+
   @Output() reconnectRequested = new EventEmitter<void>();
   @Output() connectionStateChange = new EventEmitter<{
     connected: boolean;
