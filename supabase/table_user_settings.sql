@@ -2,6 +2,7 @@ create table public.user_settings (
   user_id uuid not null,
   per_trade_target_percent numeric(8, 4) not null default 1,
   sound_notifications_threshold numeric(8, 4) not null default 2.8,
+  high_priority_sound_threshold numeric(8, 4) not null default 3.4,
   daily_target_percent numeric(8, 4) not null default 2,
   weekly_r_target numeric(8, 4) not null default 5,
   default_chart_mode text not null default 'trades'::text,

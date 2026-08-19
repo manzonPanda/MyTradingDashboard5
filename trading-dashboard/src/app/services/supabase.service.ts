@@ -84,6 +84,7 @@ export interface UserSettings {
   user_id: string;
   per_trade_target_percent: number;
   sound_notifications_threshold: number;
+  high_priority_sound_threshold: number;
   daily_target_percent: number;
   weekly_r_target: number;
   default_chart_mode: 'daily' | 'trades';

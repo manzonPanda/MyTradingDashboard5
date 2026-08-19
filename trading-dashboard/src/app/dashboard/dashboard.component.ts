@@ -1283,6 +1283,7 @@ mt5AccountInfo: AccountSettings = {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
     this.saveLiveTradeDisplayPreferences();
+    void this.persistLiveTradeSoundThresholds();
     this.stopAllGaugeAlerts();
     this.cdr.markForCheck();
   }
@@ -1309,6 +1310,21 @@ mt5AccountInfo: AccountSettings = {
       soundThreshold: this.liveTradeSoundSettings.alertThreshold,
       highPrioritySoundThreshold: this.liveTradeSoundSettings.highAlertThreshold
     }));
+  }
+
+  private async persistLiveTradeSoundThresholds(): Promise<void> {
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+
+    try {
+      await this.supabaseService.updateUserSettings(userId, {
+        sound_notifications_threshold: this.liveTradeSoundSettings.alertThreshold,
+        high_priority_sound_threshold: this.liveTradeSoundSettings.highAlertThreshold
+      });
+    } catch (error) {
+      console.error('Unable to save live trade sound thresholds:', error);
+      this.snackBar.open('Unable to save sound thresholds.', 'Dismiss', { duration: 4000 });
+    }
   }
 
   private loadLiveTradeSoundSettings(): void {
@@ -2253,13 +2269,11 @@ mt5AccountInfo: AccountSettings = {
   private applyPersistedUserSettings(settings: UserSettings): void {
     this.isDailyChart = settings.default_chart_mode === 'daily';
     const savedDisplayPreferences = this.loadLiveTradeDisplayPreferences();
-    const alertThreshold = Number.isFinite(Number(savedDisplayPreferences.soundThreshold))
-      ? Number(savedDisplayPreferences.soundThreshold)
-      : settings.sound_notifications_threshold;
-    const savedHighAlertThreshold = Number(savedDisplayPreferences.highPrioritySoundThreshold);
-    const highAlertThreshold = Number.isFinite(savedHighAlertThreshold)
-      && savedHighAlertThreshold > alertThreshold
-      ? savedHighAlertThreshold
+    const alertThreshold = Number(settings.sound_notifications_threshold);
+    const highPrioritySoundThreshold = Number(settings.high_priority_sound_threshold);
+    const highAlertThreshold = Number.isFinite(highPrioritySoundThreshold)
+      && highPrioritySoundThreshold > alertThreshold
+      ? highPrioritySoundThreshold
       : Math.max(alertThreshold, alertThreshold + 0.6);
     this.liveTradeSoundSettings = {
       enabled: typeof savedDisplayPreferences.soundEnabled === 'boolean'
