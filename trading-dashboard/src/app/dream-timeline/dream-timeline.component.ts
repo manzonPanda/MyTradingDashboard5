@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 
@@ -21,7 +21,7 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
   confettiPieces = Array.from({ length: 25 });
   private timerSubscription?: Subscription;
   isAnniversaryMonth = false;
-  showConfetti = false;
+  @Input() profitTargetHit = false;
 
   ngOnInit(): void {
     this.calculateTimeElapsed();
@@ -68,7 +68,6 @@ export class DreamTimelineComponent implements OnInit, OnDestroy {
 
     if (isWithinAnniversaryPeriod !== this.isAnniversaryMonth) {
       this.isAnniversaryMonth = isWithinAnniversaryPeriod;
-      this.showConfetti = isWithinAnniversaryPeriod;
     }
   }
 

@@ -1,6 +1,6 @@
 <!-- Dream Timeline with Magical Confetti Animation -->
 <div class="dream-time-minimal" [class.anniversary-month]="isAnniversaryMonth">
-  @if (showConfetti) {
+  @if (profitTargetHit) {
     <div class="confetti-container">
       @for (piece of confettiPieces; track $index) {
         <div [class]="'confetti-piece confetti-' + (($index % 6) + 1) + ' confetti-delay-' + ($index + 1)"></div>
