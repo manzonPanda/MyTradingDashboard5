@@ -35,6 +35,7 @@ import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { Account, Certificate, Payout, PropFirm, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { Mt5TimeService } from '../services/mt5-time.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
@@ -83,6 +84,8 @@ const DEFAULT_LIVE_TRADE_SOUND_SETTINGS: LiveTradeSoundSettings = {
 interface Table {
   openDate: string;
   timeOpenPh?: string;
+  /** Original MT5 server (EET/EEST) open timestamp — never shifted for display. */
+  timeOpenServer?: string;
   tradeNotion: Trades[];
   status: string;
   position: string;
@@ -94,6 +97,8 @@ interface Table {
   tP: string;
   closeDate: string;
   timeClosePh?: string;
+  /** Original MT5 server (EET/EEST) close timestamp — never shifted for display. */
+  timeCloseServer?: string;
   exit: string;
   commission: string;
   swap: string;
@@ -1259,7 +1264,7 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, @Inject(DOCUMENT) private document: Document) {
+    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
@@ -4235,14 +4240,28 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
+    // Persist the ORIGINAL MT5 server wall-clock timestamps (EET/EEST) unchanged
+    // into time_open / time_close, and derive the _ph fields with the DST-aware
+    // IANA conversion. The display-formatted openDate/closeDate (+5h legacy) is
+    // only used as a fallback for CSV-imported trades that carry no raw server
+    // timestamp.
+    const serverOpen = this.normalizeOriginalServerTime(
+      trade.timeOpenServer ?? this.originalServerTimeFromDisplay(trade.openDate)
+    );
+    const serverClose = trade.closeDate === '-' || !trade.closeDate
+      ? undefined
+      : this.normalizeOriginalServerTime(
+          trade.timeCloseServer ?? this.originalServerTimeFromDisplay(trade.closeDate)
+        );
+
     return {
       ticket: trade.position,
       buy_sell: trade.type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
-      time_open: this.formatMt5DateForSupabase(trade.openDate),
-      time_open_ph: trade.timeOpenPh || undefined,
-      time_close: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
-      time_close_ph: trade.closeDate === '-' ? undefined : trade.timeClosePh || undefined,
+      time_open: serverOpen,
+      time_open_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverOpen) ?? trade.timeOpenPh,
+      time_close: serverClose,
+      time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverClose) ?? trade.timeClosePh,
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
       pnl: this.toNumber(trade.netProfit),
@@ -4256,22 +4275,28 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     };
   }
 
-  private formatMt5DateForSupabase(date: string): string | undefined {
-    if (!date || date === '-') return undefined;
-
-    const yearFirstMatch = date.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})/);
-    if (yearFirstMatch) {
-      const [, year, month, day, hour, minute] = yearFirstMatch;
-      return `${year}-${month}-${day}T${hour}:${minute}:00`;
-    }
-
-    const monthFirstMatch = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/);
-    if (!monthFirstMatch) return undefined;
-
-    const [, month, day, year, hour, minute] = monthFirstMatch;
-    return `${year}-${month}-${day}T${hour}:${minute}:00`;
+  private normalizeOriginalServerTime(value: string | undefined): string | undefined {
+    return this.mt5Time.normalizeMt5ServerTime(value) ?? undefined;
   }
 
+  /** Recover the original "YYYY-MM-DD HH:MM:SS" wall-clock from a display string. */
+  private originalServerTimeFromDisplay(displayDate: string | undefined): string | undefined {
+    if (!displayDate || displayDate === '-') return undefined;
+
+    const yearFirstMatch = displayDate.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (yearFirstMatch) {
+      const [, year, month, day, hour, minute, second = '00'] = yearFirstMatch;
+      return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    }
+
+    const monthFirstMatch = displayDate.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (!monthFirstMatch) return undefined;
+
+    const [, month, day, year, hour, minute, second = '00'] = monthFirstMatch;
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+  }
+
+  /** Converts a possibly-numeric string to a number (non-finite → 0). */
   private toNumber(value: string | number): number {
     const numberValue = Number(value);
     return Number.isFinite(numberValue) ? numberValue : 0;
@@ -4369,17 +4394,34 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const currentTradesByPosition = this.mt5LiveTradesAccountId === accountId
       ? new Map(this.mt5LiveTrades.map(trade => [String(trade.position), trade]))
       : new Map<string, Table>();
+    // When MT5 is connected, prefer the RAW MT5 history timestamps (source of
+    // truth) even for rows already in Supabase, so the sync repairs any
+    // timezone-shifted values and keeps time_open/time_close as the original
+    // MT5 server timestamps.
+    const mt5RawByPosition = new Map(
+      (mt5History ?? []).map((trade: any) => [String(trade.position_id), trade])
+    );
     const mappedMt5Trades = (response || []).map((trade: any) => {
       const cachedExtremes = this.getLiveExtremes(trade.position_id);
       const currentTrade = currentTradesByPosition.get(String(trade.position_id));
       const mfe = Math.max(Number(trade.mfe) || 0, cachedExtremes.mfe, Number(currentTrade?.mfe) || 0);
       const mae = Math.min(Number(trade.mae) || 0, cachedExtremes.mae, Number(currentTrade?.mae) || 0);
+      const mt5Raw = mt5RawByPosition.get(String(trade.position_id));
+      const serverOpen = mt5Raw?.time_open ?? trade.time_open;
+      const serverClose = mt5Raw?.time_close ?? trade.time_close;
 
       return {
         openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
-        timeOpenPh: trade.time_open_ph,
+        // Raw MT5 server (EET/EEST) timestamps — kept original and used for the
+        // Supabase sync so time_open/time_close are never timezone-shifted.
+        timeOpenServer: serverOpen,
+        timeCloseServer: serverClose,
+        // DST-aware Philippine display fields (fall back to already-stored _ph).
+        timeOpenPh: this.mt5Time.mt5ServerTimeToPhilippine(serverOpen) ?? trade.time_open_ph,
         closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
-        timeClosePh: trade.time_close_ph,
+        timeClosePh: serverClose
+          ? (this.mt5Time.mt5ServerTimeToPhilippine(serverClose) ?? trade.time_close_ph)
+          : undefined,
         tradeNotion: [],
         status: "",
         position: trade.position_id,
@@ -4473,10 +4515,17 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         const mt5Trade = closedMt5ByPosition.get(String(trade.position_id));
         if (!mt5Trade) return null;
 
-        const timeClose = this.formatMt5DateForSupabase(
-          this.convertAndFormatMT5Date(String(mt5Trade.time_close))
-        );
-        const tradeUpdates: Partial<Trade> = { time_close: timeClose };
+        // Store the ORIGINAL MT5 server close time untouched and derive the
+        // Philippine variant with the DST-aware IANA conversion.
+        const serverTimeClose = this.normalizeOriginalServerTime(String(mt5Trade.time_close ?? ''));
+        const tradeUpdates: Partial<Trade> = serverTimeClose
+          ? {
+              time_close: serverTimeClose,
+              time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverTimeClose),
+            }
+          : {};
+
+        if (Object.keys(tradeUpdates).length === 0) return null;
         if (mt5Trade.exit_price !== undefined && mt5Trade.exit_price !== null) {
           tradeUpdates.price_close = Number(mt5Trade.exit_price);
         }
@@ -4533,24 +4582,31 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   ): Promise<void> {
     if (this.autoSyncInFlight || !accountId || !mt5Trades.length || !this.isActiveMt5Account()) return;
 
-    const existingIds = new Set(supabaseTrades.map(t => String(t.position_id)));
-    const newTrades = mt5Trades.filter(t => !existingIds.has(String(t.position)));
-    if (!newTrades.length) return;
+    const tradesToSync = mt5Trades.filter(trade => trade.position !== undefined && trade.position !== null && trade.position !== '');
+    if (!tradesToSync.length) return;
 
     this.autoSyncInFlight = true;
     this.clearMt5AutoSyncDismissal();
     this.mt5AutoSyncStatus = 'syncing';
-    this.mt5AutoSyncStatusMessage = `Syncing ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
+    this.mt5AutoSyncStatusMessage = 'Syncing trades...';
     this.mt5AutoSyncProgress = 0;
     this.mt5AutoSyncProcessed = 0;
-    this.mt5AutoSyncTotal = newTrades.length;
+    this.mt5AutoSyncTotal = tradesToSync.length;
     this.mt5AutoSyncCreated = 0;
     this.mt5AutoSyncUpdated = 0;
     this.cdr.detectChanges();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
     try {
-      const trades = newTrades.map(t => ({
+      // Fetch the raw persisted rows ONCE so syncTradesToAccount can diff against
+      // them in-memory (no per-trade lookup) and skip writes when nothing changed.
+      let existingByTicket: Map<string, Trade> = new Map();
+      if (supabaseTrades.length) {
+        const rawTrades = await this.supabaseService.getAllTrades(accountId);
+        existingByTicket = new Map(rawTrades.map(trade => [String(trade.ticket), trade]));
+      }
+
+      const trades = tradesToSync.map(t => ({
         ...this.mapMt5TradeForSupabase(t),
         mfe: this.toNumber(t.mfe),
         mae: this.toNumber(t.mae ?? '0')
@@ -4564,19 +4620,22 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           this.mt5AutoSyncTotal = total;
           this.mt5AutoSyncCreated = created;
           this.mt5AutoSyncUpdated = updated;
-          this.mt5AutoSyncStatusMessage = `Syncing ${processed} of ${total} MT5 trade${total === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
+          this.mt5AutoSyncStatusMessage = `Syncing trades... ${processed} of ${total}`;
           this.cdr.detectChanges();
           await new Promise<void>(resolve => setTimeout(resolve, 0));
         },
-        () => this.isActiveMt5Account() && this.selectedAccount?.id === accountId
+        () => this.isActiveMt5Account() && this.selectedAccount?.id === accountId,
+        existingByTicket
       );
       if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) return;
       this.mt5AutoSyncStatus = 'success';
       this.mt5AutoSyncProgress = 100;
-      this.mt5AutoSyncProcessed = newTrades.length;
+      this.mt5AutoSyncProcessed = tradesToSync.length;
       this.mt5AutoSyncCreated = result.created;
       this.mt5AutoSyncUpdated = result.updated;
-      this.mt5AutoSyncStatusMessage = `Synced ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} while connected to ${this.selectedAccount?.name ?? 'the selected account'}.`;
+      this.mt5AutoSyncStatusMessage = result.created || result.updated
+        ? `Trades synchronized. ${result.created} created, ${result.updated} updated.`
+        : 'Trades synchronized.';
       this.scheduleMt5AutoSyncDismissal();
     } catch (error) {
       if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) {
@@ -4585,7 +4644,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         this.mt5AutoSyncStatusMessage = '';
       } else {
         this.mt5AutoSyncStatus = 'error';
-        this.mt5AutoSyncStatusMessage = error instanceof Error ? error.message : 'Automatic MT5 sync failed.';
+        this.mt5AutoSyncStatusMessage = error instanceof Error ? `Trade sync failed. ${error.message}` : 'Trade sync failed.';
         this.scheduleMt5AutoSyncDismissal();
       }
       console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
@@ -4876,7 +4935,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const extremes = this.getLiveExtremes(trade.ticket);
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
-      timeOpenPh: trade.time_open_ph,
+      timeOpenServer: trade.time_open,
+      timeOpenPh: this.mt5Time.mt5ServerTimeToPhilippine(trade.time_open) ?? trade.time_open_ph,
       closeDate: "-",
       tradeNotion: [],
       status: "",
@@ -4975,7 +5035,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       console.log('🔴 Found live trade to be close at:', closedTrade);
       // closedTrade.status= "Closed";
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
-      closedTrade.timeClosePh = trade.time_close_ph;
+      closedTrade.timeCloseServer = trade.time_close;
+      closedTrade.timeClosePh = this.mt5Time.mt5ServerTimeToPhilippine(trade.time_close) ?? trade.time_close_ph;
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr = this.calculateRiskRewardRatio(closedTrade);

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
+import { Mt5TimeService, normalizeMt5ServerTime } from './mt5-time.service';
 
 export interface PropFirm {
   id: string;
@@ -171,7 +172,7 @@ export interface Trade {
 export class SupabaseService {
   private supabase: SupabaseClient;
 
-  constructor() {
+  constructor(private readonly mt5Time: Mt5TimeService) {
     this.supabase = createClient(
       environment.supabase.url,
       environment.supabase.anonKey
@@ -580,10 +581,20 @@ export class SupabaseService {
   }
 
   async createTrade(trade: Partial<Trade>): Promise<Trade | null> {
+    const normalizedOpen = normalizeMt5ServerTime(trade.time_open);
+    const normalizedClose = normalizeMt5ServerTime(trade.time_close);
     const tradeToInsert = {
       ...trade,
-      ...(trade.time_open_ph == null
-        ? { time_open_ph: this.getCurrentPhilippineTimestamp() }
+      // The original MT5 server timestamp is stored unchanged in time_open.
+      // time_open_ph is derived from it via the DST-aware EET/EEST → Asia/Manila
+      // conversion (never "now"), so the pairing is always correct.
+      ...(normalizedOpen ? { time_open: normalizedOpen } : {}),
+      ...(normalizedClose ? { time_close: normalizedClose } : {}),
+      ...(trade.time_open_ph == null && normalizedOpen
+        ? { time_open_ph: this.mt5Time.mt5ServerTimeToPhilippine(normalizedOpen) }
+        : {}),
+      ...(normalizedClose && trade.time_close_ph == null
+        ? { time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(normalizedClose) }
         : {})
     };
     const { data, error } = await this.supabase
@@ -628,7 +639,8 @@ export class SupabaseService {
     trades: Partial<Trade>[],
     accountId: string,
     onProgress?: (processed: number, total: number, created: number, updated: number) => void | Promise<void>,
-    shouldContinue?: () => boolean
+    shouldContinue?: () => boolean,
+    existingByTicket?: Map<string, Trade>
   ): Promise<{ created: number; updated: number }> {
     let created = 0;
     let updated = 0;
@@ -644,7 +656,8 @@ export class SupabaseService {
         continue;
       }
 
-      const existing = await this.getTradeByTicket(accountTrade.ticket);
+      const existing = existingByTicket?.get(String(accountTrade.ticket))
+        ?? await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
         const updates = { ...accountTrade };
         const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;
@@ -673,20 +686,22 @@ export class SupabaseService {
           delete updates.mup;
         }
 
-        const saved = await this.updateTrade(existing.id, updates);
-        if (saved) updated++;
+        // Idempotency: skip the write entirely when nothing actually changed.
+        if (this.tradeUpdatesChanged(existing, updates)) {
+          const saved = await this.updateTrade(existing.id, updates);
+          if (saved) updated++;
+        }
       } else {
         try {
-          const saved = await this.createTrade({
-            ...accountTrade,
-            time_open: this.addThirteenHours(accountTrade.time_open),
-            time_close: this.addThirteenHours(accountTrade.time_close)
-          });
+          // time_open / time_close keep the ORIGINAL MT5 server timestamps;
+          // time_open_ph / time_close_ph are derived from them.
+          const saved = await this.createTrade(accountTrade);
           if (saved) created++;
         } catch (error) {
           if (!this.isDuplicateTradeError(error)) throw error;
 
-          const conflictingTrade = await this.getTradeByTicket(accountTrade.ticket);
+          const conflictingTrade = existingByTicket?.get(String(accountTrade.ticket))
+            ?? await this.getTradeByTicket(accountTrade.ticket, accountId);
           if (!conflictingTrade?.id) throw error;
 
           const saved = await this.updateTrade(conflictingTrade.id, accountTrade);
@@ -699,35 +714,50 @@ export class SupabaseService {
     return { created, updated };
   }
 
+  /**
+   * True when any field in `updates` (already placeholder-stripped) differs from
+   * the existing DB row. Timestamps are compared after normalizing separators so
+   * "2026-07-31T19:42:21" and "2026-07-31 19:42:21" are treated as equal.
+   */
+  private tradeUpdatesChanged(existing: Trade, updates: Partial<Trade>): boolean {
+    return Object.entries(updates).some(([key, value]) => {
+      if (value === undefined || value === null) return false;
+      const current = (existing as Record<string, unknown>)[key];
+      if (current === undefined || current === null) return true;
+
+      if (typeof value === 'string' && typeof current === 'string') {
+        return this.normalizeComparable(value) !== this.normalizeComparable(current);
+      }
+      if (typeof value === 'number' && typeof current === 'number') {
+        return value !== current;
+      }
+      return String(value) !== String(current);
+    });
+  }
+
+  private normalizeComparable(value: string): string {
+    return value
+      .replace('T', ' ')
+      .replace(/\.\d+(Z)?$/, '')
+      .replace(/Z$/, '')
+      .trim();
+  }
+
   private isDuplicateTradeError(error: unknown): boolean {
     return error instanceof Error && error.message.includes('duplicate key value violates unique constraint');
   }
 
   private withPhilippineCloseTimestamp(updates: Partial<Trade>): Partial<Trade> {
     if (updates.time_close === undefined || updates.time_close_ph != null) return updates;
-    return { ...updates, time_close_ph: this.getCurrentPhilippineTimestamp() };
-  }
-
-  private getCurrentPhilippineTimestamp(): string {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Manila',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hourCycle: 'h23'
-    }).formatToParts(new Date());
-    const value = (type: string): string => parts.find(part => part.type === type)?.value ?? '';
-    return `${value('year')}-${value('month')}-${value('day')} ${value('hour')}:${value('minute')}:${value('second')}`;
-  }
-
-  private addThirteenHours(timestamp?: string): string | undefined {
-    if (!timestamp) return undefined;
-    const date = new Date(timestamp);
-    if (Number.isNaN(date.getTime())) return timestamp;
-    return new Date(date.getTime() + 13 * 60 * 60 * 1000).toISOString();
+    const normalizedClose = normalizeMt5ServerTime(updates.time_close);
+    if (!normalizedClose) return updates;
+    // Derive time_close_ph from the original MT5 server close time (DST-aware),
+    // never from the current local clock.
+    return {
+      ...updates,
+      time_close: normalizedClose,
+      time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(normalizedClose),
+    };
   }
 
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {
