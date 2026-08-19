@@ -6373,31 +6373,41 @@ table.simple-table {
       color: var(--tf-text-primary);
     }
   }
+}
 
-  .mt5-auto-sync-complete {
+.mt5-auto-sync-complete {
     display: flex;
+    width: min(calc(100% - 2.5rem), 42rem);
+    box-sizing: border-box;
     flex-direction: column;
-    gap: 0.9rem;
-    margin: 0 1.25rem 1rem;
-    padding: 1rem 1.1rem;
-    border: 1px solid rgba(45, 212, 191, 0.28);
-    border-left: 3px solid #14b8a6;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(6, 182, 212, 0.06)), var(--tf-bg-card);
-    box-shadow: 0 8px 24px rgba(15, 118, 110, 0.1);
+    gap: 0.35rem;
+    margin: 0 1.25rem 0.6rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid rgba(45, 212, 191, 0.24);
+    border-left: 2px solid #14b8a6;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(6, 182, 212, 0.035)), var(--tf-bg-card);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.07);
   }
 
   .mt5-auto-sync-complete-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.6rem;
   }
 
   .mt5-auto-sync-complete-title {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .mt5-auto-sync-complete-title > div {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
     min-width: 0;
   }
 
@@ -6405,86 +6415,122 @@ table.simple-table {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
     border-radius: 50%;
     background: linear-gradient(135deg, #14b8a6, #0f766e);
     color: #ffffff;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 800;
-    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.28);
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.2);
   }
 
   .mt5-auto-sync-complete-kicker {
     display: block;
     color: var(--tf-text-muted);
-    font-size: 0.65rem;
+    font-size: 0.55rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .mt5-auto-sync-complete h2 {
-    margin: 0.15rem 0 0;
+    margin: 0;
+    overflow: hidden;
     color: var(--tf-text-primary);
-    font-size: 1rem;
-    line-height: 1.1;
+    font-size: 0.78rem;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .mt5-auto-sync-complete-badge {
-    padding: 0.3rem 0.55rem;
-    border: 1px solid rgba(20, 184, 166, 0.26);
+    flex: 0 0 auto;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid rgba(20, 184, 166, 0.22);
     border-radius: 999px;
-    background: rgba(20, 184, 166, 0.12);
+    background: rgba(20, 184, 166, 0.08);
     color: var(--tf-positive);
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: 800;
   }
 
   .mt5-auto-sync-complete mat-progress-bar {
     --mdc-linear-progress-active-indicator-color: #14b8a6;
-    --mdc-linear-progress-track-color: rgba(20, 184, 166, 0.16);
-    --mdc-linear-progress-track-height: 4px;
-    --mdc-linear-progress-active-indicator-height: 4px;
+    --mdc-linear-progress-track-color: rgba(20, 184, 166, 0.13);
+    --mdc-linear-progress-track-height: 3px;
+    --mdc-linear-progress-active-indicator-height: 3px;
   }
 
   .mt5-auto-sync-complete-metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.6rem;
+    gap: 0.35rem;
   }
 
   .mt5-auto-sync-complete-metric {
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.55rem 0.65rem;
-    border: 1px solid rgba(148, 163, 184, 0.16);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.04);
+    align-items: baseline;
+    gap: 0.3rem;
+    min-width: 0;
+    padding: 0.3rem 0.4rem;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.025);
 
     strong {
+      overflow: hidden;
       color: var(--tf-text-primary);
-      font-size: 0.95rem;
+      font-size: 0.72rem;
       line-height: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     span {
+      overflow: hidden;
       color: var(--tf-text-muted);
-      font-size: 0.68rem;
+      font-size: 0.54rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
+      text-overflow: ellipsis;
       text-transform: uppercase;
+      white-space: nowrap;
     }
   }
 
   .mt5-auto-sync-complete-message {
     margin: 0;
+    overflow: hidden;
     color: var(--tf-text-secondary);
-    font-size: 0.75rem;
-    line-height: 1.35;
+    font-size: 0.6rem;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
+  .mt5-auto-sync-complete.is-syncing .mt5-auto-sync-complete-icon {
+    animation: mt5-sync-rotation 1s linear infinite;
+  }
+
+  .mt5-auto-sync-complete.is-error {
+    border-color: rgba(239, 68, 68, 0.28);
+    border-left-color: #ef4444;
+  }
+
+  .mt5-auto-sync-complete.is-error .mt5-auto-sync-complete-icon {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+  }
+
+.trading-chart-container > .mt5-auto-sync-complete {
+  width: calc(100% - 1rem);
+  max-width: none;
+  margin: 0.45rem 0.5rem 0.25rem;
+}
+
+.mt5-report-import {
   .mt5-sync-status {
     position: fixed;
     top: 1rem;
@@ -10781,7 +10827,7 @@ table.simple-table {
 
     .connection-status-container {
       min-height: 0;
-      padding: 0.6rem;
+      padding: 0.35rem 0.45rem;
       border: 0;
       border-radius: 0;
       background: transparent;
@@ -10800,8 +10846,35 @@ table.simple-table {
     }
 
     .server-status-item {
+      grid-template-columns: 22px minmax(0, 1fr);
+      column-gap: 0.45rem;
       min-width: 0;
-      padding: 0.2rem;
+      padding: 0.15rem 0.2rem;
+    }
+
+    .server-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      transform: scale(0.85);
+      transform-origin: bottom right;
+    }
+
+    .server-info {
+      gap: 0;
+    }
+
+    .account-details,
+    .server-detail {
+      overflow: hidden;
+      font-size: 0.65rem;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .server-status-item.status-offline {

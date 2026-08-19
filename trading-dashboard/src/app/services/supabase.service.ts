@@ -610,7 +610,7 @@ export class SupabaseService {
   async syncTradesToAccount(
     trades: Partial<Trade>[],
     accountId: string,
-    onProgress?: (processed: number, total: number, created: number, updated: number) => void,
+    onProgress?: (processed: number, total: number, created: number, updated: number) => void | Promise<void>,
     shouldContinue?: () => boolean
   ): Promise<{ created: number; updated: number }> {
     let created = 0;
@@ -623,7 +623,7 @@ export class SupabaseService {
 
       const accountTrade = { ...trade, account_id: accountId };
       if (accountTrade.ticket === undefined || accountTrade.ticket === null) {
-        onProgress?.(index + 1, trades.length, created, updated);
+        await onProgress?.(index + 1, trades.length, created, updated);
         continue;
       }
 
@@ -666,7 +666,7 @@ export class SupabaseService {
         });
         if (saved) created++;
       }
-      onProgress?.(index + 1, trades.length, created, updated);
+      await onProgress?.(index + 1, trades.length, created, updated);
     }
 
     return { created, updated };

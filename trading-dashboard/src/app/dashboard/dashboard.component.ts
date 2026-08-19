@@ -783,6 +783,7 @@ export class DashboardComponent implements AfterViewInit {
         this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
         if (this.selectedAccount?.id === updatedAccount.id) {
           this.selectedAccount = updatedAccount;
+          this.clearMt5AutoSyncDismissal();
           this.mt5AutoSyncStatus = 'idle';
           this.mt5AutoSyncStatusMessage = '';
           this.applySelectedAccountSettings();
@@ -2303,6 +2304,7 @@ mt5AccountInfo: AccountSettings = {
     this.recentlyAddedTrades = [];
     this.isMt5LiveSnapshotAvailable = false;
     this.mt5OpenPositionIds = new Set();
+    this.clearMt5AutoSyncDismissal();
     this.mt5AutoSyncStatus = 'idle';
     this.mt5AutoSyncStatusMessage = '';
     this.updateTableData();
@@ -2498,6 +2500,7 @@ mt5AccountInfo: AccountSettings = {
     if (this.liveExtremesCacheTimer) {
       window.clearTimeout(this.liveExtremesCacheTimer);
     }
+    this.clearMt5AutoSyncDismissal();
     this.dismissNewsReminder();
     this.newsReminder.clearAllReminders();
     this.auraEnergy.destroy();
@@ -4288,6 +4291,26 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   /** Prevents overlapping auto-sync runs from concurrent loadMT5Data() calls. */
   private autoSyncInFlight = false;
+  private mt5AutoSyncDismissTimer?: number;
+
+  private clearMt5AutoSyncDismissal(): void {
+    if (this.mt5AutoSyncDismissTimer !== undefined) {
+      window.clearTimeout(this.mt5AutoSyncDismissTimer);
+      this.mt5AutoSyncDismissTimer = undefined;
+    }
+  }
+
+  private scheduleMt5AutoSyncDismissal(): void {
+    this.clearMt5AutoSyncDismissal();
+    this.mt5AutoSyncDismissTimer = window.setTimeout(() => {
+      this.mt5AutoSyncDismissTimer = undefined;
+      if (this.mt5AutoSyncStatus === 'success' || this.mt5AutoSyncStatus === 'error') {
+        this.mt5AutoSyncStatus = 'idle';
+        this.mt5AutoSyncStatusMessage = '';
+        this.cdr.detectChanges();
+      }
+    }, 5000);
+  }
 
   async loadMT5Data(): Promise<void> {
     const loadVersion = ++this.mt5DataLoadVersion;
@@ -4507,6 +4530,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     if (!newTrades.length) return;
 
     this.autoSyncInFlight = true;
+    this.clearMt5AutoSyncDismissal();
     this.mt5AutoSyncStatus = 'syncing';
     this.mt5AutoSyncStatusMessage = `Syncing ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
     this.mt5AutoSyncProgress = 0;
@@ -4514,20 +4538,27 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.mt5AutoSyncTotal = newTrades.length;
     this.mt5AutoSyncCreated = 0;
     this.mt5AutoSyncUpdated = 0;
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
 
     try {
-      const trades = newTrades.map(t => this.mapMt5TradeForSupabase(t));
+      const trades = newTrades.map(t => ({
+        ...this.mapMt5TradeForSupabase(t),
+        mfe: this.toNumber(t.mfe),
+        mae: this.toNumber(t.mae ?? '0')
+      }));
       const result = await this.supabaseService.syncTradesToAccount(
         trades,
         accountId,
-        (processed, total, created, updated) => {
+        async (processed, total, created, updated) => {
           this.mt5AutoSyncProgress = total ? Math.round((processed / total) * 100) : 100;
           this.mt5AutoSyncProcessed = processed;
           this.mt5AutoSyncTotal = total;
           this.mt5AutoSyncCreated = created;
           this.mt5AutoSyncUpdated = updated;
-          this.cdr.markForCheck();
+          this.mt5AutoSyncStatusMessage = `Syncing ${processed} of ${total} MT5 trade${total === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
+          this.cdr.detectChanges();
+          await new Promise<void>(resolve => setTimeout(resolve, 0));
         },
         () => this.isActiveMt5Account() && this.selectedAccount?.id === accountId
       );
@@ -4538,18 +4569,21 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       this.mt5AutoSyncCreated = result.created;
       this.mt5AutoSyncUpdated = result.updated;
       this.mt5AutoSyncStatusMessage = `Synced ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} while connected to ${this.selectedAccount?.name ?? 'the selected account'}.`;
+      this.scheduleMt5AutoSyncDismissal();
     } catch (error) {
       if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) {
+        this.clearMt5AutoSyncDismissal();
         this.mt5AutoSyncStatus = 'idle';
         this.mt5AutoSyncStatusMessage = '';
       } else {
         this.mt5AutoSyncStatus = 'error';
         this.mt5AutoSyncStatusMessage = error instanceof Error ? error.message : 'Automatic MT5 sync failed.';
+        this.scheduleMt5AutoSyncDismissal();
       }
       console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
     } finally {
       this.autoSyncInFlight = false;
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     }
   }
 
@@ -4688,6 +4722,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       this.recentlyAddedTrades = [];
       this.isMt5LiveSnapshotAvailable = false;
       this.mt5OpenPositionIds = new Set();
+      this.clearMt5AutoSyncDismissal();
       this.mt5AutoSyncStatus = 'idle';
       this.mt5AutoSyncStatusMessage = '';
       this.updateTableData();
@@ -4785,6 +4820,19 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       mae: this.toNumber(trade.mae ?? '0')
     };
     await this.supabaseService.saveTradeForAccount(tradeForSupabase, this.selectedAccount.id);
+  }
+
+  private async persistNewLiveTrade(trade: Table): Promise<void> {
+    if (!this.selectedAccount || !this.isActiveMt5Account()) return;
+
+    const accountId = this.selectedAccount.id;
+    const existingTrade = await this.supabaseService.getTradeByTicket(trade.position, accountId);
+    if (existingTrade || this.autoSyncInFlight) {
+      await this.persistLiveTrade(trade);
+      return;
+    }
+
+    await this.autoSyncMt5TradesToSupabase([trade], [], accountId);
   }
 
   private async loadNewTradeScreenshot(trade: Table): Promise<void> {
@@ -4885,7 +4933,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       // Go to last page of the table to show the latest trade
       this.setPage(this.getTotalPages());
 
-      void this.persistLiveTrade(newTrade).catch(error => {
+      void this.persistNewLiveTrade(newTrade).catch(error => {
         console.error('Unable to persist opened trade:', error);
       });
 
