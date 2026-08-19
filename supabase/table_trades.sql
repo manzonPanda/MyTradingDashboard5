@@ -25,6 +25,8 @@ create table public.trades (
   held text null,
   account_id uuid null,
   mae numeric null,
+  time_open_ph timestamp without time zone null,
+  time_close_ph timestamp without time zone null,
   constraint trades_pkey primary key (id),
   constraint trades_account_id_fkey foreign KEY (account_id) references accounts (id),
   constraint trades_buy_sell_check check (
@@ -41,6 +43,10 @@ where
   (ticket is not null);
 
 create index IF not exists idx_trades_date_start on public.trades using btree (time_open) TABLESPACE pg_default;
+
+create index IF not exists idx_trades_time_open_ph on public.trades using btree (time_open_ph) TABLESPACE pg_default;
+
+create index IF not exists idx_trades_time_close_ph on public.trades using btree (time_close_ph) TABLESPACE pg_default;
 
 create trigger trg_trades_updated_at BEFORE
 update on trades for EACH row
