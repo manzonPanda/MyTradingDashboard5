@@ -53,6 +53,10 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
   @Input() syncCreated = 0;
   @Input() syncUpdated = 0;
 
+  get showSyncStatus(): boolean {
+    return this.syncStatus === 'syncing' || this.syncStatus === 'error';
+  }
+
   @Output() reconnectRequested = new EventEmitter<void>();
   @Output() connectionStateChange = new EventEmitter<{
     connected: boolean;

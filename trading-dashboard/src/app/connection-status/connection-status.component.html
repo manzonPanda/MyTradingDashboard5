@@ -36,11 +36,11 @@
         @if (server.status !== 'online' && server.status !== 'checking' && server.detail) {
           <div class="server-detail">{{ server.detail }}</div>
         }
-        @if (server.name === 'MT5 API') {
+        @if (server.name === 'MT5 API' && showSyncStatus) {
           <div class="mt5-sync-indicator" [ngClass]="'sync-status-' + syncStatus" role="status" aria-live="polite">
             <div class="mt5-sync-indicator-header">
-              <span class="mt5-sync-status-dot"></span>
-              <strong>{{ syncStatus === 'syncing' ? 'Auto-sync in progress' : syncStatus === 'success' ? 'Auto-sync complete' : syncStatus === 'error' ? 'Auto-sync needs attention' : 'Auto-sync waiting' }}</strong>
+              <span class="mt5-sync-status-mark" aria-hidden="true">{{ syncStatus === 'success' ? '✓' : syncStatus === 'error' ? '!' : '•' }}</span>
+              <strong>{{ syncStatus === 'syncing' ? 'MT5 sync in progress' : syncStatus === 'success' ? 'MT5 sync complete' : 'MT5 sync needs attention' }}</strong>
               @if (syncStatus === 'syncing' || syncStatus === 'success') {
                 <span class="mt5-sync-progress-label">{{ syncProgress }}%</span>
               }
@@ -51,10 +51,19 @@
                 [value]="syncProgress"
                 aria-label="Automatic MT5 sync progress">
               </mat-progress-bar>
-              <div class="mt5-sync-counts">
-                <span>{{ syncProcessed }} / {{ syncTotal }} trades</span>
-                <span>{{ syncCreated }} created</span>
-                <span>{{ syncUpdated }} updated</span>
+              <div class="mt5-sync-metrics">
+                <div class="mt5-sync-metric">
+                  <strong>{{ syncProcessed }} / {{ syncTotal }}</strong>
+                  <span>trades</span>
+                </div>
+                <div class="mt5-sync-metric">
+                  <strong>{{ syncCreated }}</strong>
+                  <span>created</span>
+                </div>
+                <div class="mt5-sync-metric">
+                  <strong>{{ syncUpdated }}</strong>
+                  <span>updated</span>
+                </div>
               </div>
             }
             <span class="mt5-sync-message">{{ syncStatusMessage }}</span>

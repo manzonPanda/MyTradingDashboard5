@@ -156,40 +156,56 @@
 .mt5-sync-indicator {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 7px;
   width: 100%;
-  margin-top: 3px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid rgba(20, 184, 166, 0.22);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(240, 253, 250, 0.96), rgba(236, 254, 255, 0.72));
+  box-shadow: 0 3px 10px rgba(15, 118, 110, 0.08);
   color: #64748b;
   font-size: 10px;
+}
+
+.sync-status-syncing {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.96), rgba(254, 249, 195, 0.62));
+}
+
+.sync-status-error {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.96), rgba(255, 247, 237, 0.72));
 }
 
 .mt5-sync-indicator-header {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
-.mt5-sync-status-dot {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 6px;
+.mt5-sync-status-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: #0d9488;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.sync-status-syncing .mt5-sync-status-dot {
+.sync-status-syncing .mt5-sync-status-mark {
   background: #f59e0b;
   animation: checking-blink 1s infinite;
 }
 
-.sync-status-success .mt5-sync-status-dot {
-  background: #10b981;
-}
-
-.sync-status-error .mt5-sync-status-dot {
+.sync-status-error .mt5-sync-status-mark {
   background: #ef4444;
 }
 
@@ -201,32 +217,67 @@
 }
 
 .mt5-sync-indicator-header strong {
-  color: #475569;
+  color: #0f766e;
   font-size: 10px;
+  letter-spacing: 0.01em;
+}
+
+.sync-status-syncing .mt5-sync-indicator-header strong {
+  color: #b45309;
+}
+
+.sync-status-error .mt5-sync-indicator-header strong {
+  color: #b91c1c;
 }
 
 .mt5-sync-progress-label {
   margin-left: auto;
   color: #0f766e;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .mt5-sync-indicator mat-progress-bar {
-  --mdc-linear-progress-track-height: 3px;
-  --mdc-linear-progress-active-indicator-height: 3px;
+  --mdc-linear-progress-active-indicator-color: #14b8a6;
+  --mdc-linear-progress-track-color: rgba(20, 184, 166, 0.16);
+  --mdc-linear-progress-track-height: 4px;
+  --mdc-linear-progress-active-indicator-height: 4px;
 }
 
-.mt5-sync-counts {
+.mt5-sync-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.mt5-sync-metric {
   display: flex;
-  flex-wrap: wrap;
-  gap: 3px 7px;
-  color: #64748b;
-  font-size: 9px;
+  flex-direction: column;
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid rgba(20, 184, 166, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.55);
+
+  strong {
+    overflow: hidden;
+    color: #0f766e;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
 }
 
 .mt5-sync-message {
   overflow: hidden;
-  color: #64748b;
+  color: #475569;
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
