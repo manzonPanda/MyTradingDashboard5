@@ -479,41 +479,6 @@
   <section class="metrics-section">
     <div class="metrics-container">
       <div class="trading-chart-container" data-aura-target>
-        @if (mt5AutoSyncStatus !== 'idle') {
-          <section class="mt5-auto-sync-complete" [class.is-syncing]="mt5AutoSyncStatus === 'syncing'" [class.is-error]="mt5AutoSyncStatus === 'error'" role="status" aria-live="polite">
-            <div class="mt5-auto-sync-complete-header">
-              <div class="mt5-auto-sync-complete-title">
-                <span class="mt5-auto-sync-complete-icon" aria-hidden="true">{{ mt5AutoSyncStatus === 'success' ? '✓' : (mt5AutoSyncStatus === 'error' ? '!' : '↻') }}</span>
-                <div>
-                  <span class="mt5-auto-sync-complete-kicker">MT5 automatic sync</span>
-                  <h2>{{ mt5AutoSyncStatus === 'success' ? 'Sync complete' : (mt5AutoSyncStatus === 'error' ? 'Sync failed' : 'Syncing trades') }}</h2>
-                </div>
-              </div>
-              <span class="mt5-auto-sync-complete-badge">{{ mt5AutoSyncProgress }}%</span>
-            </div>
-            <mat-progress-bar
-              mode="determinate"
-              [value]="mt5AutoSyncProgress"
-              [attr.aria-label]="'Automatic MT5 sync ' + mt5AutoSyncProgress + '% complete'">
-            </mat-progress-bar>
-            <div class="mt5-auto-sync-complete-metrics">
-              <div class="mt5-auto-sync-complete-metric">
-                <strong>{{ mt5AutoSyncProcessed }} / {{ mt5AutoSyncTotal }}</strong>
-                <span>Trades synced</span>
-              </div>
-              <div class="mt5-auto-sync-complete-metric">
-                <strong>{{ mt5AutoSyncCreated }}</strong>
-                <span>Created</span>
-              </div>
-              <div class="mt5-auto-sync-complete-metric">
-                <strong>{{ mt5AutoSyncUpdated }}</strong>
-                <span>Updated</span>
-              </div>
-            </div>
-            <p class="mt5-auto-sync-complete-message">{{ mt5AutoSyncStatusMessage }}</p>
-          </section>
-        }
-
         <div class="chart-header">
           <div class="mt5-account-info">
             <div class="account-targets">
@@ -602,6 +567,41 @@
         </div>
 
         <div class="chart-canvas-wrapper">
+          @if (mt5AutoSyncStatus !== 'idle') {
+            <section class="mt5-auto-sync-complete" [class.is-syncing]="mt5AutoSyncStatus === 'syncing'" [class.is-error]="mt5AutoSyncStatus === 'error'" role="status" aria-live="polite">
+              <div class="mt5-auto-sync-complete-header">
+                <div class="mt5-auto-sync-complete-title">
+                  <span class="mt5-auto-sync-complete-icon" aria-hidden="true">{{ mt5AutoSyncStatus === 'success' ? '✓' : (mt5AutoSyncStatus === 'error' ? '!' : '↻') }}</span>
+                  <div>
+                    <span class="mt5-auto-sync-complete-kicker">MT5 automatic sync</span>
+                    <h2>{{ mt5AutoSyncStatus === 'success' ? 'Sync complete' : (mt5AutoSyncStatus === 'error' ? 'Sync failed' : 'Syncing trades') }}</h2>
+                  </div>
+                </div>
+                <span class="mt5-auto-sync-complete-badge">{{ mt5AutoSyncProgress }}%</span>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="mt5AutoSyncProgress"
+                [attr.aria-label]="'Automatic MT5 sync ' + mt5AutoSyncProgress + '% complete'">
+              </mat-progress-bar>
+              <div class="mt5-auto-sync-complete-metrics">
+                <div class="mt5-auto-sync-complete-metric">
+                  <strong>{{ mt5AutoSyncProcessed }} / {{ mt5AutoSyncTotal }}</strong>
+                  <span>Trades synced</span>
+                </div>
+                <div class="mt5-auto-sync-complete-metric">
+                  <strong>{{ mt5AutoSyncCreated }}</strong>
+                  <span>Created</span>
+                </div>
+                <div class="mt5-auto-sync-complete-metric">
+                  <strong>{{ mt5AutoSyncUpdated }}</strong>
+                  <span>Updated</span>
+                </div>
+              </div>
+              <p class="mt5-auto-sync-complete-message">{{ mt5AutoSyncStatusMessage }}</p>
+            </section>
+          }
+
           <!-- Loading spinner when data is not ready -->
           <div *ngIf="isLoadingMT5Data" class="chart-loading-overlay">
             <div class="loading-spinner">
