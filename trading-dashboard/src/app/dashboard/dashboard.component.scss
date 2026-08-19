@@ -6376,10 +6376,12 @@ table.simple-table {
 
   .mt5-auto-sync-complete {
     display: flex;
+    width: min(calc(100% - 2.5rem), 42rem);
+    box-sizing: border-box;
     flex-direction: column;
-    gap: 0.9rem;
-    margin: 0 1.25rem 1rem;
-    padding: 1rem 1.1rem;
+    gap: 0.55rem;
+    margin: 0 1.25rem 0.75rem;
+    padding: 0.65rem 0.75rem;
     border: 1px solid rgba(45, 212, 191, 0.28);
     border-left: 3px solid #14b8a6;
     border-radius: 12px;
@@ -10794,7 +10796,7 @@ table.simple-table {
 
     .connection-status-container {
       min-height: 0;
-      padding: 0.6rem;
+      padding: 0.35rem 0.45rem;
       border: 0;
       border-radius: 0;
       background: transparent;
@@ -10813,8 +10815,35 @@ table.simple-table {
     }
 
     .server-status-item {
+      grid-template-columns: 22px minmax(0, 1fr);
+      column-gap: 0.45rem;
       min-width: 0;
-      padding: 0.2rem;
+      padding: 0.15rem 0.2rem;
+    }
+
+    .server-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      transform: scale(0.85);
+      transform-origin: bottom right;
+    }
+
+    .server-info {
+      gap: 0;
+    }
+
+    .account-details,
+    .server-detail {
+      overflow: hidden;
+      font-size: 0.65rem;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .server-status-item.status-offline {
