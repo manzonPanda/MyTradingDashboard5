@@ -6374,6 +6374,117 @@ table.simple-table {
     }
   }
 
+  .mt5-auto-sync-complete {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin: 0 1.25rem 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-left: 3px solid #14b8a6;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(6, 182, 212, 0.06)), var(--tf-bg-card);
+    box-shadow: 0 8px 24px rgba(15, 118, 110, 0.1);
+  }
+
+  .mt5-auto-sync-complete-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .mt5-auto-sync-complete-title {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+  }
+
+  .mt5-auto-sync-complete-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #14b8a6, #0f766e);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.28);
+  }
+
+  .mt5-auto-sync-complete-kicker {
+    display: block;
+    color: var(--tf-text-muted);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mt5-auto-sync-complete h2 {
+    margin: 0.15rem 0 0;
+    color: var(--tf-text-primary);
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .mt5-auto-sync-complete-badge {
+    padding: 0.3rem 0.55rem;
+    border: 1px solid rgba(20, 184, 166, 0.26);
+    border-radius: 999px;
+    background: rgba(20, 184, 166, 0.12);
+    color: var(--tf-positive);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .mt5-auto-sync-complete mat-progress-bar {
+    --mdc-linear-progress-active-indicator-color: #14b8a6;
+    --mdc-linear-progress-track-color: rgba(20, 184, 166, 0.16);
+    --mdc-linear-progress-track-height: 4px;
+    --mdc-linear-progress-active-indicator-height: 4px;
+  }
+
+  .mt5-auto-sync-complete-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .mt5-auto-sync-complete-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+
+    strong {
+      color: var(--tf-text-primary);
+      font-size: 0.95rem;
+      line-height: 1;
+    }
+
+    span {
+      color: var(--tf-text-muted);
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
+
+  .mt5-auto-sync-complete-message {
+    margin: 0;
+    color: var(--tf-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
   .mt5-sync-status {
     position: fixed;
     top: 1rem;

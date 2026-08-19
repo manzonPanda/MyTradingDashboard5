@@ -589,10 +589,19 @@ export class SupabaseService {
     return data as Trade;
   }
 
+  async deleteTradeByTicket(ticket: number | string, accountId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('trades')
+      .delete()
+      .eq('ticket', ticket)
+      .eq('account_id', accountId);
+    if (error) throw new Error(`Trade deletion failed: ${error.message}`);
+  }
+
   async saveTradeForAccount(trade: Partial<Trade>, accountId: string): Promise<Trade | null> {
     const tradeForAccount = { ...trade, account_id: accountId };
     if (tradeForAccount.ticket !== undefined && tradeForAccount.ticket !== null) {
-      const existing = await this.getTradeByTicket(tradeForAccount.ticket);
+      const existing = await this.getTradeByTicket(tradeForAccount.ticket, accountId);
       if (existing?.id) return this.updateTrade(existing.id, tradeForAccount);
     }
     return this.createTrade(tradeForAccount);
@@ -601,19 +610,24 @@ export class SupabaseService {
   async syncTradesToAccount(
     trades: Partial<Trade>[],
     accountId: string,
-    onProgress?: (processed: number, total: number, created: number, updated: number) => void
+    onProgress?: (processed: number, total: number, created: number, updated: number) => void,
+    shouldContinue?: () => boolean
   ): Promise<{ created: number; updated: number }> {
     let created = 0;
     let updated = 0;
 
     for (const [index, trade] of trades.entries()) {
+      if (shouldContinue && !shouldContinue()) {
+        throw new Error('Automatic MT5 sync stopped because the connected account changed.');
+      }
+
       const accountTrade = { ...trade, account_id: accountId };
       if (accountTrade.ticket === undefined || accountTrade.ticket === null) {
         onProgress?.(index + 1, trades.length, created, updated);
         continue;
       }
 
-      const existing = await this.getTradeByTicket(accountTrade.ticket);
+      const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
         const updates = { ...accountTrade };
         const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;

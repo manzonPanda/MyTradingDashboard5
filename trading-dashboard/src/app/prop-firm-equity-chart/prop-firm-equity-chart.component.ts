@@ -399,12 +399,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     const floating = Number(raw.floatingPnL ?? 0);
     const isOpen = raw.tradeResult === 'open';
 
-    let dailyRow = '';
-    if (Number.isFinite(raw.dailyPnl)) {
-      dailyRow = `
-        <div class="pf-td-row"><span>Daily P&amp;L</span><b class="${(raw.dailyPnl || 0) >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(raw.dailyPnl)}</b></div>`;
-    }
-
     return `
       <div class="pf-tooltip${isOpen || raw.tradeId ? ' pf-tooltip--trade' : ''}">
         <div class="pf-td-head">
@@ -415,7 +409,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         <div class="pf-td-divider pf-tooltip-divider"></div>
         <div class="pf-td-row"><span>Balance</span><b>${this.fmtUsdPlain(balance)}</b></div>
         <div class="pf-td-row"><span>Floating P&amp;L</span><b class="${floating >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(floating)}</b></div>
-        ${dailyRow}
         ${raw.tradeId ? this.tradeDetailHtml(raw as AccountEquityPoint) : ''}
       </div>
     `;
@@ -463,7 +456,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         timeOpenPh: p.timeOpenPh,
         timeClosePh: p.timeClosePh,
         pnl: p.pnl,
-        dailyPnl: p.dailyPnl,
         isCurrent: isLast,
       };
       lineData.push(item);
