@@ -475,38 +475,40 @@
     </span>
   </div>
 
-  <section class="mt5-auto-sync-complete" *ngIf="mt5AutoSyncStatus === 'success'" role="status" aria-live="polite">
-    <div class="mt5-auto-sync-complete-header">
-      <div class="mt5-auto-sync-complete-title">
-        <span class="mt5-auto-sync-complete-icon" aria-hidden="true">✓</span>
-        <div>
-          <span class="mt5-auto-sync-complete-kicker">MT5 automatic sync</span>
-          <h2>Sync complete</h2>
+  @if (mt5AutoSyncStatus === 'syncing' || mt5AutoSyncStatus === 'success') {
+    <section class="mt5-auto-sync-complete" [class.is-syncing]="mt5AutoSyncStatus === 'syncing'" role="status" aria-live="polite">
+      <div class="mt5-auto-sync-complete-header">
+        <div class="mt5-auto-sync-complete-title">
+          <span class="mt5-auto-sync-complete-icon" aria-hidden="true">{{ mt5AutoSyncStatus === 'success' ? '✓' : '↻' }}</span>
+          <div>
+            <span class="mt5-auto-sync-complete-kicker">MT5 automatic sync</span>
+            <h2>{{ mt5AutoSyncStatus === 'success' ? 'Sync complete' : 'Syncing trades' }}</h2>
+          </div>
+        </div>
+        <span class="mt5-auto-sync-complete-badge">{{ mt5AutoSyncProgress }}%</span>
+      </div>
+      <mat-progress-bar
+        mode="determinate"
+        [value]="mt5AutoSyncProgress"
+        [attr.aria-label]="'Automatic MT5 sync ' + mt5AutoSyncProgress + '% complete'">
+      </mat-progress-bar>
+      <div class="mt5-auto-sync-complete-metrics">
+        <div class="mt5-auto-sync-complete-metric">
+          <strong>{{ mt5AutoSyncProcessed }} / {{ mt5AutoSyncTotal }}</strong>
+          <span>Trades synced</span>
+        </div>
+        <div class="mt5-auto-sync-complete-metric">
+          <strong>{{ mt5AutoSyncCreated }}</strong>
+          <span>Created</span>
+        </div>
+        <div class="mt5-auto-sync-complete-metric">
+          <strong>{{ mt5AutoSyncUpdated }}</strong>
+          <span>Updated</span>
         </div>
       </div>
-      <span class="mt5-auto-sync-complete-badge">100%</span>
-    </div>
-    <mat-progress-bar
-      mode="determinate"
-      value="100"
-      aria-label="Automatic MT5 sync complete">
-    </mat-progress-bar>
-    <div class="mt5-auto-sync-complete-metrics">
-      <div class="mt5-auto-sync-complete-metric">
-        <strong>{{ mt5AutoSyncProcessed }} / {{ mt5AutoSyncTotal }}</strong>
-        <span>Trades synced</span>
-      </div>
-      <div class="mt5-auto-sync-complete-metric">
-        <strong>{{ mt5AutoSyncCreated }}</strong>
-        <span>Created</span>
-      </div>
-      <div class="mt5-auto-sync-complete-metric">
-        <strong>{{ mt5AutoSyncUpdated }}</strong>
-        <span>Updated</span>
-      </div>
-    </div>
-    <p class="mt5-auto-sync-complete-message">{{ mt5AutoSyncStatusMessage }}</p>
-  </section>
+      <p class="mt5-auto-sync-complete-message">{{ mt5AutoSyncStatusMessage }}</p>
+    </section>
+  }
 
   <!-- Key Metrics Cards -->
   <section class="metrics-section">

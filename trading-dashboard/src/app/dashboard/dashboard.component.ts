@@ -4527,6 +4527,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           this.mt5AutoSyncTotal = total;
           this.mt5AutoSyncCreated = created;
           this.mt5AutoSyncUpdated = updated;
+          this.mt5AutoSyncStatusMessage = `Syncing ${processed} of ${total} MT5 trade${total === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
           this.cdr.markForCheck();
         },
         () => this.isActiveMt5Account() && this.selectedAccount?.id === accountId
