@@ -14,6 +14,7 @@ export interface LiveTradeSoundSettings {
 
 interface Table {
   openDate: string;
+  timeOpenServer?: string;
   status: string;
   position: string;
   symbol: string;
@@ -446,7 +447,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   formatHoldingTime(trade: Table): string {
-    const openedAt = new Date(trade.openDate || '').getTime();
+    const openedAt = trade.timeOpenServer
+      ? Date.parse(`${trade.timeOpenServer.replace(' ', 'T')}Z`)
+      : new Date(trade.openDate || '').getTime();
     if (!Number.isFinite(openedAt)) return '00s';
 
     const elapsedSeconds = Math.max(0, Math.floor((Date.now() - openedAt) / 1000));
