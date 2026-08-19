@@ -14,7 +14,7 @@ export interface LiveTradeSoundSettings {
 
 interface Table {
   openDate: string;
-  timeOpenServer?: string;
+  timeOpenServer?: string | number;
   status: string;
   position: string;
   symbol: string;
@@ -447,10 +447,8 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   formatHoldingTime(trade: Table): string {
-    const openedAt = trade.timeOpenServer
-      ? Date.parse(`${trade.timeOpenServer.replace(' ', 'T')}Z`)
-      : new Date(trade.openDate || '').getTime();
-    if (!Number.isFinite(openedAt)) return '00s';
+    const openedAt = this.parseOpenTimestamp(trade.timeOpenServer) ?? this.parseDisplayedOpenTimestamp(trade.openDate);
+    if (openedAt === null) return '00s';
 
     const elapsedSeconds = Math.max(0, Math.floor((Date.now() - openedAt) / 1000));
     const hours = Math.floor(elapsedSeconds / 3600);
@@ -464,6 +462,31 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
       return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
     return `${String(seconds).padStart(2, '0')}s`;
+  }
+
+  private parseOpenTimestamp(value: string | number | undefined): number | null {
+    if (value === undefined || value === null || value === '') return null;
+
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue) && numericValue > 0) {
+      return numericValue < 1_000_000_000_000 ? numericValue * 1000 : numericValue;
+    }
+
+    const raw = String(value).trim();
+    const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');
+    const timestamp = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)
+      ? Date.parse(normalized)
+      : Date.parse(`${normalized}Z`);
+
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+
+  private parseDisplayedOpenTimestamp(value: string): number | null {
+    const match = value?.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return null;
+
+    const [, month, day, year, hour, minute, second = '0'] = match;
+    return Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second)) - 8 * 60 * 60 * 1000;
   }
 
   getTradeProfit(trade: Table): number {
