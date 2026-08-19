@@ -45,6 +45,12 @@ interface MT5HealthResponse {
 })
 export class ConnectionStatusComponent implements OnInit, OnDestroy {
   @Output() reconnectRequested = new EventEmitter<void>();
+  @Output() connectionStateChange = new EventEmitter<{
+    connected: boolean;
+    account: MT5AccountInfo | null;
+  }>();
+
+  private lastEmittedConnectionState = '';
 
   servers: ServerStatus[] = [
     {
@@ -74,6 +80,8 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         this.servers.forEach(server => {
           server.status = 'offline';
           server.detail = 'Disconnected';
+          server.account = undefined;
+          this.emitMt5ConnectionState(server);
         });
       }
     });
@@ -116,8 +124,11 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         server.status = 'online';
         server.detail = '';
       } else {
+        server.status = 'offline';
+        server.detail = 'Disconnected';
         server.account = undefined;
       }
+      this.emitMt5ConnectionState(server);
     });
   }
 
@@ -153,12 +164,15 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
             server.account = undefined;
           }
         }
+        this.emitMt5ConnectionState(server);
 
       } catch (error) {
         if (server.status !== 'reconnecting') {
           server.status = 'offline';
           server.detail = 'Disconnected';
+          server.account = undefined;
         }
+        this.emitMt5ConnectionState(server);
       }
 
       server.lastChecked = new Date();
@@ -201,6 +215,20 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
     }
   }
 
+  private emitMt5ConnectionState(server: ServerStatus): void {
+    if (server.name !== 'MT5 API') return;
+
+    const login = server.account?.login ?? null;
+    const stateKey = `${server.status === 'online'}:${login ?? ''}`;
+    if (stateKey === this.lastEmittedConnectionState) return;
+
+    this.lastEmittedConnectionState = stateKey;
+    this.connectionStateChange.emit({
+      connected: server.status === 'online',
+      account: server.account ?? null
+    });
+  }
+
   getServerTooltip(server: ServerStatus): string {
     const status = server.status === 'online' ? 'Connected' :
                   server.status === 'reconnecting' ? 'Reconnecting...' :
@@ -216,6 +244,7 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
     server.status = 'reconnecting';
     server.detail = 'Reconnecting…';
+    this.emitMt5ConnectionState(server);
     this.http.post(`${environment.backendUrlMt5}/api/start-reconnect`, {})
       .subscribe({
         next: () => {
@@ -225,6 +254,8 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
         error: () => {
           server.status = 'offline';
           server.detail = 'Disconnected';
+          server.account = undefined;
+          this.emitMt5ConnectionState(server);
         }
       });
   }
