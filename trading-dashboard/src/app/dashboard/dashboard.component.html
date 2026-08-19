@@ -81,13 +81,6 @@
           <span>Connected services</span>
         </div>
         <app-connection-status
-          [syncStatus]="mt5ConnectionSyncStatus"
-          [syncStatusMessage]="mt5ConnectionSyncStatusMessage"
-          [syncProgress]="mt5AutoSyncProgress"
-          [syncProcessed]="mt5AutoSyncProcessed"
-          [syncTotal]="mt5AutoSyncTotal"
-          [syncCreated]="mt5AutoSyncCreated"
-          [syncUpdated]="mt5AutoSyncUpdated"
           (reconnectRequested)="startReconnect()"
           (connectionStateChange)="onMt5ConnectionStateChange($event)">
         </app-connection-status>
