@@ -6524,13 +6524,33 @@ table.simple-table {
     background: linear-gradient(135deg, #ef4444, #b91c1c);
   }
 
-.trading-chart-container .chart-canvas-wrapper > .mt5-auto-sync-complete {
+.trading-chart-container .chart-top-overlays {
   position: absolute;
   top: 1rem;
   right: 1rem;
   left: 1rem;
-  z-index: 4;
-  width: auto;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+
+.trading-chart-container .chart-top-overlays > * {
+  pointer-events: auto;
+}
+
+.trading-chart-container .chart-top-overlays .mt5-account-mismatch-banner {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.trading-chart-container .chart-top-overlays > .mt5-auto-sync-complete {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: 100%;
   max-width: none;
   margin: 0;
   box-shadow: 0 8px 24px rgba(15, 118, 110, 0.14);

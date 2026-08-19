@@ -461,20 +461,6 @@
     </div>
   </header>
 
-  <!-- MT5 <-> UI account mismatch safety banner -->
-  <div
-    class="mt5-account-mismatch-banner"
-    *ngIf="mt5AccountMismatch"
-    role="alert"
-  >
-    <mat-icon class="banner-icon">warning</mat-icon>
-    <span class="banner-text">
-      MT5 is connected to account <strong>{{ mt5ConnectedAccount }}</strong>, but you are viewing
-      <strong>{{ selectedAccount?.name }}</strong>. Live MT5 trades are hidden so data from the
-      wrong account is never mixed into this dashboard.
-    </span>
-  </div>
-
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
@@ -567,7 +553,19 @@
         </div>
 
         <div class="chart-canvas-wrapper">
-          @if (mt5AutoSyncStatus !== 'idle') {
+          <div class="chart-top-overlays">
+            @if (mt5AccountMismatch) {
+              <div class="mt5-account-mismatch-banner" role="alert">
+                <mat-icon class="banner-icon">warning</mat-icon>
+                <span class="banner-text">
+                  MT5 is connected to account <strong>{{ mt5ConnectedAccount }}</strong>, but you are viewing
+                  <strong>{{ selectedAccount?.name }}</strong>. Live MT5 trades are hidden so data from the
+                  wrong account is never mixed into this dashboard.
+                </span>
+              </div>
+            }
+
+            @if (mt5AutoSyncStatus !== 'idle') {
             <section class="mt5-auto-sync-complete" [class.is-syncing]="mt5AutoSyncStatus === 'syncing'" [class.is-error]="mt5AutoSyncStatus === 'error'" role="status" aria-live="polite">
               <div class="mt5-auto-sync-complete-header">
                 <div class="mt5-auto-sync-complete-title">
@@ -600,7 +598,8 @@
               </div>
               <p class="mt5-auto-sync-complete-message">{{ mt5AutoSyncStatusMessage }}</p>
             </section>
-          }
+            }
+          </div>
 
           <!-- Loading spinner when data is not ready -->
           <div *ngIf="isLoadingMT5Data" class="chart-loading-overlay">
