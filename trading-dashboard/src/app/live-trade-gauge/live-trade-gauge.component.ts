@@ -77,7 +77,6 @@ export class LiveTradeGaugeComponent implements OnInit, OnChanges, OnDestroy {
     const magnitude = Math.abs(clamped);
 
     let color: string;
-    let glow: { shadowBlur: number; shadowColor: string };
     let posValue = 0;
     let negValue = 0;
 
@@ -85,13 +84,11 @@ export class LiveTradeGaugeComponent implements OnInit, OnChanges, OnDestroy {
       // Risk-consumed scale: a full ring = the account risk %.
       const normalized = Math.max(0, Math.min(1, magnitude / safeNegativeMax));
       color = '#ef4444';
-      glow = this.getGlow(normalized, color);
       negValue = magnitude;
     } else {
       // Fixed 3% scale: a full ring = 3% P&L.
       const normalized = Math.max(0, Math.min(1, clamped / safePositiveMax));
       color = this.getRadiantColor(normalized);
-      glow = this.getGlow(normalized, color);
       posValue = clamped;
     }
 
@@ -167,8 +164,6 @@ export class LiveTradeGaugeComponent implements OnInit, OnChanges, OnDestroy {
               clip: false,
               itemStyle: {
                 color,
-                shadowBlur: isNegative ? 0 : glow.shadowBlur,
-                shadowColor: isNegative ? 'transparent' : glow.shadowColor,
               },
             },
             data: [{ value: posValue, name: '' }],
@@ -192,8 +187,6 @@ export class LiveTradeGaugeComponent implements OnInit, OnChanges, OnDestroy {
               clip: false,
               itemStyle: {
                 color: '#ef4444',
-                shadowBlur: isNegative ? glow.shadowBlur : 0,
-                shadowColor: isNegative ? glow.shadowColor : 'transparent',
               },
             },
             data: [{ value: negValue, name: '' }],
@@ -224,15 +217,6 @@ export class LiveTradeGaugeComponent implements OnInit, OnChanges, OnDestroy {
     const g = Math.round(211 + (191 - 211) * p);
     const b = Math.round(238 + (255 - 238) * p);
     return `rgb(${r}, ${g}, ${b})`;
-  }
-
-  /** Soft glow that intensifies as the fill approaches its maximum. */
-  private getGlow(t: number, color: string): { shadowBlur: number; shadowColor: string } {
-    const intensity = t * t;
-    return {
-      shadowBlur: 5 + intensity * 60,
-      shadowColor: color,
-    };
   }
 
   ngOnDestroy(): void {
