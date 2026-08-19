@@ -6524,6 +6524,12 @@ table.simple-table {
     background: linear-gradient(135deg, #ef4444, #b91c1c);
   }
 
+.trading-chart-container > .mt5-auto-sync-complete {
+  width: calc(100% - 1rem);
+  max-width: none;
+  margin: 0.45rem 0.5rem 0.25rem;
+}
+
 .mt5-report-import {
   .mt5-sync-status {
     position: fixed;

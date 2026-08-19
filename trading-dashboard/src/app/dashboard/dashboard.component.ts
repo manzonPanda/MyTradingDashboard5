@@ -783,6 +783,7 @@ export class DashboardComponent implements AfterViewInit {
         this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
         if (this.selectedAccount?.id === updatedAccount.id) {
           this.selectedAccount = updatedAccount;
+          this.clearMt5AutoSyncDismissal();
           this.mt5AutoSyncStatus = 'idle';
           this.mt5AutoSyncStatusMessage = '';
           this.applySelectedAccountSettings();
@@ -2303,6 +2304,7 @@ mt5AccountInfo: AccountSettings = {
     this.recentlyAddedTrades = [];
     this.isMt5LiveSnapshotAvailable = false;
     this.mt5OpenPositionIds = new Set();
+    this.clearMt5AutoSyncDismissal();
     this.mt5AutoSyncStatus = 'idle';
     this.mt5AutoSyncStatusMessage = '';
     this.updateTableData();
@@ -2498,6 +2500,7 @@ mt5AccountInfo: AccountSettings = {
     if (this.liveExtremesCacheTimer) {
       window.clearTimeout(this.liveExtremesCacheTimer);
     }
+    this.clearMt5AutoSyncDismissal();
     this.dismissNewsReminder();
     this.newsReminder.clearAllReminders();
     this.auraEnergy.destroy();
@@ -4288,6 +4291,26 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   /** Prevents overlapping auto-sync runs from concurrent loadMT5Data() calls. */
   private autoSyncInFlight = false;
+  private mt5AutoSyncDismissTimer?: number;
+
+  private clearMt5AutoSyncDismissal(): void {
+    if (this.mt5AutoSyncDismissTimer !== undefined) {
+      window.clearTimeout(this.mt5AutoSyncDismissTimer);
+      this.mt5AutoSyncDismissTimer = undefined;
+    }
+  }
+
+  private scheduleMt5AutoSyncDismissal(): void {
+    this.clearMt5AutoSyncDismissal();
+    this.mt5AutoSyncDismissTimer = window.setTimeout(() => {
+      this.mt5AutoSyncDismissTimer = undefined;
+      if (this.mt5AutoSyncStatus === 'success' || this.mt5AutoSyncStatus === 'error') {
+        this.mt5AutoSyncStatus = 'idle';
+        this.mt5AutoSyncStatusMessage = '';
+        this.cdr.detectChanges();
+      }
+    }, 5000);
+  }
 
   async loadMT5Data(): Promise<void> {
     const loadVersion = ++this.mt5DataLoadVersion;
@@ -4507,6 +4530,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     if (!newTrades.length) return;
 
     this.autoSyncInFlight = true;
+    this.clearMt5AutoSyncDismissal();
     this.mt5AutoSyncStatus = 'syncing';
     this.mt5AutoSyncStatusMessage = `Syncing ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
     this.mt5AutoSyncProgress = 0;
@@ -4545,13 +4569,16 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       this.mt5AutoSyncCreated = result.created;
       this.mt5AutoSyncUpdated = result.updated;
       this.mt5AutoSyncStatusMessage = `Synced ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} while connected to ${this.selectedAccount?.name ?? 'the selected account'}.`;
+      this.scheduleMt5AutoSyncDismissal();
     } catch (error) {
       if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) {
+        this.clearMt5AutoSyncDismissal();
         this.mt5AutoSyncStatus = 'idle';
         this.mt5AutoSyncStatusMessage = '';
       } else {
         this.mt5AutoSyncStatus = 'error';
         this.mt5AutoSyncStatusMessage = error instanceof Error ? error.message : 'Automatic MT5 sync failed.';
+        this.scheduleMt5AutoSyncDismissal();
       }
       console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
     } finally {
@@ -4695,6 +4722,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       this.recentlyAddedTrades = [];
       this.isMt5LiveSnapshotAvailable = false;
       this.mt5OpenPositionIds = new Set();
+      this.clearMt5AutoSyncDismissal();
       this.mt5AutoSyncStatus = 'idle';
       this.mt5AutoSyncStatusMessage = '';
       this.updateTableData();
