@@ -84,6 +84,8 @@ export interface UserSettings {
   user_id: string;
   per_trade_target_percent: number;
   sound_notifications_threshold: number;
+  live_trade_sound_threshold: number;
+  live_trade_high_priority_sound_threshold: number;
   daily_target_percent: number;
   weekly_r_target: number;
   default_chart_mode: 'daily' | 'trades';
@@ -208,7 +210,7 @@ export class SupabaseService {
   }
 
   async updateUserSettings(userId: string, updates: Partial<Omit<UserSettings, 'user_id' | 'created_at' | 'updated_at'>>): Promise<UserSettings> {
-    const { data, error } = await this.supabase.from('user_settings').upsert({ user_id: userId, ...updates }).select('*').single();
+    const { data, error } = await this.supabase.from('user_settings').upsert({ user_id: userId, ...updates }, { onConflict: 'user_id' }).select('*').single();
     if (error) throw new Error(`Settings update failed: ${error.message}`);
     return data as UserSettings;
   }
@@ -216,7 +218,7 @@ export class SupabaseService {
   async updateAuraEnergySettings(userId: string, updates: AuraEnergySettings): Promise<AuraEnergySettings> {
     const { data, error } = await this.supabase
       .from('user_settings')
-      .upsert({ user_id: userId, ...updates })
+      .upsert({ user_id: userId, ...updates }, { onConflict: 'user_id' })
       .select('aura_enabled, aura_travel_duration_ms, aura_min_delay_ms, aura_max_delay_ms, aura_trail_length_percent, aura_stroke_width, aura_head_radius, aura_bloom_intensity, aura_fade_duration_ms, aura_color_start, aura_color_mid, aura_color_peak, aura_color_head, aura_min_targets, aura_max_targets')
       .single();
     if (error) throw new Error(`AURA energy settings update failed: ${error.message}`);

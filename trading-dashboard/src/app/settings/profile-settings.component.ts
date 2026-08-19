@@ -15,7 +15,8 @@ export interface LiveTradeDisplayPreferences {
 const LIVE_TRADE_PREFERENCES_KEY = 'trading-dashboard.live-trade-display-preferences';
 
 const defaults: Omit<UserSettings, 'user_id'> = {
-  per_trade_target_percent: 1, sound_notifications_threshold: 2.8, daily_target_percent: 2, weekly_r_target: 5,
+  per_trade_target_percent: 1, sound_notifications_threshold: 2.8, live_trade_sound_threshold: 2.8,
+  live_trade_high_priority_sound_threshold: 3.4, daily_target_percent: 2, weekly_r_target: 5,
   default_chart_mode: 'trades', trading_day_reset_time: '17:00', default_account_id: null,
   show_account_balance: true, show_pnl: true, show_trading_activity: true, show_news_calendar: true,
   aura_enabled: true, aura_travel_duration_ms: 2000, aura_min_delay_ms: 2000, aura_max_delay_ms: 5000,
@@ -69,6 +70,11 @@ export class ProfileSettingsComponent implements OnInit {
     this.saving = true; this.message = '';
     try {
       this.validateLiveTradeDisplayPreferences();
+      this.settings = {
+        ...this.settings,
+        live_trade_sound_threshold: this.liveTradeDisplayPreferences.soundThreshold,
+        live_trade_high_priority_sound_threshold: this.liveTradeDisplayPreferences.highPrioritySoundThreshold
+      };
       await Promise.all([
         this.supabase.updateProfile(userId, this.profile),
         this.supabase.updateUserSettings(userId, this.settings)
@@ -81,17 +87,18 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   private loadLiveTradeDisplayPreferences(): void {
+    const soundThreshold = Number(this.settings.live_trade_sound_threshold);
+    const highPrioritySoundThreshold = Number(this.settings.live_trade_high_priority_sound_threshold);
+    if (Number.isFinite(soundThreshold) && soundThreshold >= 0) this.liveTradeDisplayPreferences.soundThreshold = soundThreshold;
+    if (Number.isFinite(highPrioritySoundThreshold) && highPrioritySoundThreshold > this.liveTradeDisplayPreferences.soundThreshold) this.liveTradeDisplayPreferences.highPrioritySoundThreshold = highPrioritySoundThreshold;
+
     const saved = localStorage.getItem(LIVE_TRADE_PREFERENCES_KEY);
     if (!saved) return;
 
     try {
       const preferences = JSON.parse(saved) as Partial<LiveTradeDisplayPreferences>;
       const max = Number(preferences.positiveGaugePercentMax);
-      const soundThreshold = Number(preferences.soundThreshold);
-      const highPrioritySoundThreshold = Number(preferences.highPrioritySoundThreshold);
       if (Number.isFinite(max) && max >= .1 && max <= 100) this.liveTradeDisplayPreferences.positiveGaugePercentMax = max;
-      if (Number.isFinite(soundThreshold) && soundThreshold >= 0) this.liveTradeDisplayPreferences.soundThreshold = soundThreshold;
-      if (Number.isFinite(highPrioritySoundThreshold) && highPrioritySoundThreshold > this.liveTradeDisplayPreferences.soundThreshold) this.liveTradeDisplayPreferences.highPrioritySoundThreshold = highPrioritySoundThreshold;
       if (typeof preferences.soundEnabled === 'boolean') this.liveTradeDisplayPreferences.soundEnabled = preferences.soundEnabled;
     } catch {
       localStorage.removeItem(LIVE_TRADE_PREFERENCES_KEY);
@@ -107,7 +114,10 @@ export class ProfileSettingsComponent implements OnInit {
 
   private saveLiveTradeDisplayPreferences(): void {
     const preferences = this.liveTradeDisplayPreferences;
-    localStorage.setItem(LIVE_TRADE_PREFERENCES_KEY, JSON.stringify(preferences));
+    localStorage.setItem(LIVE_TRADE_PREFERENCES_KEY, JSON.stringify({
+      positiveGaugePercentMax: preferences.positiveGaugePercentMax,
+      soundEnabled: preferences.soundEnabled
+    }));
     this.liveTradeDisplayPreferencesChange.emit({ ...preferences });
   }
 
