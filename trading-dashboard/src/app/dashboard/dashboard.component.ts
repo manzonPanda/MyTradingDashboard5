@@ -82,6 +82,7 @@ const DEFAULT_LIVE_TRADE_SOUND_SETTINGS: LiveTradeSoundSettings = {
 
 interface Table {
   openDate: string;
+  mt5TimeOpen?: string;
   timeOpenPh?: string;
   tradeNotion: Trades[];
   status: string;
@@ -93,6 +94,7 @@ interface Table {
   sL: string;
   tP: string;
   closeDate: string;
+  mt5TimeClose?: string;
   timeClosePh?: string;
   exit: string;
   commission: string;
@@ -821,6 +823,7 @@ mt5AccountInfo: AccountSettings = {
   private mt5AccountLogin: string | null = null;
   private mt5ServiceConnected = false;
   private mt5DataLoadVersion = 0;
+  private mt5Socket?: Socket;
 
   /** True when the MT5 /api/history endpoint answered recently (terminal reachable). */
   private mt5HistoryAvailable = false;
@@ -2338,10 +2341,11 @@ mt5AccountInfo: AccountSettings = {
       console.error('❌ ngOnInit: Error loading MT5 data:', error);
     }
 
-    const socket = io(`${this.BACKEND_URL_MT5}/`,{
+    this.mt5Socket = io(`${this.BACKEND_URL_MT5}/`,{
       transports: ['websocket'], // ��� Force WebSocket to avoid polling
       upgrade: false,              // Optional, disables fallback to long-polling
     });
+    const socket = this.mt5Socket;
 
     socket.on("connect", async () => {
       console.warn("✅ Connected to WebSocket server");
@@ -2350,6 +2354,7 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on("account_info", (data) => {
+      this.mt5ServiceConnected = true;
       this.mt5AccountLogin = this.normalizeAccountNumber(data?.login);
       const balance = Number(data?.balance ?? data?.account_balance ?? data?.equity);
       if (Number.isFinite(balance) && balance > 0) {
@@ -2507,6 +2512,7 @@ mt5AccountInfo: AccountSettings = {
       window.clearTimeout(this.liveExtremesCacheTimer);
     }
     this.clearMt5AutoSyncDismissal();
+    this.mt5Socket?.disconnect();
     this.dismissNewsReminder();
     this.newsReminder.clearAllReminders();
     this.auraEnergy.destroy();
@@ -4239,10 +4245,12 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       ticket: trade.position,
       buy_sell: trade.type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
-      time_open: this.formatMt5DateForSupabase(trade.openDate),
+      time_open: this.formatMt5DateForSupabase(trade.mt5TimeOpen ?? trade.openDate),
       time_open_ph: trade.timeOpenPh || undefined,
-      time_close: trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
-      time_close_ph: trade.closeDate === '-' ? undefined : trade.timeClosePh || undefined,
+      time_close: trade.mt5TimeClose
+        ? this.formatMt5DateForSupabase(trade.mt5TimeClose)
+        : trade.closeDate === '-' ? undefined : this.formatMt5DateForSupabase(trade.closeDate),
+      time_close_ph: trade.timeClosePh || undefined,
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
       pnl: this.toNumber(trade.netProfit),
@@ -4259,17 +4267,17 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   private formatMt5DateForSupabase(date: string): string | undefined {
     if (!date || date === '-') return undefined;
 
-    const yearFirstMatch = date.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2})/);
+    const yearFirstMatch = date.trim().match(/^(\d{4})[-.](\d{2})[-.](\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
     if (yearFirstMatch) {
-      const [, year, month, day, hour, minute] = yearFirstMatch;
-      return `${year}-${month}-${day}T${hour}:${minute}:00`;
+      const [, year, month, day, hour, minute, second = '00'] = yearFirstMatch;
+      return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     }
 
-    const monthFirstMatch = date.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/);
+    const monthFirstMatch = date.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
     if (!monthFirstMatch) return undefined;
 
-    const [, month, day, year, hour, minute] = monthFirstMatch;
-    return `${year}-${month}-${day}T${hour}:${minute}:00`;
+    const [, month, day, year, hour, minute, second = '00'] = monthFirstMatch;
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
   }
 
   private toNumber(value: string | number): number {
@@ -4346,7 +4354,14 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           )
         : null;
       if (accountId && mt5History !== null && mt5AccountMatches) {
-        await this.syncClosedMt5Trades(supabaseTrades, mt5History, accountId);
+        await this.syncClosedMt5Trades(
+          supabaseTrades,
+          mt5History,
+          accountId,
+          () => loadVersion === this.mt5DataLoadVersion
+            && this.isActiveMt5Account()
+            && this.selectedAccount?.id === accountId
+        );
       }
       // SAFETY: Never merge MT5 history into the displayed data unless MT5 is
       // connected to the same account selected in the UI — otherwise a mismatched
@@ -4377,8 +4392,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
       return {
         openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
+        mt5TimeOpen: trade.fromSupabase ? undefined : trade.time_open,
         timeOpenPh: trade.time_open_ph,
         closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
+        mt5TimeClose: trade.fromSupabase ? undefined : trade.time_close,
         timeClosePh: trade.time_close_ph,
         tradeNotion: [],
         status: "",
@@ -4422,7 +4439,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       void this.correctLiveTradeRiskRewardRatios(this.mt5LiveTrades, supabaseTrades, accountId).catch(error => {
         console.warn('Unable to correct live trade R:R values:', error);
       });
-      void this.autoSyncMt5TradesToSupabase(this.mt5LiveTrades, supabaseTrades, accountId);
+      void this.autoSyncMt5TradesToSupabase(this.mt5LiveTrades, accountId);
     }
 
     console.log("✅ mt5LiveTrades updated:", this.mt5LiveTrades.length, 'trades');
@@ -4454,7 +4471,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   private async syncClosedMt5Trades(
     supabaseTrades: any[],
     mt5History: any[],
-    accountId: string
+    accountId: string,
+    shouldContinue: () => boolean
   ): Promise<void> {
     const closedMt5ByPosition = new Map(
       mt5History
@@ -4467,30 +4485,27 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         .map(trade => [String(trade.position_id), trade])
     );
 
-    const updates = supabaseTrades
-      .filter(trade => String(trade.status).toLowerCase() === 'open')
-      .map(trade => {
-        const mt5Trade = closedMt5ByPosition.get(String(trade.position_id));
-        if (!mt5Trade) return null;
+    for (const trade of supabaseTrades) {
+      if (!shouldContinue()) return;
+      if (String(trade.status).toLowerCase() !== 'open') continue;
 
-        const timeClose = this.formatMt5DateForSupabase(
-          this.convertAndFormatMT5Date(String(mt5Trade.time_close))
-        );
-        const tradeUpdates: Partial<Trade> = { time_close: timeClose };
-        if (mt5Trade.exit_price !== undefined && mt5Trade.exit_price !== null) {
-          tradeUpdates.price_close = Number(mt5Trade.exit_price);
-        }
-        if (mt5Trade.profit !== undefined && mt5Trade.profit !== null) {
-          tradeUpdates.pnl = Number(mt5Trade.profit);
-        }
-        if (mt5Trade.commission !== undefined && mt5Trade.commission !== null) {
-          tradeUpdates.commission = Number(mt5Trade.commission);
-        }
-        return this.supabaseService.updateTradeByTicket(trade.position_id, accountId, tradeUpdates);
-      })
-      .filter((update): update is Promise<Trade | null> => update !== null);
+      const mt5Trade = closedMt5ByPosition.get(String(trade.position_id));
+      if (!mt5Trade) continue;
 
-    if (updates.length) await Promise.all(updates);
+      const tradeUpdates: Partial<Trade> = {
+        time_close: this.formatMt5DateForSupabase(String(mt5Trade.time_close))
+      };
+      if (mt5Trade.exit_price !== undefined && mt5Trade.exit_price !== null) {
+        tradeUpdates.price_close = Number(mt5Trade.exit_price);
+      }
+      if (mt5Trade.profit !== undefined && mt5Trade.profit !== null) {
+        tradeUpdates.pnl = Number(mt5Trade.profit);
+      }
+      if (mt5Trade.commission !== undefined && mt5Trade.commission !== null) {
+        tradeUpdates.commission = Number(mt5Trade.commission);
+      }
+      await this.supabaseService.updateTradeByTicket(trade.position_id, accountId, tradeUpdates);
+    }
   }
 
   /**
@@ -4528,29 +4543,24 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
   private async autoSyncMt5TradesToSupabase(
     mt5Trades: Table[],
-    supabaseTrades: any[],
     accountId: string
   ): Promise<void> {
-    if (this.autoSyncInFlight || !accountId || !mt5Trades.length || !this.isActiveMt5Account()) return;
-
-    const existingIds = new Set(supabaseTrades.map(t => String(t.position_id)));
-    const newTrades = mt5Trades.filter(t => !existingIds.has(String(t.position)));
-    if (!newTrades.length) return;
+    if (this.autoSyncInFlight || !accountId || !this.isActiveMt5Account()) return;
 
     this.autoSyncInFlight = true;
     this.clearMt5AutoSyncDismissal();
     this.mt5AutoSyncStatus = 'syncing';
-    this.mt5AutoSyncStatusMessage = `Syncing ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
+    this.mt5AutoSyncStatusMessage = '🔄 Syncing trades...';
     this.mt5AutoSyncProgress = 0;
     this.mt5AutoSyncProcessed = 0;
-    this.mt5AutoSyncTotal = newTrades.length;
+    this.mt5AutoSyncTotal = mt5Trades.length;
     this.mt5AutoSyncCreated = 0;
     this.mt5AutoSyncUpdated = 0;
     this.cdr.detectChanges();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
     try {
-      const trades = newTrades.map(t => ({
+      const trades = mt5Trades.map(t => ({
         ...this.mapMt5TradeForSupabase(t),
         mfe: this.toNumber(t.mfe),
         mae: this.toNumber(t.mae ?? '0')
@@ -4564,7 +4574,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           this.mt5AutoSyncTotal = total;
           this.mt5AutoSyncCreated = created;
           this.mt5AutoSyncUpdated = updated;
-          this.mt5AutoSyncStatusMessage = `Syncing ${processed} of ${total} MT5 trade${total === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
+          this.mt5AutoSyncStatusMessage = '🔄 Syncing trades...';
           this.cdr.detectChanges();
           await new Promise<void>(resolve => setTimeout(resolve, 0));
         },
@@ -4573,10 +4583,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) return;
       this.mt5AutoSyncStatus = 'success';
       this.mt5AutoSyncProgress = 100;
-      this.mt5AutoSyncProcessed = newTrades.length;
+      this.mt5AutoSyncProcessed = mt5Trades.length;
       this.mt5AutoSyncCreated = result.created;
       this.mt5AutoSyncUpdated = result.updated;
-      this.mt5AutoSyncStatusMessage = `Synced ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} while connected to ${this.selectedAccount?.name ?? 'the selected account'}.`;
+      this.mt5AutoSyncStatusMessage = '✓ Trades synchronized';
       this.scheduleMt5AutoSyncDismissal();
     } catch (error) {
       if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) {
@@ -4585,7 +4595,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         this.mt5AutoSyncStatusMessage = '';
       } else {
         this.mt5AutoSyncStatus = 'error';
-        this.mt5AutoSyncStatusMessage = error instanceof Error ? error.message : 'Automatic MT5 sync failed.';
+        this.mt5AutoSyncStatusMessage = '⚠ Trade sync failed';
         this.scheduleMt5AutoSyncDismissal();
       }
       console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
@@ -4747,8 +4757,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       );
       const login = this.normalizeAccountNumber(account?.login ?? account?.info?.login);
       this.mt5AccountLogin = login;
+      this.mt5ServiceConnected = Boolean(login);
     } catch (error) {
       this.mt5AccountLogin = null;
+      this.mt5ServiceConnected = false;
       console.warn('Unable to refresh MT5 account identity.', error);
     }
   }
@@ -4840,7 +4852,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       return;
     }
 
-    await this.autoSyncMt5TradesToSupabase([trade], [], accountId);
+    await this.autoSyncMt5TradesToSupabase([trade], accountId);
   }
 
   private async loadNewTradeScreenshot(trade: Table): Promise<void> {
@@ -4876,6 +4888,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const extremes = this.getLiveExtremes(trade.ticket);
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
+      mt5TimeOpen: trade.time_open,
       timeOpenPh: trade.time_open_ph,
       closeDate: "-",
       tradeNotion: [],
@@ -4975,6 +4988,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       console.log('🔴 Found live trade to be close at:', closedTrade);
       // closedTrade.status= "Closed";
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
+      closedTrade.mt5TimeClose = trade.time_close;
       closedTrade.timeClosePh = trade.time_close_ph;
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';

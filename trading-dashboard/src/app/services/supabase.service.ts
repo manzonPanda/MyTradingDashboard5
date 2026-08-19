@@ -170,6 +170,7 @@ export interface Trade {
 })
 export class SupabaseService {
   private supabase: SupabaseClient;
+  private readonly accountSyncQueues = new Map<string, Promise<void>>();
 
   constructor() {
     this.supabase = createClient(
@@ -568,27 +569,23 @@ export class SupabaseService {
   }
 
   async updateTradeByTicket(ticket: number | string, accountId: string, updates: Partial<Trade>): Promise<Trade | null> {
-    const { data, error } = await this.supabase
-      .from('trades')
-      .update(this.withPhilippineCloseTimestamp(updates))
-      .eq('ticket', ticket)
-      .eq('account_id', accountId)
-      .select()
-      .maybeSingle();
-    if (error) throw new Error(`Trade status update failed: ${error.message}`);
-    return data as Trade | null;
+    return this.runAccountSync(accountId, async () => {
+      const { data, error } = await this.supabase
+        .from('trades')
+        .update(this.withMt5PhilippineTimestamps(updates))
+        .eq('ticket', ticket)
+        .eq('account_id', accountId)
+        .select()
+        .maybeSingle();
+      if (error) throw new Error(`Trade status update failed: ${error.message}`);
+      return data as Trade | null;
+    });
   }
 
   async createTrade(trade: Partial<Trade>): Promise<Trade | null> {
-    const tradeToInsert = {
-      ...trade,
-      ...(trade.time_open_ph == null
-        ? { time_open_ph: this.getCurrentPhilippineTimestamp() }
-        : {})
-    };
     const { data, error } = await this.supabase
       .from('trades')
-      .insert(tradeToInsert)
+      .insert(trade)
       .select()
       .single();
     if (error) throw new Error(`Trade insert failed: ${error.message}`);
@@ -605,10 +602,18 @@ export class SupabaseService {
   }
 
   async saveTradeForAccount(trade: Partial<Trade>, accountId: string): Promise<Trade | null> {
-    const tradeForAccount = { ...trade, account_id: accountId };
+    return this.runAccountSync(accountId, () => this.saveMt5TradeForAccount(trade, accountId));
+  }
+
+  private async saveMt5TradeForAccount(trade: Partial<Trade>, accountId: string): Promise<Trade | null> {
+    const tradeForAccount = { ...this.withMt5PhilippineTimestamps(trade), account_id: accountId };
     if (tradeForAccount.ticket !== undefined && tradeForAccount.ticket !== null) {
-      const existing = await this.getTradeByTicket(tradeForAccount.ticket);
-      if (existing?.id) return this.updateTrade(existing.id, tradeForAccount);
+      const existing = await this.getTradeByTicket(tradeForAccount.ticket, accountId);
+      if (existing?.id) {
+        return this.hasTradeChanges(existing, tradeForAccount)
+          ? this.updateTrade(existing.id, tradeForAccount)
+          : existing;
+      }
     }
 
     try {
@@ -618,13 +623,26 @@ export class SupabaseService {
         throw error;
       }
 
-      const conflictingTrade = await this.getTradeByTicket(tradeForAccount.ticket);
+      const conflictingTrade = await this.getTradeByTicket(tradeForAccount.ticket, accountId);
       if (!conflictingTrade?.id) throw error;
-      return this.updateTrade(conflictingTrade.id, tradeForAccount);
+      return this.hasTradeChanges(conflictingTrade, tradeForAccount)
+        ? this.updateTrade(conflictingTrade.id, tradeForAccount)
+        : conflictingTrade;
     }
   }
 
   async syncTradesToAccount(
+    trades: Partial<Trade>[],
+    accountId: string,
+    onProgress?: (processed: number, total: number, created: number, updated: number) => void | Promise<void>,
+    shouldContinue?: () => boolean
+  ): Promise<{ created: number; updated: number }> {
+    return this.runAccountSync(accountId, () =>
+      this.syncMt5TradesToAccount(trades, accountId, onProgress, shouldContinue)
+    );
+  }
+
+  private async syncMt5TradesToAccount(
     trades: Partial<Trade>[],
     accountId: string,
     onProgress?: (processed: number, total: number, created: number, updated: number) => void | Promise<void>,
@@ -638,13 +656,13 @@ export class SupabaseService {
         throw new Error('Automatic MT5 sync stopped because the connected account changed.');
       }
 
-      const accountTrade = { ...trade, account_id: accountId };
+      const accountTrade = { ...this.withMt5PhilippineTimestamps(trade), account_id: accountId };
       if (accountTrade.ticket === undefined || accountTrade.ticket === null) {
         await onProgress?.(index + 1, trades.length, created, updated);
         continue;
       }
 
-      const existing = await this.getTradeByTicket(accountTrade.ticket);
+      const existing = await this.getTradeByTicket(accountTrade.ticket, accountId);
       if (existing?.id) {
         const updates = { ...accountTrade };
         const hasRiskPlaceholder = updates.risk_per_trade === undefined || updates.risk_per_trade === null || updates.risk_per_trade === 0;
@@ -673,24 +691,24 @@ export class SupabaseService {
           delete updates.mup;
         }
 
-        const saved = await this.updateTrade(existing.id, updates);
-        if (saved) updated++;
+        if (this.hasTradeChanges(existing, updates)) {
+          const saved = await this.updateTrade(existing.id, updates);
+          if (saved) updated++;
+        }
       } else {
         try {
-          const saved = await this.createTrade({
-            ...accountTrade,
-            time_open: this.addThirteenHours(accountTrade.time_open),
-            time_close: this.addThirteenHours(accountTrade.time_close)
-          });
+          const saved = await this.createTrade(accountTrade);
           if (saved) created++;
         } catch (error) {
           if (!this.isDuplicateTradeError(error)) throw error;
 
-          const conflictingTrade = await this.getTradeByTicket(accountTrade.ticket);
+          const conflictingTrade = await this.getTradeByTicket(accountTrade.ticket, accountId);
           if (!conflictingTrade?.id) throw error;
 
-          const saved = await this.updateTrade(conflictingTrade.id, accountTrade);
-          if (saved) updated++;
+          if (this.hasTradeChanges(conflictingTrade, accountTrade)) {
+            const saved = await this.updateTrade(conflictingTrade.id, accountTrade);
+            if (saved) updated++;
+          }
         }
       }
       await onProgress?.(index + 1, trades.length, created, updated);
@@ -699,18 +717,60 @@ export class SupabaseService {
     return { created, updated };
   }
 
+  private async runAccountSync<T>(accountId: string, operation: () => Promise<T>): Promise<T> {
+    const preceding = this.accountSyncQueues.get(accountId) ?? Promise.resolve();
+    let release!: () => void;
+    const current = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const tail = preceding.catch(() => undefined).then(() => current);
+    this.accountSyncQueues.set(accountId, tail);
+
+    await preceding.catch(() => undefined);
+    try {
+      return await operation();
+    } finally {
+      release();
+      if (this.accountSyncQueues.get(accountId) === tail) {
+        this.accountSyncQueues.delete(accountId);
+      }
+    }
+  }
+
   private isDuplicateTradeError(error: unknown): boolean {
     return error instanceof Error && error.message.includes('duplicate key value violates unique constraint');
   }
 
-  private withPhilippineCloseTimestamp(updates: Partial<Trade>): Partial<Trade> {
-    if (updates.time_close === undefined || updates.time_close_ph != null) return updates;
-    return { ...updates, time_close_ph: this.getCurrentPhilippineTimestamp() };
+  private withMt5PhilippineTimestamps(trade: Partial<Trade>): Partial<Trade> {
+    const timeOpenPh = trade.time_open
+      ? this.convertMt5TimestampToPhilippineTime(trade.time_open) ?? trade.time_open_ph
+      : trade.time_open_ph;
+    const timeClosePh = trade.time_close
+      ? this.convertMt5TimestampToPhilippineTime(trade.time_close) ?? trade.time_close_ph
+      : trade.time_close_ph;
+
+    return {
+      ...trade,
+      ...(timeOpenPh === undefined ? {} : { time_open_ph: timeOpenPh }),
+      ...(timeClosePh === undefined ? {} : { time_close_ph: timeClosePh })
+    };
   }
 
-  private getCurrentPhilippineTimestamp(): string {
+  private convertMt5TimestampToPhilippineTime(timestamp: string): string | undefined {
+    const match = timestamp.trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (!match) return undefined;
+
+    const [, year, month, day, hour, minute, second = '00'] = match;
+    const localTimestamp = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+    let instant = new Date(localTimestamp - this.getTimeZoneOffset(new Date(localTimestamp), 'Europe/Athens'));
+    instant = new Date(localTimestamp - this.getTimeZoneOffset(instant, 'Europe/Athens'));
+
+    return this.formatTimestampInTimeZone(instant, 'Asia/Manila');
+  }
+
+  private getTimeZoneOffset(instant: Date, timeZone: string): number {
     const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Manila',
+      timeZone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -718,22 +778,49 @@ export class SupabaseService {
       minute: '2-digit',
       second: '2-digit',
       hourCycle: 'h23'
-    }).formatToParts(new Date());
+    }).formatToParts(instant);
+    const value = (type: string): number => Number(parts.find(part => part.type === type)?.value ?? 0);
+    return Date.UTC(value('year'), value('month') - 1, value('day'), value('hour'), value('minute'), value('second')) - instant.getTime();
+  }
+
+  private formatTimestampInTimeZone(instant: Date, timeZone: string): string {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23'
+    }).formatToParts(instant);
     const value = (type: string): string => parts.find(part => part.type === type)?.value ?? '';
     return `${value('year')}-${value('month')}-${value('day')} ${value('hour')}:${value('minute')}:${value('second')}`;
   }
 
-  private addThirteenHours(timestamp?: string): string | undefined {
-    if (!timestamp) return undefined;
-    const date = new Date(timestamp);
-    if (Number.isNaN(date.getTime())) return timestamp;
-    return new Date(date.getTime() + 13 * 60 * 60 * 1000).toISOString();
+  private hasTradeChanges(existing: Trade, updates: Partial<Trade>): boolean {
+    return Object.entries(updates).some(([key, incoming]) => {
+      if (incoming === undefined) return false;
+      const current = existing[key as keyof Trade];
+      if (current === null || current === undefined || incoming === null) return current !== incoming;
+      if (key.startsWith('time_')) {
+        return this.normalizeTimestamp(String(current)) !== this.normalizeTimestamp(String(incoming));
+      }
+      if (typeof current === 'number' || typeof incoming === 'number') {
+        return Number(current) !== Number(incoming);
+      }
+      return current !== incoming;
+    });
+  }
+
+  private normalizeTimestamp(timestamp: string): string {
+    return timestamp.trim().replace('T', ' ').replace(/(\.\d+)?Z?$/, '');
   }
 
   async updateTrade(id: string, updates: Partial<Trade>): Promise<Trade | null> {
     const { data, error } = await this.supabase
       .from('trades')
-      .update(this.withPhilippineCloseTimestamp(updates))
+      .update(updates)
       .eq('id', id)
       .select()
       .single();
