@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Mt5TimeService, mt5ServerTimeToPhilippine, normalizeMt5ServerTime } from './mt5-time.service';
+import { Mt5TimeService, mt5ServerTimeToPhilippine, normalizeMt5ServerTime, utcTimeToPhilippine } from './mt5-time.service';
 
 describe('Mt5TimeService', () => {
   let service: Mt5TimeService;
@@ -48,6 +48,10 @@ describe('Mt5TimeService', () => {
       expect(mt5ServerTimeToPhilippine('')).toBeUndefined();
       expect(mt5ServerTimeToPhilippine('not-a-date')).toBeUndefined();
     });
+  });
+
+  it('converts the UTC timestamp emitted by the MT5 backend to Philippine time', () => {
+    expect(utcTimeToPhilippine('2026-07-31 19:42:21')).toBe('2026-08-01 03:42:21');
   });
 
   describe('normalizeMt5ServerTime', () => {

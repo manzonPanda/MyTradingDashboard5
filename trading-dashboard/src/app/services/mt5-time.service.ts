@@ -105,15 +105,16 @@ function zoneOffsetMs(zone: string, instantMs: number): number {
   return wallAsUtc - instantMs;
 }
 
-/**
- * Convert an MT5 server wall-clock timestamp (EET/EEST) to Philippine time
- * (Asia/Manila) using the IANA timezone database — never a hard-coded +5/+6.
- *
- * The naive MT5 string is first treated as if it were UTC to guess the instant,
- * then corrected with the actual EET/EEST offset. A fixed-point refinement
- * resolves the hour around DST transitions so the result is always stable and
- * idempotent.
- */
+/** Convert a UTC timestamp to Philippine time (Asia/Manila). */
+export function utcTimeToPhilippine(value: string | null | undefined): string | undefined {
+  const parts = parseNaiveTimestamp(value ?? '');
+  if (!parts) return undefined;
+
+  const utcTimestamp = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+  const ph = wallClockInZone(PHILIPPINE_TIME_ZONE, utcTimestamp);
+  return `${pad(ph.year)}-${pad(ph.month)}-${pad(ph.day)} ${pad(ph.hour)}:${pad(ph.minute)}:${pad(ph.second)}`;
+}
+
 export function mt5ServerTimeToPhilippine(value: string | null | undefined): string | undefined {
   const parts = parseNaiveTimestamp(value ?? '');
   if (!parts) return undefined;
@@ -138,6 +139,11 @@ export function mt5ServerTimeToPhilippine(value: string | null | undefined): str
 export class Mt5TimeService {
   readonly mt5ServerTimeZone = MT5_SERVER_TIME_ZONE;
   readonly philippineTimeZone = PHILIPPINE_TIME_ZONE;
+
+  /** Convert a UTC MT5 timestamp to Asia/Manila. */
+  utcTimeToPhilippine(value: string | null | undefined): string | undefined {
+    return utcTimeToPhilippine(value);
+  }
 
   /** DST-aware MT5 server time (EET/EEST) → Asia/Manila. */
   mt5ServerTimeToPhilippine(value: string | null | undefined): string | undefined {

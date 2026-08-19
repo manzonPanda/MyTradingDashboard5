@@ -48,4 +48,16 @@ describe('DashboardComponent', () => {
     component.selectedAccount.start_date = '2025-01-11';
     expect(component.calculateDaysSinceFirstTrade()).toBe(0);
   });
+
+  it('calculates persisted R from profit and risk instead of the planned target ratio', () => {
+    const trade = { profit: '150', riskPerTrade: '100', rrr: '4.00' } as any;
+
+    expect((component as any).calculateTradeR(trade)).toBe('1.50');
+  });
+
+  it('uses the reported R when the trade has no risk amount', () => {
+    const trade = { profit: '150', riskPerTrade: '0', rrr: '-0.75R' } as any;
+
+    expect((component as any).calculateTradeR(trade)).toBe('-0.75');
+  });
 });

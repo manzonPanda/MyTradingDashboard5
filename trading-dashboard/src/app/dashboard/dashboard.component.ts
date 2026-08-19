@@ -4240,11 +4240,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
-    // Persist the ORIGINAL MT5 server wall-clock timestamps (EET/EEST) unchanged
-    // into time_open / time_close, and derive the _ph fields with the DST-aware
-    // IANA conversion. The display-formatted openDate/closeDate (+5h legacy) is
-    // only used as a fallback for CSV-imported trades that carry no raw server
-    // timestamp.
+    // Persist the original MT5 UTC timestamps unchanged into time_open/time_close
+    // and derive the Philippine display fields from them. The display-formatted
+    // dates are only used as a fallback for CSV-imported trades without raw times.
     const serverOpen = this.normalizeOriginalServerTime(
       trade.timeOpenServer ?? this.originalServerTimeFromDisplay(trade.openDate)
     );
@@ -4259,16 +4257,16 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       buy_sell: trade.type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
       time_open: serverOpen,
-      time_open_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverOpen) ?? trade.timeOpenPh,
+      time_open_ph: this.mt5Time.utcTimeToPhilippine(serverOpen) ?? trade.timeOpenPh,
       time_close: serverClose,
-      time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverClose) ?? trade.timeClosePh,
+      time_close_ph: this.mt5Time.utcTimeToPhilippine(serverClose) ?? trade.timeClosePh,
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
       pnl: this.toNumber(trade.netProfit),
       price_close: trade.exit === '-' ? undefined : this.toNumber(trade.exit),
       price_open: this.toNumber(trade.entry),
       risk_per_trade: this.toNumber(trade.riskPerTrade),
-      rrr: this.calculateRiskRewardRatio(trade),
+      rrr: this.calculateTradeR(trade),
       sl: this.toNumber(trade.sL),
       swap: this.toNumber(trade.swap),
       tp: this.toNumber(trade.tP)
@@ -4302,21 +4300,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return Number.isFinite(numberValue) ? numberValue : 0;
   }
 
-  private calculateRiskRewardRatio(trade: Pick<Table, 'entry' | 'sL' | 'tP'>): string {
-    const entry = Number(trade.entry);
-    const stopLoss = Number(trade.sL);
-    const takeProfit = Number(trade.tP);
-    const risk = Math.abs(entry - stopLoss);
-    const reward = Math.abs(takeProfit - entry);
+  private calculateTradeR(trade: Pick<Table, 'profit' | 'riskPerTrade' | 'rrr'>): string {
+    const risk = this.toNumber(trade.riskPerTrade);
+    if (risk > 0) return (this.toNumber(trade.profit) / risk).toFixed(2);
 
-    if (!Number.isFinite(risk) || !Number.isFinite(reward) || risk <= 0 || reward <= 0) {
-      return '0';
-    }
-
-    return (reward / risk).toFixed(2);
+    const reportedR = Number(String(trade.rrr ?? '').replace(/R$/i, '').trim());
+    return Number.isFinite(reportedR) ? reportedR.toFixed(2) : '0';
   }
 
-  private isSameRiskRewardRatio(currentValue: string | number | null | undefined, expectedValue: string): boolean {
+  private isSameTradeR(currentValue: string | number | null | undefined, expectedValue: string): boolean {
     const current = Number(String(currentValue ?? '').replace(/R$/i, '').trim());
     const expected = Number(expectedValue);
     return Number.isFinite(current) && Number.isFinite(expected) && Math.abs(current - expected) < 0.005;
@@ -4411,16 +4403,15 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       const serverClose = mt5Raw?.time_close ?? trade.time_close;
 
       return {
-        openDate: this.convertAndFormatMT5Date(trade.time_open, !trade.fromSupabase),
-        // Raw MT5 server (EET/EEST) timestamps — kept original and used for the
-        // Supabase sync so time_open/time_close are never timezone-shifted.
+        openDate: this.convertAndFormatMT5Date(serverOpen, true),
+        // Raw MT5 UTC timestamps — kept original and used for Supabase storage.
         timeOpenServer: serverOpen,
         timeCloseServer: serverClose,
-        // DST-aware Philippine display fields (fall back to already-stored _ph).
-        timeOpenPh: this.mt5Time.mt5ServerTimeToPhilippine(serverOpen) ?? trade.time_open_ph,
-        closeDate: trade.time_close ? this.convertAndFormatMT5Date(trade.time_close, !trade.fromSupabase) : "-",
+        // Philippine display fields derived from the raw UTC timestamps.
+        timeOpenPh: this.mt5Time.utcTimeToPhilippine(serverOpen) ?? trade.time_open_ph,
+        closeDate: serverClose ? this.convertAndFormatMT5Date(serverClose, true) : "-",
         timeClosePh: serverClose
-          ? (this.mt5Time.mt5ServerTimeToPhilippine(serverClose) ?? trade.time_close_ph)
+          ? (this.mt5Time.utcTimeToPhilippine(serverClose) ?? trade.time_close_ph)
           : undefined,
         tradeNotion: [],
         status: "",
@@ -4437,7 +4428,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         profit: trade.profit ? trade.profit.toString() : '0',
         netProfit: (trade.profit + trade.commission).toString(),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
-        rrr: '0',
+        rrr: String(trade.reward_risk_ratio ?? '0'),
         mt5status: trade.status || '',
         mfe: String(mfe),
         mae: String(mae),
@@ -4461,8 +4452,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     // (login matches the selected account's account_number). Never write MT5
     // trades into a different selected account.
     if (accountId && mt5History !== null && this.isActiveMt5Account()) {
-      void this.correctLiveTradeRiskRewardRatios(this.mt5LiveTrades, supabaseTrades, accountId).catch(error => {
-        console.warn('Unable to correct live trade R:R values:', error);
+      void this.correctLiveTradeRValues(this.mt5LiveTrades, supabaseTrades, accountId).catch(error => {
+        console.warn('Unable to correct live trade R values:', error);
       });
       void this.autoSyncMt5TradesToSupabase(this.mt5LiveTrades, supabaseTrades, accountId);
     }
@@ -4521,7 +4512,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         const tradeUpdates: Partial<Trade> = serverTimeClose
           ? {
               time_close: serverTimeClose,
-              time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverTimeClose),
+              time_close_ph: this.mt5Time.utcTimeToPhilippine(serverTimeClose),
             }
           : {};
 
@@ -4552,7 +4543,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
    * — so the full history (e.g. trades that closed while the app was offline)
    * was never persisted automatically. This closes that gap.
    */
-  private async correctLiveTradeRiskRewardRatios(
+  private async correctLiveTradeRValues(
     mt5Trades: Table[],
     supabaseTrades: any[],
     accountId: string
@@ -4564,8 +4555,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       if (!this.mt5OpenPositionIds?.has(String(trade.position))) return [];
 
       const persistedTrade = persistedTrades.get(String(trade.position));
-      const rrr = this.calculateRiskRewardRatio(trade);
-      if (!persistedTrade || rrr === '0' || this.isSameRiskRewardRatio(persistedTrade.reward_risk_ratio, rrr)) {
+      const rrr = this.calculateTradeR(trade);
+      if (!persistedTrade || this.isSameTradeR(persistedTrade.reward_risk_ratio, rrr)) {
         return [];
       }
 
@@ -4726,17 +4717,16 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
 
-  convertAndFormatMT5Date(rawDateStr: string, adjustTimezone = true): string { // MT5 API date format -> time_close: "2025-07-24 09:56:01"
-    const [datePart, timePart] = rawDateStr.split(' ');
+  convertAndFormatMT5Date(rawDateStr: string, adjustTimezone = true): string { // MT5 UTC timestamp -> Philippine display time
+    const displayTimestamp = adjustTimezone
+      ? this.mt5Time.utcTimeToPhilippine(rawDateStr) ?? rawDateStr
+      : rawDateStr;
+    const [datePart, timePart] = displayTimestamp.split(/[T ]/);
     const [year, month, day] = datePart.split('-').map(Number);
     const [hour, minute, second] = timePart.split(':').map(Number);
+    const date = new Date(year, month - 1, day, hour, minute, second || 0);
 
-    const dateObj = new Date(year, month - 1, day, hour, minute, second);
-    if (adjustTimezone) {
-      dateObj.setHours(dateObj.getHours() + 5);
-    }
-
-    return `${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}.${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+    return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
 
   
@@ -4936,7 +4926,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       timeOpenServer: trade.time_open,
-      timeOpenPh: this.mt5Time.mt5ServerTimeToPhilippine(trade.time_open) ?? trade.time_open_ph,
+      timeOpenPh: this.mt5Time.utcTimeToPhilippine(trade.time_open) ?? trade.time_open_ph,
       closeDate: "-",
       tradeNotion: [],
       status: "",
@@ -5036,10 +5026,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       // closedTrade.status= "Closed";
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
       closedTrade.timeCloseServer = trade.time_close;
-      closedTrade.timeClosePh = this.mt5Time.mt5ServerTimeToPhilippine(trade.time_close) ?? trade.time_close_ph;
+      closedTrade.timeClosePh = this.mt5Time.utcTimeToPhilippine(trade.time_close) ?? trade.time_close_ph;
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
-      closedTrade.rrr = this.calculateRiskRewardRatio(closedTrade);
+      closedTrade.rrr = this.calculateTradeR(closedTrade);
       const closingProfit = Number(trade.profit);
       const finalMfe = Math.max(Number(closedTrade.mfe) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
       const finalMae = Math.min(Number(closedTrade.mae) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
@@ -5181,11 +5171,14 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     }
 
     if (this.selectedAccount && livePositionId !== undefined && livePositionId !== null && livePositionId !== '') {
-      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const positionOpenTimestamp = Number(priceData.time);
+      const timeOpen = Number.isFinite(positionOpenTimestamp) && positionOpenTimestamp > 0
+        ? new Date(positionOpenTimestamp * 1000).toISOString().slice(0, 19).replace('T', ' ')
+        : new Date().toISOString().slice(0, 19).replace('T', ' ');
       this.addMT5LiveTrade({
         ...priceData,
         ticket: livePositionId,
-        time_open: now,
+        time_open: timeOpen,
         price_open: Number(priceData.price_open ?? priceData.price_current ?? 0),
         type: Number(priceData.type ?? priceData.trade_type ?? 0),
         volume: Number(priceData.volume ?? 0),
