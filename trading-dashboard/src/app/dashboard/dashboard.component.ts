@@ -4514,21 +4514,23 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.mt5AutoSyncTotal = newTrades.length;
     this.mt5AutoSyncCreated = 0;
     this.mt5AutoSyncUpdated = 0;
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
 
     try {
       const trades = newTrades.map(t => this.mapMt5TradeForSupabase(t));
       const result = await this.supabaseService.syncTradesToAccount(
         trades,
         accountId,
-        (processed, total, created, updated) => {
+        async (processed, total, created, updated) => {
           this.mt5AutoSyncProgress = total ? Math.round((processed / total) * 100) : 100;
           this.mt5AutoSyncProcessed = processed;
           this.mt5AutoSyncTotal = total;
           this.mt5AutoSyncCreated = created;
           this.mt5AutoSyncUpdated = updated;
           this.mt5AutoSyncStatusMessage = `Syncing ${processed} of ${total} MT5 trade${total === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+          await new Promise<void>(resolve => setTimeout(resolve, 0));
         },
         () => this.isActiveMt5Account() && this.selectedAccount?.id === accountId
       );
@@ -4550,7 +4552,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
     } finally {
       this.autoSyncInFlight = false;
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     }
   }
 
