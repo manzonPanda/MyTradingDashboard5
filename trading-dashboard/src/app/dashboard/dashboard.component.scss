@@ -6373,8 +6373,9 @@ table.simple-table {
       color: var(--tf-text-primary);
     }
   }
+}
 
-  .mt5-auto-sync-complete {
+.mt5-auto-sync-complete {
     display: flex;
     width: min(calc(100% - 2.5rem), 42rem);
     box-sizing: border-box;
@@ -6523,6 +6524,7 @@ table.simple-table {
     background: linear-gradient(135deg, #ef4444, #b91c1c);
   }
 
+.mt5-report-import {
   .mt5-sync-status {
     position: fixed;
     top: 1rem;
