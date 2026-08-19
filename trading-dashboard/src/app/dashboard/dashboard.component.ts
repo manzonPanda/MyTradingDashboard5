@@ -783,7 +783,10 @@ export class DashboardComponent implements AfterViewInit {
         this.accounts = this.accounts.map(account => account.id === updatedAccount.id ? updatedAccount : account);
         if (this.selectedAccount?.id === updatedAccount.id) {
           this.selectedAccount = updatedAccount;
+          this.mt5AutoSyncStatus = 'idle';
+          this.mt5AutoSyncStatusMessage = '';
           this.applySelectedAccountSettings();
+          await this.loadMT5Data();
         }
         this.cancelAccountEdit();
         this.snackBar.open('Account details saved.', 'Dismiss', { duration: 3000, verticalPosition: 'top', horizontalPosition: 'right', panelClass: ['account-notification', 'notification-success'] });
@@ -815,6 +818,7 @@ mt5AccountInfo: AccountSettings = {
   private mt5OpenPositionIds: Set<string> | null = null;
   private isMt5LiveSnapshotAvailable = false;
   private mt5AccountLogin: string | null = null;
+  private mt5ServiceConnected = false;
   private mt5DataLoadVersion = 0;
 
   /** True when the MT5 /api/history endpoint answered recently (terminal reachable). */
@@ -827,7 +831,7 @@ mt5AccountInfo: AccountSettings = {
    * runs.
    */
   get mt5AccountMismatch(): boolean {
-    return this.mt5HistoryAvailable && this.mt5AccountLogin !== null && !this.isActiveMt5Account();
+    return this.mt5ServiceConnected && this.mt5AccountLogin !== null && !this.isActiveMt5Account();
   }
 
   /** MT5 terminal login number (public, used by the mismatch safety banner). */
@@ -840,6 +844,13 @@ mt5AccountInfo: AccountSettings = {
   mt5ImportError = '';
   mt5SyncStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
   mt5SyncStatusMessage = '';
+  mt5AutoSyncStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
+  mt5AutoSyncStatusMessage = '';
+  mt5AutoSyncProgress = 0;
+  mt5AutoSyncProcessed = 0;
+  mt5AutoSyncTotal = 0;
+  mt5AutoSyncCreated = 0;
+  mt5AutoSyncUpdated = 0;
   fixTicketAccountId = '';
   fixTicketFileName = '';
   fixTicketRows: { openTime: string; adjustedOpenTime: string; ticket: string; matched: boolean; matchedTradeId?: string }[] = [];
@@ -2291,6 +2302,8 @@ mt5AccountInfo: AccountSettings = {
     this.recentlyAddedTrades = [];
     this.isMt5LiveSnapshotAvailable = false;
     this.mt5OpenPositionIds = new Set();
+    this.mt5AutoSyncStatus = 'idle';
+    this.mt5AutoSyncStatusMessage = '';
     this.updateTableData();
     this.applySelectedAccountSettings();
     this.currentPage = 1;
@@ -2360,8 +2373,16 @@ mt5AccountInfo: AccountSettings = {
     });
 
     socket.on("trade_closed", (data: any) => {
+      if (!this.isActiveMt5Account()) return;
       console.warn("Trade closed:", data);
       this.closeMT5Trade(data);
+    });
+
+    socket.on("trade_deleted", (data: any) => {
+      if (!this.isActiveMt5Account()) return;
+      void this.deleteMT5Trade(data).catch(error => {
+        console.error('Unable to delete removed MT5 trade:', error);
+      });
     });
 
     socket.on('price_update', (data: any) => {
@@ -4478,22 +4499,56 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     supabaseTrades: any[],
     accountId: string
   ): Promise<void> {
-    // Guard against concurrent loadMT5Data() calls (ngOnInit + socket connect)
-    // both trying to create the same missing trades at the same time.
-    if (this.autoSyncInFlight || !accountId || !mt5Trades.length) return;
+    if (this.autoSyncInFlight || !accountId || !mt5Trades.length || !this.isActiveMt5Account()) return;
 
     const existingIds = new Set(supabaseTrades.map(t => String(t.position_id)));
     const newTrades = mt5Trades.filter(t => !existingIds.has(String(t.position)));
     if (!newTrades.length) return;
 
     this.autoSyncInFlight = true;
+    this.mt5AutoSyncStatus = 'syncing';
+    this.mt5AutoSyncStatusMessage = `Syncing ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} to ${this.selectedAccount?.name ?? 'the selected account'}…`;
+    this.mt5AutoSyncProgress = 0;
+    this.mt5AutoSyncProcessed = 0;
+    this.mt5AutoSyncTotal = newTrades.length;
+    this.mt5AutoSyncCreated = 0;
+    this.mt5AutoSyncUpdated = 0;
+    this.cdr.markForCheck();
+
     try {
       const trades = newTrades.map(t => this.mapMt5TradeForSupabase(t));
-      await this.supabaseService.syncTradesToAccount(trades, accountId);
+      const result = await this.supabaseService.syncTradesToAccount(
+        trades,
+        accountId,
+        (processed, total, created, updated) => {
+          this.mt5AutoSyncProgress = total ? Math.round((processed / total) * 100) : 100;
+          this.mt5AutoSyncProcessed = processed;
+          this.mt5AutoSyncTotal = total;
+          this.mt5AutoSyncCreated = created;
+          this.mt5AutoSyncUpdated = updated;
+          this.cdr.markForCheck();
+        },
+        () => this.isActiveMt5Account() && this.selectedAccount?.id === accountId
+      );
+      if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) return;
+      this.mt5AutoSyncStatus = 'success';
+      this.mt5AutoSyncProgress = 100;
+      this.mt5AutoSyncProcessed = newTrades.length;
+      this.mt5AutoSyncCreated = result.created;
+      this.mt5AutoSyncUpdated = result.updated;
+      this.mt5AutoSyncStatusMessage = `Synced ${newTrades.length} MT5 trade${newTrades.length === 1 ? '' : 's'} while connected to ${this.selectedAccount?.name ?? 'the selected account'}.`;
     } catch (error) {
+      if (!this.isActiveMt5Account() || this.selectedAccount?.id !== accountId) {
+        this.mt5AutoSyncStatus = 'idle';
+        this.mt5AutoSyncStatusMessage = '';
+      } else {
+        this.mt5AutoSyncStatus = 'error';
+        this.mt5AutoSyncStatusMessage = error instanceof Error ? error.message : 'Automatic MT5 sync failed.';
+      }
       console.warn('Auto-sync of MT5 trades to Supabase failed:', error);
     } finally {
       this.autoSyncInFlight = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -4617,21 +4672,52 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     return normalized || null;
   }
 
+  onMt5ConnectionStateChange(state: {
+    connected: boolean;
+    account: { login: string | number | null } | null;
+  }): void {
+    this.mt5ServiceConnected = state.connected;
+    this.mt5AccountLogin = state.connected
+      ? this.normalizeAccountNumber(state.account?.login)
+      : null;
+    this.mt5HistoryAvailable = state.connected;
+
+    if (!state.connected || !this.isActiveMt5Account()) {
+      this.mt5LiveTrades = [];
+      this.recentlyAddedTrades = [];
+      this.isMt5LiveSnapshotAvailable = false;
+      this.mt5OpenPositionIds = new Set();
+      this.mt5AutoSyncStatus = 'idle';
+      this.mt5AutoSyncStatusMessage = '';
+      this.updateTableData();
+    }
+
+    void this.loadMT5Data();
+    this.cdr.markForCheck();
+  }
+
   private async refreshMt5AccountLogin(): Promise<void> {
     try {
       const account = await firstValueFrom(
         this.http.get<any>(`${this.BACKEND_URL_MT5}/api/account_info`)
       );
       const login = this.normalizeAccountNumber(account?.login ?? account?.info?.login);
-      if (login) this.mt5AccountLogin = login;
+      this.mt5AccountLogin = login;
     } catch (error) {
+      this.mt5AccountLogin = null;
       console.warn('Unable to refresh MT5 account identity.', error);
     }
   }
 
   private isActiveMt5Account(): boolean {
     const selectedAccountNumber = this.normalizeAccountNumber(this.selectedAccount?.account_number);
-    return Boolean(selectedAccountNumber && this.mt5AccountLogin && selectedAccountNumber === this.mt5AccountLogin);
+    return Boolean(
+      this.mt5ServiceConnected
+      && this.selectedAccount?.platform === 'MT5'
+      && selectedAccountNumber
+      && this.mt5AccountLogin
+      && selectedAccountNumber === this.mt5AccountLogin
+    );
   }
 
   private getLiveExtremesCache(): Record<string, Record<string, { mfe: number; mae: number }>> {
@@ -4685,13 +4771,13 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   private async persistClosedTradeExtremes(ticket: number | string, mfe: number, mae: number): Promise<void> {
-    if (!this.selectedAccount) return;
+    if (!this.selectedAccount || !this.isActiveMt5Account()) return;
     await this.supabaseService.updateTradeMfeMaeByTicket(ticket, this.selectedAccount.id, mfe, mae);
     this.clearLiveExtremes(ticket);
   }
 
   private async persistLiveTrade(trade: Table): Promise<void> {
-    if (!this.selectedAccount) return;
+    if (!this.selectedAccount || !this.isActiveMt5Account()) return;
     const tradeForSupabase = {
       ...this.mapMt5TradeForSupabase(trade),
       mfe: this.toNumber(trade.mfe),
@@ -4804,6 +4890,19 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
     } else {
     }
+  }
+
+  private async deleteMT5Trade(tradeData: any): Promise<void> {
+    const ticket = tradeData?.ticket ?? tradeData?.position_id ?? tradeData?.position;
+    const accountId = this.selectedAccount?.id;
+    if (!accountId || ticket === undefined || ticket === null || ticket === '') return;
+
+    await this.supabaseService.deleteTradeByTicket(ticket, accountId);
+    this.mt5LiveTrades = this.mt5LiveTrades.filter(trade => String(trade.position) !== String(ticket));
+    this.recentlyAddedTrades = this.recentlyAddedTrades.filter(trade => String(trade.position) !== String(ticket));
+    this.mt5OpenPositionIds?.delete(String(ticket));
+    this.updateTableData();
+    this.cdr.markForCheck();
   }
 
   // Close MT5 trade when closed
@@ -4920,6 +5019,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   updateMT5TradePrice(priceData: any): void {
+    if (!this.isActiveMt5Account()) return;
+
     const livePositionId = priceData.ticket ?? priceData.position_id ?? priceData.position;
     const livePositionNumber = Number(livePositionId);
     const tradeIndex = this.mt5LiveTrades.findIndex(trade => {
