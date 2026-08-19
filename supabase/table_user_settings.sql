@@ -2,6 +2,8 @@ create table public.user_settings (
   user_id uuid not null,
   per_trade_target_percent numeric(8, 4) not null default 1,
   sound_notifications_threshold numeric(8, 4) not null default 2.8,
+  live_trade_sound_threshold numeric(8, 4) not null default 2.8,
+  live_trade_high_priority_sound_threshold numeric(8, 4) not null default 3.4,
   daily_target_percent numeric(8, 4) not null default 2,
   weekly_r_target numeric(8, 4) not null default 5,
   default_chart_mode text not null default 'trades'::text,
@@ -39,6 +41,12 @@ create table public.user_settings (
     (
       default_chart_mode = any (array['daily'::text, 'trades'::text])
     )
+  ),
+  constraint user_settings_live_trade_sound_threshold_check check (
+    (live_trade_sound_threshold >= 0)
+  ),
+  constraint user_settings_live_trade_high_priority_sound_threshold_check check (
+    (live_trade_high_priority_sound_threshold > live_trade_sound_threshold)
   )
 ) TABLESPACE pg_default;
 
