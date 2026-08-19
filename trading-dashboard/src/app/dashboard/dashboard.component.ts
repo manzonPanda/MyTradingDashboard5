@@ -4518,7 +4518,11 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
     try {
-      const trades = newTrades.map(t => this.mapMt5TradeForSupabase(t));
+      const trades = newTrades.map(t => ({
+        ...this.mapMt5TradeForSupabase(t),
+        mfe: this.toNumber(t.mfe),
+        mae: this.toNumber(t.mae ?? '0')
+      }));
       const result = await this.supabaseService.syncTradesToAccount(
         trades,
         accountId,
@@ -4790,6 +4794,19 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     await this.supabaseService.saveTradeForAccount(tradeForSupabase, this.selectedAccount.id);
   }
 
+  private async persistNewLiveTrade(trade: Table): Promise<void> {
+    if (!this.selectedAccount || !this.isActiveMt5Account()) return;
+
+    const accountId = this.selectedAccount.id;
+    const existingTrade = await this.supabaseService.getTradeByTicket(trade.position, accountId);
+    if (existingTrade || this.autoSyncInFlight) {
+      await this.persistLiveTrade(trade);
+      return;
+    }
+
+    await this.autoSyncMt5TradesToSupabase([trade], [], accountId);
+  }
+
   private async loadNewTradeScreenshot(trade: Table): Promise<void> {
     for (let attempt = 0; attempt < 15; attempt++) {
       if (attempt > 0) {
@@ -4888,7 +4905,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       // Go to last page of the table to show the latest trade
       this.setPage(this.getTotalPages());
 
-      void this.persistLiveTrade(newTrade).catch(error => {
+      void this.persistNewLiveTrade(newTrade).catch(error => {
         console.error('Unable to persist opened trade:', error);
       });
 

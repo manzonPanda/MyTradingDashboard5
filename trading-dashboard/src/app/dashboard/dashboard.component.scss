@@ -6485,6 +6485,19 @@ table.simple-table {
     line-height: 1.35;
   }
 
+  .mt5-auto-sync-complete.is-syncing .mt5-auto-sync-complete-icon {
+    animation: mt5-sync-rotation 1s linear infinite;
+  }
+
+  .mt5-auto-sync-complete.is-error {
+    border-color: rgba(239, 68, 68, 0.28);
+    border-left-color: #ef4444;
+  }
+
+  .mt5-auto-sync-complete.is-error .mt5-auto-sync-complete-icon {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+  }
+
   .mt5-sync-status {
     position: fixed;
     top: 1rem;
