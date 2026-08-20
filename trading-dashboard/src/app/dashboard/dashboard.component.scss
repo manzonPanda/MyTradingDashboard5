@@ -6479,26 +6479,7 @@ table.simple-table {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-  }
-
-  .mt5-auto-sync-dismissal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .mt5-auto-sync-dismissal-label,
-  .mt5-auto-sync-dismissal-header strong {
-    color: var(--tf-text-muted);
-    font-size: 0.54rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-  }
-
-  .mt5-auto-sync-dismissal-header strong {
-    color: var(--tf-positive);
+    margin-top: 0.1rem;
   }
 
   .mt5-auto-sync-dismiss-progress {
