@@ -100,7 +100,7 @@ export class LiveTradeGaugeComponent implements OnInit, OnChanges, OnDestroy {
     const baseGauge = {
       type: 'gauge' as const,
       center: ['50%', '50%'],
-      radius: '72%',
+      radius: '82%',
       pointer: { show: false },
       axisTick: { show: false },
       splitLine: { show: false },

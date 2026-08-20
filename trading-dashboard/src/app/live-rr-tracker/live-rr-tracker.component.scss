@@ -625,7 +625,7 @@
 .trade-metrics-grid > .trade-gauge-card {
   grid-column: 4 / span 2;
   grid-row: 1 / span 2;
-  width: min(100%, 132px);
+  width: min(100%, 172px);
   justify-self: center;
 }
 
@@ -808,7 +808,7 @@
 }
 
 .trade-gauge-card {
-  width: min(100%, 132px);
+  width: min(100%, 172px);
   justify-self: center;
   background: var(--tf-bg-card);
   border: 1px solid var(--tf-border-primary);
@@ -880,15 +880,23 @@
 .trade-gauge-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.35rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  text-align: center;
 }
 
 .trade-gauge-symbol {
   color: var(--tf-text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
+}
+
+.holding-time-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--tf-text-secondary);
+  font-size: 1rem;
 }
 
 .trade-gauge-content {
@@ -898,7 +906,7 @@
 }
 
 .trade-gauge {
-  flex: 0 1 100px;
+  flex: 1 1 172px;
   width: 100%;
   max-width: 100%;
   aspect-ratio: 1;

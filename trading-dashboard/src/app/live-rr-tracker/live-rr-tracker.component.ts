@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { TradeService } from '../services/trade.service';
+import { Mt5TimeService } from '../services/mt5-time.service';
 import { LiveTradeGaugeComponent } from '../live-trade-gauge/live-trade-gauge.component';
 
 export interface LiveTradeSoundSettings {
@@ -209,6 +210,7 @@ interface Table {
 
             <div class="trade-gauge-card">
               <div class="trade-gauge-heading">
+                <mat-icon class="holding-time-icon" aria-hidden="true">schedule</mat-icon>
                 <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
               <div class="trade-gauge-content">
@@ -264,7 +266,8 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private readonly cdr: ChangeDetectorRef,
-    private readonly tradeService: TradeService
+    private readonly tradeService: TradeService,
+    private readonly mt5Time: Mt5TimeService
   ) {}
 
   ngOnInit() {
@@ -474,10 +477,15 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
     const raw = String(value).trim();
     const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');
-    const timestamp = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)
-      ? Date.parse(normalized)
-      : Date.parse(`${normalized}Z`);
+    if (/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)) {
+      const timestamp = Date.parse(normalized);
+      return Number.isFinite(timestamp) ? timestamp : null;
+    }
 
+    const philippineTime = this.mt5Time.mt5ServerTimeToPhilippine(raw);
+    if (!philippineTime) return null;
+
+    const timestamp = Date.parse(`${philippineTime.replace(' ', 'T')}+08:00`);
     return Number.isFinite(timestamp) ? timestamp : null;
   }
 
