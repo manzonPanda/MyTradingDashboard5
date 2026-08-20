@@ -2213,6 +2213,14 @@ table.simple-table {
     width: 100%;
   }
 
+  .equity-calendar-column {
+    flex: 2.7;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .left-feature-square {
     flex: 1.2;
     background: var(--tf-bg-card);
