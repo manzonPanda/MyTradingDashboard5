@@ -210,6 +210,7 @@ interface Table {
 
             <div class="trade-gauge-card">
               <div class="trade-gauge-heading">
+                <mat-icon class="holding-time-icon" aria-hidden="true">schedule</mat-icon>
                 <span class="trade-gauge-symbol" [attr.title]="formatHoldingTime(trade)">{{ formatHoldingTime(trade) }}</span>
               </div>
               <div class="trade-gauge-content">
