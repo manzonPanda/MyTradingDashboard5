@@ -619,6 +619,13 @@
 
         </div>
 
+        <div class="calendar-section">
+          <app-trading-calendar
+            [tableData]="tableData"
+            [viewDate]="viewDate"
+            [accountId]="selectedAccount?.id ?? null">
+          </app-trading-calendar>
+        </div>
       </div>
 
       <div class="metrics-grid">
@@ -1680,16 +1687,6 @@
       </button>
     </div>
   </section>
-
-  <!-- Trading Calendar Section -->
-  <section class="calendar-section">
-    <app-trading-calendar
-      [tableData]="tableData"
-      [viewDate]="viewDate"
-      [accountId]="selectedAccount?.id ?? null">
-    </app-trading-calendar>
-  </section>
-
 
   <section id="trading-history" class="table-section notion-performance-section" *ngIf="currentWorkspace === 'trading-history'"></section>
 
