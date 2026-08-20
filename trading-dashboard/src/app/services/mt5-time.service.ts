@@ -13,7 +13,7 @@ import { Injectable } from '@angular/core';
  * We use the IANA timezone database (via the platform's Intl API) so the offset
  * is resolved automatically per timestamp instead of hard-coding +5/+6.
  */
-export const MT5_SERVER_TIME_ZONE = 'Europe/Athens';
+export const MT5_SERVER_TIME_ZONE = 'Europe/Helsinki';
 export const PHILIPPINE_TIME_ZONE = 'Asia/Manila';
 
 const NAIVE_WALL_RE = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/;
@@ -133,6 +133,18 @@ export function mt5ServerTimeToPhilippine(value: string | null | undefined): str
   return `${pad(ph.year)}-${pad(ph.month)}-${pad(ph.day)} ${pad(ph.hour)}:${pad(ph.minute)}:${pad(ph.second)}`;
 }
 
+/** Convert a UTC timestamp into the naïve MT5 server wall-clock format. */
+export function utcTimeToMt5ServerTime(value: string | null | undefined): string | undefined {
+  const parts = parseNaiveTimestamp(value ?? '');
+  if (!parts) return undefined;
+
+  const server = wallClockInZone(
+    MT5_SERVER_TIME_ZONE,
+    Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
+  );
+  return `${pad(server.year)}-${pad(server.month)}-${pad(server.day)} ${pad(server.hour)}:${pad(server.minute)}:${pad(server.second)}`;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -148,6 +160,11 @@ export class Mt5TimeService {
   /** DST-aware MT5 server time (EET/EEST) → Asia/Manila. */
   mt5ServerTimeToPhilippine(value: string | null | undefined): string | undefined {
     return mt5ServerTimeToPhilippine(value);
+  }
+
+  /** Convert a UTC timestamp into the naïve MT5 server wall-clock format. */
+  utcTimeToMt5ServerTime(value: string | null | undefined): string | undefined {
+    return utcTimeToMt5ServerTime(value);
   }
 
   /** Keep the original MT5 wall-clock but normalize to "YYYY-MM-DD HH:MM:SS". */
