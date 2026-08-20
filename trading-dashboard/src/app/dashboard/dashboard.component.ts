@@ -862,6 +862,8 @@ mt5AccountInfo: AccountSettings = {
   mt5AutoSyncTotal = 0;
   mt5AutoSyncCreated = 0;
   mt5AutoSyncUpdated = 0;
+  mt5AutoSyncDismissProgress = 0;
+  mt5AutoSyncDismissRemainingSeconds = 0;
   fixTicketAccountId = '';
   fixTicketFileName = '';
   fixTicketRows: { openTime: string; adjustedOpenTime: string; ticket: string; matched: boolean; matchedTradeId?: string }[] = [];
@@ -4307,24 +4309,45 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   /** Prevents overlapping auto-sync runs from concurrent loadMT5Data() calls. */
   private autoSyncInFlight = false;
   private mt5AutoSyncDismissTimer?: number;
+  private mt5AutoSyncDismissInterval?: number;
+  private readonly mt5AutoSyncDismissDurationMs = 10000;
 
   private clearMt5AutoSyncDismissal(): void {
     if (this.mt5AutoSyncDismissTimer !== undefined) {
       window.clearTimeout(this.mt5AutoSyncDismissTimer);
       this.mt5AutoSyncDismissTimer = undefined;
     }
+    if (this.mt5AutoSyncDismissInterval !== undefined) {
+      window.clearInterval(this.mt5AutoSyncDismissInterval);
+      this.mt5AutoSyncDismissInterval = undefined;
+    }
+    this.mt5AutoSyncDismissProgress = 0;
+    this.mt5AutoSyncDismissRemainingSeconds = 0;
   }
 
   private scheduleMt5AutoSyncDismissal(): void {
     this.clearMt5AutoSyncDismissal();
+    const dismissalDeadline = Date.now() + this.mt5AutoSyncDismissDurationMs;
+    this.mt5AutoSyncDismissProgress = 100;
+    this.mt5AutoSyncDismissRemainingSeconds = Math.ceil(this.mt5AutoSyncDismissDurationMs / 1000);
+
+    const updateCountdown = () => {
+      const remainingMs = Math.max(0, dismissalDeadline - Date.now());
+      this.mt5AutoSyncDismissProgress = (remainingMs / this.mt5AutoSyncDismissDurationMs) * 100;
+      this.mt5AutoSyncDismissRemainingSeconds = Math.ceil(remainingMs / 1000);
+      this.cdr.detectChanges();
+    };
+
+    this.mt5AutoSyncDismissInterval = window.setInterval(updateCountdown, 100);
     this.mt5AutoSyncDismissTimer = window.setTimeout(() => {
       this.mt5AutoSyncDismissTimer = undefined;
+      this.clearMt5AutoSyncDismissal();
       if (this.mt5AutoSyncStatus === 'success' || this.mt5AutoSyncStatus === 'error') {
         this.mt5AutoSyncStatus = 'idle';
         this.mt5AutoSyncStatusMessage = '';
         this.cdr.detectChanges();
       }
-    }, 5000);
+    }, this.mt5AutoSyncDismissDurationMs);
   }
 
   async loadMT5Data(): Promise<void> {

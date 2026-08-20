@@ -6475,6 +6475,20 @@ table.simple-table {
     --mdc-linear-progress-active-indicator-height: 3px;
   }
 
+  .mt5-auto-sync-dismissal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-top: 0.1rem;
+  }
+
+  .mt5-auto-sync-dismiss-progress {
+    --mdc-linear-progress-active-indicator-color: var(--tf-positive);
+    --mdc-linear-progress-track-color: rgba(20, 184, 166, 0.13);
+    --mdc-linear-progress-track-height: 3px;
+    --mdc-linear-progress-active-indicator-height: 3px;
+  }
+
   .mt5-auto-sync-complete-metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6561,7 +6575,8 @@ table.simple-table {
   position: relative;
   inset: auto;
   z-index: auto;
-  width: 100%;
+  align-self: center;
+  width: 50%;
   max-width: none;
   margin: 0;
   box-shadow: 0 8px 24px rgba(15, 118, 110, 0.14);

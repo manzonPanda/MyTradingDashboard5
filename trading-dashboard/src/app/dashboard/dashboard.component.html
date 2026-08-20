@@ -598,6 +598,16 @@
                 </div>
               </div>
               <p class="mt5-auto-sync-complete-message">{{ mt5AutoSyncStatusMessage }}</p>
+              @if (mt5AutoSyncStatus === 'success' || mt5AutoSyncStatus === 'error') {
+                <div class="mt5-auto-sync-dismissal" aria-live="polite">
+                  <mat-progress-bar
+                    class="mt5-auto-sync-dismiss-progress"
+                    mode="determinate"
+                    [value]="mt5AutoSyncDismissProgress"
+                    [attr.aria-label]="'Notification closes in ' + mt5AutoSyncDismissRemainingSeconds + ' seconds'">
+                  </mat-progress-bar>
+                </div>
+              }
             </section>
             }
           </div>

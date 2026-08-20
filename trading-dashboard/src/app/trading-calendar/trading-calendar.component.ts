@@ -681,7 +681,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     if (absAmount >= 1000) {
       return `${amount < 0 ? '-' : ''}$${(absAmount / 1000).toFixed(1)}K`;
     }
-    return `$${amount.toFixed(0)}`;
+    return `$${amount.toFixed(2)}`;
   }
 
   formatPercentage(percentage: number | null | undefined): string {
