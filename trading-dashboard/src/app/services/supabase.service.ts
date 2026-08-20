@@ -600,7 +600,7 @@ export class SupabaseService {
     };
     const { data, error } = await this.supabase
       .from('trades')
-      .upsert(tradeToInsert, { onConflict: 'ticket' })
+      .insert(tradeToInsert)
       .select()
       .single();
     if (error) throw new Error(`Trade insert failed: ${error.message}`);
