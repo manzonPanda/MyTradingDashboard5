@@ -583,6 +583,20 @@
                 [value]="mt5AutoSyncProgress"
                 [attr.aria-label]="'Automatic MT5 sync ' + mt5AutoSyncProgress + '% complete'">
               </mat-progress-bar>
+              @if (mt5AutoSyncStatus === 'success' || mt5AutoSyncStatus === 'error') {
+                <div class="mt5-auto-sync-dismissal" aria-live="polite">
+                  <div class="mt5-auto-sync-dismissal-header">
+                    <span class="mt5-auto-sync-dismissal-label">Auto-closes in</span>
+                    <strong>{{ mt5AutoSyncDismissRemainingSeconds }}s</strong>
+                  </div>
+                  <mat-progress-bar
+                    class="mt5-auto-sync-dismiss-progress"
+                    mode="determinate"
+                    [value]="mt5AutoSyncDismissProgress"
+                    [attr.aria-label]="'Notification closes in ' + mt5AutoSyncDismissRemainingSeconds + ' seconds'">
+                  </mat-progress-bar>
+                </div>
+              }
               <div class="mt5-auto-sync-complete-metrics">
                 <div class="mt5-auto-sync-complete-metric">
                   <strong>{{ mt5AutoSyncProcessed }} / {{ mt5AutoSyncTotal }}</strong>

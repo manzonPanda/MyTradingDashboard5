@@ -6475,6 +6475,39 @@ table.simple-table {
     --mdc-linear-progress-active-indicator-height: 3px;
   }
 
+  .mt5-auto-sync-dismissal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .mt5-auto-sync-dismissal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .mt5-auto-sync-dismissal-label,
+  .mt5-auto-sync-dismissal-header strong {
+    color: var(--tf-text-muted);
+    font-size: 0.54rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .mt5-auto-sync-dismissal-header strong {
+    color: var(--tf-positive);
+  }
+
+  .mt5-auto-sync-dismiss-progress {
+    --mdc-linear-progress-active-indicator-color: var(--tf-positive);
+    --mdc-linear-progress-track-color: rgba(20, 184, 166, 0.13);
+    --mdc-linear-progress-track-height: 3px;
+    --mdc-linear-progress-active-indicator-height: 3px;
+  }
+
   .mt5-auto-sync-complete-metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6561,6 +6594,7 @@ table.simple-table {
   position: relative;
   inset: auto;
   z-index: auto;
+  align-self: center;
   width: 50%;
   max-width: none;
   margin: 0;
