@@ -4411,12 +4411,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         // Raw MT5 UTC timestamps — kept original and used for Supabase storage.
         timeOpenServer: serverOpen,
         timeCloseServer: serverClose,
-        // Philippine display fields derived from the raw UTC timestamps.
-        timeOpenPh: this.mt5Time.utcTimeToPhilippine(serverOpen) ?? trade.time_open_ph,
+        // Prefer the persisted Philippine display fields when available.
+        timeOpenPh: trade.time_open_ph ?? this.mt5Time.utcTimeToPhilippine(serverOpen),
         closeDate: serverClose ? this.convertAndFormatMT5Date(serverClose, true) : "-",
-        timeClosePh: serverClose
-          ? (this.mt5Time.utcTimeToPhilippine(serverClose) ?? trade.time_close_ph)
-          : undefined,
+        timeClosePh: trade.time_close_ph ?? (serverClose ? this.mt5Time.utcTimeToPhilippine(serverClose) : undefined),
         tradeNotion: [],
         status: "",
         position: trade.position_id,
