@@ -149,11 +149,11 @@
     border: 1px solid var(--tf-border-primary);
     border-radius: 8px;
     overflow: hidden;
-    min-height: 440px;
+    min-height: 380px;
 
     .calendar-day {
       background: var(--tf-bg-card);
-      min-height: 74px;
+      min-height: 64px;
       padding: 0.55rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
