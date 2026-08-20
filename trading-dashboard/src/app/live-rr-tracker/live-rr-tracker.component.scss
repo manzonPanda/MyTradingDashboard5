@@ -880,9 +880,10 @@
 .trade-gauge-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.35rem;
   margin-bottom: 0.25rem;
+  text-align: center;
 }
 
 .trade-gauge-symbol {
