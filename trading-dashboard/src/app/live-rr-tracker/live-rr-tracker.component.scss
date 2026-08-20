@@ -625,7 +625,7 @@
 .trade-metrics-grid > .trade-gauge-card {
   grid-column: 4 / span 2;
   grid-row: 1 / span 2;
-  width: min(100%, 180px);
+  width: min(100%, 172px);
   justify-self: center;
 }
 
@@ -808,7 +808,7 @@
 }
 
 .trade-gauge-card {
-  width: min(100%, 180px);
+  width: min(100%, 172px);
   justify-self: center;
   background: var(--tf-bg-card);
   border: 1px solid var(--tf-border-primary);
@@ -882,7 +882,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.35rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .trade-gauge-symbol {
@@ -898,7 +898,7 @@
 }
 
 .trade-gauge {
-  flex: 1 1 160px;
+  flex: 1 1 172px;
   width: 100%;
   max-width: 100%;
   aspect-ratio: 1;
