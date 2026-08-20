@@ -1428,30 +1428,28 @@ mt5AccountInfo: AccountSettings = {
     return new Date(nowUtc.getTime() + 8 * 60 * 60 * 1000);
   }
 
-          private getCurrentSessionStart(): Date {
+  private getCurrentSessionStart(): Date {
     const phtNow = this.getPhilippinesNow();
     const sessionStart = new Date(phtNow);
-    sessionStart.setHours(15, 0, 0, 0); // 3:00 PM PHT
-    // If current time is before 3 PM, use yesterday 3 PM
+    sessionStart.setUTCHours(5, 0, 0, 0);
     if (phtNow.getTime() < sessionStart.getTime()) {
-      sessionStart.setDate(sessionStart.getDate() - 1);
+      sessionStart.setUTCDate(sessionStart.getUTCDate() - 1);
     }
-    // Convert back to UTC timestamp
     return new Date(sessionStart.getTime() - 8 * 60 * 60 * 1000);
   }
 
   /**
    * Total realized balance at the start of the current trading session.
    *
-   * The session boundary is the most recent 3 PM PHT reset — the same instant
+   * The session boundary is the most recent 5 AM PHT reset — the same instant
    * the resetCountdown counts down to. The balance at that instant is the
    * original starting balance plus the realized P&L of every closed trade that
    * settled on or before the reset (i.e. "yesterday's" total balance). Using
    * this value (instead of the original account size) for the daily-loss
    * reference levels makes them track the live account value as it grows.
    *
-   * Uses the same getSessionWindowUtc() / parseOpenDate() primitives as the
-   * daily-P&L calculation so the comparison stays in the same time frame.
+   * Uses the same getSessionWindowUtc() / parsePhilippineDisplayDate() primitives
+   * as the daily-P&L calculation so the comparison stays in the same time frame.
    */
   private getSessionStartBalance(): number {
     const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
@@ -1464,7 +1462,7 @@ mt5AccountInfo: AccountSettings = {
         status === 'open' || status === 'live' || status === 'position' || t.closeDate === '-';
       if (isOpenPosition || !t.closeDate || t.closeDate === '-') continue;
 
-      const closeTime = this.parseOpenDate(t.closeDate);
+      const closeTime = this.parsePhilippineDisplayDate(t.closeDate);
       if (!closeTime || isNaN(closeTime.getTime())) continue;
       if (closeTime.getTime() <= sessionStartUtc.getTime()) {
         realizedBeforeSession += this.getSafeNumber(t.netProfit);
@@ -1511,11 +1509,15 @@ mt5AccountInfo: AccountSettings = {
     return isNaN(dt.getTime()) ? null : dt;
   }
 
+  private parsePhilippineDisplayDate(str: string): Date | null {
+    const displayDate = this.parseOpenDate(str);
+    return displayDate ? new Date(displayDate.getTime() - 8 * 60 * 60 * 1000) : null;
+  }
+
   private updateResetCountdown(): void {
     const phtNow = this.getPhilippinesNow();
     const target = new Date(phtNow.getTime());
-    // Use UTC setters so the UTC fields represent PHT local time (since we shifted by +8h)
-    target.setUTCHours(15, 0, 0, 0); // 3:00 PM PHT
+    target.setUTCHours(5, 0, 0, 0);
     if (phtNow.getTime() >= target.getTime()) {
       target.setUTCDate(target.getUTCDate() + 1);
     }
@@ -1529,25 +1531,14 @@ mt5AccountInfo: AccountSettings = {
   }
 
   private getSessionWindowUtc(): { start: Date, end: Date } {
-    const phtNow = this.getPhilippinesNow();
-    const today3pmPHT = new Date(phtNow.getTime());
-    today3pmPHT.setHours(15, 0, 0, 0);
-    const windowStartPHT = new Date(today3pmPHT.getTime() - 24 * 60 * 60 * 1000); // yesterday 3 PM PHT
-    const windowEndPHT = new Date(Math.min(today3pmPHT.getTime(), phtNow.getTime())); // up to 3 PM today (or now if before 3 PM)
     return {
-      start: new Date(windowStartPHT.getTime() - 8 * 60 * 60 * 1000),
-      end: new Date(windowEndPHT.getTime() - 8 * 60 * 60 * 1000)
+      start: this.getCurrentSessionStart(),
+      end: new Date()
     };
   }
 
   private getTodayWindowUtc(): { start: Date, end: Date } {
-    const phtNow = this.getPhilippinesNow();
-    const startPHT = new Date(phtNow.getTime());
-    startPHT.setHours(0, 0, 0, 0); // midnight today PHT
-    return {
-      start: new Date(startPHT.getTime() - 8 * 60 * 60 * 1000),
-      end: new Date(phtNow.getTime() - 8 * 60 * 60 * 1000) // up to now
-    };
+    return this.getSessionWindowUtc();
   }
 
   private updateDailyLimitMetrics(): void {
@@ -1557,7 +1548,7 @@ mt5AccountInfo: AccountSettings = {
     let winSum = 0;
     let lossSum = 0; // keep negative
     for (const t of this.tableData) {
-      const od = this.parseOpenDate(t.openDate || '');
+      const od = this.parsePhilippineDisplayDate(t.openDate || '');
       const status = String(t.mt5status || '').toLowerCase();
       const isOpenPosition = status === 'open' || status === 'live' || status === 'position' || t.closeDate === '-';
       const isInSession = od && od.getTime() >= windowStartUTC.getTime() && od.getTime() <= windowEndUTC.getTime();
@@ -1571,7 +1562,7 @@ mt5AccountInfo: AccountSettings = {
 
                 this.dailyPnL = pnl;
     // Base the daily loss budget on yesterday's session-start balance (the most
-    // recent 3 PM PHT reset) rather than the original account size, so the
+    // recent 5 AM PHT reset) rather than the original account size, so the
     // budget — and therefore the doughnut — tracks the live account value.
     const startBal = this.getSessionStartBalance() || 0;
     this.dailyPnLPercent = startBal > 0 ? (pnl / startBal) * 100 : 0;
@@ -3117,7 +3108,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const profitTarget = startingBalance * (1 + profitTargetPct / 100);
     const maxDrawdown = startingBalance * (1 - maxDDPct / 100);
     // The daily-loss threshold is measured from the balance at the start of the
-    // current trading session (the most recent 3 PM PHT reset that
+    // current trading session (the most recent 5 AM PHT reset that
     // resetCountdown counts down to) — i.e. "yesterday's" total balance — not
     // from the original account size, so the line tracks the live account value.
     const sessionStartBalance = this.getSessionStartBalance();
@@ -5434,11 +5425,11 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.cdr.markForCheck();
   }
 
-  // Today-only filtering helpers for Day Trades chips (midnight PHT to now)
+  // Current-session filtering helpers for Day Trades chips (5 AM PHT to now)
   private getTodayFilteredTrades(): Table[] {
     const { start, end } = this.getTodayWindowUtc();
     return (Array.isArray(this.tableData) ? this.tableData : []).filter(t => {
-      const od = this.parseOpenDate(t.openDate || '');
+      const od = this.parsePhilippineDisplayDate(t.openDate || '');
       return !!od && od.getTime() >= start.getTime() && od.getTime() <= end.getTime();
     });
   }

@@ -60,4 +60,17 @@ describe('DashboardComponent', () => {
 
     expect((component as any).calculateTradeR(trade)).toBe('-0.75');
   });
+
+  it('uses 5 AM PHT as the Day Trades session boundary', () => {
+    jasmine.clock().install();
+    try {
+      jasmine.clock().mockDate(new Date('2025-04-06T20:59:00Z'));
+      expect((component as any).getCurrentSessionStart().toISOString()).toBe('2025-04-05T21:00:00.000Z');
+
+      jasmine.clock().mockDate(new Date('2025-04-06T21:00:00Z'));
+      expect((component as any).getCurrentSessionStart().toISOString()).toBe('2025-04-06T21:00:00.000Z');
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
 });
