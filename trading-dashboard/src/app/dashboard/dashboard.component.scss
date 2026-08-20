@@ -2213,6 +2213,15 @@ table.simple-table {
     width: 100%;
   }
 
+  .equity-calendar-column {
+    flex: 3.5;
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .left-feature-square {
     flex: 1.2;
     background: var(--tf-bg-card);
@@ -4308,7 +4317,9 @@ table.simple-table {
 }
 
 .calendar-section {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 980px;
+  margin: 0;
   padding: 0 1.5rem 1.5rem;
 }
 
@@ -12888,7 +12899,8 @@ table.simple-table {
   }
 
   .metrics-section .left-feature-square,
-  .metrics-section .trading-chart-container {
+  .metrics-section .trading-chart-container,
+  .metrics-section .equity-calendar-column {
     width: 100%;
   }
 

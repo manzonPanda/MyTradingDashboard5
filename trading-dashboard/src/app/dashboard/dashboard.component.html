@@ -464,7 +464,8 @@
   <!-- Key Metrics Cards -->
   <section class="metrics-section">
     <div class="metrics-container">
-      <div class="trading-chart-container" data-aura-target>
+      <div class="equity-calendar-column">
+        <div class="trading-chart-container" data-aura-target>
         <div class="chart-header">
           <div class="mt5-account-info">
             <div class="account-targets">
@@ -618,8 +619,16 @@
           </app-prop-firm-equity-chart>
 
         </div>
-
       </div>
+
+      <div class="calendar-section">
+        <app-trading-calendar
+          [tableData]="tableData"
+          [viewDate]="viewDate"
+          [accountId]="selectedAccount?.id ?? null">
+        </app-trading-calendar>
+      </div>
+    </div>
 
       <div class="metrics-grid">
         <div data-aura-target class="metric-card trading-activity-combined">
@@ -1680,16 +1689,6 @@
       </button>
     </div>
   </section>
-
-  <!-- Trading Calendar Section -->
-  <section class="calendar-section">
-    <app-trading-calendar
-      [tableData]="tableData"
-      [viewDate]="viewDate"
-      [accountId]="selectedAccount?.id ?? null">
-    </app-trading-calendar>
-  </section>
-
 
   <section id="trading-history" class="table-section notion-performance-section" *ngIf="currentWorkspace === 'trading-history'"></section>
 
