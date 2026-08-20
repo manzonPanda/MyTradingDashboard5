@@ -587,15 +587,15 @@ export class SupabaseService {
     const normalizedClose = normalizeMt5ServerTime(trade.time_close);
     const tradeToInsert = {
       ...trade,
-      // The original MT5 UTC timestamp is stored unchanged in time_open.
+      // The original MT5 server timestamp is stored unchanged in time_open.
       // time_open_ph is derived from it as Asia/Manila time, never from "now".
       ...(normalizedOpen ? { time_open: normalizedOpen } : {}),
       ...(normalizedClose ? { time_close: normalizedClose } : {}),
       ...(trade.time_open_ph == null && normalizedOpen
-        ? { time_open_ph: this.mt5Time.utcTimeToPhilippine(normalizedOpen) }
+        ? { time_open_ph: this.mt5Time.mt5ServerTimeToPhilippine(normalizedOpen) }
         : {}),
       ...(normalizedClose && trade.time_close_ph == null
-        ? { time_close_ph: this.mt5Time.utcTimeToPhilippine(normalizedClose) }
+        ? { time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(normalizedClose) }
         : {})
     };
     const { data, error } = await this.supabase
@@ -694,7 +694,7 @@ export class SupabaseService {
         }
       } else {
         try {
-          // time_open / time_close keep the ORIGINAL MT5 server timestamps;
+          // time_open / time_close keep the original MT5 server timestamps;
           // time_open_ph / time_close_ph are derived from them.
           const saved = await this.createTrade(accountTrade);
           if (saved) created++;

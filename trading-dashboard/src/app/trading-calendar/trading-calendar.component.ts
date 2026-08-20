@@ -41,8 +41,6 @@ interface CalendarDay {
   lossCount: number;
   winRate: number;
   dailyPercentage: number;
-  totalWinAmount: number;
-  totalLossAmount: number;
 }
 
 interface WeekSummary {
@@ -128,16 +126,6 @@ interface WeekSummary {
                     <span class="win-count">{{ day.winCount }}W</span>
                     <span class="separator">•</span>
                     <span class="loss-count">{{ day.lossCount }}L</span>
-                  </div>
-                  <div class="day-win-loss-amounts">
-                    <div class="amounts-row">
-                      <div class="win-amount" [ngClass]="{'zero-amount': day.totalWinAmount === 0}">
-                        <span class="amount-value">{{ formatCurrency(day.totalWinAmount) }}</span>
-                      </div>
-                      <div class="loss-amount" [ngClass]="{'zero-amount': day.totalLossAmount === 0}">
-                        <span class="amount-value">{{ formatCurrency(getAbsoluteValue(day.totalLossAmount)) }}</span>
-                      </div>
-                    </div>
                   </div>
                   <div class="day-pnl-amount" [ngClass]="getDayPnLClass(day.pnl)">
                     {{ formatCurrency(day.pnl) }}
@@ -354,8 +342,6 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const winCount = dayTrades.filter(trade => parseFloat(trade.netProfit) > 0).length;
       const lossCount = dayTrades.filter(trade => parseFloat(trade.netProfit) < 0).length;
       const dailyPercentage = (dayPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
-      const totalWinAmount = this.calculateTotalWins(dayTrades);
-      const totalLossAmount = this.calculateTotalLosses(dayTrades);
 
       this.calendarDays.push({
         date: currentDay,
@@ -368,8 +354,6 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         lossCount: lossCount,
         winRate: dayTrades.length > 0 ? (winCount / dayTrades.length) * 100 : 0,
         dailyPercentage: dailyPercentage,
-        totalWinAmount: totalWinAmount,
-        totalLossAmount: totalLossAmount
       });
     }
 
@@ -480,18 +464,6 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const profit = parseFloat(trade.netProfit) || 0;
       return sum + profit;
     }, 0);
-  }
-
-  calculateTotalWins(trades: Table[]): number {
-    return trades
-      .filter(trade => parseFloat(trade.netProfit) > 0)
-      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
-  }
-
-  calculateTotalLosses(trades: Table[]): number {
-    return trades
-      .filter(trade => parseFloat(trade.netProfit) < 0)
-      .reduce((sum, trade) => sum + parseFloat(trade.netProfit), 0);
   }
 
   isToday(date: Date): boolean {
@@ -708,10 +680,6 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     if (pnl > 0) return 'positive';
     if (pnl < 0) return 'negative';
     return 'neutral';
-  }
-
-  getAbsoluteValue(value: number): number {
-    return Math.abs(value);
   }
 
   isWeekday(date: Date): boolean {

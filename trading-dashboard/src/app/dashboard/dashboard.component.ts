@@ -3085,7 +3085,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           tp: trade.tp ?? 0,
           risk_usd: null,
           reward_risk_ratio: null,
-          time_open: new Date(Number(trade.time) * 1000).toISOString().slice(0, 19).replace('T', ' '),
+          time_open: this.mt5Time.utcTimeToMt5ServerTime(new Date(Number(trade.time) * 1000).toISOString()),
           time_close: null,
           status: 'open'
         }));
@@ -4223,7 +4223,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
   private mapMt5TradeForSupabase(trade: Table): Partial<Trade> {
-    // Persist the original MT5 UTC timestamps unchanged into time_open/time_close
+    // Persist the original MT5 server timestamps unchanged into time_open/time_close
     // and derive the Philippine display fields from them. The display-formatted
     // dates are only used as a fallback for CSV-imported trades without raw times.
     const serverOpen = this.normalizeOriginalServerTime(
@@ -4240,9 +4240,11 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       buy_sell: trade.type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
       commission: this.toNumber(trade.commission),
       time_open: serverOpen,
-      time_open_ph: this.mt5Time.utcTimeToPhilippine(serverOpen) ?? trade.timeOpenPh,
+      time_open_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverOpen) ?? trade.timeOpenPh,
       time_close: serverClose,
-      time_close_ph: this.mt5Time.utcTimeToPhilippine(serverClose) ?? trade.timeClosePh,
+      time_close_ph: serverClose
+        ? this.mt5Time.mt5ServerTimeToPhilippine(serverClose) ?? trade.timeClosePh
+        : undefined,
       instrument: trade.symbol,
       lots: this.toNumber(trade.volume),
       pnl: this.toNumber(trade.netProfit),
@@ -4408,15 +4410,13 @@ async onPaste(event: ClipboardEvent): Promise<void> {
 
       return {
         openDate: this.convertAndFormatMT5Date(serverOpen, true),
-        // Raw MT5 UTC timestamps — kept original and used for Supabase storage.
+        // Raw MT5 server timestamps — kept original and used for Supabase storage.
         timeOpenServer: serverOpen,
         timeCloseServer: serverClose,
-        // Philippine display fields derived from the raw UTC timestamps.
-        timeOpenPh: this.mt5Time.utcTimeToPhilippine(serverOpen) ?? trade.time_open_ph,
+        // Recalculate from the server timestamp so stale persisted display fields are repaired on refresh.
+        timeOpenPh: this.mt5Time.mt5ServerTimeToPhilippine(serverOpen) ?? trade.time_open_ph,
         closeDate: serverClose ? this.convertAndFormatMT5Date(serverClose, true) : "-",
-        timeClosePh: serverClose
-          ? (this.mt5Time.utcTimeToPhilippine(serverClose) ?? trade.time_close_ph)
-          : undefined,
+        timeClosePh: this.mt5Time.mt5ServerTimeToPhilippine(serverClose) ?? trade.time_close_ph,
         tradeNotion: [],
         status: "",
         position: trade.position_id,
@@ -4510,13 +4510,13 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         const mt5Trade = closedMt5ByPosition.get(String(trade.position_id));
         if (!mt5Trade) return null;
 
-        // Store the ORIGINAL MT5 server close time untouched and derive the
+        // Store the original MT5 server close time untouched and derive the
         // Philippine variant with the DST-aware IANA conversion.
         const serverTimeClose = this.normalizeOriginalServerTime(String(mt5Trade.time_close ?? ''));
         const tradeUpdates: Partial<Trade> = serverTimeClose
           ? {
               time_close: serverTimeClose,
-              time_close_ph: this.mt5Time.utcTimeToPhilippine(serverTimeClose),
+              time_close_ph: this.mt5Time.mt5ServerTimeToPhilippine(serverTimeClose),
             }
           : {};
 
@@ -4721,9 +4721,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   }
 
 
-  convertAndFormatMT5Date(rawDateStr: string, adjustTimezone = true): string { // MT5 UTC timestamp -> Philippine display time
+  convertAndFormatMT5Date(rawDateStr: string, adjustTimezone = true): string { // MT5 server timestamp -> Philippine display time
     const displayTimestamp = adjustTimezone
-      ? this.mt5Time.utcTimeToPhilippine(rawDateStr) ?? rawDateStr
+      ? this.mt5Time.mt5ServerTimeToPhilippine(rawDateStr) ?? rawDateStr
       : rawDateStr;
     const [datePart, timePart] = displayTimestamp.split(/[T ]/);
     const [year, month, day] = datePart.split('-').map(Number);
@@ -4930,7 +4930,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const newTrade: Table = {
       openDate: this.convertAndFormatMT5Date(trade.time_open),
       timeOpenServer: trade.time_open,
-      timeOpenPh: this.mt5Time.utcTimeToPhilippine(trade.time_open) ?? trade.time_open_ph,
+      timeOpenPh: this.mt5Time.mt5ServerTimeToPhilippine(trade.time_open) ?? trade.time_open_ph,
       closeDate: "-",
       tradeNotion: [],
       status: "",
@@ -5030,7 +5030,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       // closedTrade.status= "Closed";
       closedTrade.closeDate= trade.time_close ? this.convertAndFormatMT5Date(trade.time_close) : '0';
       closedTrade.timeCloseServer = trade.time_close;
-      closedTrade.timeClosePh = this.mt5Time.utcTimeToPhilippine(trade.time_close) ?? trade.time_close_ph;
+      closedTrade.timeClosePh = this.mt5Time.mt5ServerTimeToPhilippine(trade.time_close) ?? trade.time_close_ph;
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
       closedTrade.rrr = this.calculateTradeR(closedTrade);
