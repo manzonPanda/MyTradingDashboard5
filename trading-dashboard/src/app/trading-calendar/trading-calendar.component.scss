@@ -149,11 +149,11 @@
     border: 1px solid var(--tf-border-primary);
     border-radius: 8px;
     overflow: hidden;
-    min-height: 380px;
+    min-height: 320px;
 
     .calendar-day {
       background: var(--tf-bg-card);
-      min-height: 64px;
+      min-height: 52px;
       padding: 0.55rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -575,7 +575,7 @@
 .weekly-summary {
   background: var(--tf-bg-secondary);
   border-left: 1px solid var(--tf-border-primary);
-  padding: 1.5rem 1rem 1.5rem 1rem;
+  padding: 0.75rem 0.5rem;
   display: grid;
   grid-template-rows: auto repeat(6, 1fr);
   gap: 1px;
@@ -583,13 +583,13 @@
 
   &::before {
     content: '';
-    height: calc(0.75rem + 0.875rem + 0.75rem + 1rem);
+    height: 2rem;
     grid-row: 1;
     display: block;
   }
 
   .week-summary {
-    padding: 1rem;
+    padding: 0.4rem;
     border-radius: 12px;
     border: 1px solid var(--tf-border-primary);
     background: linear-gradient(135deg, var(--tf-bg-card) 0%, rgba(255, 255, 255, 0.02) 100%);
@@ -597,7 +597,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 90px;
+    min-height: 0;
     height: 100%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     position: relative;
@@ -625,12 +625,12 @@
     }
 
     .week-label {
-      font-size: 0.875rem;
+      font-size: 0.7rem;
       font-weight: 700;
       color: var(--tf-text-primary);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.25rem;
       text-align: center;
-      padding: 0.25rem 0.5rem;
+      padding: 0.15rem 0.3rem;
       background: rgba(99, 102, 241, 0.08);
       border-radius: 6px;
       border: 1px solid rgba(99, 102, 241, 0.2);
@@ -638,10 +638,10 @@
     }
 
     .week-percentage {
-      font-size: 1.125rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      margin-bottom: 0.5rem;
-      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.2rem;
+      padding: 0.2rem 0.3rem;
       border-radius: 8px;
       text-align: center;
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.06));
@@ -681,10 +681,10 @@
     }
 
     .week-pnl {
-      font-size: 0.875rem;
+      font-size: 0.7rem;
       font-weight: 600;
-      margin-bottom: 0.25rem;
-      padding: 0.375rem 0.5rem;
+      margin-bottom: 0.1rem;
+      padding: 0.15rem 0.25rem;
       border-radius: 6px;
       text-align: center;
       background: rgba(107, 114, 128, 0.05);
@@ -715,7 +715,7 @@
     }
 
     .week-details {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: var(--tf-text-muted);
     }
   }
