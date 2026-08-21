@@ -1443,3 +1443,130 @@
     opacity: 0.1;
   }
 }
+
+.empty-state-container.target-reached {
+  min-height: 212px;
+  border-color: rgba(45, 212, 191, 0.3);
+  background: radial-gradient(circle at 83% 12%, rgba(34, 211, 238, 0.16), transparent 30%), radial-gradient(circle at 14% 100%, rgba(16, 185, 129, 0.14), transparent 36%), linear-gradient(135deg, #061421 0%, #0b2030 100%);
+  box-shadow: 0 14px 40px rgba(3, 24, 38, 0.34), inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.target-achievement {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 620px);
+  gap: 0.65rem;
+  padding: 1.25rem 2.5rem;
+  overflow: hidden;
+  text-align: center;
+}
+
+.target-achievement-visual {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.achievement-star {
+  position: absolute;
+  top: 1.2rem;
+  right: 14%;
+  color: #a5f3fc;
+  font-size: 1rem;
+  opacity: 0.8;
+  text-shadow: 0 0 16px rgba(165, 243, 252, 0.7);
+  animation: achievement-twinkle 4s ease-in-out infinite;
+}
+
+.achievement-trajectory {
+  position: absolute;
+  top: 2.1rem;
+  right: 22%;
+  color: rgba(45, 212, 191, 0.46);
+  transform: rotate(-14deg);
+
+  mat-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1.5rem;
+  }
+}
+
+.achievement-horizon {
+  position: absolute;
+  right: -6%;
+  bottom: 1rem;
+  left: -6%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.45), transparent);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.38);
+}
+
+.target-status {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: 0.35rem;
+  margin: 0;
+  color: #7dd3c7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  mat-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    font-size: 0.9rem;
+  }
+}
+
+.target-quote {
+  margin: 0;
+  color: #f0fdfa;
+  font-size: clamp(1.35rem, 3.1vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.target-performance {
+  margin: 0.1rem 0 0;
+  color: #c7f9ef;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.target-guidance {
+  max-width: 340px;
+  margin: 0 auto;
+  color: rgba(226, 232, 240, 0.75);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+@keyframes achievement-twinkle {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@media (max-width: 768px) {
+  .empty-state-container.target-reached {
+    min-height: 280px;
+  }
+
+  .target-achievement {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .achievement-star {
+    animation: none;
+  }
+}
