@@ -141,16 +141,18 @@ interface WeekSummary {
 
         <!-- Weekly Summary Sidebar -->
         <div class="weekly-summary">
-          <div *ngFor="let week of weekSummaries" class="week-summary">
+          <div *ngFor="let week of weekSummaries" class="week-summary" [class.week-without-trades]="week.totalTrades === 0">
             <div class="week-label">{{ week.label }}</div>
             <div class="week-percentage" [ngClass]="getWeekPnLClass(week.totalPnL)">
               {{ formatPercentage(week.weeklyPercentageGained) }}
             </div>
             <div class="week-win-loss">
-              {{ week.winCount }}W <span class="week-summary-separator">/</span> {{ week.lossCount }}L
+              <span class="week-wins">{{ week.winCount }}W</span>
+              <span class="week-summary-separator">/</span>
+              <span class="week-losses">{{ week.lossCount }}L</span>
             </div>
             <div class="week-pnl" [ngClass]="getWeekPnLClass(week.totalPnL)">
-              {{ formatCurrency(week.totalPnL) }}
+              {{ week.totalPnL > 0 ? '+' : '' }}{{ formatCurrency(week.totalPnL) }}
             </div>
             <div class="week-details">{{ week.days }} days</div>
           </div>
@@ -373,8 +375,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const weekDays = this.calendarDays.slice(weekIndex * 7, (weekIndex + 1) * 7);
       const currentMonthDays = weekDays.filter(day => day.isCurrentMonth);
       
-      if (currentMonthDays.length === 0) continue;
-      
+     
       const weekPnL = currentMonthDays.reduce((sum, day) => sum + day.pnl, 0);
       const weekTrades = currentMonthDays.reduce((sum, day) => sum + day.tradeCount, 0);
       const weekWinCount = currentMonthDays.reduce((sum, day) => sum + day.winCount, 0);
