@@ -41,6 +41,7 @@ interface CalendarDay {
   lossCount: number;
   winRate: number;
   dailyPercentage: number;
+  weekSummary?: WeekSummary;
 }
 
 interface WeekSummary {
@@ -100,7 +101,8 @@ interface WeekSummary {
                 'loss-day': day.pnl < 0,
                 'weekday-profit': isWeekday(day.date) && day.pnl > 0,
                 'weekday-loss': isWeekday(day.date) && day.pnl < 0,
-                'weekend': !isWeekday(day.date)
+                'weekend': !isWeekday(day.date),
+                'has-week-summary': !!day.weekSummary
               }"
               role="button"
               tabindex="0"
@@ -113,7 +115,7 @@ interface WeekSummary {
                 <span class="badge-label">New Account</span>
               </div>
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date) && !isBeforeAccountStart(day.date)">
+              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && (isWeekday(day.date) || day.weekSummary) && !isBeforeAccountStart(day.date)">
                 <span class="badge-dot"></span>
                 <span class="badge-text">No trades</span>
               </div>
@@ -133,26 +135,23 @@ interface WeekSummary {
                     {{ formatCurrency(day.pnl) }}
                   </div>
                 </div>
-
               </div>
+              <section class="week-summary" *ngIf="day.weekSummary" aria-label="Weekly performance summary">
+                <div class="week-label">{{ day.weekSummary.label }}</div>
+                <div class="week-percentage" [ngClass]="getWeekPnLClass(day.weekSummary.totalPnL)">
+                  {{ formatPercentage(day.weekSummary.weeklyPercentageGained) }}
+                </div>
+                <div class="week-win-loss">
+                  <span class="week-win-count">{{ day.weekSummary.winCount }}W</span>
+                  <span class="week-summary-separator">/</span>
+                  <span class="week-loss-count">{{ day.weekSummary.lossCount }}L</span>
+                </div>
+                <div class="week-pnl" [ngClass]="getWeekPnLClass(day.weekSummary.totalPnL)">
+                  {{ formatCurrency(day.weekSummary.totalPnL) }}
+                </div>
+                <div class="week-details">{{ day.weekSummary.days }} days</div>
+              </section>
             </div>
-          </div>
-        </div>
-
-        <!-- Weekly Summary Sidebar -->
-        <div class="weekly-summary">
-          <div *ngFor="let week of weekSummaries" class="week-summary">
-            <div class="week-label">{{ week.label }}</div>
-            <div class="week-percentage" [ngClass]="getWeekPnLClass(week.totalPnL)">
-              {{ formatPercentage(week.weeklyPercentageGained) }}
-            </div>
-            <div class="week-win-loss">
-              {{ week.winCount }}W <span class="week-summary-separator">/</span> {{ week.lossCount }}L
-            </div>
-            <div class="week-pnl" [ngClass]="getWeekPnLClass(week.totalPnL)">
-              {{ formatCurrency(week.totalPnL) }}
-            </div>
-            <div class="week-details">{{ week.days }} days</div>
           </div>
         </div>
       </div>
@@ -382,7 +381,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const activeDays = currentMonthDays.filter(day => day.tradeCount > 0).length;
       const weeklyPercentageGained = (weekPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
 
-      this.weekSummaries.push({
+      const weekSummary: WeekSummary = {
         weekNumber: weekIndex + 1,
         label: `Week ${weekIndex + 1}`,
         totalPnL: weekPnL,
@@ -391,7 +390,10 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         lossCount: weekLossCount,
         days: activeDays,
         weeklyPercentageGained: weeklyPercentageGained
-      });
+      };
+
+      this.weekSummaries.push(weekSummary);
+      this.calendarDays[weekIndex * 7 + 6].weekSummary = weekSummary;
     }
   }
 
