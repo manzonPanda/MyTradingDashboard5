@@ -506,6 +506,7 @@ export class DashboardComponent implements AfterViewInit {
   // Daily Limit tracking
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
+  dailyTarget: number | null = null;
   dailyWinsPercent: number = 0;
   dailyWinsAmount: number = 0;
   dailyLossesAmount: number = 0; // negative value for losses
@@ -1279,6 +1280,11 @@ mt5AccountInfo: AccountSettings = {
 
     // Register Chart.js components
     Chart.register(...registerables);
+  }
+
+  onDailyTargetChange(dailyTarget: number): void {
+    this.dailyTarget = dailyTarget;
+    this.cdr.markForCheck();
   }
 
   onLiveTradeSoundSettingsChange(settings: LiveTradeSoundSettingsModel): void {
@@ -2243,6 +2249,8 @@ mt5AccountInfo: AccountSettings = {
 
   private applyPersistedUserSettings(settings: UserSettings): void {
     this.isDailyChart = settings.default_chart_mode === 'daily';
+    const dailyTarget = Number(settings.daily_target_percent);
+    this.dailyTarget = Number.isFinite(dailyTarget) ? dailyTarget : null;
     const savedDisplayPreferences = this.loadLiveTradeDisplayPreferences();
     this.liveTradeSoundSettings = {
       enabled: typeof savedDisplayPreferences.soundEnabled === 'boolean'

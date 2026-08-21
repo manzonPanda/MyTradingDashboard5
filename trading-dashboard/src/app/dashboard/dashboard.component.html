@@ -746,6 +746,8 @@
       [mt5LiveTrades]="getCurrentMt5LiveTrades()"
       [tableData]="tableData"
       [accountSize]="mt5AccountInfo.startingBalance"
+      [currentDailyPerformance]="dailyPnLPercent"
+      [dailyTarget]="dailyTarget"
       [positiveGaugePercentMax]="liveTradeGaugePercentMax"
       [liveTradeSoundSettings]="liveTradeSoundSettings"
       (gaugePercentMaxChange)="onLiveTradeGaugePercentMaxChange($event)"
@@ -1886,6 +1888,6 @@
 
   <div *ngIf="isProfileSettingsOpen" class="profile-settings-overlay" role="dialog" aria-modal="true" aria-label="Profile settings">
     <button type="button" class="profile-settings-overlay-close" aria-label="Close profile settings" (click)="closeProfileSettings()"><mat-icon>close</mat-icon></button>
-    <app-profile-settings (closed)="closeProfileSettings()" (liveTradeDisplayPreferencesChange)="onLiveTradeDisplayPreferencesChange($event)"></app-profile-settings>
+    <app-profile-settings (closed)="closeProfileSettings()" (dailyTargetChange)="onDailyTargetChange($event)" (liveTradeDisplayPreferencesChange)="onLiveTradeDisplayPreferencesChange($event)"></app-profile-settings>
   </div>
 </div>

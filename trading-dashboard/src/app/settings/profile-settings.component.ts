@@ -44,6 +44,7 @@ export class ProfileSettingsComponent implements OnInit {
     highPrioritySoundThreshold: 3.4
   };
   @Output() closed = new EventEmitter<void>();
+  @Output() dailyTargetChange = new EventEmitter<number>();
   @Output() liveTradeDisplayPreferencesChange = new EventEmitter<LiveTradeDisplayPreferences>();
 
   constructor(private readonly supabase: SupabaseService, readonly auth: AuthService, private readonly router: Router) {}
@@ -80,6 +81,8 @@ export class ProfileSettingsComponent implements OnInit {
         this.supabase.updateUserSettings(userId, this.settings)
       ]);
       this.saveLiveTradeDisplayPreferences();
+      const dailyTarget = Number(this.settings.daily_target_percent);
+      if (Number.isFinite(dailyTarget)) this.dailyTargetChange.emit(dailyTarget);
       this.message = 'Settings saved.';
     } catch (error) {
       this.message = error instanceof Error ? error.message : 'Unable to save settings.';

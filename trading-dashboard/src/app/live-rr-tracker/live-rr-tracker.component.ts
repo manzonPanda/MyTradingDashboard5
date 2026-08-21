@@ -43,7 +43,7 @@ interface Table {
   template: `
     <div class="live-rr-tracker-container">
       <!-- Empty State - No Live Trades -->
-      <div *ngIf="!hasLiveTrades" class="empty-state-container" [class.is-maximized]="isMaximized">
+      <div *ngIf="!hasLiveTrades" class="empty-state-container" [class.is-maximized]="isMaximized" [class.target-reached]="targetReached">
         <button
           type="button"
           class="live-trades-maximize-button"
@@ -52,57 +52,64 @@ interface Table {
           (click)="toggleMaximize()">
           <mat-icon>{{ isMaximized ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
         </button>
-        <div class="empty-state-content">
-          <!-- Decorative Animation Background -->
-          <div class="animated-bg">
-            <div class="floating-orb orb-1"></div>
-            <div class="floating-orb orb-2"></div>
-            <div class="floating-orb orb-3"></div>
-          </div>
 
-          <!-- Two Column Layout -->
-          <div class="two-column-layout">
-            <!-- Left Column: Icon and Title -->
-            <div class="column left-column">
-              <!-- Main Icon -->
-              <div class="empty-state-icon">
-                <div class="icon-wrapper">
-                  <mat-icon class="main-icon">trending_up</mat-icon>
-                  <div class="icon-pulse-ring"></div>
-                </div>
-              </div>
-
-              <!-- Title -->
-              <div class="empty-state-text">
-                <h2 class="empty-title">Ready to Trade?</h2>
-              </div>
+        @if (targetReached) {
+          <section class="target-achievement" aria-live="polite">
+            <div class="target-achievement-visual" aria-hidden="true">
+              <span class="achievement-star">✦</span>
+              <span class="achievement-trajectory"><mat-icon>north_east</mat-icon></span>
+              <span class="achievement-horizon"></span>
+            </div>
+            <p class="target-status"><mat-icon>verified</mat-icon>Daily target reached</p>
+            <h2 class="target-quote">Feet on the ground,<br>eyes on the stars.</h2>
+            <p class="target-performance">{{ formatPercentage(currentDailyPerformance) }} / {{ formatPercentage(dailyTarget) }} target</p>
+            <p class="target-guidance">Protect the progress. No need to force another trade.</p>
+          </section>
+        } @else {
+          <div class="empty-state-content">
+            <div class="animated-bg">
+              <div class="floating-orb orb-1"></div>
+              <div class="floating-orb orb-2"></div>
+              <div class="floating-orb orb-3"></div>
             </div>
 
-            <!-- Right Column: Description and Features -->
-            <div class="column right-column">
-              <!-- Quick Stats Preview -->
-              <div class="preview-stats">
-                <div class="stat-badge">
-                  <mat-icon>show_chart</mat-icon>
-                  <span>Real-time RR</span>
+            <div class="two-column-layout">
+              <div class="column left-column">
+                <div class="empty-state-icon">
+                  <div class="icon-wrapper">
+                    <mat-icon class="main-icon">trending_up</mat-icon>
+                    <div class="icon-pulse-ring"></div>
+                  </div>
                 </div>
-                <div class="stat-badge">
-                  <mat-icon>trending_up</mat-icon>
-                  <span>Live P&amp;L</span>
-                </div>
-                <div class="stat-badge">
-                  <mat-icon>speed</mat-icon>
-                  <span>Risk amount</span>
-                </div>
-                <div class="stat-badge">
-                  <mat-icon>schedule</mat-icon>
-                  <span>Holding time</span>
+
+                <div class="empty-state-text">
+                  <h2 class="empty-title">Ready to Trade?</h2>
                 </div>
               </div>
 
+              <div class="column right-column">
+                <div class="preview-stats">
+                  <div class="stat-badge">
+                    <mat-icon>show_chart</mat-icon>
+                    <span>Real-time RR</span>
+                  </div>
+                  <div class="stat-badge">
+                    <mat-icon>trending_up</mat-icon>
+                    <span>Live P&amp;L</span>
+                  </div>
+                  <div class="stat-badge">
+                    <mat-icon>speed</mat-icon>
+                    <span>Risk amount</span>
+                  </div>
+                  <div class="stat-badge">
+                    <mat-icon>schedule</mat-icon>
+                    <span>Holding time</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
 
       <!-- Live Trading Display - When Trades Are Open -->
@@ -236,6 +243,8 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mt5LiveTrades: Table[] = [];
   @Input() tableData: Table[] = [];
   @Input() accountSize = 0;
+  @Input() currentDailyPerformance = 0;
+  @Input() dailyTarget: number | null = null;
   @Input() positiveGaugePercentMax = 4;
   @Input() liveTradeSoundSettings: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   @Output() liveTradeSoundSettingsChange = new EventEmitter<LiveTradeSoundSettings>();
@@ -269,6 +278,15 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     private readonly tradeService: TradeService,
     private readonly mt5Time: Mt5TimeService
   ) {}
+
+  get targetReached(): boolean {
+    return this.dailyTarget !== null && this.currentDailyPerformance >= this.dailyTarget;
+  }
+
+  formatPercentage(value: number | null): string {
+    const percentage = Number(value) || 0;
+    return `${percentage >= 0 ? '+' : ''}${percentage.toFixed(2)}%`;
+  }
 
   ngOnInit() {
     const savedGaugeMax = Number(localStorage.getItem('live-trade-gauge-max-percent'));
