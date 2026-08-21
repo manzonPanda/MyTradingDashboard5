@@ -61,7 +61,7 @@ interface Table {
               <span class="achievement-horizon"></span>
             </div>
             <p class="target-status"><mat-icon>verified</mat-icon>Daily target reached</p>
-            <h2 class="target-quote">Feet on the ground,<br>eyes on the stars.</h2>
+            <h2 class="target-quote">Feet on the ground,<br>eyes on the sky.</h2>
             <p class="target-performance">{{ formatPercentage(currentDailyPerformance) }} / {{ formatPercentage(dailyTarget) }} target</p>
           </section>
         } @else {
