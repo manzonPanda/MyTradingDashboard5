@@ -1813,6 +1813,24 @@
   }
 }
 
+@media (max-width: 600px) {
+  .calendar-grid {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--tf-border-secondary) transparent;
+  }
+
+  .calendar-grid .day-headers,
+  .calendar-grid .calendar-days {
+    min-width: 34rem;
+  }
+
+  .calendar-grid .calendar-days .calendar-day {
+    min-width: 0;
+  }
+}
+
 .calendar-days .calendar-day .week-summary {
   display: grid;
   grid-template-areas:

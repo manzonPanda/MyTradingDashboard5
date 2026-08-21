@@ -1200,7 +1200,7 @@ table.simple-table {
           padding: 0;
           flex: 1 1 auto;
           min-width: 0;
-          height: calc(180px - 35px);
+          min-height: 0;
           overflow-y: auto;
           overflow-x: hidden;
           scrollbar-width: none;
@@ -13187,6 +13187,7 @@ table.simple-table {
 @media (max-width: 768px) {
   .dashboard-header .trading-week-container .trading-days-grid {
     scroll-snap-type: x proximity;
+    scroll-padding-inline: 0.5rem;
     overscroll-behavior-inline: contain;
   }
 
@@ -13195,13 +13196,38 @@ table.simple-table {
     min-width: min(78vw, 18rem);
   }
 
+  .dashboard-header .trading-week-container .trading-days-grid .day-column .enhanced-news-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-header .trading-week-container .trading-days-grid .time-group-container,
+  .dashboard-header .trading-week-container .trading-days-grid .time-info,
+  .dashboard-header .trading-week-container .trading-days-grid .currency-badges,
+  .dashboard-header .trading-week-container .trading-days-grid .single-event .event-content,
+  .dashboard-header .trading-week-container .trading-days-grid .multiple-events .summary-content {
+    min-width: 0;
+  }
+
+  .dashboard-header .trading-week-container .trading-days-grid .time-info,
+  .dashboard-header .trading-week-container .trading-days-grid .currency-badges {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-header .trading-week-container .trading-days-grid .single-event .event-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .dashboard-header .trading-week-container .trading-days-grid .multiple-events .expanded-events {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
   .dashboard-header .event-title,
   .dashboard-header .summary-text,
   .dashboard-header .no-news-text,
   .metric-label span,
   .metric-value {
-    overflow-wrap: normal;
+    overflow-wrap: anywhere;
     word-break: normal;
   }
 
