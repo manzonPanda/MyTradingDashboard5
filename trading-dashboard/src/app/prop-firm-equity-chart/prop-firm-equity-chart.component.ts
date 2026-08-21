@@ -469,7 +469,9 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     const markLines = this.buildMarkLines(pal);
 
     const option: any = {
+      animation: !this.isLive,
       animationDuration: 600,
+      animationDurationUpdate: this.isLive ? 0 : 600,
       animationEasing: 'cubicOut',
       backgroundColor: 'transparent',
       grid: { left: 20, right: 112, top: 24, bottom: 38, containLabel: true },
@@ -634,7 +636,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       });
     }
 
-    this.chart.setOption(option, { notMerge: true });
+    this.chart.setOption(option, { replaceMerge: ['series'], lazyUpdate: true });
   }
 
   private pointCurrentColor(): string {
