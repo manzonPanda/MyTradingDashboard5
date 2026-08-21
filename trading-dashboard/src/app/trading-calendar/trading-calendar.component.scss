@@ -1398,3 +1398,455 @@
     height: 108px;
   }
 }
+
+.trading-calendar-container {
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+}
+
+.calendar-header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(110deg, var(--tf-bg-secondary), rgba(15, 23, 42, 0.58));
+
+  .calendar-nav {
+    gap: 0.9rem;
+
+    .nav-button {
+      border-radius: 7px;
+      background: transparent;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .month-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+  }
+
+  .monthly-stats {
+    font-size: 0.8rem;
+
+    .stats-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+  }
+}
+
+.calendar-grid-container {
+  grid-template-columns: minmax(0, 1fr) 176px;
+}
+
+.calendar-grid {
+  gap: 0.7rem;
+  padding: 1.15rem;
+
+  .day-headers {
+    gap: 6px;
+
+    .day-header {
+      padding: 0.35rem 0 0.45rem;
+      font-size: clamp(0.64rem, 1.2vw, 0.76rem);
+      font-weight: 500;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+  }
+
+  .calendar-days {
+    gap: 6px;
+    min-height: 360px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+
+    .calendar-day {
+      min-width: 0;
+      min-height: 58px;
+      padding: 0.6rem;
+      border: 1px solid var(--tf-border-primary);
+      border-radius: 7px;
+      background: var(--tf-bg-secondary);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+      &:focus-visible {
+        outline: 2px solid var(--tf-accent-info);
+        outline-offset: 2px;
+      }
+
+      &:hover {
+        background: var(--tf-bg-hover);
+        box-shadow: 0 5px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+      }
+
+      &.outside-month {
+        background: rgba(255, 255, 255, 0.015);
+
+        .day-number,
+        .day-content {
+          opacity: 0.4;
+        }
+      }
+
+      &.weekend {
+        border-color: rgba(148, 163, 184, 0.14) !important;
+        border-left-width: 1px !important;
+        background: rgba(148, 163, 184, 0.035) !important;
+        box-shadow: none !important;
+      }
+
+      &.profit-day,
+      &.weekday-profit {
+        border-color: rgba(16, 185, 129, 0.34) !important;
+        border-left-width: 1px !important;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.09), rgba(16, 185, 129, 0.025)) !important;
+        box-shadow: inset 0 0 18px rgba(16, 185, 129, 0.035) !important;
+
+        &::before {
+          display: none !important;
+        }
+
+        &:hover {
+          border-color: rgba(16, 185, 129, 0.48) !important;
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.115), rgba(16, 185, 129, 0.04)) !important;
+          box-shadow: inset 0 0 18px rgba(16, 185, 129, 0.05), 0 5px 16px rgba(0, 0, 0, 0.15) !important;
+          transform: translateY(-1px) !important;
+        }
+      }
+
+      &.loss-day,
+      &.weekday-loss {
+        border-color: rgba(244, 63, 94, 0.34) !important;
+        border-left-width: 1px !important;
+        background: linear-gradient(135deg, rgba(244, 63, 94, 0.085), rgba(244, 63, 94, 0.02)) !important;
+        box-shadow: inset 0 0 18px rgba(244, 63, 94, 0.03) !important;
+
+        &::before {
+          display: none !important;
+        }
+
+        &:hover {
+          border-color: rgba(244, 63, 94, 0.48) !important;
+          background: linear-gradient(135deg, rgba(244, 63, 94, 0.11), rgba(244, 63, 94, 0.035)) !important;
+          box-shadow: inset 0 0 18px rgba(244, 63, 94, 0.045), 0 5px 16px rgba(0, 0, 0, 0.15) !important;
+          transform: translateY(-1px) !important;
+        }
+      }
+
+      &.today {
+        border-left: 1px solid var(--tf-accent-info) !important;
+        box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.62) !important;
+
+        .day-number {
+          display: block;
+          width: auto;
+          height: auto;
+          border-radius: 0;
+          background: transparent;
+          color: var(--tf-text-primary);
+          font-weight: 600;
+          box-shadow: none;
+        }
+
+        &.profit-day,
+        &.weekday-profit {
+          box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.62), inset 0 0 18px rgba(16, 185, 129, 0.035) !important;
+        }
+
+        &.loss-day,
+        &.weekday-loss {
+          box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.62), inset 0 0 18px rgba(244, 63, 94, 0.03) !important;
+        }
+      }
+
+      .day-number {
+        margin-bottom: 0.35rem;
+        color: var(--tf-text-secondary);
+        font-size: 0.68rem;
+        font-weight: 500;
+      }
+
+      .day-percentage-display {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        font-size: clamp(0.68rem, 1.2vw, 0.86rem);
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+
+        &.positive {
+          color: var(--tf-positive);
+          background: transparent;
+          border: 0;
+          box-shadow: none;
+        }
+
+        &.negative {
+          color: var(--tf-negative);
+          background: transparent;
+          border: 0;
+          box-shadow: none;
+        }
+      }
+
+      .day-content {
+        gap: 0.32rem;
+
+        .day-trades-summary {
+          gap: 0.2rem;
+
+          .trades-count {
+            gap: 0.28rem;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            color: var(--tf-text-secondary);
+            font-size: 0.68rem;
+            font-weight: 500;
+            line-height: 1.15;
+
+            .win-count,
+            .loss-count {
+              padding: 0;
+              border: 0;
+              border-radius: 0;
+              background: transparent;
+              color: inherit;
+              font-size: inherit;
+              font-weight: inherit;
+            }
+          }
+
+          .day-pnl-amount {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            color: var(--tf-text-secondary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.005em;
+            line-height: 1.2;
+
+            &.positive {
+              color: var(--tf-positive);
+              background: transparent;
+              border: 0;
+            }
+
+            &.negative {
+              color: var(--tf-negative);
+              background: transparent;
+              border: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.weekly-summary {
+  grid-template-rows: 2.55rem repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 1.15rem 0.75rem;
+  background: linear-gradient(180deg, var(--tf-bg-secondary), rgba(15, 23, 42, 0.4));
+
+  .week-summary {
+    padding: 0.65rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.018);
+    box-shadow: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+    &::before {
+      display: none;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.035);
+      box-shadow: none;
+      transform: translateY(-1px);
+    }
+
+    .week-label {
+      margin-bottom: 0.32rem;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--tf-text-muted);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .week-percentage {
+      margin-bottom: 0.22rem;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      color: var(--tf-text-primary);
+      font-size: 0.88rem;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      text-align: left;
+
+      &.positive {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        color: var(--tf-positive);
+        text-shadow: none;
+      }
+
+      &.negative {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        color: var(--tf-negative);
+        text-shadow: none;
+      }
+    }
+
+    .week-win-loss,
+    .week-pnl,
+    .week-details {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      color: var(--tf-text-secondary);
+      font-size: 0.66rem;
+      font-weight: 500;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .week-win-loss,
+    .week-details {
+      color: var(--tf-text-muted);
+    }
+
+    .week-summary-separator {
+      margin: 0 0.22rem;
+    }
+
+    .week-pnl {
+      font-weight: 600;
+
+      &.positive {
+        background: transparent;
+        border: 0;
+        color: var(--tf-positive);
+      }
+
+      &.negative {
+        background: transparent;
+        border: 0;
+        color: var(--tf-negative);
+      }
+    }
+  }
+}
+
+.calendar-days .calendar-day .no-trades-badge {
+  gap: 0.32rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.calendar-days .calendar-day .no-trades-badge .badge-dot {
+  width: 4px;
+  height: 4px;
+  opacity: 0.7;
+}
+
+.calendar-days .calendar-day .new-account-badge {
+  top: 0.52rem;
+  right: 0.55rem;
+  left: auto;
+  gap: 0.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--tf-text-muted);
+  font-size: 0.56rem;
+  font-weight: 600;
+  line-height: 1;
+  transform: none;
+}
+
+.calendar-days .calendar-day .new-account-badge .badge-star {
+  color: var(--tf-positive);
+  font-size: 0.62rem;
+}
+
+.calendar-days .calendar-day .new-account-badge .badge-label {
+  color: inherit;
+}
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    padding: 0.65rem;
+
+    .calendar-days {
+      gap: 4px;
+
+      .calendar-day {
+        .day-content {
+          gap: 0.2rem;
+
+          .day-percentage-display,
+          .day-trades-summary .day-pnl-amount {
+            font-size: 0.65rem;
+          }
+
+          .day-trades-summary .trades-count {
+            font-size: 0.6rem;
+          }
+        }
+      }
+    }
+  }
+
+  .weekly-summary {
+    padding: 0.65rem;
+  }
+
+  .calendar-days .calendar-day .new-account-badge {
+    top: 0.35rem;
+    right: 0.35rem;
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid .calendar-days {
+    gap: 3px;
+  }
+}
