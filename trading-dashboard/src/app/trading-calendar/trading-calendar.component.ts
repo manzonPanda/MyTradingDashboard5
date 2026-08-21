@@ -48,6 +48,8 @@ interface WeekSummary {
   label: string;
   totalPnL: number;
   totalTrades: number;
+  winCount: number;
+  lossCount: number;
   days: number;
   weeklyPercentageGained: number;
 }
@@ -124,7 +126,7 @@ interface WeekSummary {
                 <div class="day-trades-summary">
                   <div class="trades-count">
                     <span class="win-count">{{ day.winCount }}W</span>
-                    <span class="separator">•</span>
+                    <span class="separator">/</span>
                     <span class="loss-count">{{ day.lossCount }}L</span>
                   </div>
                   <div class="day-pnl-amount" [ngClass]="getDayPnLClass(day.pnl)">
@@ -143,6 +145,9 @@ interface WeekSummary {
             <div class="week-label">{{ week.label }}</div>
             <div class="week-percentage" [ngClass]="getWeekPnLClass(week.totalPnL)">
               {{ formatPercentage(week.weeklyPercentageGained) }}
+            </div>
+            <div class="week-win-loss">
+              {{ week.winCount }}W <span class="week-summary-separator">/</span> {{ week.lossCount }}L
             </div>
             <div class="week-pnl" [ngClass]="getWeekPnLClass(week.totalPnL)">
               {{ formatCurrency(week.totalPnL) }}
@@ -372,6 +377,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       
       const weekPnL = currentMonthDays.reduce((sum, day) => sum + day.pnl, 0);
       const weekTrades = currentMonthDays.reduce((sum, day) => sum + day.tradeCount, 0);
+      const weekWinCount = currentMonthDays.reduce((sum, day) => sum + day.winCount, 0);
+      const weekLossCount = currentMonthDays.reduce((sum, day) => sum + day.lossCount, 0);
       const activeDays = currentMonthDays.filter(day => day.tradeCount > 0).length;
       const weeklyPercentageGained = (weekPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
 
@@ -380,6 +387,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
         label: `Week ${weekIndex + 1}`,
         totalPnL: weekPnL,
         totalTrades: weekTrades,
+        winCount: weekWinCount,
+        lossCount: weekLossCount,
         days: activeDays,
         weeklyPercentageGained: weeklyPercentageGained
       });
