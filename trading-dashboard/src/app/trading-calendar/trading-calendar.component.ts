@@ -376,6 +376,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       
       const weekPnL = currentMonthDays.reduce((sum, day) => sum + day.pnl, 0);
       const weekTrades = currentMonthDays.reduce((sum, day) => sum + day.tradeCount, 0);
+      if (weekTrades === 0) continue;
       const weekWinCount = currentMonthDays.reduce((sum, day) => sum + day.winCount, 0);
       const weekLossCount = currentMonthDays.reduce((sum, day) => sum + day.lossCount, 0);
       const activeDays = currentMonthDays.filter(day => day.tradeCount > 0).length;
