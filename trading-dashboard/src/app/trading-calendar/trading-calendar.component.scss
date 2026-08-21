@@ -113,7 +113,7 @@
 
 .calendar-grid-container {
   display: grid;
-  grid-template-columns: 1fr 170px;
+  grid-template-columns: minmax(0, 1fr);
   background: var(--tf-bg-card);
   align-items: start;
   grid-template-rows: auto 1fr;
@@ -753,38 +753,6 @@
     }
   }
 
-  .weekly-summary {
-    border-left: 0;
-    border-top: 1px solid var(--tf-border-primary);
-    padding: 0.65rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: auto;
-
-    &::before {
-      display: none;
-    }
-
-    .week-summary {
-      min-height: 72px;
-      padding: 0.55rem;
-
-      .week-label {
-        font-size: 0.7rem;
-        margin-bottom: 0.4rem;
-      }
-
-      .week-percentage {
-        font-size: 0.9rem;
-        margin-bottom: 0.3rem;
-        padding: 0.3rem 0.4rem;
-      }
-
-      .week-pnl,
-      .week-details {
-        font-size: 0.65rem;
-      }
-    }
-  }
 }
 
 @media (max-width: 480px) {
@@ -819,9 +787,6 @@
     }
   }
 
-  .weekly-summary {
-    grid-template-columns: 1fr;
-  }
 }
 
 .day-trades-modal {
@@ -1435,7 +1400,7 @@
 }
 
 .calendar-grid-container {
-  grid-template-columns: minmax(0, 1fr) 176px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .calendar-grid {
@@ -1576,8 +1541,8 @@
         border-radius: 0;
         background: transparent;
         box-shadow: none;
-        font-size: clamp(0.68rem, 1.2vw, 0.86rem);
-        font-weight: 650;
+        font-size: clamp(0.82rem, 1.35vw, 1rem);
+        font-weight: 700;
         letter-spacing: -0.01em;
         line-height: 1.2;
 
@@ -1633,7 +1598,7 @@
             background: transparent;
             box-shadow: none;
             color: var(--tf-text-secondary);
-            font-size: 0.7rem;
+            font-size: 0.66rem;
             font-weight: 600;
             letter-spacing: 0.005em;
             line-height: 1.2;
@@ -1834,9 +1799,6 @@
     }
   }
 
-  .weekly-summary {
-    padding: 0.65rem;
-  }
 
   .calendar-days .calendar-day .new-account-badge {
     top: 0.35rem;
@@ -1848,5 +1810,96 @@
 @media (max-width: 480px) {
   .calendar-grid .calendar-days {
     gap: 3px;
+  }
+}
+
+.calendar-days .calendar-day .week-summary {
+  display: grid;
+  grid-template-areas:
+    'label percentage'
+    'record pnl'
+    'details details';
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.18rem 0.5rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--tf-border-primary);
+  color: var(--tf-text-secondary);
+  font-size: 0.62rem;
+  line-height: 1.2;
+
+  .week-label {
+    grid-area: label;
+    color: var(--tf-text-muted);
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .week-percentage {
+    grid-area: percentage;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: right;
+
+    &.positive {
+      color: var(--tf-positive);
+    }
+
+    &.negative {
+      color: var(--tf-negative);
+    }
+  }
+
+  .week-win-loss {
+    grid-area: record;
+    color: var(--tf-text-muted);
+  }
+
+  .week-win-count {
+    color: var(--tf-positive);
+  }
+
+  .week-loss-count {
+    color: var(--tf-negative);
+  }
+
+  .week-summary-separator {
+    margin: 0 0.22rem;
+    color: var(--tf-text-muted);
+  }
+
+  .week-pnl {
+    grid-area: pnl;
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-align: right;
+
+    &.positive {
+      color: var(--tf-positive);
+    }
+
+    &.negative {
+      color: var(--tf-negative);
+    }
+  }
+
+  .week-details {
+    grid-area: details;
+    color: var(--tf-text-muted);
+  }
+}
+
+.calendar-days .calendar-day.has-week-summary {
+  .day-content {
+    flex: 0 0 auto;
+  }
+
+  .no-trades-badge {
+    position: static;
+    align-self: flex-start;
+    margin: 0.1rem 0 0;
+    transform: none;
   }
 }
