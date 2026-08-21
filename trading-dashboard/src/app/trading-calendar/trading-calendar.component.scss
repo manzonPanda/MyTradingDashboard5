@@ -1903,3 +1903,20 @@
     transform: none;
   }
 }
+
+:host-context(body:not(.dark-theme)) {
+  .calendar-header {
+    background: linear-gradient(110deg, var(--tf-bg-secondary), var(--tf-bg-tertiary));
+  }
+
+  .calendar-grid .calendar-days .calendar-day {
+    &.outside-month {
+      background: var(--tf-bg-primary);
+    }
+
+    &.weekend {
+      border-color: var(--tf-border-primary) !important;
+      background: var(--tf-bg-primary) !important;
+    }
+  }
+}
