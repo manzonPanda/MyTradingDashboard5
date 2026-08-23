@@ -183,6 +183,11 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     return `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
+  private fmtPercentage(v: number): string {
+    const sign = v >= 0 ? '+' : '-';
+    return `${sign}${Math.abs(v).toFixed(2)}%`;
+  }
+
   private updateChartState(): void {
     this.isLive = this.config.hasLiveTrade;
     this.hasNoTrades = (this.points || []).length <= 1 && !this.isLive;
@@ -397,6 +402,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     const equity = Number(raw.equity ?? raw.value?.[1]);
     const balance = Number(raw.balance ?? equity);
     const floating = Number(raw.floatingPnL ?? 0);
+    const startingBalance = Number(this.config.startingBalance);
+    const equityPercent = startingBalance > 0 ? ((equity - startingBalance) / startingBalance) * 100 : 0;
     const isOpen = raw.tradeResult === 'open';
 
     return `
@@ -404,7 +411,10 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         <div class="pf-td-head">
           <span>${this.fmtHeader(headerTs || '')}</span>
         </div>
-        <div class="pf-eq">${this.fmtUsdPlain(equity)}</div>
+        <div class="pf-eq">
+          <span>${this.fmtUsdPlain(equity)}</span>
+          <span class="pf-eq-percentage ${equityPercent >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtPercentage(equityPercent)}</span>
+        </div>
         <div class="pf-eq-label">Equity</div>
         <div class="pf-td-divider pf-tooltip-divider"></div>
         <div class="pf-td-row"><span>Balance</span><b>${this.fmtUsdPlain(balance)}</b></div>
