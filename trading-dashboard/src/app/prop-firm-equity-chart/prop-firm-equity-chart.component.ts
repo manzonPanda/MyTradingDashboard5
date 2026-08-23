@@ -362,11 +362,11 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       rows.push(`<div class="pf-td-row"><span>R:R</span><b>${this.esc(p.rr)}</b></div>`);
     }
     const openLabel = p.timeOpenPh ? this.compactTime(p.timeOpenPh) : '';
-    const closeLabel = p.timeClosePh ? this.compactTime(p.timeClosePh) : null;
+    const closeLabel = p.timeClosePh ? this.compactTime(p.timeClosePh) : '';
     if (openLabel) {
-      const suffix = closeLabel ? ` → ${closeLabel}` : '';
-      rows.push(`<div class="pf-td-row"><span>Open</span><b>${openLabel}${suffix}</b></div>`);
-    } else if (closeLabel) {
+      rows.push(`<div class="pf-td-row"><span>Open</span><b>${openLabel}</b></div>`);
+    }
+    if (closeLabel) {
       rows.push(`<div class="pf-td-row"><span>Close</span><b>${closeLabel}</b></div>`);
     }
     const duration = this.tradeDuration(p.timeOpenPh, p.timeClosePh);
