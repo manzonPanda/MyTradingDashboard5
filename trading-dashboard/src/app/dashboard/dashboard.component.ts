@@ -3203,6 +3203,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           timeOpenPh: trade.timeOpenPh,
           timeClosePh: trade.timeClosePh,
           pnl: Math.round(net * 100) / 100,
+          mfe: Number(trade.mfe) || 0,
           dailyPnl: dayPnL[dayKeyOf(ts)] ? Math.round(dayPnL[dayKeyOf(ts)] * 100) / 100 : (isOpen ? Math.round(runningOpenTotal * 100) / 100 : undefined),
         });
       });
@@ -3225,6 +3226,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         volume: openTrades[0]?.volume !== undefined ? String(openTrades[0].volume) : undefined,
         timeOpenPh: openTrades[0]?.timeOpenPh,
         pnl: floatingPnL,
+        mfe: Number(openTrades[0]?.mfe) || 0,
         dailyPnl: floatingPnL,
       });
     }
