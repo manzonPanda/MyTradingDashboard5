@@ -349,7 +349,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       const side = p.type ? p.type.toUpperCase() : '';
       let line = this.esc(p.symbol);
       if (side) line += ` &nbsp;·&nbsp; <b>${side}</b>`;
-      if (p.volume) line += ` &nbsp;·&nbsp; ${this.esc(p.volume)} lots`;
+      if (p.volume) line += ` &nbsp;·&nbsp; ${Number(p.volume).toFixed(2)} lots`;
       rows.push(`<div class="pf-td-line">${line}</div>`);
     }
     if (Number.isFinite(p.pnl)) {
