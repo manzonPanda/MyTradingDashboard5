@@ -183,6 +183,11 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     return `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
+  private fmtPercentage(v: number): string {
+    const sign = v >= 0 ? '+' : '-';
+    return `${sign}${Math.abs(v).toFixed(2)}%`;
+  }
+
   private updateChartState(): void {
     this.isLive = this.config.hasLiveTrade;
     this.hasNoTrades = (this.points || []).length <= 1 && !this.isLive;
@@ -344,7 +349,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       const side = p.type ? p.type.toUpperCase() : '';
       let line = this.esc(p.symbol);
       if (side) line += ` &nbsp;·&nbsp; <b>${side}</b>`;
-      if (p.volume) line += ` &nbsp;·&nbsp; ${this.esc(p.volume)} lots`;
+      if (p.volume) line += ` &nbsp;·&nbsp; ${Number(p.volume).toFixed(2)} lots`;
       rows.push(`<div class="pf-td-line">${line}</div>`);
     }
     if (Number.isFinite(p.pnl)) {
@@ -357,11 +362,11 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       rows.push(`<div class="pf-td-row"><span>R:R</span><b>${this.esc(p.rr)}</b></div>`);
     }
     const openLabel = p.timeOpenPh ? this.compactTime(p.timeOpenPh) : '';
-    const closeLabel = p.timeClosePh ? this.compactTime(p.timeClosePh) : null;
+    const closeLabel = p.timeClosePh ? this.compactTime(p.timeClosePh) : '';
     if (openLabel) {
-      const suffix = closeLabel ? ` → ${closeLabel}` : '';
-      rows.push(`<div class="pf-td-row"><span>Open</span><b>${openLabel}${suffix}</b></div>`);
-    } else if (closeLabel) {
+      rows.push(`<div class="pf-td-row"><span>Open</span><b>${openLabel}</b></div>`);
+    }
+    if (closeLabel) {
       rows.push(`<div class="pf-td-row"><span>Close</span><b>${closeLabel}</b></div>`);
     }
     const duration = this.tradeDuration(p.timeOpenPh, p.timeClosePh);
@@ -397,6 +402,8 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     const equity = Number(raw.equity ?? raw.value?.[1]);
     const balance = Number(raw.balance ?? equity);
     const floating = Number(raw.floatingPnL ?? 0);
+    const startingBalance = Number(this.config.startingBalance);
+    const equityPercent = startingBalance > 0 ? ((equity - startingBalance) / startingBalance) * 100 : 0;
     const isOpen = raw.tradeResult === 'open';
 
     return `
@@ -404,7 +411,10 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         <div class="pf-td-head">
           <span>${this.fmtHeader(headerTs || '')}</span>
         </div>
-        <div class="pf-eq">${this.fmtUsdPlain(equity)}</div>
+        <div class="pf-eq">
+          <span>${this.fmtUsdPlain(equity)}</span>
+          <span class="pf-eq-percentage ${equityPercent >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtPercentage(equityPercent)}</span>
+        </div>
         <div class="pf-eq-label">Equity</div>
         <div class="pf-td-divider pf-tooltip-divider"></div>
         <div class="pf-td-row"><span>Balance</span><b>${this.fmtUsdPlain(balance)}</b></div>
