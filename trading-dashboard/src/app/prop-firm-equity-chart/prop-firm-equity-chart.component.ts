@@ -35,6 +35,7 @@ export interface AccountEquityPoint {
   timeOpenPh?: string;
   timeClosePh?: string;
   pnl?: number;
+  mfe?: number;
   dailyPnl?: number;
 }
 
@@ -343,6 +344,11 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     if (Number.isFinite(p.pnl)) {
       rows.push(`<div class="pf-td-row"><span>P&amp;L</span><b class="${(p.pnl || 0) >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(p.pnl || 0)}</b></div>`);
     }
+    if (Number.isFinite(p.mfe)) {
+      const mfe = p.mfe || 0;
+      const mfePercent = this.config.startingBalance > 0 ? (mfe / this.config.startingBalance) * 100 : 0;
+      rows.push(`<div class="pf-td-row"><span>MFE</span><b class="pf-value-positive">${this.fmtUsdPlain(mfe)} (${this.fmtPercentage(mfePercent)})</b></div>`);
+    }
     if (Number.isFinite(p.risk) && p.risk && p.risk > 0) {
       rows.push(`<div class="pf-td-row"><span>Risk</span><b>${this.fmtUsdPlain(p.risk)}</b></div>`);
     }
@@ -449,6 +455,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         timeOpenPh: p.timeOpenPh,
         timeClosePh: p.timeClosePh,
         pnl: p.pnl,
+        mfe: p.mfe,
         isCurrent: isLast,
       };
       lineData.push(item);
