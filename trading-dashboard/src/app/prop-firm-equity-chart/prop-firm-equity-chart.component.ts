@@ -209,18 +209,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
-  private fmtHeader(ts: string): string {
-    const d = new Date(ts);
-    if (isNaN(d.getTime())) return 'START';
-    const mon = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-    const day = d.getDate();
-    let h = d.getHours();
-    const m = d.getMinutes();
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return `${mon} ${day} · ${h}:${String(m).padStart(2, '0')} ${ampm}`;
-  }
-
   /** Automatic, data-driven Y range that never compresses the curve. */
   private computeYRange(): { min: number; max: number } {
     const { startingBalance, profitTarget, maxDrawdown, dailyLossLimit } = this.config;
@@ -397,8 +385,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
     const raw = first?.data as any;
     if (!raw) return '';
 
-    const ts = raw.ts || raw.timestamp;
-    const headerTs = raw.tradeId && raw.timeOpenPh ? raw.timeOpenPh : ts;
     const equity = Number(raw.equity ?? raw.value?.[1]);
     const balance = Number(raw.balance ?? equity);
     const floating = Number(raw.floatingPnL ?? 0);
@@ -408,9 +394,6 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
 
     return `
       <div class="pf-tooltip${isOpen || raw.tradeId ? ' pf-tooltip--trade' : ''}">
-        <div class="pf-td-head">
-          <span>${this.fmtHeader(headerTs || '')}</span>
-        </div>
         <div class="pf-eq">
           <span>${this.fmtUsdPlain(equity)}</span>
           <span class="pf-eq-percentage ${equityPercent >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtPercentage(equityPercent)}</span>
@@ -418,7 +401,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
         <div class="pf-eq-label">Equity</div>
         <div class="pf-td-divider pf-tooltip-divider"></div>
         <div class="pf-td-row"><span>Balance</span><b>${this.fmtUsdPlain(balance)}</b></div>
-        <div class="pf-td-row"><span>Floating P&amp;L</span><b class="${floating >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(floating)}</b></div>
+        ${isOpen ? `<div class="pf-td-row"><span>Floating P&amp;L</span><b class="${floating >= 0 ? 'pf-value-positive' : 'pf-value-negative'}">${this.fmtUsd(floating)}</b></div>` : ''}
         ${raw.tradeId ? this.tradeDetailHtml(raw as AccountEquityPoint) : ''}
       </div>
     `;
