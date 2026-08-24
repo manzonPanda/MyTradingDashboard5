@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStra
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { NgxImageZoomModule } from 'ngx-image-zoom';
 import { SupabaseService } from '../services/supabase.service';
 
 interface Table {
@@ -26,6 +27,8 @@ interface Table {
   riskPerTrade?: string;
   rrr?: string;
   mt5status?: string;
+  mfe?: string;
+  mae?: string;
   screenshotUrl?: string;
   screenshotUrls?: string[];
 }
@@ -58,7 +61,7 @@ interface WeekSummary {
 @Component({
   selector: 'app-trading-calendar',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, NgxImageZoomModule],
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     <div class="trading-calendar-container">
@@ -203,6 +206,8 @@ interface WeekSummary {
                 <div class="day-trade-metrics">
                   <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
                   <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
+                  <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatCurrency(getMfeValue(trade)) }}</strong></span>
+                  <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatCurrency(getMaeValue(trade)) }}</strong></span>
                   <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
                 </div>
               </div>
@@ -267,7 +272,18 @@ interface WeekSummary {
           <button type="button" class="screenshot-lightbox-close" aria-label="Close screenshot preview" (click)="closeScreenshot()">
             <mat-icon aria-hidden="true">close</mat-icon>
           </button>
-          <img [src]="activeScreenshotUrl" alt="Trade screenshot enlarged" (click)="$event.stopPropagation()">
+          <div class="screenshot-lightbox-content" (click)="$event.stopPropagation()">
+            <lib-ngx-image-zoom
+              [thumbImage]="activeScreenshotUrl"
+              [fullImage]="activeScreenshotUrl"
+              altText="Trade screenshot enlarged"
+              titleText="Scroll to zoom"
+              zoomMode="toggle-freeze"
+              [enableScrollZoom]="true"
+              [scrollStepSize]="0.25"
+              [maxZoomRatio]="3">
+            </lib-ngx-image-zoom>
+          </div>
         </div>
       </div>
     </div>
@@ -631,6 +647,14 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   getNumericValue(value: string | number | undefined): number {
     return parseFloat(String(value || '0')) || 0;
+  }
+
+  getMfeValue(trade: Table): number {
+    return Math.max(0, this.getNumericValue(trade.mfe));
+  }
+
+  getMaeValue(trade: Table): number {
+    return Math.min(0, this.getNumericValue(trade.mae));
   }
 
   formatTradeTime(value: string): string {

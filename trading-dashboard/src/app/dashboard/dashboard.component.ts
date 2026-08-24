@@ -4,6 +4,7 @@ import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { NgxImageZoomModule } from 'ngx-image-zoom';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule, DOCUMENT, Location } from "@angular/common";
 import { Router, RouterLink } from '@angular/router';
@@ -158,6 +159,7 @@ interface NotionPerformanceData {
     TradingCalendarComponent,
     DreamTimelineComponent,
     LiveRRTrackerComponent,
+    NgxImageZoomModule,
     PropFirmEquityChartComponent,
     WinRateGaugeComponent,
     ProfitFactorGaugeComponent,
@@ -2117,6 +2119,16 @@ get drawdownIsBalanceTrailingMode(): boolean {
 
   getCertificatePreviewUrl(certificate: Certificate): string | null {
     return certificate.file_path && !certificate.file_path.startsWith('http') ? this.certificatePreviewUrls[certificate.id] ?? null : null;
+  }
+
+  openTradeScreenshotViewer(trade: Table): void {
+    if (!trade.screenshotUrl) return;
+    this.certificateImageViewer = { url: trade.screenshotUrl, alt: `${trade.symbol} trade screenshot` };
+  }
+
+  openRoiImageViewer(): void {
+    if (!this.roiImagePreviewUrl) return;
+    this.certificateImageViewer = { url: this.roiImagePreviewUrl, alt: this.roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview' };
   }
 
   openCertificateImageViewer(certificate: Certificate): void {

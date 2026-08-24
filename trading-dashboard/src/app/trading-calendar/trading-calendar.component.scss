@@ -1016,6 +1016,28 @@
   strong {
     color: var(--tf-text-primary);
   }
+
+  .day-trade-extreme {
+    font-weight: 600;
+  }
+
+  .day-trade-mfe {
+    background: rgba(16, 185, 129, 0.14);
+    color: var(--tf-positive);
+
+    strong {
+      color: inherit;
+    }
+  }
+
+  .day-trade-mae {
+    background: rgba(244, 63, 94, 0.14);
+    color: var(--tf-negative);
+
+    strong {
+      color: inherit;
+    }
+  }
 }
 
 .day-trade-media {
@@ -1224,17 +1246,51 @@
   z-index: 20;
   inset: 0;
   display: grid;
-  padding: 3rem;
+  padding: 3rem 3rem 4.5rem;
   place-items: center;
+  overflow: auto;
   background: rgba(2, 6, 23, 0.84);
+}
 
-  img {
-    max-width: min(100%, 1100px);
-    max-height: min(100%, 82vh);
-    object-fit: contain;
-    border-radius: 0.5rem;
-    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4);
-  }
+.screenshot-lightbox-content {
+  display: grid;
+  width: min(100%, 1100px);
+  height: min(82vh, 760px);
+  place-items: center;
+  overflow: auto;
+}
+
+:host ::ng-deep .screenshot-lightbox-content lib-ngx-image-zoom {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep .screenshot-lightbox-content .ngxImageZoomContainer {
+  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+}
+
+:host ::ng-deep .screenshot-lightbox-content .ngxImageZoomThumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+:host ::ng-deep .screenshot-lightbox-content .ngxImageZoomFullContainer {
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+:host ::ng-deep .screenshot-lightbox-content .ngxImageZoomFull {
+  position: absolute;
+  max-width: none;
+  object-fit: initial;
 }
 
 .screenshot-lightbox-close {
