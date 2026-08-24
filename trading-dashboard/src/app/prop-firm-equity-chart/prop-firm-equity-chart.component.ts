@@ -44,6 +44,11 @@ export interface PropFirmChartConfig {
   startingBalance: number;
   profitTarget: number;
   maxDrawdown: number;
+  /**
+   * Live drawdown floor from the drawdown calculation engine. When present it
+   * replaces the static maxDrawdown level so trailing floors are visualized.
+   */
+  maxDrawdownFloor?: number;
   dailyLossLimit: number;
   currentBalance: number;
   currentEquity: number;
@@ -243,7 +248,7 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
   }
 
   private buildMarkLines(pal: AuraPalette): any[] {
-    const { profitTarget, startingBalance, maxDrawdown, dailyLossLimit } = this.config;
+    const { profitTarget, startingBalance, maxDrawdown, dailyLossLimit, maxDrawdownFloor } = this.config;
     const lines: any[] = [];
     const labelBackground = this.isDark() ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.84)';
     const labelStyle = {
@@ -285,9 +290,12 @@ export class PropFirmEquityChartComponent implements OnInit, OnChanges, OnDestro
       });
     }
 
-    if (Number.isFinite(maxDrawdown) && maxDrawdown > 0) {
+    // Prefer the live floor from the drawdown engine (trailing modes) and fall
+    // back to the static configured level.
+    const drawdownFloor = Number.isFinite(maxDrawdownFloor) ? maxDrawdownFloor! : maxDrawdown;
+    if (Number.isFinite(drawdownFloor) && drawdownFloor > 0) {
       lines.push({
-        yAxis: maxDrawdown,
+        yAxis: drawdownFloor,
         name: 'Max Drawdown',
         lineStyle: { color: '#EF4444', width: 1, type: 'dashed', opacity: 0.8 },
         label: {

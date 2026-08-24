@@ -525,7 +525,7 @@
                   </div>
                 </div>
               </div>
-              <div class="target-card max-loss" data-aura-target="chart-stat">
+              <div class="target-card max-loss" data-aura-target="chart-stat" [ngClass]="'dd-status-' + (drawdownState?.status ?? 'normal')">
                 <div class="target-icon">
                   <mat-icon>trending_down</mat-icon>
                 </div>
@@ -533,9 +533,28 @@
                   <div class="target-label gradient-text">Max Drawdown</div>
                   <div class="target-value-group">
                     <div class="target-value loss">{{ mt5AccountInfo.maxTotalDrawdown }}%</div>
-                    <div class="target-amount">{{ (mt5AccountInfo.startingBalance * mt5AccountInfo.maxTotalDrawdown / 100) | currency:'USD':'symbol':'1.0-0' }}</div>
+                    <div class="target-amount">{{ drawdownMaxAmount | currency:'USD':'symbol':'1.0-0' }}</div>
                   </div>
+                  @if (drawdownState; as dd) {
+                    <div class="dd-mode-line" [title]="dd.tooltip">
+                      <span class="dd-mode-name">{{ dd.modeLabel }}</span>
+                      @if (dd.floor !== null) {
+                        <span class="dd-mode-separator">•</span>
+                        <span class="dd-floor-value">
+                          @if (dd.breached || dd.approaching) {
+                            <span class="dd-warning-icon" aria-hidden="true">⚠</span>
+                          }
+                          Floor {{ dd.floor | currency:'USD':'symbol':'1.0-0' }}
+                          @if (dd.locked) {
+                            <span class="dd-lock-indicator" aria-hidden="true" title="Floor locked at your initial balance">🔒</span>
+                          }
+                        </span>
+                      }
+                    </div>
+                  }
                 </div>
+                <button type="button" class="dd-settings-button" aria-label="Configure drawdown rule"
+                        title="Drawdown settings" (click)="openDrawdownSettings(); $event.stopPropagation()">⚙</button>
               </div>
               <div class="target-card daily-limit" data-aura-target="chart-stat">
                 <div class="target-icon">
@@ -1402,16 +1421,44 @@
       </div>
     }
 
+
+    @if (accountPendingDeletion) {
+      <div class="account-modal-backdrop account-delete-backdrop" role="presentation" (click)="cancelAccountDeletion()">
+        <section class="account-delete-modal" role="dialog" aria-modal="true" aria-labelledby="account-delete-title" (click)="$event.stopPropagation()">
+          <div class="account-delete-icon"><mat-icon>delete_outline</mat-icon></div>
+          <div class="account-delete-copy">
+            <p class="account-delete-kicker">Remove account</p>
+            <h3 id="account-delete-title">Delete {{ accountPendingDeletion.name }}?</h3>
+            <p>This will remove the account from your workspace. This action cannot be undone.</p>
+          </div>
+          <div class="account-delete-actions">
+            <button type="button" class="account-delete-cancel" [disabled]="isDeletingAccount" (click)="cancelAccountDeletion()">Keep account</button>
+            <button type="button" class="account-delete-confirm" [disabled]="isDeletingAccount" (click)="confirmAccountDeletion()">
+              <mat-icon>{{ isDeletingAccount ? 'sync' : 'delete_outline' }}</mat-icon>
+              {{ isDeletingAccount ? 'Deleting…' : 'Delete account' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+  </section>
     @if (editingAccountId || isCreatingAccount) {
       <div class="account-modal-backdrop" role="presentation">
-        <section class="account-edit-modal" role="dialog" aria-modal="true" aria-labelledby="account-edit-title">
+        <section class="account-edit-modal" [class.is-drawdown-only]="drawdownOnlyMode" role="dialog" aria-modal="true" aria-labelledby="account-edit-title">
           <div class="account-edit-heading">
             <div>
-              <p class="account-edit-kicker">{{ isCreatingAccount ? 'New trading account' : 'Account settings' }}</p>
-              <h3 id="account-edit-title">{{ isCreatingAccount ? 'Add an account' : 'Edit account details' }}</h3>
-              <p class="account-edit-subtitle">{{ isCreatingAccount ? 'Add the account details you use to track performance and risk.' : 'Keep your trading limits and account identity in sync.' }}</p>
+              @if (drawdownOnlyMode) {
+                <p class="account-edit-kicker">Risk rule</p>
+                <h3 id="account-edit-title">Max Drawdown</h3>
+                <p class="account-edit-subtitle">Configure how this account’s drawdown rule works.</p>
+              } @else {
+                <p class="account-edit-kicker">{{ isCreatingAccount ? 'New trading account' : 'Account settings' }}</p>
+                <h3 id="account-edit-title">{{ isCreatingAccount ? 'Add an account' : 'Edit account details' }}</h3>
+                <p class="account-edit-subtitle">{{ isCreatingAccount ? 'Add the account details you use to track performance and risk.' : 'Keep your trading limits and account identity in sync.' }}</p>
+              }
             </div>
           </div>
+          @if (!drawdownOnlyMode) {
           <div class="account-edit-fields">
             <label class="account-edit-field account-edit-field-wide">
               <span>Account name</span>
@@ -1468,45 +1515,92 @@
               <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.profit_target_percent" />
             </label>
             <label class="account-edit-field">
-              <span>Max drawdown %</span>
-              <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.max_total_drawdown_percent" />
-            </label>
-            <label class="account-edit-field">
               <span>Daily loss limit %</span>
               <input type="number" min="0" step="0.1" [(ngModel)]="accountEditForm.daily_loss_limit_percent" />
             </label>
           </div>
-          <div class="account-edit-actions">
-            <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">Cancel</button>
-            <button type="button" class="account-edit-save" [disabled]="isSavingAccount || !accountEditForm.name?.trim() || !accountEditForm.platform" (click)="saveAccountEdit()">
-              <mat-icon>{{ isSavingAccount ? 'sync' : isCreatingAccount ? 'add' : 'save' }}</mat-icon>
-              {{ isSavingAccount ? (isCreatingAccount ? 'Adding…' : 'Saving…') : (isCreatingAccount ? 'Add account' : 'Save changes') }}
-            </button>
-          </div>
-        </section>
-      </div>
-    }
+          }
 
-    @if (accountPendingDeletion) {
-      <div class="account-modal-backdrop account-delete-backdrop" role="presentation" (click)="cancelAccountDeletion()">
-        <section class="account-delete-modal" role="dialog" aria-modal="true" aria-labelledby="account-delete-title" (click)="$event.stopPropagation()">
-          <div class="account-delete-icon"><mat-icon>delete_outline</mat-icon></div>
-          <div class="account-delete-copy">
-            <p class="account-delete-kicker">Remove account</p>
-            <h3 id="account-delete-title">Delete {{ accountPendingDeletion.name }}?</h3>
-            <p>This will remove the account from your workspace. This action cannot be undone.</p>
+          <!-- Drawdown rule configuration (opened directly from the Max Drawdown card ⚙) -->
+          <div class="account-edit-drawdown">
+            <div class="account-edit-section-header">
+              <h4>Max Drawdown</h4>
+              <span class="account-edit-section-hint">How this account's drawdown rule works</span>
+            </div>
+            <div class="account-edit-fields">
+              <label class="account-edit-field">
+                <span>Percentage (%)</span>
+                <input type="number" min="0" step="0.1"
+                       [(ngModel)]="accountEditForm.max_total_drawdown_percent"
+                       (ngModelChange)="onDrawdownPercentInput()" name="drawdown-percent" />
+              </label>
+              <label class="account-edit-field">
+                <span>Amount ($)</span>
+                <input type="number" min="0" step="1"
+                       [ngModel]="drawdownEditAmount"
+                       (ngModelChange)="drawdownEditAmount = $event; onDrawdownAmountInput()"
+                       [disabled]="getDrawdownBaseBalance() <= 0"
+                       name="drawdown-amount" />
+              </label>
+              <label class="account-edit-field">
+                <span>Drawdown mode</span>
+                <select [(ngModel)]="accountEditForm.drawdown_mode" (ngModelChange)="onDrawdownModeChange()" name="drawdown-mode">
+                  @for (mode of drawdownModeOptions; track mode.value) {
+                    <option [value]="mode.value" [title]="mode.tooltip">{{ mode.label }}</option>
+                  }
+                </select>
+              </label>
+              @if (drawdownShowTrailingOptions) {
+                <label class="account-edit-field">
+                  <span>{{ drawdownIsEodMode ? 'EOD basis' : 'Trailing basis' }}</span>
+                  <select [(ngModel)]="accountEditForm.drawdown_basis" name="drawdown-basis"
+                          [disabled]="drawdownIsBalanceTrailingMode"
+                          [title]="drawdownIsBalanceTrailingMode ? 'Balance Trailing always follows your highest realized balance.' : ''">
+                    <option value="balance">Balance</option>
+                    @if (!drawdownIsBalanceTrailingMode) {
+                      <option value="equity">Equity</option>
+                    }
+                  </select>
+                  @if (drawdownIsBalanceTrailingMode) {
+                    <small class="account-edit-field-hint">Floor follows your highest realized balance.</small>
+                  }
+                </label>
+                @if (drawdownIsEodMode) {
+                  <label class="account-edit-field">
+                    <span>Account timezone</span>
+                    <select [(ngModel)]="accountEditForm.drawdown_eod_timezone" name="drawdown-eod-timezone">
+                      @for (tz of drawdownEodTimezones; track tz) {
+                        <option [value]="tz">{{ tz }}</option>
+                      }
+                    </select>
+                    <small class="account-edit-field-hint">End-of-day result uses this trading/session timezone.</small>
+                  </label>
+                }
+                <label class="account-edit-field account-edit-toggle-field">
+                  <span>Stop trailing at initial balance</span>
+                  <mat-slide-toggle color="primary" name="drawdown-stop-at-ib"
+                                    [(ngModel)]="accountEditForm.drawdown_stop_at_initial_balance">
+                    {{ accountEditForm.drawdown_stop_at_initial_balance ? 'ON' : 'OFF' }}
+                  </mat-slide-toggle>
+                  <small class="account-edit-field-hint">The floor trails upward but stops for good once it reaches your initial balance.</small>
+                </label>
+              } @else {
+                <div class="account-edit-field account-edit-static-note">
+                  <small class="account-edit-field-hint">Static level based on your starting balance — no trailing configuration needed.</small>
+                </div>
+              }
+            </div>
           </div>
-          <div class="account-delete-actions">
-            <button type="button" class="account-delete-cancel" [disabled]="isDeletingAccount" (click)="cancelAccountDeletion()">Keep account</button>
-            <button type="button" class="account-delete-confirm" [disabled]="isDeletingAccount" (click)="confirmAccountDeletion()">
-              <mat-icon>{{ isDeletingAccount ? 'sync' : 'delete_outline' }}</mat-icon>
-              {{ isDeletingAccount ? 'Deleting…' : 'Delete account' }}
+          <div class="account-edit-actions">
+            <button type="button" class="account-edit-cancel" (click)="cancelAccountEdit()">{{ drawdownOnlyMode ? 'Close' : 'Cancel' }}</button>
+            <button type="button" class="account-edit-save" [disabled]="isSavingAccount || (!drawdownOnlyMode && (!accountEditForm.name?.trim() || !accountEditForm.platform))" (click)="saveAccountEdit()">
+              <mat-icon>{{ isSavingAccount ? 'sync' : isCreatingAccount ? 'add' : 'save' }}</mat-icon>
+              {{ drawdownOnlyMode ? (isSavingAccount ? 'Saving…' : 'Save drawdown rule') : (isSavingAccount ? (isCreatingAccount ? 'Adding…' : 'Saving…') : (isCreatingAccount ? 'Add account' : 'Save changes')) }}
             </button>
           </div>
         </section>
       </div>
     }
-  </section>
 
   <section id="mt5-import" class="mt5-import-section" *ngIf="currentWorkspace === 'active-account'">
     <div class="mt5-report-import">

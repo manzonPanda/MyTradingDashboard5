@@ -35,6 +35,7 @@ import { NewsReminderService } from '../services/news-reminder.service';
 import { ConfettiService } from '../services/confetti.service';
 import { AuraEnergyService, AuraEnergyConfig, DEFAULT_AURA_ENERGY_CONFIG } from '../services/aura-energy.service';
 import { Account, Certificate, Payout, PropFirm, RoiTransaction, SupabaseService, Trade, UserSettings } from '../services/supabase.service';
+import { DrawdownService, DEFAULT_DRAWDOWN_CONFIG, DrawdownBasis, DrawdownConfig, DrawdownMode, DrawdownState } from '../services/drawdown.service';
 import { Mt5TimeService } from '../services/mt5-time.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
@@ -665,10 +666,15 @@ export class DashboardComponent implements AfterViewInit {
       profit_target_percent: null,
       max_total_drawdown_percent: null,
       daily_loss_limit_percent: null,
+      drawdown_mode: DEFAULT_DRAWDOWN_CONFIG.mode,
+      drawdown_basis: DEFAULT_DRAWDOWN_CONFIG.basis,
+      drawdown_stop_at_initial_balance: DEFAULT_DRAWDOWN_CONFIG.stopAtInitialBalance,
+      drawdown_eod_timezone: DEFAULT_DRAWDOWN_CONFIG.eodTimezone,
       start_date: new Date().toISOString().slice(0, 10),
       status: 'active',
       phase: 'phase1'
     };
+    this.drawdownEditAmount = null;
     this.cdr.markForCheck();
   }
 
@@ -684,10 +690,15 @@ export class DashboardComponent implements AfterViewInit {
       profit_target_percent: account.profit_target_percent ?? 0,
       max_total_drawdown_percent: account.max_total_drawdown_percent ?? 0,
       daily_loss_limit_percent: account.daily_loss_limit_percent ?? 0,
+      drawdown_mode: (account.drawdown_mode ?? DEFAULT_DRAWDOWN_CONFIG.mode) as DrawdownMode,
+      drawdown_basis: (account.drawdown_basis ?? DEFAULT_DRAWDOWN_CONFIG.basis) as DrawdownBasis,
+      drawdown_stop_at_initial_balance: account.drawdown_stop_at_initial_balance ?? false,
+      drawdown_eod_timezone: account.drawdown_eod_timezone ?? DEFAULT_DRAWDOWN_CONFIG.eodTimezone,
       start_date: account.start_date ? account.start_date.slice(0, 10) : '',
       status: account.status ?? 'active',
       phase: account.phase ?? 'phase1'
     };
+    this.onDrawdownPercentInput();
     this.cdr.markForCheck();
   }
 
@@ -695,6 +706,7 @@ export class DashboardComponent implements AfterViewInit {
     this.editingAccountId = null;
     this.isCreatingAccount = false;
     this.accountEditForm = {};
+    this.drawdownOnlyMode = false;
     this.isSavingAccount = false;
   }
 
@@ -764,6 +776,10 @@ export class DashboardComponent implements AfterViewInit {
       profit_target_percent: Number(this.accountEditForm.profit_target_percent) || 0,
       max_total_drawdown_percent: Number(this.accountEditForm.max_total_drawdown_percent) || 0,
       daily_loss_limit_percent: Number(this.accountEditForm.daily_loss_limit_percent) || 0,
+      drawdown_mode: (this.accountEditForm.drawdown_mode ?? DEFAULT_DRAWDOWN_CONFIG.mode) as DrawdownMode,
+      drawdown_basis: (this.accountEditForm.drawdown_basis ?? DEFAULT_DRAWDOWN_CONFIG.basis) as DrawdownBasis,
+      drawdown_stop_at_initial_balance: this.accountEditForm.drawdown_stop_at_initial_balance ?? false,
+      drawdown_eod_timezone: this.accountEditForm.drawdown_eod_timezone ?? DEFAULT_DRAWDOWN_CONFIG.eodTimezone,
       start_date: this.accountEditForm.start_date || null,
       status: this.accountEditForm.status || 'active',
       phase: this.accountEditForm.phase || 'phase1'
@@ -821,6 +837,126 @@ mt5AccountInfo: AccountSettings = {
   maxTotalDrawdown: 0,
   dailyLossLimit: 0
 };
+
+// ── Drawdown risk-status widget state ────────────────────────────────────────
+// Calculated by the centralized DrawdownService from configuration + trading
+// data. Never persisted — only the rule configuration lives on the account row.
+drawdownState: DrawdownState | null = null;
+/**
+ * Drawdown-focused modal mode: opened via the ⚙ button, shows ONLY the
+ * drawdown configuration instead of the full account editor.
+ */
+drawdownOnlyMode = false;
+/** Transient dollar amount backing the amount↔percent inputs in settings. */
+drawdownEditAmount: number | null = null;
+
+/** Dollar value of the configured maximum drawdown shown on the card. */
+get drawdownMaxAmount(): number {
+  if (this.drawdownState && this.drawdownState.maxDrawdownAmount > 0) {
+    return this.drawdownState.maxDrawdownAmount;
+  }
+  const startingBalance = this.mt5AccountInfo?.startingBalance || 0;
+  return Math.round(startingBalance * (this.mt5AccountInfo?.maxTotalDrawdown || 0) / 100);
+}
+
+/** Initial balance used to convert between the % and $ drawdown inputs. */
+getDrawdownBaseBalance(): number {
+  const formBalance = Number(this.accountEditForm.initial_balance);
+  if (Number.isFinite(formBalance) && formBalance > 0) return formBalance;
+  return this.selectedAccount ? this.inferAccountSize(this.selectedAccount) : 0;
+}
+
+/** Draws the ⚙ button / config UI conditionals straight from the selected account. */
+private getDrawdownConfig(): DrawdownConfig {
+  const account = this.selectedAccount;
+  return {
+    mode: (account?.drawdown_mode as DrawdownMode | null | undefined) ?? DEFAULT_DRAWDOWN_CONFIG.mode,
+    basis: (account?.drawdown_basis as DrawdownBasis | null | undefined) ?? DEFAULT_DRAWDOWN_CONFIG.basis,
+    stopAtInitialBalance: account?.drawdown_stop_at_initial_balance ?? DEFAULT_DRAWDOWN_CONFIG.stopAtInitialBalance,
+    eodTimezone: account?.drawdown_eod_timezone ?? DEFAULT_DRAWDOWN_CONFIG.eodTimezone
+  };
+}
+
+/** One-click path: Dashboard → Max Drawdown → ⚙ → drawdown settings. */
+openDrawdownSettings(): void {
+  const account = this.selectedAccount;
+  if (!account) {
+    // No accounts yet — fall back to the full creator (identity fields first).
+    this.openAccountCreator();
+    return;
+  }
+  this.editAccount(account);
+  // Focused mode: show only the drawdown configuration.
+  this.drawdownOnlyMode = true;
+  setTimeout(() => {
+    this.document.querySelector('.account-edit-drawdown')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    this.cdr.markForCheck();
+  }, 80);
+}
+
+/** Percent input → keep the $ amount field in sync (uses initial balance). */
+onDrawdownPercentInput(): void {
+  const base = this.getDrawdownBaseBalance();
+  const percent = Number(this.accountEditForm.max_total_drawdown_percent);
+  this.drawdownEditAmount =
+    base > 0 && Number.isFinite(percent)
+      ? Math.round(base * (percent / 100) * 100) / 100
+      : null;
+}
+
+/** Amount input → keep the % field in sync (percentage stays source of truth). */
+onDrawdownAmountInput(): void {
+  const base = this.getDrawdownBaseBalance();
+  const amount = Number(this.drawdownEditAmount);
+  if (base > 0 && Number.isFinite(amount) && amount >= 0) {
+    this.accountEditForm.max_total_drawdown_percent = Math.round((amount / base) * 10000) / 100;
+  }
+}
+
+/** Balance Trailing always follows realized balance — lock the basis choice. */
+onDrawdownModeChange(): void {
+  if (this.accountEditForm.drawdown_mode === 'balance_trailing') {
+    this.accountEditForm.drawdown_basis = 'balance';
+  }
+}
+
+/** Mode dropdown options (labels + tooltips come from the engine metadata). */
+get drawdownModeOptions() {
+  return this.drawdownService.getAvailableModes();
+}
+
+/** Common IANA timezones offered for the EOD cutoff. */
+readonly drawdownEodTimezones: string[] = [
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'Europe/London',
+  'Europe/Berlin',
+  'Europe/Moscow',
+  'Asia/Dubai',
+  'Asia/Singapore',
+  'Asia/Hong_Kong',
+  'Asia/Tokyo',
+  'Asia/Manila',
+  'Australia/Sydney'
+];
+
+get drawdownShowTrailingOptions(): boolean {
+  const mode = this.accountEditForm.drawdown_mode;
+  return !!mode && mode !== 'fixed';
+}
+
+get drawdownIsEodMode(): boolean {
+  return this.accountEditForm.drawdown_mode === 'eod_trailing';
+}
+
+get drawdownIsBalanceTrailingMode(): boolean {
+  return this.accountEditForm.drawdown_mode === 'balance_trailing';
+}
+
+
   mt5LiveTrades: Table[] = []; // Live trades from MT5
   private mt5OpenPositionIds: Set<string> | null = null;
   private isMt5LiveSnapshotAvailable = false;
@@ -1267,7 +1403,8 @@ mt5AccountInfo: AccountSettings = {
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService, @Inject(DOCUMENT) private document: Document) {
+    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService,
+    public drawdownService: DrawdownService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
@@ -2289,6 +2426,26 @@ mt5AccountInfo: AccountSettings = {
       dailyLossLimit: account?.daily_loss_limit_percent ?? 0
     };
     this.dropdownSelectedSize = this.mt5AccountInfo.startingBalance;
+    // Refresh the risk-status widget immediately against the existing equity
+    // curve so rule changes are visible before the next full chart rebuild.
+    this.recomputeDrawdownState();
+  }
+
+  /** Re-runs the drawdown engine with the latest configuration + known curve. */
+  private recomputeDrawdownState(): void {
+    const startingBalance = this.mt5AccountInfo?.startingBalance ?? 0;
+    const lastBalance =
+      this.chartConfig?.currentBalance ?? this.mt5AccountInfo.balance ?? startingBalance;
+    const lastEquity =
+      this.chartConfig?.currentEquity ?? this.mt5AccountInfo.balance ?? startingBalance;
+    this.drawdownState = this.drawdownService.computeState(this.getDrawdownConfig(), {
+      startingBalance,
+      maxDrawdownPercent: this.mt5AccountInfo?.maxTotalDrawdown ?? 0,
+      points: this.accountEquityData ?? [],
+      currentBalance: lastBalance,
+      currentEquity: lastEquity,
+      sessionStartTimestamp: this.getSessionWindowUtc().start.toISOString()
+    });
   }
 
   async selectAccount(account: Account): Promise<void> {
@@ -3232,13 +3389,29 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     }
 
     this.accountEquityData = points;
+
+    // Centralized drawdown calculation — rule configuration comes from the
+    // selected account row; trading data comes from the curve built above.
+    // The dashboard never implements drawdown math itself.
+    const currentBalanceRounded = Math.round(runningBalance * 100) / 100;
+    const currentEquityRounded = Math.round((runningBalance + floatingPnL) * 100) / 100;
+    this.drawdownState = this.drawdownService.computeState(this.getDrawdownConfig(), {
+      startingBalance,
+      maxDrawdownPercent: maxDDPct,
+      points,
+      currentBalance: currentBalanceRounded,
+      currentEquity: currentEquityRounded,
+      sessionStartTimestamp: this.getSessionWindowUtc().start.toISOString()
+    });
+
     this.chartConfig = {
       startingBalance,
       profitTarget,
       maxDrawdown,
       dailyLossLimit,
-      currentBalance: Math.round(runningBalance * 100) / 100,
-      currentEquity: Math.round((runningBalance + floatingPnL) * 100) / 100,
+      maxDrawdownFloor: this.drawdownState?.floor ?? undefined,
+      currentBalance: currentBalanceRounded,
+      currentEquity: currentEquityRounded,
       floatingPnL,
       hasLiveTrade: openTrades.length > 0,
     };

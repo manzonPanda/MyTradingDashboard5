@@ -310,6 +310,152 @@
   }
 }
 
+// ── Max Drawdown risk-status widget (card accent states) ────────────────────
+// Neutral blue/purple → normal · amber → approaching · green/cyan → locked
+// · red → breached (reuses the existing .max-loss danger styling).
+.mt5-account-info .target-card {
+  &.max-loss.dd-status-normal,
+  &.dd-status-normal {
+    &::before {
+      background: linear-gradient(90deg, #6366f1, #818cf8);
+    }
+  }
+
+  &.dd-status-approaching {
+    &::before {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    &:hover {
+      box-shadow:
+        0 12px 40px rgba(245, 158, 11, 0.2),
+        0 6px 16px rgba(245, 158, 11, 0.14);
+    }
+  }
+
+  &.dd-status-locked {
+    &::before {
+      background: linear-gradient(90deg, #10b981, #06b6d4);
+    }
+
+    &:hover {
+      box-shadow:
+        0 12px 40px rgba(16, 185, 129, 0.18),
+        0 6px 16px rgba(6, 182, 212, 0.14);
+    }
+  }
+
+  &.dd-status-breached::before {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+  }
+
+  &.max-loss .target-content {
+    // Leave room for the ⚙ settings button in the top-right corner.
+    padding-right: 1rem;
+  }
+
+  // Keep the card + gear button interactive even if an ancestor disables
+  // pointer events (same defensive pattern as .chart-mode-card).
+  &.max-loss,
+  &.max-loss .dd-settings-button {
+    pointer-events: auto;
+  }
+}
+
+.dd-mode-line {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.28rem;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: default;
+
+  .dd-mode-name {
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .dd-mode-separator {
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  .dd-floor-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dd-warning-icon,
+  .dd-lock-indicator {
+    font-size: 0.62rem;
+    flex-shrink: 0;
+  }
+
+  .dd-warning-icon {
+    color: #d97706;
+  }
+
+  .dd-lock-indicator {
+    filter: saturate(0.85);
+  }
+}
+
+.dd-status-approaching .dd-floor-value {
+  color: #b45309;
+}
+
+.dd-status-locked .dd-floor-value {
+  color: #047857;
+}
+
+.dd-status-breached .dd-floor-value {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+// Subtle one-click access to the drawdown rule configuration.
+.dd-settings-button {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    transform: rotate(45deg);
+    background: rgba(148, 163, 184, 0.16);
+    color: #475569;
+    outline: none;
+  }
+
+  &:active {
+    transform: rotate(45deg) scale(0.9);
+  }
+}
+
 // Beautiful Chart Stats Styling - Remove Circles and Match Target Card Height
 .chart-stats {
   display: flex;
@@ -1015,6 +1161,52 @@ table.simple-table {
 
     &.daily-limit .target-value {
       color: #fbbf24;
+    }
+  }
+
+  // Dark-theme drawdown widget accents.
+  .mt5-account-info .target-card {
+    &.dd-status-normal::before {
+      background: linear-gradient(90deg, #818cf8, #a5b4fc);
+    }
+
+    &.dd-status-approaching::before {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    &.dd-status-locked::before {
+      background: linear-gradient(90deg, #34d399, #22d3ee);
+    }
+
+    &.dd-status-breached::before {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+  }
+
+  .dd-mode-line {
+    color: #94a3b8;
+  }
+
+  .dd-status-approaching .dd-floor-value,
+  .dd-status-approaching .dd-warning-icon {
+    color: #fbbf24;
+  }
+
+  .dd-status-locked .dd-floor-value {
+    color: #34d399;
+  }
+
+  .dd-status-breached .dd-floor-value {
+    color: #f87171;
+  }
+
+  .dd-settings-button {
+    color: #64748b;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(148, 163, 184, 0.18);
+      color: #cbd5e1;
     }
   }
 
@@ -12024,6 +12216,12 @@ table.simple-table {
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.35);
 }
 
+// Focused variant opened via the Max Drawdown card ⚙ — identity fields hidden,
+// so the dialog can be narrower and centered on the risk rule alone.
+.account-edit-modal.is-drawdown-only {
+  width: min(560px, 100%);
+}
+
 .account-edit-heading {
   display: flex;
   align-items: center;
@@ -12099,6 +12297,72 @@ table.simple-table {
 
 .account-edit-field-wide {
   grid-column: span 2;
+}
+
+// ── Drawdown rule configuration section (account settings modal) ────────────
+.account-edit-drawdown {
+  margin-top: 1.1rem;
+  padding: 0.9rem 0.95rem 1rem;
+  border: 1px solid var(--tf-border-secondary);
+  border-radius: 0.85rem;
+  background: rgba(148, 163, 184, 0.06);
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+
+  // Brief highlight when opened via the Max Drawdown card's ⚙ button.
+  &.account-edit-drawdown-focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18);
+  }
+
+  .account-edit-section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+
+    h4 {
+      margin: 0;
+      color: var(--tf-text-primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .account-edit-section-hint {
+      color: var(--tf-text-muted);
+      font-size: 0.66rem;
+      font-weight: 600;
+    }
+  }
+
+  .account-edit-field-hint {
+    grid-column: 1 / -1;
+    color: var(--tf-text-muted);
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .account-edit-toggle-field {
+    mat-slide-toggle {
+      justify-self: start;
+    }
+  }
+
+  .account-edit-static-note {
+    align-self: center;
+  }
+
+  input:disabled,
+  select:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
 }
 
 .account-edit-actions {
