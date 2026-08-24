@@ -940,12 +940,18 @@
 
         <!-- Emotion Selection -->
         <div class="emotion-section-compact" *ngIf="!isTradeEmotionalSubmitted(trade)">
-          <img
+          <button
             *ngIf="trade.screenshotUrl && !hasScreenshotLoadError(trade.position)"
-            class="emotion-trade-screenshot"
-            [src]="trade.screenshotUrl"
-            [alt]="trade.symbol + ' trade screenshot'"
-            (error)="onScreenshotLoadError(trade.position)">
+            type="button"
+            class="emotion-trade-screenshot-button"
+            [attr.aria-label]="'Enlarge ' + trade.symbol + ' trade screenshot'"
+            (click)="openTradeScreenshotViewer(trade)">
+            <img
+              class="emotion-trade-screenshot"
+              [src]="trade.screenshotUrl"
+              [alt]="trade.symbol + ' trade screenshot'"
+              (error)="onScreenshotLoadError(trade.position)">
+          </button>
           <div *ngIf="hasScreenshotLoadError(trade.position)" class="screenshot-load-fallback">
             Screenshot unavailable
           </div>
@@ -1114,7 +1120,9 @@
                   </label>
                   @if (roiImagePreviewUrl) {
                     <div class="roi-image-preview">
-                      <img [src]="roiImagePreviewUrl" [alt]="roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview'">
+                      <button type="button" class="roi-image-preview-button" [attr.aria-label]="'Enlarge ' + (roiForm.transaction_type === 'payout' ? 'payout receipt' : 'expense image')" (click)="openRoiImageViewer()">
+                        <img [src]="roiImagePreviewUrl" [alt]="roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview'">
+                      </button>
                       <span>{{ editingRoiTransactionId ? 'Current image' : 'Selected image' }}</span>
                     </div>
                   }
@@ -1268,7 +1276,14 @@
         <div class="certificate-image-viewer-backdrop" role="presentation" (click)="closeCertificateImageViewer()">
           <section class="certificate-image-viewer" role="dialog" aria-modal="true" aria-label="Certificate preview" (click)="$event.stopPropagation()">
             <button class="certificate-image-viewer-close" type="button" aria-label="Close certificate preview" (click)="closeCertificateImageViewer()"><mat-icon>close</mat-icon></button>
-            <img class="certificate-expanded-preview" [src]="viewer.url" [alt]="viewer.alt">
+            <div class="certificate-image-viewer-content">
+              <img class="certificate-expanded-preview" [src]="viewer.url" [alt]="viewer.alt" [style.transform]="'scale(' + viewer.zoom + ')'" (wheel)="onImageViewerWheel($event)">
+            </div>
+            <div class="certificate-image-viewer-controls" aria-label="Image zoom controls">
+              <button type="button" aria-label="Zoom out" title="Zoom out" [disabled]="viewer.zoom <= 1" (click)="setImageViewerZoom(viewer.zoom - 0.25)"><mat-icon aria-hidden="true">remove</mat-icon></button>
+              <button type="button" aria-label="Reset zoom" title="Reset zoom" (click)="setImageViewerZoom(1)">{{ (viewer.zoom * 100).toFixed(0) }}%</button>
+              <button type="button" aria-label="Zoom in" title="Zoom in" [disabled]="viewer.zoom >= 3" (click)="setImageViewerZoom(viewer.zoom + 0.25)"><mat-icon aria-hidden="true">add</mat-icon></button>
+            </div>
           </section>
         </div>
       }

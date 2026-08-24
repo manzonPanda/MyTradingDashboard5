@@ -214,7 +214,7 @@ export class DashboardComponent implements AfterViewInit {
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
   certificatePreviewUrls: Record<string, string> = {};
-  certificateImageViewer: { url: string; alt: string } | null = null;
+  certificateImageViewer: { url: string; alt: string; zoom: number } | null = null;
   payoutProofUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
@@ -2119,10 +2119,20 @@ get drawdownIsBalanceTrailingMode(): boolean {
     return certificate.file_path && !certificate.file_path.startsWith('http') ? this.certificatePreviewUrls[certificate.id] ?? null : null;
   }
 
+  openTradeScreenshotViewer(trade: Table): void {
+    if (!trade.screenshotUrl) return;
+    this.certificateImageViewer = { url: trade.screenshotUrl, alt: `${trade.symbol} trade screenshot`, zoom: 1 };
+  }
+
+  openRoiImageViewer(): void {
+    if (!this.roiImagePreviewUrl) return;
+    this.certificateImageViewer = { url: this.roiImagePreviewUrl, alt: this.roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview', zoom: 1 };
+  }
+
   openCertificateImageViewer(certificate: Certificate): void {
     const url = this.getCertificatePreviewUrl(certificate);
     if (!url) return;
-    this.certificateImageViewer = { url, alt: `${this.getCertificateFirmName(certificate)} certificate` };
+    this.certificateImageViewer = { url, alt: `${this.getCertificateFirmName(certificate)} certificate`, zoom: 1 };
   }
 
   closeCertificateImageViewer(): void {
@@ -2147,7 +2157,17 @@ get drawdownIsBalanceTrailingMode(): boolean {
   openPayoutImageViewer(payout: Payout): void {
     const url = this.getPayoutProofUrl(payout);
     if (!url) return;
-    this.certificateImageViewer = { url, alt: `${this.getPayoutFirmName(payout)} payout proof` };
+    this.certificateImageViewer = { url, alt: `${this.getPayoutFirmName(payout)} payout proof`, zoom: 1 };
+  }
+
+  setImageViewerZoom(zoom: number): void {
+    if (!this.certificateImageViewer) return;
+    this.certificateImageViewer.zoom = Math.min(3, Math.max(1, zoom));
+  }
+
+  onImageViewerWheel(event: WheelEvent): void {
+    event.preventDefault();
+    this.setImageViewerZoom((this.certificateImageViewer?.zoom ?? 1) + (event.deltaY < 0 ? 0.25 : -0.25));
   }
 
   private async loadPayoutProofUrls(payouts: Payout[]): Promise<void> {

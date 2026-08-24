@@ -271,7 +271,14 @@ interface WeekSummary {
           <button type="button" class="screenshot-lightbox-close" aria-label="Close screenshot preview" (click)="closeScreenshot()">
             <mat-icon aria-hidden="true">close</mat-icon>
           </button>
-          <img [src]="activeScreenshotUrl" alt="Trade screenshot enlarged" (click)="$event.stopPropagation()">
+          <div class="screenshot-lightbox-content" (click)="$event.stopPropagation()">
+            <img [src]="activeScreenshotUrl" alt="Trade screenshot enlarged" [style.transform]="'scale(' + activeScreenshotZoom + ')'" (wheel)="onScreenshotWheel($event)">
+          </div>
+          <div class="screenshot-lightbox-controls" (click)="$event.stopPropagation()" aria-label="Screenshot zoom controls">
+            <button type="button" aria-label="Zoom out" title="Zoom out" [disabled]="activeScreenshotZoom <= 1" (click)="setScreenshotZoom(activeScreenshotZoom - 0.25)"><mat-icon aria-hidden="true">remove</mat-icon></button>
+            <button type="button" aria-label="Reset zoom" title="Reset zoom" (click)="setScreenshotZoom(1)">{{ (activeScreenshotZoom * 100).toFixed(0) }}%</button>
+            <button type="button" aria-label="Zoom in" title="Zoom in" [disabled]="activeScreenshotZoom >= 3" (click)="setScreenshotZoom(activeScreenshotZoom + 0.25)"><mat-icon aria-hidden="true">add</mat-icon></button>
+          </div>
         </div>
       </div>
     </div>
@@ -293,6 +300,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   private readonly deletingScreenshotUrls = new Set<string>();
   private readonly draggingScreenshotTickets = new Set<string>();
   activeScreenshotUrl: string | null = null;
+  activeScreenshotZoom = 1;
   confirmingDeleteUrl: string | null = null;
   private readonly screenshotLoadedTickets = new Set<string>();
   private readonly screenshotLoadingTickets = new Set<string>();
@@ -563,10 +571,21 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   openScreenshot(screenshotUrl: string): void {
     this.activeScreenshotUrl = screenshotUrl;
+    this.activeScreenshotZoom = 1;
   }
 
   closeScreenshot(): void {
     this.activeScreenshotUrl = null;
+    this.activeScreenshotZoom = 1;
+  }
+
+  setScreenshotZoom(zoom: number): void {
+    this.activeScreenshotZoom = Math.min(3, Math.max(1, zoom));
+  }
+
+  onScreenshotWheel(event: WheelEvent): void {
+    event.preventDefault();
+    this.setScreenshotZoom(this.activeScreenshotZoom + (event.deltaY < 0 ? 0.25 : -0.25));
   }
 
   requestDeleteScreenshot(screenshotUrl: string): void {
