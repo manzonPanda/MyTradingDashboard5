@@ -4,6 +4,7 @@ import { MatCardModule  } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { NgxImageZoomModule } from 'ngx-image-zoom';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule, DOCUMENT, Location } from "@angular/common";
 import { Router, RouterLink } from '@angular/router';
@@ -158,6 +159,7 @@ interface NotionPerformanceData {
     TradingCalendarComponent,
     DreamTimelineComponent,
     LiveRRTrackerComponent,
+    NgxImageZoomModule,
     PropFirmEquityChartComponent,
     WinRateGaugeComponent,
     ProfitFactorGaugeComponent,
@@ -214,7 +216,7 @@ export class DashboardComponent implements AfterViewInit {
   isDeletingCertificate = false;
   certificateDeleteConfirmationId: string | null = null;
   certificatePreviewUrls: Record<string, string> = {};
-  certificateImageViewer: { url: string; alt: string; zoom: number } | null = null;
+  certificateImageViewer: { url: string; alt: string } | null = null;
   payoutProofUrls: Record<string, string> = {};
   private certificateDeleteConfirmationTimer?: number;
   isSavingPayout = false;
@@ -2121,18 +2123,18 @@ get drawdownIsBalanceTrailingMode(): boolean {
 
   openTradeScreenshotViewer(trade: Table): void {
     if (!trade.screenshotUrl) return;
-    this.certificateImageViewer = { url: trade.screenshotUrl, alt: `${trade.symbol} trade screenshot`, zoom: 1 };
+    this.certificateImageViewer = { url: trade.screenshotUrl, alt: `${trade.symbol} trade screenshot` };
   }
 
   openRoiImageViewer(): void {
     if (!this.roiImagePreviewUrl) return;
-    this.certificateImageViewer = { url: this.roiImagePreviewUrl, alt: this.roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview', zoom: 1 };
+    this.certificateImageViewer = { url: this.roiImagePreviewUrl, alt: this.roiForm.transaction_type === 'payout' ? 'Payout receipt preview' : 'Expense image preview' };
   }
 
   openCertificateImageViewer(certificate: Certificate): void {
     const url = this.getCertificatePreviewUrl(certificate);
     if (!url) return;
-    this.certificateImageViewer = { url, alt: `${this.getCertificateFirmName(certificate)} certificate`, zoom: 1 };
+    this.certificateImageViewer = { url, alt: `${this.getCertificateFirmName(certificate)} certificate` };
   }
 
   closeCertificateImageViewer(): void {
@@ -2157,17 +2159,7 @@ get drawdownIsBalanceTrailingMode(): boolean {
   openPayoutImageViewer(payout: Payout): void {
     const url = this.getPayoutProofUrl(payout);
     if (!url) return;
-    this.certificateImageViewer = { url, alt: `${this.getPayoutFirmName(payout)} payout proof`, zoom: 1 };
-  }
-
-  setImageViewerZoom(zoom: number): void {
-    if (!this.certificateImageViewer) return;
-    this.certificateImageViewer.zoom = Math.min(3, Math.max(1, zoom));
-  }
-
-  onImageViewerWheel(event: WheelEvent): void {
-    event.preventDefault();
-    this.setImageViewerZoom((this.certificateImageViewer?.zoom ?? 1) + (event.deltaY < 0 ? 0.25 : -0.25));
+    this.certificateImageViewer = { url, alt: `${this.getPayoutFirmName(payout)} payout proof` };
   }
 
   private async loadPayoutProofUrls(payouts: Payout[]): Promise<void> {

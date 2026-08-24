@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStra
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { NgxImageZoomModule } from 'ngx-image-zoom';
 import { SupabaseService } from '../services/supabase.service';
 
 interface Table {
@@ -60,7 +61,7 @@ interface WeekSummary {
 @Component({
   selector: 'app-trading-calendar',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, NgxImageZoomModule],
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
     <div class="trading-calendar-container">
@@ -272,12 +273,16 @@ interface WeekSummary {
             <mat-icon aria-hidden="true">close</mat-icon>
           </button>
           <div class="screenshot-lightbox-content" (click)="$event.stopPropagation()">
-            <img [src]="activeScreenshotUrl" alt="Trade screenshot enlarged" [style.transform]="'scale(' + activeScreenshotZoom + ')'" (wheel)="onScreenshotWheel($event)">
-          </div>
-          <div class="screenshot-lightbox-controls" (click)="$event.stopPropagation()" aria-label="Screenshot zoom controls">
-            <button type="button" aria-label="Zoom out" title="Zoom out" [disabled]="activeScreenshotZoom <= 1" (click)="setScreenshotZoom(activeScreenshotZoom - 0.25)"><mat-icon aria-hidden="true">remove</mat-icon></button>
-            <button type="button" aria-label="Reset zoom" title="Reset zoom" (click)="setScreenshotZoom(1)">{{ (activeScreenshotZoom * 100).toFixed(0) }}%</button>
-            <button type="button" aria-label="Zoom in" title="Zoom in" [disabled]="activeScreenshotZoom >= 3" (click)="setScreenshotZoom(activeScreenshotZoom + 0.25)"><mat-icon aria-hidden="true">add</mat-icon></button>
+            <lib-ngx-image-zoom
+              [thumbImage]="activeScreenshotUrl"
+              [fullImage]="activeScreenshotUrl"
+              altText="Trade screenshot enlarged"
+              titleText="Scroll to zoom"
+              zoomMode="toggle-freeze"
+              [enableScrollZoom]="true"
+              [scrollStepSize]="0.25"
+              [maxZoomRatio]="3">
+            </lib-ngx-image-zoom>
           </div>
         </div>
       </div>
@@ -300,7 +305,6 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   private readonly deletingScreenshotUrls = new Set<string>();
   private readonly draggingScreenshotTickets = new Set<string>();
   activeScreenshotUrl: string | null = null;
-  activeScreenshotZoom = 1;
   confirmingDeleteUrl: string | null = null;
   private readonly screenshotLoadedTickets = new Set<string>();
   private readonly screenshotLoadingTickets = new Set<string>();
@@ -571,21 +575,10 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   openScreenshot(screenshotUrl: string): void {
     this.activeScreenshotUrl = screenshotUrl;
-    this.activeScreenshotZoom = 1;
   }
 
   closeScreenshot(): void {
     this.activeScreenshotUrl = null;
-    this.activeScreenshotZoom = 1;
-  }
-
-  setScreenshotZoom(zoom: number): void {
-    this.activeScreenshotZoom = Math.min(3, Math.max(1, zoom));
-  }
-
-  onScreenshotWheel(event: WheelEvent): void {
-    event.preventDefault();
-    this.setScreenshotZoom(this.activeScreenshotZoom + (event.deltaY < 0 ? 0.25 : -0.25));
   }
 
   requestDeleteScreenshot(screenshotUrl: string): void {

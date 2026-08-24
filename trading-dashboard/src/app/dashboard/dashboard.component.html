@@ -1277,12 +1277,16 @@
           <section class="certificate-image-viewer" role="dialog" aria-modal="true" aria-label="Certificate preview" (click)="$event.stopPropagation()">
             <button class="certificate-image-viewer-close" type="button" aria-label="Close certificate preview" (click)="closeCertificateImageViewer()"><mat-icon>close</mat-icon></button>
             <div class="certificate-image-viewer-content">
-              <img class="certificate-expanded-preview" [src]="viewer.url" [alt]="viewer.alt" [style.transform]="'scale(' + viewer.zoom + ')'" (wheel)="onImageViewerWheel($event)">
-            </div>
-            <div class="certificate-image-viewer-controls" aria-label="Image zoom controls">
-              <button type="button" aria-label="Zoom out" title="Zoom out" [disabled]="viewer.zoom <= 1" (click)="setImageViewerZoom(viewer.zoom - 0.25)"><mat-icon aria-hidden="true">remove</mat-icon></button>
-              <button type="button" aria-label="Reset zoom" title="Reset zoom" (click)="setImageViewerZoom(1)">{{ (viewer.zoom * 100).toFixed(0) }}%</button>
-              <button type="button" aria-label="Zoom in" title="Zoom in" [disabled]="viewer.zoom >= 3" (click)="setImageViewerZoom(viewer.zoom + 0.25)"><mat-icon aria-hidden="true">add</mat-icon></button>
+              <lib-ngx-image-zoom
+                [thumbImage]="viewer.url"
+                [fullImage]="viewer.url"
+                [altText]="viewer.alt"
+                titleText="Scroll to zoom"
+                zoomMode="toggle-freeze"
+                [enableScrollZoom]="true"
+                [scrollStepSize]="0.25"
+                [maxZoomRatio]="3">
+              </lib-ngx-image-zoom>
             </div>
           </section>
         </div>
