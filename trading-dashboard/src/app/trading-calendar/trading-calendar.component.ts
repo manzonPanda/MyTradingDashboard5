@@ -26,6 +26,8 @@ interface Table {
   riskPerTrade?: string;
   rrr?: string;
   mt5status?: string;
+  mfe?: string;
+  mae?: string;
   screenshotUrl?: string;
   screenshotUrls?: string[];
 }
@@ -203,6 +205,8 @@ interface WeekSummary {
                 <div class="day-trade-metrics">
                   <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
                   <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
+                  <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatCurrency(getMfeValue(trade)) }}</strong></span>
+                  <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatCurrency(getMaeValue(trade)) }}</strong></span>
                   <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
                 </div>
               </div>
@@ -631,6 +635,14 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   getNumericValue(value: string | number | undefined): number {
     return parseFloat(String(value || '0')) || 0;
+  }
+
+  getMfeValue(trade: Table): number {
+    return Math.max(0, this.getNumericValue(trade.mfe));
+  }
+
+  getMaeValue(trade: Table): number {
+    return Math.min(0, this.getNumericValue(trade.mae));
   }
 
   formatTradeTime(value: string): string {

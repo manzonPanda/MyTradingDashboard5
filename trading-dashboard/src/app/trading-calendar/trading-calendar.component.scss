@@ -1016,6 +1016,28 @@
   strong {
     color: var(--tf-text-primary);
   }
+
+  .day-trade-extreme {
+    font-weight: 600;
+  }
+
+  .day-trade-mfe {
+    background: rgba(16, 185, 129, 0.14);
+    color: var(--tf-positive);
+
+    strong {
+      color: inherit;
+    }
+  }
+
+  .day-trade-mae {
+    background: rgba(244, 63, 94, 0.14);
+    color: var(--tf-negative);
+
+    strong {
+      color: inherit;
+    }
+  }
 }
 
 .day-trade-media {
