@@ -4603,6 +4603,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       const mt5Raw = mt5RawByPosition.get(String(trade.position_id));
       const serverOpen = mt5Raw?.time_open ?? trade.time_open;
       const serverClose = mt5Raw?.time_close ?? trade.time_close;
+      const profit = mt5Raw?.profit ?? trade.profit;
+      const commission = mt5Raw?.commission ?? trade.commission;
+      const swap = mt5Raw?.swap ?? trade.swap;
 
       return {
         openDate: this.convertAndFormatMT5Date(serverOpen, true),
@@ -4623,12 +4626,12 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         sL: trade.sl ? trade.sl.toString() : '0',
         tP: trade.tp ? trade.tp.toString() : '0',
         exit: trade.exit_price ? trade.exit_price.toString() : '0',
-        commission: trade.commission ? trade.commission.toString() : '0',
-        swap: trade.swap ? trade.swap.toString() : '0',
-        profit: trade.profit ? trade.profit.toString() : '0',
-        netProfit: (trade.fromSupabase
-          ? this.toNumber(trade.profit)
-          : this.toNumber(trade.profit) + this.toNumber(trade.commission) + this.toNumber(trade.swap)
+        commission: commission !== undefined && commission !== null ? commission.toString() : '0',
+        swap: swap !== undefined && swap !== null ? swap.toString() : '0',
+        profit: profit !== undefined && profit !== null ? profit.toString() : '0',
+        netProfit: (mt5Raw || !trade.fromSupabase
+          ? this.toNumber(profit) + this.toNumber(commission) + this.toNumber(swap)
+          : this.toNumber(trade.profit)
         ).toString(),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
         rrr: String(trade.reward_risk_ratio ?? '0'),
@@ -4865,13 +4868,13 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     const supabasePositionIds = new Set(supabaseTrades.map(trade => String(trade.position_id)));
     const reconciledSupabaseTrades = supabaseTrades.map(trade => {
       const mt5Trade = mt5ByPosition.get(String(trade.position_id));
-      if (!mt5Trade || String(mt5Trade.status).toLowerCase() === 'open') return trade;
+      if (!mt5Trade) return trade;
 
       return {
         ...trade,
-        status: mt5Trade.status,
+        status: mt5Trade.status ?? trade.status,
         time_close: mt5Trade.time_close || trade.time_close,
-        exit_price: mt5Trade.exit_price || trade.exit_price,
+        exit_price: mt5Trade.exit_price ?? trade.exit_price,
         profit: mt5Trade.profit ?? trade.profit,
         commission: mt5Trade.commission ?? trade.commission,
         swap: mt5Trade.swap ?? trade.swap
@@ -5661,7 +5664,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
   getNetFromCommissionPlusGross(row: Table): number {
     const gross = this.getSafeNumber(row.profit);
     const commission = this.getSafeNumber(row.commission);
-    return gross + commission;
+    const swap = this.getSafeNumber(row.swap);
+    return gross + commission + swap;
   }
 
   private getNetCommissionGrossPercentage(row: Table): number {
