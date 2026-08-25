@@ -31,6 +31,7 @@ interface Table {
   mae?: string;
   screenshotUrl?: string;
   screenshotUrls?: string[];
+  dailyReflection?: string;
 }
 
 interface CalendarDay {
@@ -211,6 +212,37 @@ interface WeekSummary {
                   <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatCurrency(getMaeValue(trade)) }}</strong></span>
                   <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
                 </div>
+                <section class="day-trade-reflection">
+                  <div class="day-trade-reflection-heading">
+                    <mat-icon aria-hidden="true">auto_stories</mat-icon>
+                    <div>
+                      <span>Daily reflection</span>
+                      <p>What did this trade teach you?</p>
+                    </div>
+                  </div>
+                  <textarea
+                    class="day-trade-reflection-input"
+                    [value]="getDailyReflectionDraft(trade)"
+                    [disabled]="isSavingDailyReflection(trade)"
+                    maxlength="1500"
+                    aria-label="Daily reflection"
+                    placeholder="Capture your execution, mindset, and one improvement for next time..."
+                    (input)="updateDailyReflectionDraft(trade, $any($event.target).value)"
+                    (keydown.control.enter)="saveDailyReflection(trade)"></textarea>
+                  <div class="day-trade-reflection-footer">
+                    <span class="day-trade-reflection-count">{{ getDailyReflectionDraft(trade).length }} / 1,500</span>
+                    <span class="day-trade-reflection-error" *ngIf="getDailyReflectionError(trade)">{{ getDailyReflectionError(trade) }}</span>
+                    <button
+                      type="button"
+                      class="day-trade-reflection-save"
+                      [class.is-saved]="isDailyReflectionSaved(trade)"
+                      [disabled]="!trade.position || isSavingDailyReflection(trade)"
+                      (click)="saveDailyReflection(trade)">
+                      <mat-icon aria-hidden="true">{{ isSavingDailyReflection(trade) ? 'sync' : isDailyReflectionSaved(trade) ? 'check' : 'save' }}</mat-icon>
+                      {{ isSavingDailyReflection(trade) ? 'Saving…' : isDailyReflectionSaved(trade) ? 'Saved' : 'Save reflection' }}
+                    </button>
+                  </div>
+                </section>
               </div>
               <div class="day-trade-media">
                 <div class="day-trade-screenshot-gallery" *ngIf="trade.screenshotUrls?.length; else screenshotState">
@@ -309,6 +341,11 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   confirmingDeleteUrl: string | null = null;
   private readonly screenshotLoadedTickets = new Set<string>();
   private readonly screenshotLoadingTickets = new Set<string>();
+  private readonly dailyReflectionDrafts = new Map<string, string>();
+  private readonly loadingReflectionTickets = new Set<string>();
+  private readonly savingReflectionTickets = new Set<string>();
+  private readonly savedReflectionTickets = new Set<string>();
+  private readonly reflectionErrors = new Map<string, string>();
 
   readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -504,12 +541,18 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   async openDayModal(day: CalendarDay): Promise<void> {
     this.selectedDay = day;
+    const tickets = day.trades.map(trade => String(trade.position)).filter(Boolean);
+    const screenshotTickets = tickets.filter(ticket =>
+      !this.screenshotLoadedTickets.has(ticket) && !this.screenshotLoadingTickets.has(ticket)
+    );
+    const loaders: Promise<void>[] = [];
 
-    const tickets = day.trades
-      .map(trade => String(trade.position))
-      .filter(ticket => ticket && !this.screenshotLoadedTickets.has(ticket) && !this.screenshotLoadingTickets.has(ticket));
-    if (!tickets.length) return;
+    if (screenshotTickets.length) loaders.push(this.loadTradeScreenshots(day, screenshotTickets));
+    if (this.accountId && tickets.length) loaders.push(this.loadTradeReflections(day, tickets));
+    if (loaders.length) await Promise.all(loaders);
+  }
 
+  private async loadTradeScreenshots(day: CalendarDay, tickets: string[]): Promise<void> {
     tickets.forEach(ticket => this.screenshotLoadingTickets.add(ticket));
     try {
       const screenshotUrls = await this.supabaseService.getTradeScreenshotUrls(tickets);
@@ -529,8 +572,78 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     }
   }
 
+  private async loadTradeReflections(day: CalendarDay, tickets: string[]): Promise<void> {
+    tickets.forEach(ticket => this.loadingReflectionTickets.add(ticket));
+    try {
+      const reflections = await this.supabaseService.getTradeReflections(tickets, this.accountId!);
+      for (const trade of day.trades) {
+        const ticket = String(trade.position);
+        const reflection = reflections[ticket] ?? trade.dailyReflection ?? '';
+        if (!this.dailyReflectionDrafts.has(ticket)) this.dailyReflectionDrafts.set(ticket, reflection);
+        trade.dailyReflection = reflection;
+      }
+      this.selectedDay = { ...day, trades: [...day.trades] };
+    } catch (error) {
+      for (const ticket of tickets) {
+        this.reflectionErrors.set(ticket, error instanceof Error ? error.message : 'Unable to load your reflection.');
+      }
+    } finally {
+      tickets.forEach(ticket => this.loadingReflectionTickets.delete(ticket));
+    }
+  }
+
   closeDayModal(): void {
     this.selectedDay = null;
+  }
+
+  getDailyReflectionDraft(trade: Table): string {
+    const ticket = String(trade.position);
+    return this.dailyReflectionDrafts.get(ticket) ?? trade.dailyReflection ?? '';
+  }
+
+  updateDailyReflectionDraft(trade: Table, reflection: string): void {
+    const ticket = String(trade.position);
+    this.dailyReflectionDrafts.set(ticket, reflection.slice(0, 1500));
+    this.savedReflectionTickets.delete(ticket);
+    this.reflectionErrors.delete(ticket);
+  }
+
+  isSavingDailyReflection(trade: Table): boolean {
+    return this.savingReflectionTickets.has(String(trade.position));
+  }
+
+  isDailyReflectionSaved(trade: Table): boolean {
+    return this.savedReflectionTickets.has(String(trade.position));
+  }
+
+  getDailyReflectionError(trade: Table): string {
+    return this.reflectionErrors.get(String(trade.position)) || '';
+  }
+
+  async saveDailyReflection(trade: Table): Promise<void> {
+    const ticket = String(trade.position);
+    if (!ticket || this.savingReflectionTickets.has(ticket)) return;
+    if (!this.accountId) {
+      this.reflectionErrors.set(ticket, 'Choose an account before saving.');
+      return;
+    }
+
+    this.savingReflectionTickets.add(ticket);
+    this.savedReflectionTickets.delete(ticket);
+    this.reflectionErrors.delete(ticket);
+    try {
+      const dailyReflection = this.getDailyReflectionDraft(trade);
+      const savedTrade = await this.supabaseService.updateTradeByTicket(ticket, this.accountId, { daily_reflection: dailyReflection });
+      if (!savedTrade) throw new Error('Trade record was not found.');
+
+      trade.dailyReflection = dailyReflection;
+      this.savedReflectionTickets.add(ticket);
+      this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
+    } catch (error) {
+      this.reflectionErrors.set(ticket, error instanceof Error ? error.message : 'Unable to save your reflection.');
+    } finally {
+      this.savingReflectionTickets.delete(ticket);
+    }
   }
 
   isUploadingScreenshots(trade: Table): boolean {
