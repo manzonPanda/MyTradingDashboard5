@@ -206,6 +206,7 @@ interface WeekSummary {
                 <div class="day-trade-metrics">
                   <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
                   <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
+                  <span>Swap <strong>{{ formatCurrency(getNumericValue(trade.swap)) }}</strong></span>
                   <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatCurrency(getMfeValue(trade)) }}</strong></span>
                   <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatCurrency(getMaeValue(trade)) }}</strong></span>
                   <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
