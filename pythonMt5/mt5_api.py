@@ -205,6 +205,7 @@ def emit_trade_opened(pos, open_time_str, risk_usd):
         'sl': pos.sl,
         'tp': pos.tp,
         'profit': pos.profit,
+        'swap': pos.swap,
         'time_open': open_time_str,
         'risk_usd': round(risk_usd, 2) if risk_usd is not None else None,
         'screenshot_url': screenshot_url,
@@ -255,6 +256,7 @@ def watch_trades():
                 "price_open": pos.price_open,
                 "price_current": pos.price_current,
                 "profit": pos.profit,
+                "swap": pos.swap,
                 "time": pos.time,
                 "sl": pos.sl if pos.sl != 0 else None,
                 "tp": pos.tp if pos.tp != 0 else None,
@@ -309,6 +311,12 @@ def watch_trades():
             # else:
                 # print("⚠️ No deals returned from history_deals_get")
 
+            trade_swap = getattr(closed_pos, 'swap', 0) or 0
+            if deals:
+                position_swaps = [getattr(d, 'swap', 0) or 0 for d in deals if d.position_id == closed_pos.ticket]
+                if position_swaps:
+                    trade_swap = sum(position_swaps)
+
             # ✅ Calculate reward:risk ratio (R)
             sl = closed_pos.sl
             price_open = closed_pos.price_open
@@ -339,6 +347,7 @@ def watch_trades():
                 "price_open": closed_pos.price_open,
                 "price_close": closed_pos.price_current,
                 "profit": closed_pos.profit,
+                "swap": trade_swap,
                 "time_close": close_time_str,
                 "reward_risk_ratio": reward_risk_ratio,
                 "object": closed_pos
@@ -447,6 +456,7 @@ def get_open_trades():
             "sl": p.sl,
             "tp": p.tp,
             "profit": p.profit,
+            "swap": p.swap,
             "time": p.time,
             "object":p
         })
@@ -488,6 +498,10 @@ def full_history():
         df_commission = df_deals[df_deals['commission'] != 0].groupby('position_id')['commission'].sum().reset_index()
         df_merged = df_merged.merge(df_commission, on='position_id', how='left')
         df_merged['commission'] = df_merged['commission'].fillna(0)
+
+        df_swap = df_deals.groupby('position_id')['swap'].sum().reset_index()
+        df_merged = df_merged.merge(df_swap, on='position_id', how='left')
+        df_merged['swap'] = df_merged['swap'].fillna(0)
 
         # 🎯 SL/TP from orders
         orders = mt5.history_orders_get(from_date, to_date)
@@ -531,7 +545,7 @@ def full_history():
 
         df_closed = df_merged[[
             'position_id', 'symbol', 'volume', 'trade_type', 'entry_price',
-            'exit_price', 'profit', 'commission', 'sl', 'tp',
+            'exit_price', 'profit', 'commission', 'swap', 'sl', 'tp',
             'risk_usd', 'reward_risk_ratio',
             'time_open', 'time_close', 'status'
         ]].to_dict(orient='records')
@@ -561,6 +575,7 @@ def full_history():
                 'exit_price': None,
                 'profit': pos.profit,
                 'commission': 0,
+                'swap': pos.swap,
                 'sl': pos.sl,
                 'tp': pos.tp,
                 'risk_usd': risk_usd,
