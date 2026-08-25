@@ -554,6 +554,24 @@ export class SupabaseService {
     return data as Trade | null;
   }
 
+  async getTradeReflections(tickets: Array<number | string>, accountId: string): Promise<Record<string, string>> {
+    if (!tickets.length) return {};
+
+    const { data, error } = await this.supabase
+      .from('trades')
+      .select('ticket, daily_reflection')
+      .eq('account_id', accountId)
+      .in('ticket', tickets.map(ticket => String(ticket)));
+    if (error) throw new Error(`Trade reflection loading failed: ${error.message}`);
+
+    return (data ?? []).reduce<Record<string, string>>((reflections, trade) => {
+      if (trade.ticket !== null && trade.ticket !== undefined) {
+        reflections[String(trade.ticket)] = trade.daily_reflection ?? '';
+      }
+      return reflections;
+    }, {});
+  }
+
   async getTradesWithNullTickets(accountId: string): Promise<Trade[]> {
     const { data, error } = await this.supabase
       .from('trades')
