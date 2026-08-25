@@ -3258,6 +3258,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
           exit_price: null,
           profit: trade.profit ?? 0,
           commission: 0,
+          swap: trade.swap ?? 0,
           sl: trade.sl ?? 0,
           tp: trade.tp ?? 0,
           risk_usd: null,
@@ -4625,7 +4626,10 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         commission: trade.commission ? trade.commission.toString() : '0',
         swap: trade.swap ? trade.swap.toString() : '0',
         profit: trade.profit ? trade.profit.toString() : '0',
-        netProfit: (trade.profit + trade.commission).toString(),
+        netProfit: (trade.fromSupabase
+          ? this.toNumber(trade.profit)
+          : this.toNumber(trade.profit) + this.toNumber(trade.commission) + this.toNumber(trade.swap)
+        ).toString(),
         riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() : '0',
         rrr: String(trade.reward_risk_ratio ?? '0'),
         mt5status: trade.status || '',
@@ -4719,11 +4723,17 @@ async onPaste(event: ClipboardEvent): Promise<void> {
         if (mt5Trade.exit_price !== undefined && mt5Trade.exit_price !== null) {
           tradeUpdates.price_close = Number(mt5Trade.exit_price);
         }
+        const mt5Profit = Number(mt5Trade.profit) || 0;
+        const mt5Commission = Number(mt5Trade.commission) || 0;
+        const mt5Swap = Number(mt5Trade.swap) || 0;
         if (mt5Trade.profit !== undefined && mt5Trade.profit !== null) {
-          tradeUpdates.pnl = Number(mt5Trade.profit);
+          tradeUpdates.pnl = mt5Profit + mt5Commission + mt5Swap;
         }
         if (mt5Trade.commission !== undefined && mt5Trade.commission !== null) {
-          tradeUpdates.commission = Number(mt5Trade.commission);
+          tradeUpdates.commission = mt5Commission;
+        }
+        if (mt5Trade.swap !== undefined && mt5Trade.swap !== null) {
+          tradeUpdates.swap = mt5Swap;
         }
         return this.supabaseService.updateTradeByTicket(trade.position_id, accountId, tradeUpdates);
       })
@@ -5138,9 +5148,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       tP: trade.tp ? trade.tp.toString() : 0,
       exit: "-",
       commission: trade.commission ? trade.commission.toString() : '0',
-      swap: "-",
+      swap: this.toNumber(trade.swap).toString(),
       profit: trade.profit ? trade.profit.toString() : '0',
-      netProfit: trade.profit ? trade.profit.toString() : '0',
+      netProfit: (this.toNumber(trade.profit) + this.toNumber(trade.commission) + this.toNumber(trade.swap)).toString(),
       riskPerTrade: trade.risk_usd ? trade.risk_usd.toString() :'0',
       rrr: '0',
       mt5status: trade.status || '',
@@ -5228,6 +5238,8 @@ async onPaste(event: ClipboardEvent): Promise<void> {
       closedTrade.timeClosePh = this.mt5Time.mt5ServerTimeToPhilippine(trade.time_close) ?? trade.time_close_ph;
       closedTrade.exit= trade.price_close ? trade.price_close.toString() : '0';
       closedTrade.profit= trade.profit ? trade.profit.toString() : '0';
+      closedTrade.swap = this.toNumber(trade.swap ?? closedTrade.swap).toString();
+      closedTrade.netProfit = (this.toNumber(closedTrade.profit) + this.toNumber(closedTrade.commission) + this.toNumber(closedTrade.swap)).toString();
       closedTrade.rrr = this.calculateTradeR(closedTrade);
       const closingProfit = Number(trade.profit);
       const finalMfe = Math.max(Number(closedTrade.mfe) || 0, Number.isFinite(closingProfit) ? closingProfit : 0);
@@ -5340,10 +5352,12 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     if (tradeIndex !== -1) {
       const trade = this.mt5LiveTrades[tradeIndex];
       const currentProfit = priceData.profit ? parseFloat(priceData.profit.toString()) : 0;
+      const currentSwap = this.toNumber(priceData.swap ?? trade.swap);
 
       // Update current profit values
       trade.profit = priceData.profit ? priceData.profit.toString() : '0';
-      trade.netProfit = priceData.profit ? priceData.profit.toString() : '0';
+      trade.swap = currentSwap.toString();
+      trade.netProfit = (currentProfit + this.toNumber(trade.commission) + currentSwap).toString();
       this.notifyGaugePercentage(trade);
 
       if ((!trade.riskPerTrade || Number(trade.riskPerTrade) <= 0) && priceData.sl_value !== undefined) {
