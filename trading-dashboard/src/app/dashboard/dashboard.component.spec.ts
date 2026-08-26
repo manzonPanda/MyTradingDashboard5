@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { of, throwError } from 'rxjs';
+import { TradeService } from '../services/trade.service';
 import { DashboardComponent } from './dashboard.component';
 
 describe('DashboardComponent', () => {
@@ -59,6 +61,42 @@ describe('DashboardComponent', () => {
     const trade = { profit: '150', riskPerTrade: '0', rrr: '-0.75R' } as any;
 
     expect((component as any).calculateTradeR(trade)).toBe('-0.75');
+  });
+
+  it('closes verified live MT5 trades once the daily target is reached', () => {
+    const tradeService = TestBed.inject(TradeService);
+    const closeAllTrades = spyOn(tradeService, 'closeAllTrades').and.returnValue(of({ success: true }));
+    component.dailyTarget = 2;
+    component.dailyPnLPercent = 2;
+    component.selectedAccount = { id: 'account-1', name: 'Test account', platform: 'MT5', account_number: '110566588' } as any;
+    component.mt5LiveTrades = [{ position: '101' } as any];
+    (component as any).mt5ServiceConnected = true;
+    (component as any).mt5AccountLogin = '110566588';
+    (component as any).isMt5LiveSnapshotAvailable = true;
+    (component as any).mt5OpenPositionIds = new Set(['101']);
+
+    (component as any).closeOpenLiveTradesAtDailyTarget();
+
+    expect(closeAllTrades).toHaveBeenCalledTimes(1);
+    expect((component as any).mt5OpenPositionIds.has('101')).toBeFalse();
+  });
+
+  it('does not immediately retry a failed daily target close', () => {
+    const tradeService = TestBed.inject(TradeService);
+    const closeAllTrades = spyOn(tradeService, 'closeAllTrades').and.returnValue(throwError(() => new Error('MT5 unavailable')));
+    component.dailyTarget = 2;
+    component.dailyPnLPercent = 2;
+    component.selectedAccount = { id: 'account-1', name: 'Test account', platform: 'MT5', account_number: '110566588' } as any;
+    component.mt5LiveTrades = [{ position: '101' } as any];
+    (component as any).mt5ServiceConnected = true;
+    (component as any).mt5AccountLogin = '110566588';
+    (component as any).isMt5LiveSnapshotAvailable = true;
+    (component as any).mt5OpenPositionIds = new Set(['101']);
+
+    (component as any).closeOpenLiveTradesAtDailyTarget();
+    (component as any).closeOpenLiveTradesAtDailyTarget();
+
+    expect(closeAllTrades).toHaveBeenCalledTimes(1);
   });
 
   it('uses 5 AM PHT as the Day Trades session boundary', () => {
