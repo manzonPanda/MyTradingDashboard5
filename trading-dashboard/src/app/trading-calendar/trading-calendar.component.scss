@@ -311,33 +311,15 @@
         }
       }
 
-      // Balance the large blank weekend cells (e.g. Sundays) that have no
-      // trades and no weekly summary: center the day number instead of leaving
-      // it orphaned near the top, and add a subtle "Weekend" pill so the cell
-      // reads as intentionally empty rather than half-filled.
       &.weekend:not(.has-trades):not(.has-week-summary):not(.outside-month) {
-        justify-content: center;
-        align-items: center;
-        gap: 0.4rem;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 0.25rem;
 
         .day-number {
           margin-bottom: 0;
         }
 
-        &::after {
-          content: 'Weekend';
-          font-size: 0.55rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--tf-text-muted);
-          opacity: 0.55;
-          background: rgba(107, 114, 128, 0.08);
-          border: 1px solid rgba(107, 114, 128, 0.18);
-          padding: 0.18rem 0.55rem;
-          border-radius: 999px;
-          line-height: 1;
-        }
       }
 
       .day-number {
@@ -2071,17 +2053,17 @@
     'details details';
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.18rem 0.5rem;
-  margin-top: auto;
-  padding-top: 0.45rem;
+  margin-top: 0;
+  padding-top: 0.3rem;
   border-top: 1px solid var(--tf-border-primary);
   color: var(--tf-text-secondary);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   line-height: 1.2;
 
   .week-label {
     grid-area: label;
     color: var(--tf-text-muted);
-    font-size: 0.56rem;
+    font-size: 0.62rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -2089,7 +2071,7 @@
 
   .week-percentage {
     grid-area: percentage;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-align: right;
 
@@ -2105,6 +2087,7 @@
   .week-win-loss {
     grid-area: record;
     color: var(--tf-text-muted);
+    font-size: 0.68rem;
   }
 
   .week-win-count {
@@ -2122,7 +2105,7 @@
 
   .week-pnl {
     grid-area: pnl;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     font-weight: 600;
     text-align: right;
 
