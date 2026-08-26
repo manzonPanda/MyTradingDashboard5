@@ -311,14 +311,10 @@
         }
       }
 
-      // Balance the large blank weekend cells (e.g. Sundays) that have no
-      // trades and no weekly summary: center the day number instead of leaving
-      // it orphaned near the top, and add a subtle "Weekend" pill so the cell
-      // reads as intentionally empty rather than half-filled.
       &.weekend:not(.has-trades):not(.has-week-summary):not(.outside-month) {
-        justify-content: center;
-        align-items: center;
-        gap: 0.4rem;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 0.25rem;
 
         .day-number {
           margin-bottom: 0;
