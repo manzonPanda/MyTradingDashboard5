@@ -41,6 +41,7 @@ import { Mt5TimeService } from '../services/mt5-time.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
+import { TradeService } from '../services/trade.service';
 
 
 declare var $: any;
@@ -510,6 +511,8 @@ export class DashboardComponent implements AfterViewInit {
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
   dailyTarget: number | null = null;
+  private dailyTargetCloseInFlight = false;
+  private dailyTargetCloseRetryAfter = 0;
   dailyWinsPercent: number = 0;
   dailyWinsAmount: number = 0;
   dailyLossesAmount: number = 0; // negative value for losses
@@ -1405,7 +1408,7 @@ get drawdownIsBalanceTrailingMode(): boolean {
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
-    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService,
+    private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService, private tradeService: TradeService,
     public drawdownService: DrawdownService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
@@ -1423,6 +1426,7 @@ get drawdownIsBalanceTrailingMode(): boolean {
 
   onDailyTargetChange(dailyTarget: number): void {
     this.dailyTarget = dailyTarget;
+    this.updateDailyLimitMetrics();
     this.cdr.markForCheck();
   }
 
@@ -1735,6 +1739,54 @@ get drawdownIsBalanceTrailingMode(): boolean {
     if (this.dailyPnLPercent <= -3.5 && !this.dailyLimitNotified) {
       this.dailyLimitNotified = true;
     }
+
+    this.closeOpenLiveTradesAtDailyTarget();
+  }
+
+  private closeOpenLiveTradesAtDailyTarget(): void {
+    const dailyTarget = this.dailyTarget;
+    if (
+      this.dailyTargetCloseInFlight
+      || Date.now() < this.dailyTargetCloseRetryAfter
+      || dailyTarget === null
+      || dailyTarget <= 0
+      || this.dailyPnLPercent < dailyTarget
+      || !this.isActiveMt5Account()
+    ) return;
+
+    const openPositionIds = this.getCurrentMt5LiveTrades().map(trade => String(trade.position));
+    if (openPositionIds.length === 0) return;
+
+    const accountId = this.selectedAccount?.id ?? null;
+    this.dailyTargetCloseInFlight = true;
+    this.tradeService.closeAllTrades().subscribe({
+      next: response => {
+        this.dailyTargetCloseInFlight = false;
+        if (!response?.success) {
+          this.dailyTargetCloseRetryAfter = Date.now() + 15000;
+          this.snackBar.open('Unable to close all live trades after the daily target was reached.', 'Dismiss', { duration: 5000 });
+          return;
+        }
+
+        if (this.selectedAccount?.id === accountId) {
+          for (const positionId of openPositionIds) {
+            this.mt5OpenPositionIds?.delete(positionId);
+          }
+          this.updateTableData();
+          void this.loadMT5Data();
+        }
+
+        this.dailyTargetCloseRetryAfter = 0;
+        this.snackBar.open('Live trades closed because the daily target was reached.', 'Dismiss', { duration: 5000 });
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.dailyTargetCloseInFlight = false;
+        this.dailyTargetCloseRetryAfter = Date.now() + 15000;
+        this.snackBar.open('Unable to close live trades after the daily target was reached.', 'Dismiss', { duration: 5000 });
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   getWinRingCircumference(): number { return 2 * Math.PI * 44; }
