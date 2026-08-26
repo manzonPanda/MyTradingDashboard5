@@ -2057,13 +2057,13 @@
   padding-top: 0.3rem;
   border-top: 1px solid var(--tf-border-primary);
   color: var(--tf-text-secondary);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   line-height: 1.2;
 
   .week-label {
     grid-area: label;
     color: var(--tf-text-muted);
-    font-size: 0.56rem;
+    font-size: 0.62rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -2071,7 +2071,7 @@
 
   .week-percentage {
     grid-area: percentage;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-align: right;
 
@@ -2087,6 +2087,7 @@
   .week-win-loss {
     grid-area: record;
     color: var(--tf-text-muted);
+    font-size: 0.68rem;
   }
 
   .week-win-count {
@@ -2104,7 +2105,7 @@
 
   .week-pnl {
     grid-area: pnl;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     font-weight: 600;
     text-align: right;
 
