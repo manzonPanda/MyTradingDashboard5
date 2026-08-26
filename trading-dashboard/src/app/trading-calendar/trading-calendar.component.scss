@@ -320,20 +320,6 @@
           margin-bottom: 0;
         }
 
-        &::after {
-          content: 'Weekend';
-          font-size: 0.55rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--tf-text-muted);
-          opacity: 0.55;
-          background: rgba(107, 114, 128, 0.08);
-          border: 1px solid rgba(107, 114, 128, 0.18);
-          padding: 0.18rem 0.55rem;
-          border-radius: 999px;
-          line-height: 1;
-        }
       }
 
       .day-number {
