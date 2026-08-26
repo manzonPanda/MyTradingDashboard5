@@ -41,8 +41,8 @@ export const WARRIOR_VIDEO_SOURCES: readonly string[] = [
  */
 export const WARRIOR_STAGE_THRESHOLDS: readonly number[] = [0.5, 1.0, 1.5, 2.0, 2.5];
 
-/** Crossfade duration between stage videos (ms). */
-export const WARRIOR_CROSSFADE_MS = 800;
+/** Crossfade duration between stage videos (ms). 0 = instant hard cut. */
+export const WARRIOR_CROSSFADE_MS = 0;
 
 /**
  * Maps a live P&L percentage to a transformation stage index.
@@ -80,8 +80,10 @@ export const warriorStageForPnl = getTransformationStage;
  * Ambient warrior visualization layered over the equity chart.
  *
  * - Driven ONLY by the live P&L percentage (no timers, no randomness).
- * - Uses TWO <video> layers (A = active stage, B = incoming stage) for a smooth
- *   ~800ms crossfade when the transformation STAGE changes.
+ * - Uses TWO <video> layers (A = active stage, B = incoming stage); when the
+ *   transformation STAGE changes the new video is swapped in INSTANTLY (no
+ *   crossfade — WARRIOR_CROSSFADE_MS is 0), but only after it is loaded and
+ *   able to play so the cut never flashes a blank frame.
  * - While the stage is stable, the active video keeps looping untouched (no
  *   reload on every P&L tick).
  * - Race-condition safe: if the stage changes mid-transition, it gracefully
@@ -154,8 +156,8 @@ export class WarriorPerformanceOverlayComponent implements AfterViewInit, OnChan
   /**
    * Switches the looping video ONLY when the transformation stage actually
    * changes. While the stage is stable the active video keeps looping — we do
-   * NOT touch src/load/play on every P&L update. When the stage changes, a
-   * smooth ~800ms crossfade between the two video layers is performed.
+   * NOT touch src/load/play on every P&L update. When the stage changes, the
+   * other layer's video is swapped in instantly (crossfade disabled).
    */
   private applyStage(nextStage: number): void {
     const videos = this.layers?.toArray().map((l) => l.nativeElement) ?? [];
@@ -192,18 +194,17 @@ export class WarriorPerformanceOverlayComponent implements AfterViewInit, OnChan
   }
 
   /**
-   * Performs a smooth ~800ms crossfade from the currently active layer to the
-   * other layer, loading the new stage's video into the incoming layer and
-   * starting it once it is ready to play.
+   * Swaps playback from the currently active layer to the other one, loading
+   * the new stage's video into the incoming layer and starting it once it is
+   * ready to play.
    *
-   * Smoothness guarantees:
-   * - The fade is only triggered from inside requestAnimationFrame after the
-   *   browser has painted the incoming layer at opacity:0 (otherwise both style
-   *   writes land in the same frame and the CSS transition never animates).
-   * - The fade only starts once the incoming video can actually play (no
+   * Guarantees:
+   * - Opacity writes are deferred into requestAnimationFrame after the browser
+   *   has painted the incoming layer at opacity:0 (keeps behaviour correct if
+   *   a crossfade duration is ever re-enabled).
+   * - The swap only happens once the incoming video can actually play (no
    *   dipping to an unloaded/blank frame).
-   * - The finalize timer is measured from when the fade actually starts, so the
-   *   transition is never cut short mid-fade.
+   * - The finalize timer is measured from when the swap actually starts.
    */
   private startCrossfade(toStage: number): void {
     const videos = this.layers?.toArray().map((l) => l.nativeElement) ?? [];
@@ -258,9 +259,8 @@ export class WarriorPerformanceOverlayComponent implements AfterViewInit, OnChan
         incomingVideo.style.opacity = '1';
         activeVideo.style.opacity = '0';
 
-        // Finalize only once the ~800ms crossfade has fully completed, measured
-        // from when the fade actually starts (not when loading began) — otherwise
-        // the finalize would reset the outgoing video mid-fade and cause a jump.
+        // Finalize immediately after the swap — duration is 0 (instant cut),
+        // measured from when the swap actually starts (not when loading began).
         if (this.transitionTimer) {
           clearTimeout(this.transitionTimer);
         }

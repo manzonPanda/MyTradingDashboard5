@@ -54,7 +54,7 @@
    * No transform, no filter, no drop-shadow, no brightness/saturation change.
    * The warrior stays exactly the same size and position throughout.
    */
-  transition: opacity 800ms ease-in-out;
+  transition: none; /* instant stage cuts (WARRIOR_CROSSFADE_MS = 0) */
 }
 
 /* ---------- Responsive: the equity chart always stays the priority ---------- */

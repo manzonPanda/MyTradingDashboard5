@@ -119,7 +119,7 @@ interface WeekSummary {
                 <span class="badge-label">New Account</span>
               </div>
               <div class="day-number">{{ day.date.getDate() }}</div>
-              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && (isWeekday(day.date) || day.weekSummary) && !isBeforeAccountStart(day.date)">
+              <div class="no-trades-badge" *ngIf="day.tradeCount === 0 && !isFutureDate(day.date) && isWeekday(day.date) && !isBeforeAccountStart(day.date)">
                 <span class="badge-dot"></span>
                 <span class="badge-text">No trades</span>
               </div>
@@ -153,7 +153,6 @@ interface WeekSummary {
                 <div class="week-pnl" [ngClass]="getWeekPnLClass(day.weekSummary.totalPnL)">
                   {{ formatCurrency(day.weekSummary.totalPnL) }}
                 </div>
-                <div class="week-details">{{ day.weekSummary.days }} days</div>
               </section>
             </div>
           </div>
