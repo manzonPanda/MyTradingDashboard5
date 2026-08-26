@@ -542,7 +542,7 @@ export class ToolRouter {
   async tool_get_trading_rules(_args, userId) {
     const { data: settings, error: settingsError } = await this.supabase
       .from('user_settings')
-      .select('per_trade_target_percent, daily_target_percent, weekly_r_target, trading_day_reset_time')
+      .select('daily_target_percent, weekly_r_target, trading_day_reset_time')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -559,7 +559,6 @@ export class ToolRouter {
 
     return {
       rules: {
-        perTradeTargetPercent: settings?.per_trade_target_percent || null,
         dailyTargetPercent: settings?.daily_target_percent || null,
         weeklyRTarget: settings?.weekly_r_target || null,
         tradingDayResetTime: settings?.trading_day_reset_time || null,

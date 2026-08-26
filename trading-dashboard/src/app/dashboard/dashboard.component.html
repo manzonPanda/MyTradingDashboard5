@@ -769,8 +769,10 @@
       [dailyTarget]="dailyTarget"
       [positiveGaugePercentMax]="liveTradeGaugePercentMax"
       [liveTradeSoundSettings]="liveTradeSoundSettings"
+      [autoCloseEnabled]="perTradeGaugeAutoCloseEnabled"
       (gaugePercentMaxChange)="onLiveTradeGaugePercentMaxChange($event)"
-      (liveTradeSoundSettingsChange)="onLiveTradeSoundSettingsChange($event)">
+      (liveTradeSoundSettingsChange)="onLiveTradeSoundSettingsChange($event)"
+      (autoCloseEnabledChange)="onAutoCloseToggle($event)">
     </app-live-rr-tracker>
         </div>
 
@@ -2001,6 +2003,6 @@
 
   <div *ngIf="isProfileSettingsOpen" class="profile-settings-overlay" role="dialog" aria-modal="true" aria-label="Profile settings">
     <button type="button" class="profile-settings-overlay-close" aria-label="Close profile settings" (click)="closeProfileSettings()"><mat-icon>close</mat-icon></button>
-    <app-profile-settings (closed)="closeProfileSettings()" (dailyTargetChange)="onDailyTargetChange($event)" (liveTradeDisplayPreferencesChange)="onLiveTradeDisplayPreferencesChange($event)"></app-profile-settings>
+    <app-profile-settings (closed)="closeProfileSettings()" (dailyTargetChange)="onDailyTargetChange($event)" (positiveGaugePercentMaxChange)="onPositiveGaugePercentMaxSettingChange($event)" (perTradeGaugeAutoCloseChange)="onPerTradeGaugeAutoCloseSettingChange($event)" (liveTradeDisplayPreferencesChange)="onLiveTradeDisplayPreferencesChange($event)"></app-profile-settings>
   </div>
 </div>

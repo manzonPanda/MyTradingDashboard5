@@ -17,6 +17,7 @@ import win32con
 import win32process
 from dotenv import load_dotenv
 import time
+import traceback
 from datetime import datetime, timedelta, timezone
 from dateutil import tz
 from collections import defaultdict
@@ -31,8 +32,30 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")  # Allow WebSocket connections
+from werkzeug.exceptions import HTTPException
 local_tz = ZoneInfo("Asia/Manila")
 reconnect_in_progress = False
+
+# MetaTrader5's Python API talks to the terminal over a single IPC channel and
+# is NOT thread-safe. This service polls it from watcher threads (~every
+# 100ms) while HTTP routes issue orders, so all trade operations must be
+# serialized behind this lock. (eventlet.monkey_patch() makes threading.Lock
+# greenlet-cooperative, so holding it across sleeps cannot starve the server.)
+_MT5_TRADE_LOCK = threading.Lock()
+
+
+@app.errorhandler(Exception)
+def handle_unhandled_exception(exc):
+    """Last-resort handler: any exception escaping a route is logged with its
+    full traceback to the service console and answered with parseable JSON
+    instead of Flask's default HTML '500 Internal Server Error' page."""
+    if isinstance(exc, HTTPException):
+        return exc
+    traceback.print_exc()
+    return jsonify({
+        "success": False,
+        "error": f"{type(exc).__name__}: {exc}"
+    }), 500
 
 MASTER = r"C:\Program Files\MetaTrader 5\terminal64.exe"
 
@@ -668,7 +691,74 @@ def get_account_info():
 
 
 
+def get_filling_modes(symbol):
+    """Return an ordered list of filling modes supported by `symbol`.
+
+    NOTE: symbol_info.filling_mode is a BITMASK of SYMBOL_FILLING_* flags
+    (FOK = 1, IOC = 2). It must NOT be tested against the ORDER_FILLING_*
+    enum values used in order_send requests (FOK = 0, IOC = 1, RETURN = 2)
+    -- mixing them up causes retcode 10030 "Unsupported filling mode".
+    """
+    candidates = []
+
+    def add(mode):
+        if mode not in candidates:
+            candidates.append(mode)
+
+    info = mt5.symbol_info(symbol)
+    flags = getattr(info, "filling_mode", None) if info is not None else None
+
+    if flags is not None:
+        if flags & _SYMBOL_FILLING_IOC:
+            add(mt5.ORDER_FILLING_IOC)
+        if flags & _SYMBOL_FILLING_FOK:
+            add(mt5.ORDER_FILLING_FOK)
+        if not candidates:
+            # Broker advertises neither FOK nor IOC -> only RETURN applies
+            add(mt5.ORDER_FILLING_RETURN)
+
+    # Always keep the remaining modes as fallbacks in case the broker's
+    # advertised flags are inaccurate.
+    add(mt5.ORDER_FILLING_RETURN)
+    add(mt5.ORDER_FILLING_IOC)
+    add(mt5.ORDER_FILLING_FOK)
+    return candidates
+
+
+INVALID_FILL_RETCODE = getattr(mt5, "TRADE_RETCODE_INVALID_FILL", 10030)
+
+# ENUM_SYMBOL_FILLING_FLAGS bit flags used by symbol_info().filling_mode.
+# IMPORTANT: these are NOT the same numbers as the ORDER_FILLING_* request
+# enum above (FOK=0, IOC=1, RETURN=2), and the MetaTrader5 python package
+# does not export them as module attributes (verified on 5.0.5430), so we
+# define them locally from the documented MQL5 values:
+#   SYMBOL_FILLING_FOK = 1, SYMBOL_FILLING_IOC = 2
+_SYMBOL_FILLING_FOK = getattr(mt5, "SYMBOL_FILLING_FOK", 1)
+_SYMBOL_FILLING_IOC = getattr(mt5, "SYMBOL_FILLING_IOC", 2)
+
+
 def close_position(position):
+    """Close a single position. This function NEVER raises: any unexpected
+    failure is converted into a {"success": False, ...} result so that one
+    broken position cannot abort the whole /api/close_all_trades batch with
+    an unhandled 500."""
+    ticket = getattr(position, "ticket", None)
+    try:
+        # Serialize quote -> order flow behind the MT5 lock: watcher threads
+        # and duplicate close-all requests otherwise race on the same IPC
+        # channel, which makes MetaTrader5 calls throw mid-close.
+        with _MT5_TRADE_LOCK:
+            return _close_position_locked(position)
+    except Exception as exc:
+        traceback.print_exc()
+        return {
+            "ticket": ticket,
+            "success": False,
+            "error": f"{type(exc).__name__}: {exc}"
+        }
+
+
+def _close_position_locked(position):
     symbol_info = mt5.symbol_info(position.symbol)
     tick = mt5.symbol_info_tick(position.symbol)
 
@@ -687,63 +777,93 @@ def close_position(position):
         order_type = mt5.ORDER_TYPE_BUY
         price = tick.ask
 
-    # Use IOC if supported; otherwise use FOK
-    filling_mode = (
-        mt5.ORDER_FILLING_IOC
-        if symbol_info.filling_mode & mt5.ORDER_FILLING_IOC
-        else mt5.ORDER_FILLING_FOK
-    )
+    last_error = None
 
-    request_data = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": position.symbol,
-        "volume": position.volume,
-        "type": order_type,
-        "position": position.ticket,
-        "price": price,
-        "deviation": 20,
-        "magic": 100,
-        "comment": "",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": filling_mode,
-    }
+    for index, filling_mode in enumerate(get_filling_modes(position.symbol)):
+        # Refresh the quote between attempts so we never send stale prices
+        if index > 0:
+            time.sleep(0.1)
+            fresh_tick = mt5.symbol_info_tick(position.symbol)
+            if fresh_tick is not None:
+                price = (
+                    fresh_tick.bid
+                    if position.type == mt5.ORDER_TYPE_BUY
+                    else fresh_tick.ask
+                )
 
-    result = mt5.order_send(request_data)
-
-    if result is None:
-        return {
-            "ticket": position.ticket,
-            "success": False,
-            "error": "MT5 order_send returned no result",
-            "last_error": str(mt5.last_error())
+        request_data = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": position.symbol,
+            "volume": position.volume,
+            "type": order_type,
+            "position": position.ticket,
+            "price": price,
+            "deviation": 20,
+            "magic": 100,
+            "comment": "",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": filling_mode,
         }
 
-    if result.retcode != mt5.TRADE_RETCODE_DONE:
-        return {
-            "ticket": position.ticket,
-            "success": False,
+        result = mt5.order_send(request_data)
+
+        if result is None:
+            return {
+                "ticket": position.ticket,
+                "success": False,
+                "error": "MT5 order_send returned no result",
+                "last_error": str(mt5.last_error())
+            }
+
+        if result.retcode == mt5.TRADE_RETCODE_DONE:
+            return {
+                "ticket": position.ticket,
+                "success": True
+            }
+
+        last_error = {
             "error": "Close failed",
             "retcode": result.retcode,
             "comment": result.comment
         }
 
+        # Unsupported filling mode -> try the next mode in the list
+        if result.retcode != INVALID_FILL_RETCODE:
+            break
+
     return {
         "ticket": position.ticket,
-        "success": True
+        "success": False,
+        **last_error
     }
 
 
 @app.route('/api/close_trade', methods=['POST'])
 def close_trade():
     data = request.json or {}
-    ticket = data.get("ticket")
+    raw_ticket = data.get("ticket")
 
-    if not ticket:
-        return jsonify({"error": "Ticket is required"}), 400
+    # MetaTrader5 requires the ticket as an INTEGER. Callers (e.g. the
+    # dashboard) often send it as a string — passing a string straight
+    # through makes positions_get() silently return nothing, which used to
+    # surface as a bogus "Position not found".
+    try:
+        ticket = int(str(raw_ticket).strip())
+    except (TypeError, ValueError):
+        return jsonify({"error": "A valid numeric ticket is required"}), 400
 
-    positions = mt5.positions_get(ticket=ticket)
+    try:
+        positions = mt5.positions_get(ticket=ticket)
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({
+            "error": f"{type(exc).__name__}: {exc}",
+            "ticket": ticket,
+            "success": False
+        }), 502
+
     if not positions:
-        return jsonify({"error": "Position not found"}), 404
+        return jsonify({"error": "Position not found", "ticket": ticket}), 404
 
     result = close_position(positions[0])
     return jsonify(result), 200 if result.get("success") else 502
@@ -751,7 +871,18 @@ def close_trade():
 
 @app.route('/api/close_all_trades', methods=['POST'])
 def close_all_trades():
-    positions = mt5.positions_get() or []
+    try:
+        positions = mt5.positions_get() or []
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "requested": 0,
+            "closed": 0,
+            "failed": [],
+            "error": f"Failed to fetch open positions: {type(exc).__name__}: {exc}"
+        }), 502
+
     results = [close_position(position) for position in positions]
     failed = [result for result in results if not result.get("success")]
 

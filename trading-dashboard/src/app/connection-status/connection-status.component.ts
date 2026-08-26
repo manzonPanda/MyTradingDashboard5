@@ -108,8 +108,10 @@ export class ConnectionStatusComponent implements OnInit, OnDestroy {
 
   private connectToMT5Updates(): void {
     this.socket = io(environment.backendUrlMt5, {
-      transports: ['websocket'],
-      upgrade: false
+      // Polling fallback keeps the status widget alive when the WebSocket
+      // upgrade through the Cloudflare Tunnel fails; it upgrades to WS
+      // automatically once the connection allows it.
+      transports: ['polling', 'websocket'],
     });
 
     this.socket.on('account_info', (account: MT5AccountInfo) => {

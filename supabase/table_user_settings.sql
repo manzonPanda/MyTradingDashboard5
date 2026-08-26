@@ -1,10 +1,10 @@
 create table public.user_settings (
   user_id uuid not null,
-  per_trade_target_percent numeric(8, 4) not null default 1,
-  sound_notifications_threshold numeric(8, 4) not null default 2.8,
   live_trade_sound_threshold numeric(8, 4) not null default 2.8,
   live_trade_high_priority_sound_threshold numeric(8, 4) not null default 3.4,
   daily_target_percent numeric(8, 4) not null default 2,
+  positive_gauge_percent_max numeric(8, 4) not null default 4,
+  per_trade_gauge_auto_close_enabled boolean not null default true,
   weekly_r_target numeric(8, 4) not null default 5,
   default_chart_mode text not null default 'trades'::text,
   trading_day_reset_time time without time zone not null default '17:00:00'::time without time zone,

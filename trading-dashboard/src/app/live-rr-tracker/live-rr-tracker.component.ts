@@ -129,6 +129,17 @@ interface Table {
           <div class="header-meta">
             <button
               type="button"
+              class="auto-close-toggle"
+              [class.is-on]="autoCloseEnabled"
+              [attr.aria-pressed]="autoCloseEnabled"
+              [disabled]="isClosingAll"
+              [attr.title]="autoCloseEnabled ? 'Auto-close each trade at its Maximum positive gauge (%) is ON — click to disable' : 'Auto-close each trade at its Maximum positive gauge (%) is OFF — click to enable'"
+              (click)="toggleAutoClose()">
+              <mat-icon>{{ autoCloseEnabled ? 'bolt' : 'flash_off' }}</mat-icon>
+              {{ autoCloseEnabled ? 'Auto On' : 'Auto Off' }}
+            </button>
+            <button
+              type="button"
               class="close-all-button"
               [disabled]="isClosingAll"
               (click)="closeAllTrades()">
@@ -223,7 +234,7 @@ interface Table {
                 <app-live-trade-gauge
                   class="trade-gauge"
                   [value]="getTradePercent(trade)"
-                  [positiveMax]="3"
+                  [positiveMax]="positiveGaugePercentMax"
                   [negativeMax]="getTradeRiskPercent(trade)"
                   [symbol]="trade.symbol">
                 </app-live-trade-gauge>
@@ -248,6 +259,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() liveTradeSoundSettings: LiveTradeSoundSettings = { enabled: true, alertThreshold: 2.8, highAlertThreshold: 3.4, volume: 0.7 };
   @Output() liveTradeSoundSettingsChange = new EventEmitter<LiveTradeSoundSettings>();
   @Output() gaugePercentMaxChange = new EventEmitter<number>();
+  /** Master switch for closing each trade at its Maximum positive gauge (%). */
+  @Input() autoCloseEnabled = true;
+  @Output() autoCloseEnabledChange = new EventEmitter<boolean>();
 
   hasLiveTrades: boolean = false;
   openTradeCount: number = 0;
@@ -288,11 +302,9 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    const savedGaugeMax = Number(localStorage.getItem('live-trade-gauge-max-percent'));
-    if (Number.isFinite(savedGaugeMax) && savedGaugeMax >= 0.1 && savedGaugeMax <= 100) {
-      this.positiveGaugePercentMax = savedGaugeMax;
-      this.gaugePercentDraft = String(savedGaugeMax);
-    }
+    // The maximum comes from user settings via [positiveGaugePercentMax].
+    // No localStorage override here so every UI (widget modal + Profile &
+    // settings) edits the single source of truth.
     this.calculateLiveMetrics();
     this.holdingTimeInterval = setInterval(() => this.cdr.markForCheck(), 1000);
   }
@@ -424,6 +436,12 @@ export class LiveRRTrackerComponent implements OnInit, OnChanges, OnDestroy {
     localStorage.setItem('live-trade-gauge-max-percent', String(nextMax));
     this.gaugePercentMaxChange.emit(nextMax);
     this.isGaugeSettingsOpen = false;
+  }
+
+  toggleAutoClose(): void {
+    this.autoCloseEnabled = !this.autoCloseEnabled;
+    this.autoCloseEnabledChange.emit(this.autoCloseEnabled);
+    this.cdr.markForCheck();
   }
 
   closeAllTrades(): void {

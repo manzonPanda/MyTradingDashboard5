@@ -63,40 +63,77 @@ describe('DashboardComponent', () => {
     expect((component as any).calculateTradeR(trade)).toBe('-0.75');
   });
 
-  it('closes verified live MT5 trades once the daily target is reached', () => {
+  it('closes a trade when its PnL% reaches the maximum positive gauge', () => {
     const tradeService = TestBed.inject(TradeService);
-    const closeAllTrades = spyOn(tradeService, 'closeAllTrades').and.returnValue(of({ success: true }));
-    component.dailyTarget = 2;
-    component.dailyPnLPercent = 2;
+    const closeTrade = spyOn(tradeService, 'closeTrade').and.returnValue(of({ success: true }));
+    component.perTradeGaugeAutoCloseEnabled = true;
+    component.liveTradeGaugePercentMax = 1.5;
+    component.mt5AccountInfo = { startingBalance: 1000 } as any;
     component.selectedAccount = { id: 'account-1', name: 'Test account', platform: 'MT5', account_number: '110566588' } as any;
-    component.mt5LiveTrades = [{ position: '101' } as any];
+    component.mt5LiveTrades = [{ position: '101', profit: '20', symbol: 'GBPUSD' } as any];
     (component as any).mt5ServiceConnected = true;
     (component as any).mt5AccountLogin = '110566588';
     (component as any).isMt5LiveSnapshotAvailable = true;
     (component as any).mt5OpenPositionIds = new Set(['101']);
 
-    (component as any).closeOpenLiveTradesAtDailyTarget();
+    (component as any).checkGaugeTargetCloses();
 
-    expect(closeAllTrades).toHaveBeenCalledTimes(1);
-    expect((component as any).mt5OpenPositionIds.has('101')).toBeFalse();
+    expect(closeTrade).toHaveBeenCalledWith('101');
   });
 
-  it('does not immediately retry a failed daily target close', () => {
+  it('skips trades whose PnL% is below the maximum positive gauge', () => {
     const tradeService = TestBed.inject(TradeService);
-    const closeAllTrades = spyOn(tradeService, 'closeAllTrades').and.returnValue(throwError(() => new Error('MT5 unavailable')));
-    component.dailyTarget = 2;
-    component.dailyPnLPercent = 2;
+    const closeTrade = spyOn(tradeService, 'closeTrade');
+    component.perTradeGaugeAutoCloseEnabled = true;
+    component.liveTradeGaugePercentMax = 1.5;
+    component.mt5AccountInfo = { startingBalance: 1000 } as any;
     component.selectedAccount = { id: 'account-1', name: 'Test account', platform: 'MT5', account_number: '110566588' } as any;
-    component.mt5LiveTrades = [{ position: '101' } as any];
+    component.mt5LiveTrades = [{ position: '101', profit: '5', symbol: 'GBPUSD' } as any];
     (component as any).mt5ServiceConnected = true;
     (component as any).mt5AccountLogin = '110566588';
     (component as any).isMt5LiveSnapshotAvailable = true;
     (component as any).mt5OpenPositionIds = new Set(['101']);
 
-    (component as any).closeOpenLiveTradesAtDailyTarget();
-    (component as any).closeOpenLiveTradesAtDailyTarget();
+    (component as any).checkGaugeTargetCloses();
 
-    expect(closeAllTrades).toHaveBeenCalledTimes(1);
+    expect(closeTrade).not.toHaveBeenCalled();
+  });
+
+  it('does not immediately retry a failed gauge auto-close', () => {
+    const tradeService = TestBed.inject(TradeService);
+    const closeTrade = spyOn(tradeService, 'closeTrade').and.returnValue(throwError(() => new Error('MT5 unavailable')));
+    component.perTradeGaugeAutoCloseEnabled = true;
+    component.liveTradeGaugePercentMax = 1.5;
+    component.mt5AccountInfo = { startingBalance: 1000 } as any;
+    component.selectedAccount = { id: 'account-1', name: 'Test account', platform: 'MT5', account_number: '110566588' } as any;
+    component.mt5LiveTrades = [{ position: '101', profit: '20', symbol: 'GBPUSD' } as any];
+    (component as any).mt5ServiceConnected = true;
+    (component as any).mt5AccountLogin = '110566588';
+    (component as any).isMt5LiveSnapshotAvailable = true;
+    (component as any).mt5OpenPositionIds = new Set(['101']);
+
+    (component as any).checkGaugeTargetCloses();
+    (component as any).checkGaugeTargetCloses();
+
+    expect(closeTrade).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the per-trade gauge auto-close while it is disabled', () => {
+    const tradeService = TestBed.inject(TradeService);
+    const closeTrade = spyOn(tradeService, 'closeTrade');
+    component.perTradeGaugeAutoCloseEnabled = false;
+    component.liveTradeGaugePercentMax = 1.5;
+    component.mt5AccountInfo = { startingBalance: 1000 } as any;
+    component.selectedAccount = { id: 'account-1', name: 'Test account', platform: 'MT5', account_number: '110566588' } as any;
+    component.mt5LiveTrades = [{ position: '101', profit: '20', symbol: 'GBPUSD' } as any];
+    (component as any).mt5ServiceConnected = true;
+    (component as any).mt5AccountLogin = '110566588';
+    (component as any).isMt5LiveSnapshotAvailable = true;
+    (component as any).mt5OpenPositionIds = new Set(['101']);
+
+    (component as any).checkGaugeTargetCloses();
+
+    expect(closeTrade).not.toHaveBeenCalled();
   });
 
   it('uses 5 AM PHT as the Day Trades session boundary', () => {

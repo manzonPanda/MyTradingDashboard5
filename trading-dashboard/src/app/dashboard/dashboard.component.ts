@@ -511,8 +511,9 @@ export class DashboardComponent implements AfterViewInit {
   dailyPnL: number = 0;
   dailyPnLPercent: number = 0;
   dailyTarget: number | null = null;
-  private dailyTargetCloseInFlight = false;
-  private dailyTargetCloseRetryAfter = 0;
+  perTradeGaugeAutoCloseEnabled = true;
+  private gaugeCloseFiredTickets = new Set<string>();
+  private gaugeCloseLastAttemptAt: Record<string, number> = {};
   dailyWinsPercent: number = 0;
   dailyWinsAmount: number = 0;
   dailyLossesAmount: number = 0; // negative value for losses
@@ -1430,6 +1431,38 @@ get drawdownIsBalanceTrailingMode(): boolean {
     this.cdr.markForCheck();
   }
 
+  /** Trades widget "Auto On/Off" button — persists the new state to Supabase. */
+  onAutoCloseToggle(enabled: boolean): void {
+    void this.setPerTradeGaugeAutoCloseEnabled(enabled);
+  }
+
+  private async setPerTradeGaugeAutoCloseEnabled(enabled: boolean): Promise<void> {
+    const previous = this.perTradeGaugeAutoCloseEnabled;
+    if (previous === enabled) return;
+
+    // Optimistic update so the widget reflects the click instantly.
+    this.perTradeGaugeAutoCloseEnabled = enabled;
+    this.cdr.markForCheck();
+
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+
+    try {
+      await this.supabaseService.updateUserSettings(userId, { per_trade_gauge_auto_close_enabled: enabled });
+      this.snackBar.open(
+        enabled ? 'Gauge auto-close enabled.' : 'Gauge auto-close disabled.',
+        'Dismiss',
+        { duration: 3000 }
+      );
+    } catch {
+      // Revert the optimistic change when the save failed.
+      this.perTradeGaugeAutoCloseEnabled = previous;
+      this.snackBar.open('Unable to save the auto-close setting.', 'Dismiss', { duration: 5000 });
+    } finally {
+      this.cdr.markForCheck();
+    }
+  }
+
   onLiveTradeSoundSettingsChange(settings: LiveTradeSoundSettingsModel): void {
     this.liveTradeSoundSettings = { ...settings };
     this.document.defaultView?.localStorage.setItem(this.liveTradeSoundSettingsStorageKey, JSON.stringify(this.liveTradeSoundSettings));
@@ -1439,7 +1472,8 @@ get drawdownIsBalanceTrailingMode(): boolean {
   }
 
   onLiveTradeDisplayPreferencesChange(preferences: LiveTradeDisplayPreferences): void {
-    this.liveTradeGaugePercentMax = preferences.positiveGaugePercentMax;
+    // positiveGaugePercentMax is no longer carried here; it flows through
+    // onPositiveGaugePercentMaxSettingChange (persisted to Supabase first).
     this.onLiveTradeSoundSettingsChange({
       enabled: preferences.soundEnabled,
       alertThreshold: preferences.soundThreshold,
@@ -1448,9 +1482,102 @@ get drawdownIsBalanceTrailingMode(): boolean {
     });
   }
 
+  /** Trades widget gear modal — persists the new maximum to Supabase. */
   onLiveTradeGaugePercentMaxChange(value: number): void {
     this.liveTradeGaugePercentMax = value;
     this.saveLiveTradeDisplayPreferences();
+    void this.persistPositiveGaugePercentMax(value);
+  }
+
+  /** Profile & settings field — the modal persists before emitting. */
+  onPositiveGaugePercentMaxSettingChange(value: number): void {
+    this.liveTradeGaugePercentMax = value;
+    this.cdr.markForCheck();
+  }
+
+  private async persistPositiveGaugePercentMax(value: number): Promise<void> {
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+    try {
+      await this.supabaseService.updateUserSettings(userId, { positive_gauge_percent_max: value });
+    } catch (error) {
+      console.warn('Unable to save the maximum positive gauge setting:', error);
+      this.snackBar.open('Unable to save the maximum positive gauge setting.', 'Dismiss', { duration: 5000 });
+    }
+  }
+
+  /** Profile & settings checkbox — the modal persists before emitting. */
+  onPerTradeGaugeAutoCloseSettingChange(enabled: boolean): void {
+    this.perTradeGaugeAutoCloseEnabled = enabled;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Closes an open trade the moment its PnL% reaches the 'Maximum positive
+   * gauge (%)' setting — i.e. exactly when its gauge ring fills up.
+   * Uses the same formula as the gauge: (live profit / account size) * 100.
+   */
+  private checkGaugeTargetCloses(): void {
+    if (!this.perTradeGaugeAutoCloseEnabled) return;
+    const thresholdPct = this.liveTradeGaugePercentMax;
+    if (!Number.isFinite(thresholdPct) || thresholdPct <= 0) return;
+    if (!this.isActiveMt5Account()) return;
+
+    const openTrades = this.getCurrentMt5LiveTrades();
+    if (openTrades.length === 0) {
+      // Positions that vanished are forgotten so a future trade reusing the
+      // ticket id space can fire again cleanly.
+      if (this.gaugeCloseFiredTickets.size > 0) this.gaugeCloseFiredTickets.clear();
+      return;
+    }
+
+    const accountSize = this.mt5AccountInfo?.startingBalance || 0;
+    if (accountSize <= 0) return;
+
+    const openIds = new Set(openTrades.map(trade => String(trade.position)));
+    for (const ticket of [...this.gaugeCloseFiredTickets]) {
+      if (!openIds.has(ticket)) this.gaugeCloseFiredTickets.delete(ticket);
+    }
+
+    const now = Date.now();
+    for (const trade of openTrades) {
+      const ticket = String(trade.position);
+      if (this.gaugeCloseFiredTickets.has(ticket)) continue;
+      const lastAttempt = this.gaugeCloseLastAttemptAt[ticket] ?? 0;
+      if (now - lastAttempt < 15000) continue; // max one attempt / ticket / 15s
+
+      const profit = parseFloat(trade.profit || '0') || 0;
+      const pct = (profit / accountSize) * 100; // identical to the gauge ring math
+      if (pct < thresholdPct) continue;
+
+      this.gaugeCloseFiredTickets.add(ticket);
+      this.gaugeCloseLastAttemptAt[ticket] = now;
+      console.log(`[gauge-close] FIRING: ${trade.symbol} ${ticket} at ${pct.toFixed(2)}% >= max positive gauge ${thresholdPct}%`);
+
+      this.tradeService.closeTrade(ticket).subscribe({
+        next: (response) => {
+          if (response?.success) {
+            this.snackBar.open(`${trade.symbol} auto-closed at ${pct.toFixed(2)}% (max positive gauge).`, 'Dismiss', { duration: 4000 });
+          } else {
+            // Allow a retry on a later evaluation cycle.
+            this.gaugeCloseFiredTickets.delete(ticket);
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.gaugeCloseFiredTickets.delete(ticket);
+          // A 404 means the position was already gone (SL/TP/manual close,
+          // or a competing auto-close) before our request arrived — normal,
+          // not worth alarming the user about.
+          if (err?.status === 404) {
+            console.log(`[gauge-close] ${trade.symbol} ${ticket} was already closed before the request arrived.`);
+          } else {
+            this.snackBar.open(`Unable to auto-close ${trade.symbol} at its gauge target.`, 'Dismiss', { duration: 5000 });
+          }
+          this.cdr.markForCheck();
+        }
+      });
+    }
   }
 
   private saveLiveTradeDisplayPreferences(): void {
@@ -1739,54 +1866,6 @@ get drawdownIsBalanceTrailingMode(): boolean {
     if (this.dailyPnLPercent <= -3.5 && !this.dailyLimitNotified) {
       this.dailyLimitNotified = true;
     }
-
-    this.closeOpenLiveTradesAtDailyTarget();
-  }
-
-  private closeOpenLiveTradesAtDailyTarget(): void {
-    const dailyTarget = this.dailyTarget;
-    if (
-      this.dailyTargetCloseInFlight
-      || Date.now() < this.dailyTargetCloseRetryAfter
-      || dailyTarget === null
-      || dailyTarget <= 0
-      || this.dailyPnLPercent < dailyTarget
-      || !this.isActiveMt5Account()
-    ) return;
-
-    const openPositionIds = this.getCurrentMt5LiveTrades().map(trade => String(trade.position));
-    if (openPositionIds.length === 0) return;
-
-    const accountId = this.selectedAccount?.id ?? null;
-    this.dailyTargetCloseInFlight = true;
-    this.tradeService.closeAllTrades().subscribe({
-      next: response => {
-        this.dailyTargetCloseInFlight = false;
-        if (!response?.success) {
-          this.dailyTargetCloseRetryAfter = Date.now() + 15000;
-          this.snackBar.open('Unable to close all live trades after the daily target was reached.', 'Dismiss', { duration: 5000 });
-          return;
-        }
-
-        if (this.selectedAccount?.id === accountId) {
-          for (const positionId of openPositionIds) {
-            this.mt5OpenPositionIds?.delete(positionId);
-          }
-          this.updateTableData();
-          void this.loadMT5Data();
-        }
-
-        this.dailyTargetCloseRetryAfter = 0;
-        this.snackBar.open('Live trades closed because the daily target was reached.', 'Dismiss', { duration: 5000 });
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.dailyTargetCloseInFlight = false;
-        this.dailyTargetCloseRetryAfter = Date.now() + 15000;
-        this.snackBar.open('Unable to close live trades after the daily target was reached.', 'Dismiss', { duration: 5000 });
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   getWinRingCircumference(): number { return 2 * Math.PI * 44; }
@@ -2452,7 +2531,19 @@ get drawdownIsBalanceTrailingMode(): boolean {
     this.isDailyChart = settings.default_chart_mode === 'daily';
     const dailyTarget = Number(settings.daily_target_percent);
     this.dailyTarget = Number.isFinite(dailyTarget) ? dailyTarget : null;
+    this.perTradeGaugeAutoCloseEnabled = settings.per_trade_gauge_auto_close_enabled !== false;
     const savedDisplayPreferences = this.loadLiveTradeDisplayPreferences();
+    // Positive gauge max: user_settings is the source of truth; fall back to
+    // the legacy localStorage copy for rows created before the column existed.
+    const gaugeFromSettings = Number(settings.positive_gauge_percent_max);
+    if (Number.isFinite(gaugeFromSettings) && gaugeFromSettings >= 0.1) {
+      this.liveTradeGaugePercentMax = Math.min(100, gaugeFromSettings);
+    } else {
+      const legacyGauge = Number(savedDisplayPreferences.positiveGaugePercentMax);
+      if (Number.isFinite(legacyGauge) && legacyGauge >= 0.1) {
+        this.liveTradeGaugePercentMax = Math.min(100, legacyGauge);
+      }
+    }
     this.liveTradeSoundSettings = {
       enabled: typeof savedDisplayPreferences.soundEnabled === 'boolean'
         ? savedDisplayPreferences.soundEnabled
@@ -2478,6 +2569,16 @@ get drawdownIsBalanceTrailingMode(): boolean {
       minTargets: settings.aura_min_targets,
       maxTargets: settings.aura_max_targets
     });
+
+    // Settings can finish loading AFTER the first table/MT5 data pass has
+    // already evaluated the daily-target auto-close. Without this, a refresh
+    // could sit idle on "no daily target configured" until the next 60s
+    // timer tick even though the target was already reached.
+    this.updateDailyLimitMetrics();
+    // One deferred re-check for the opposite ordering (settings landed while
+    // MT5 data was still loading); later arrivals are covered by the regular
+    // data-update and 60s timer cycles.
+    setTimeout(() => this.updateDailyLimitMetrics(), 5000);
   }
 
   private applySelectedAccountSettings(): void {
@@ -2556,8 +2657,10 @@ get drawdownIsBalanceTrailingMode(): boolean {
     }
 
     const socket = io(`${this.BACKEND_URL_MT5}/`,{
-      transports: ['websocket'], // ��� Force WebSocket to avoid polling
-      upgrade: false,              // Optional, disables fallback to long-polling
+      // Long-polling first, upgrading to WebSocket when possible, so a
+      // flaky wss upgrade through the Cloudflare Tunnel cannot kill live
+      // updates (polling delivers emitted events near-instantly).
+      transports: ['polling', 'websocket'],
     });
 
     socket.on("connect", async () => {
@@ -4720,6 +4823,9 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     console.log("📊 Sample trade netProfit:", mt5Trades[0]?.netProfit);
 
     this.updateTableData();
+    // Evaluate per-trade gauge auto-closes immediately after a refresh loads
+    // the live snapshot instead of waiting for the first price tick.
+    this.checkGaugeTargetCloses();
 
 
 
@@ -5464,6 +5570,7 @@ async onPaste(event: ClipboardEvent): Promise<void> {
     this.updateDailyLimitMetrics();
     this.generateTradingChartData();
     this.checkForProfitTargetCelebration();
+    this.checkGaugeTargetCloses();
 
     this.cdr.detectChanges();
   }

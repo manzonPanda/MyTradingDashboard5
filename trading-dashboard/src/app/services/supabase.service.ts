@@ -93,11 +93,11 @@ export interface Profile {
 
 export interface UserSettings {
   user_id: string;
-  per_trade_target_percent: number;
-  sound_notifications_threshold: number;
   live_trade_sound_threshold: number;
   live_trade_high_priority_sound_threshold: number;
   daily_target_percent: number;
+  positive_gauge_percent_max: number;
+  per_trade_gauge_auto_close_enabled: boolean;
   weekly_r_target: number;
   default_chart_mode: 'daily' | 'trades';
   trading_day_reset_time: string;
