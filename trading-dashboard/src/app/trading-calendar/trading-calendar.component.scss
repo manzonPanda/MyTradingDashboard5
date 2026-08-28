@@ -943,15 +943,9 @@
   padding: 1rem 1.1rem;
 }
 
-.day-trade-heading,
-.day-trade-details,
-.day-trade-metrics {
+.day-trade-heading {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-}
-
-.day-trade-heading {
   justify-content: space-between;
   gap: 1rem;
 }
@@ -993,69 +987,99 @@
   }
 }
 
-.day-trade-details {
-  flex-wrap: wrap;
+.day-trade-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, auto));
+  gap: 0.35rem;
   margin-top: 0.8rem;
-  color: var(--tf-text-muted);
+}
+
+.day-trade-info-time {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.day-trade-info-ticket {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.day-trade-info-risk {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.day-trade-info-rrr {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.day-trade-info-mfe {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.day-trade-info-mae {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.day-trade-info-item {
+  display: grid;
+  min-width: 0;
+  gap: 0.28rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--tf-border-primary);
+  border-radius: 8px;
+  background: var(--tf-bg-tertiary);
+  color: var(--tf-text-primary);
   font-size: 0.75rem;
 
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  mat-icon {
-    width: 15px;
-    height: 15px;
-    font-size: 15px;
+  strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--tf-text-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-.day-trade-metrics {
-  flex-wrap: wrap;
-  margin-top: 1rem;
+.day-trade-info-label {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.25rem;
   color: var(--tf-text-muted);
-  font-size: 0.75rem;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 
-  span {
-    padding: 0.28rem 0.5rem;
-    border-radius: 6px;
-    background: var(--tf-bg-tertiary);
+  mat-icon {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
   }
+}
 
+.day-trade-info-mfe {
+  background: rgba(16, 185, 129, 0.14);
+
+  .day-trade-info-label,
   strong {
-    color: var(--tf-text-primary);
-  }
-
-  .day-trade-extreme {
-    font-weight: 600;
-  }
-
-  .day-trade-swap {
-    color: var(--tf-negative);
-
-    strong {
-      color: inherit;
-    }
-  }
-
-  .day-trade-mfe {
-    background: rgba(16, 185, 129, 0.14);
     color: var(--tf-positive);
-
-    strong {
-      color: inherit;
-    }
   }
+}
 
-  .day-trade-mae {
-    background: rgba(244, 63, 94, 0.14);
+.day-trade-info-mae {
+  background: rgba(244, 63, 94, 0.14);
+
+  .day-trade-info-label,
+  strong {
     color: var(--tf-negative);
-
-    strong {
-      color: inherit;
-    }
   }
 }
 
@@ -1564,6 +1588,20 @@
 
   .day-trade-card {
     grid-template-columns: 1fr;
+  }
+
+  .day-trade-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .day-trade-info-time,
+  .day-trade-info-ticket,
+  .day-trade-info-risk,
+  .day-trade-info-rrr,
+  .day-trade-info-mfe,
+  .day-trade-info-mae {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .day-trade-screenshot,

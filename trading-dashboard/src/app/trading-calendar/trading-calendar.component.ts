@@ -198,17 +198,31 @@ interface WeekSummary {
                   </div>
                   <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">{{ formatCurrency(getTradePnL(trade)) }}</strong>
                 </div>
-                <div class="day-trade-details">
-                  <span><mat-icon aria-hidden="true">schedule</mat-icon>{{ formatTradeTime(trade.timeOpenPh || trade.openDate) }}<ng-container *ngIf="trade.timeClosePh || (trade.closeDate && trade.closeDate !== '-')"> → {{ formatTradeTime(trade.timeClosePh || trade.closeDate) }}</ng-container></span>
-                  <span><mat-icon aria-hidden="true">confirmation_number</mat-icon>#{{ trade.position || '—' }}</span>
-                  <span *ngIf="trade.volume"><mat-icon aria-hidden="true">layers</mat-icon>{{ trade.volume }} lots</span>
-                </div>
-                <div class="day-trade-metrics">
-                  <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
-                  <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
-                  <span *ngIf="getNumericValue(trade.swap) !== 0" class="day-trade-swap">Swap <strong>{{ formatCurrency(getNumericValue(trade.swap)) }}</strong></span>
-                  <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatPercentage(getMfePercentage(trade)) }} {{ formatCurrency(getMfeValue(trade)) }}</strong></span>
-                  <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatPercentage(getMaePercentage(trade)) }} {{ formatCurrency(getMaeValue(trade)) }}</strong></span>
+                <div class="day-trade-info-grid">
+                  <div class="day-trade-info-item day-trade-info-time">
+                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">schedule</mat-icon>Time range</span>
+                    <strong>{{ formatTradeTime(trade.timeOpenPh || trade.openDate) }}<ng-container *ngIf="trade.timeClosePh || (trade.closeDate && trade.closeDate !== '-')"> → {{ formatTradeTime(trade.timeClosePh || trade.closeDate) }}</ng-container></strong>
+                  </div>
+                  <div class="day-trade-info-item day-trade-info-ticket">
+                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">confirmation_number</mat-icon>Ticket + lots</span>
+                    <strong>#{{ trade.position || '—' }}<ng-container *ngIf="trade.volume"> · {{ trade.volume }} lots</ng-container></strong>
+                  </div>
+                  <div class="day-trade-info-item day-trade-info-risk">
+                    <span class="day-trade-info-label">Risk</span>
+                    <strong>{{ trade.riskPerTrade ? formatCurrency(getNumericValue(trade.riskPerTrade)) : '—' }}</strong>
+                  </div>
+                  <div class="day-trade-info-item day-trade-info-rrr">
+                    <span class="day-trade-info-label">R:R</span>
+                    <strong>{{ trade.rrr || '—' }}</strong>
+                  </div>
+                  <div class="day-trade-info-item day-trade-info-mfe" title="Maximum Favorable Excursion">
+                    <span class="day-trade-info-label">MFE</span>
+                    <strong>{{ formatPercentage(getMfePercentage(trade)) }} {{ formatCurrency(getMfeValue(trade)) }}</strong>
+                  </div>
+                  <div class="day-trade-info-item day-trade-info-mae" title="Maximum Adverse Excursion">
+                    <span class="day-trade-info-label">MAE</span>
+                    <strong>{{ formatPercentage(getMaePercentage(trade)) }} {{ formatCurrency(getMaeValue(trade)) }}</strong>
+                  </div>
                 </div>
                 <section class="day-trade-reflection">
                   <div class="day-trade-reflection-heading">
