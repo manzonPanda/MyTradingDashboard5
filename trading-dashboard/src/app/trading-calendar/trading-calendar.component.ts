@@ -199,12 +199,12 @@ interface WeekSummary {
                   <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">{{ formatCurrency(getTradePnL(trade)) }}</strong>
                 </div>
                 <div class="day-trade-info-grid">
-                  <div class="day-trade-info-item day-trade-info-time">
-                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">schedule</mat-icon>Time range</span>
+                  <div class="day-trade-info-item day-trade-info-time" aria-label="Time range">
+                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">schedule</mat-icon></span>
                     <strong>{{ formatTradeTime(trade.timeOpenPh || trade.openDate) }}<ng-container *ngIf="trade.timeClosePh || (trade.closeDate && trade.closeDate !== '-')"> → {{ formatTradeTime(trade.timeClosePh || trade.closeDate) }}</ng-container></strong>
                   </div>
-                  <div class="day-trade-info-item day-trade-info-ticket">
-                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">confirmation_number</mat-icon>Ticket + lots</span>
+                  <div class="day-trade-info-item day-trade-info-ticket" aria-label="Ticket and lots">
+                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">confirmation_number</mat-icon></span>
                     <strong>#{{ trade.position || '—' }}<ng-container *ngIf="trade.volume"> · {{ trade.volume }} lots</ng-container></strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-risk">
