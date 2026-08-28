@@ -1049,6 +1049,23 @@
   }
 }
 
+.day-trade-info-time,
+.day-trade-info-ticket,
+.day-trade-info-risk,
+.day-trade-info-rrr {
+  gap: 0.3rem;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.68rem;
+
+  strong {
+    font-size: 0.7rem;
+  }
+
+  .day-trade-info-label {
+    font-size: 0.58rem;
+  }
+}
+
 .day-trade-info-label {
   display: inline-flex;
   align-items: center;
