@@ -1067,35 +1067,10 @@
 
 .day-trade-info-mfe,
 .day-trade-info-mae {
-  position: relative;
-  min-height: 4.7rem;
-  align-content: space-between;
-  overflow: hidden;
-  border-color: transparent;
-  box-shadow: inset 3px 0 0 currentColor;
-
-  &::after {
-    position: absolute;
-    right: -1.5rem;
-    bottom: -2rem;
-    width: 5rem;
-    height: 5rem;
-    border-radius: 50%;
-    background: currentColor;
-    content: '';
-    opacity: 0.08;
-  }
+  border-color: var(--tf-border-primary);
 
   .day-trade-info-label {
-    position: relative;
-    z-index: 1;
-    font-size: 0.67rem;
-  }
-
-  .day-trade-info-label mat-icon {
-    width: 15px;
-    height: 15px;
-    font-size: 15px;
+    font-size: 0.63rem;
   }
 }
 
@@ -1110,20 +1085,15 @@
 }
 
 .day-trade-excursion-value {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.45rem;
+  display: grid;
+  gap: 0.1rem;
   overflow: visible !important;
   color: inherit !important;
   white-space: normal !important;
 }
 
 .day-trade-excursion-percent {
-  font-size: 1rem;
-  letter-spacing: -0.02em;
+  font-size: 0.78rem;
 }
 
 .day-trade-excursion-amount {
@@ -1652,12 +1622,6 @@
   .day-trade-info-mae {
     grid-column: auto;
     grid-row: auto;
-  }
-
-  .day-trade-excursion-value {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.1rem;
   }
 
   .day-trade-screenshot,
