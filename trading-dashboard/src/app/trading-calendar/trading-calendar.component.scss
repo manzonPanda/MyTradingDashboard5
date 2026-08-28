@@ -1067,39 +1067,50 @@
 
 .day-trade-info-mfe,
 .day-trade-info-mae {
-  border-color: var(--tf-border-primary);
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  gap: 0.35rem;
+  padding: 0.3rem 0.45rem;
+  border-color: transparent;
 
   .day-trade-info-label {
-    font-size: 0.63rem;
+    flex: 0 0 auto;
+    font-size: 0.62rem;
   }
 }
 
 .day-trade-info-mfe {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.07));
+  background: rgba(16, 185, 129, 0.18);
   color: var(--tf-positive);
 }
 
 .day-trade-info-mae {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.07));
+  background: rgba(244, 63, 94, 0.18);
   color: var(--tf-negative);
 }
 
 .day-trade-excursion-value {
-  display: grid;
-  gap: 0.1rem;
-  overflow: visible !important;
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.25rem;
+  overflow: hidden !important;
   color: inherit !important;
-  white-space: normal !important;
+  white-space: nowrap !important;
 }
 
 .day-trade-excursion-percent {
-  font-size: 0.78rem;
+  font-size: 0.7rem;
 }
 
 .day-trade-excursion-amount {
+  overflow: hidden;
   color: inherit;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   opacity: 0.78;
 }
 

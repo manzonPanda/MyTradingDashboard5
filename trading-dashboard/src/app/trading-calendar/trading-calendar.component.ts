@@ -216,14 +216,14 @@ interface WeekSummary {
                     <strong>{{ trade.rrr || '—' }}</strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-mfe" title="Maximum Favorable Excursion">
-                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">north_east</mat-icon>MFE</span>
+                    <span class="day-trade-info-label">MFE</span>
                     <strong class="day-trade-excursion-value">
                       <span class="day-trade-excursion-percent">{{ formatPercentage(getMfePercentage(trade)) }}</span>
                       <span class="day-trade-excursion-amount">{{ formatCurrency(getMfeValue(trade)) }}</span>
                     </strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-mae" title="Maximum Adverse Excursion">
-                    <span class="day-trade-info-label"><mat-icon aria-hidden="true">south_west</mat-icon>MAE</span>
+                    <span class="day-trade-info-label">MAE</span>
                     <strong class="day-trade-excursion-value">
                       <span class="day-trade-excursion-percent">{{ formatPercentage(getMaePercentage(trade)) }}</span>
                       <span class="day-trade-excursion-amount">{{ formatCurrency(getMaeValue(trade)) }}</span>
