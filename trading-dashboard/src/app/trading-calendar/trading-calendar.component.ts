@@ -207,8 +207,8 @@ interface WeekSummary {
                   <span *ngIf="trade.riskPerTrade">Risk <strong>{{ formatCurrency(getNumericValue(trade.riskPerTrade)) }}</strong></span>
                   <span *ngIf="trade.rrr">R:R <strong>{{ trade.rrr }}</strong></span>
                   <span *ngIf="getNumericValue(trade.swap) !== 0" class="day-trade-swap">Swap <strong>{{ formatCurrency(getNumericValue(trade.swap)) }}</strong></span>
-                  <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatCurrency(getMfeValue(trade)) }}</strong></span>
-                  <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatCurrency(getMaeValue(trade)) }}</strong></span>
+                  <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatPercentage(getMfePercentage(trade)) }} {{ formatCurrency(getMfeValue(trade)) }}</strong></span>
+                  <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatPercentage(getMaePercentage(trade)) }} {{ formatCurrency(getMaeValue(trade)) }}</strong></span>
                   <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
                 </div>
                 <section class="day-trade-reflection">
@@ -768,6 +768,14 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
   getMaeValue(trade: Table): number {
     return Math.min(0, this.getNumericValue(trade.mae));
+  }
+
+  getMfePercentage(trade: Table): number {
+    return (this.getMfeValue(trade) / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+  }
+
+  getMaePercentage(trade: Table): number {
+    return (this.getMaeValue(trade) / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
   }
 
   formatTradeTime(value: string): string {
