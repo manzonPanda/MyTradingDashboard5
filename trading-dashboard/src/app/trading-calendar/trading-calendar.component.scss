@@ -1101,12 +1101,22 @@
 
 .day-trade-info-mfe {
   background: rgba(16, 185, 129, 0.18);
-  color: var(--tf-positive);
+  color: #34d399;
+
+  .day-trade-info-label,
+  .day-trade-excursion-value {
+    color: inherit;
+  }
 }
 
 .day-trade-info-mae {
   background: rgba(244, 63, 94, 0.18);
-  color: var(--tf-negative);
+  color: #fb7185;
+
+  .day-trade-info-label,
+  .day-trade-excursion-value {
+    color: inherit;
+  }
 }
 
 .day-trade-excursion-value {
