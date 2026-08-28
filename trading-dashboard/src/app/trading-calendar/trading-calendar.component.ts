@@ -209,7 +209,6 @@ interface WeekSummary {
                   <span *ngIf="getNumericValue(trade.swap) !== 0" class="day-trade-swap">Swap <strong>{{ formatCurrency(getNumericValue(trade.swap)) }}</strong></span>
                   <span class="day-trade-extreme day-trade-mfe" title="Maximum Favorable Excursion">MFE <strong>{{ formatPercentage(getMfePercentage(trade)) }} {{ formatCurrency(getMfeValue(trade)) }}</strong></span>
                   <span class="day-trade-extreme day-trade-mae" title="Maximum Adverse Excursion">MAE <strong>{{ formatPercentage(getMaePercentage(trade)) }} {{ formatCurrency(getMaeValue(trade)) }}</strong></span>
-                  <span *ngIf="trade.mt5status">{{ trade.mt5status }}</span>
                 </div>
                 <section class="day-trade-reflection">
                   <div class="day-trade-reflection-heading">
