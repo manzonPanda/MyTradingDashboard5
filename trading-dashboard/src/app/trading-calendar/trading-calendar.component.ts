@@ -205,7 +205,7 @@ interface WeekSummary {
                   </div>
                   <div class="day-trade-info-item day-trade-info-ticket" aria-label="Ticket and lots">
                     <span class="day-trade-info-label"><mat-icon aria-hidden="true">confirmation_number</mat-icon></span>
-                    <strong>#{{ trade.position || '—' }}<ng-container *ngIf="trade.volume"> · {{ trade.volume }} lots</ng-container></strong>
+                    <strong>#{{ trade.position || '—' }}<ng-container *ngIf="trade.volume"> · {{ trade.volume | number:'1.2-2' }} lots</ng-container></strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-risk">
                     <span class="day-trade-info-label">Risk</span>
