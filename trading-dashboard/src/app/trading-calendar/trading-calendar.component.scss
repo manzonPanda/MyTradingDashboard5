@@ -1026,9 +1026,10 @@
 }
 
 .day-trade-info-item {
-  display: grid;
+  display: flex;
   min-width: 0;
-  gap: 0.28rem;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.55rem 0.65rem;
   border: 1px solid var(--tf-border-primary);
   border-radius: 8px;
@@ -1037,6 +1038,7 @@
   font-size: 0.75rem;
 
   strong {
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     color: var(--tf-text-primary);

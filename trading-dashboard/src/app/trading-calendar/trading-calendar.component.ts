@@ -208,22 +208,22 @@ interface WeekSummary {
                     <strong>#{{ trade.position || '—' }}<ng-container *ngIf="trade.volume"> · {{ trade.volume | number:'1.2-2' }} lots</ng-container></strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-risk">
-                    <span class="day-trade-info-label">Risk</span>
+                    <span class="day-trade-info-label">Risk:</span>
                     <strong>{{ trade.riskPerTrade ? formatCurrency(getNumericValue(trade.riskPerTrade)) : '—' }}</strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-rrr">
-                    <span class="day-trade-info-label">R:R</span>
+                    <span class="day-trade-info-label">R:R:</span>
                     <strong>{{ trade.rrr || '—' }}</strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-mfe" title="Maximum Favorable Excursion">
-                    <span class="day-trade-info-label">MFE</span>
+                    <span class="day-trade-info-label">MFE:</span>
                     <strong class="day-trade-excursion-value">
                       <span class="day-trade-excursion-percent">{{ formatPercentage(getMfePercentage(trade)) }}</span>
                       <span class="day-trade-excursion-amount">{{ formatCurrency(getMfeValue(trade)) }}</span>
                     </strong>
                   </div>
                   <div class="day-trade-info-item day-trade-info-mae" title="Maximum Adverse Excursion">
-                    <span class="day-trade-info-label">MAE</span>
+                    <span class="day-trade-info-label">MAE:</span>
                     <strong class="day-trade-excursion-value">
                       <span class="day-trade-excursion-percent">{{ formatPercentage(getMaePercentage(trade)) }}</span>
                       <span class="day-trade-excursion-amount">{{ formatCurrency(getMaeValue(trade)) }}</span>
