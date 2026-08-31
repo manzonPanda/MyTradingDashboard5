@@ -1,0 +1,239 @@
+<div class="be-container">
+  <header class="be-header">
+    <div class="be-title">
+      <mat-icon>psychology_alt</mat-icon>
+      <div>
+        <h1>Trading Behavior Engine</h1>
+        <p class="be-subtitle">A.U.R.A. learns from your trades &amp; reflections</p>
+      </div>
+    </div>
+    <div class="be-account-context">
+      <mat-icon>account_balance</mat-icon>
+      <span>Analyzing: <strong>{{ selectedAccountName || '—' }}</strong></span>
+    </div>
+  </header>
+
+  <nav class="be-tabs">
+    <button [class.active]="engine.activeTab() === 'overall'" (click)="engine.setTab('overall')">OVERALL</button>
+    <button [class.active]="engine.activeTab() === 'week'" (click)="engine.setTab('week')">THIS WEEK</button>
+  </nav>
+
+  @if (engine.isLoading()) {
+    <div class="be-loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Analyzing behaviors{{ selectedAccountName ? ' for ' + selectedAccountName : '' }}…</p>
+    </div>
+  } @else if (engine.lastError()) {
+    <div class="be-error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ engine.lastError() }}</p>
+      <button mat-stroked-button (click)="reload()">Retry</button>
+    </div>
+  } @else if (!selectedAccountId) {
+    <div class="be-empty">
+      <mat-icon>swap_horiz</mat-icon>
+      <p>Select a trading account to view its behaviors.</p>
+    </div>
+  } @else if (engine.activeTab() === 'overall') {
+    @if (hasOverallData) {
+      <ng-container *ngTemplateOutlet="overallTpl"></ng-container>
+      <ng-container *ngTemplateOutlet="overallMoreTpl"></ng-container>
+    } @else {
+      <div class="be-empty">
+        <mat-icon>psychology_alt</mat-icon>
+        <p>No behaviors detected yet</p>
+        <span>A.U.R.A needs more trades and reflections to identify recurring patterns.</span>
+      </div>
+    }
+  } @else {
+    <ng-container *ngTemplateOutlet="weekTpl"></ng-container>
+  }
+</div>
+
+<!-- OVERALL tab -->
+<ng-template #overallTpl>
+  <section class="be-section" *ngIf="engine.leaks().length > 0">
+    <h2>💸 Your Biggest Leaks</h2>
+    <div class="be-card-list">
+      <div class="be-card negative" *ngFor="let b of engine.leaks().slice(0, 5)">
+        <div class="be-card-head">
+          <span class="be-name">{{ b.name }}</span>
+          <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
+        </div>
+        <p class="be-desc">{{ b.description }}</p>
+        <div class="be-metrics">
+          <span>{{ b.occurrence_count }} occurrences</span>
+          @if (b.estimated_impact_pnl !== null) {
+            <span class="impact-neg">{{ b.estimated_impact_pnl | number: '1.0-2' }} USD impact</span>
+          }
+          <span class="confidence">AI Confidence: {{ (b.confidence * 100) | number: '1.0-0' }}%</span>
+        </div>
+        <button class="be-evidence-btn" (click)="openDetail(b)">
+          <mat-icon>search</mat-icon> Evidence
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="be-section" *ngIf="engine.edge().length > 0">
+    <h2>🟢 Your Edge</h2>
+    <div class="be-card-list">
+      <div class="be-card positive" *ngFor="let b of engine.edge().slice(0, 5)">
+        <div class="be-card-head">
+          <span class="be-name">{{ b.name }}</span>
+          <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
+        </div>
+        <p class="be-desc">{{ b.description }}</p>
+        <div class="be-metrics">
+          <span>{{ b.occurrence_count }} occurrences</span>
+          @if (b.estimated_impact_pnl !== null) {
+            <span class="impact-pos">+{{ b.estimated_impact_pnl | number: '1.0-2' }} USD impact</span>
+          }
+          <span class="confidence">AI Confidence: {{ (b.confidence * 100) | number: '1.0-0' }}%</span>
+        </div>
+        <button class="be-evidence-btn" (click)="openDetail(b)">
+          <mat-icon>search</mat-icon> Evidence
+        </button>
+      </div>
+    </div>
+  </section>
+</ng-template>
+
+<!-- Emerging Behaviors + Rules (overall continued) -->
+<ng-template #overallMoreTpl>
+  <section class="be-section" *ngIf="engine.emerging().length > 0">
+    <h2>👀 Emerging Behaviors</h2>
+    <p class="be-note">Still gathering evidence — AURA noticed these only recently.</p>
+    <div class="be-card-list">
+      <div class="be-card emerging" *ngFor="let b of engine.emerging().slice(0, 5)">
+        <div class="be-card-head">
+          <span class="be-name">{{ b.name }}</span>
+          <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
+        </div>
+        <p class="be-desc">{{ b.description }}</p>
+        <div class="be-metrics">
+          <span>{{ b.occurrence_count }} occurrences</span>
+          <span class="confidence">AI Confidence: {{ (b.confidence * 100) | number: '1.0-0' }}%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="be-section" *ngIf="engine.activeRules().length > 0">
+    <h2>📜 Trading Rules</h2>
+    <div class="be-card-list">
+      <div class="be-card rule" *ngFor="let r of engine.activeRules()">
+        <div class="be-card-head">
+          <span class="be-name">{{ r.rule }}</span>
+          <span class="be-badge">{{ r.status }}</span>
+        </div>
+        <p class="be-desc" *ngIf="r.rationale">{{ r.rationale }}</p>
+        <div class="be-metrics">
+          @if (r.evidence_summary?.occurrences) {
+            <span>{{ r.evidence_summary!.occurrences }} evidence points</span>
+          }
+          <span class="confidence">Confidence: {{ (r.confidence * 100) | number: '1.0-0' }}%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</ng-template>
+
+<!-- THIS WEEK tab -->
+<ng-template #weekTpl>
+  @if (engine.brief(); as brief) {
+    <section class="be-section">
+      <h2>🔥 Trading Brief</h2>
+      <div class="be-card brief">
+        <p class="be-brief-summary">{{ brief.payload.summary }}</p>
+        @if (brief.payload.biggest_leak) {
+          <div class="be-brief-item">
+            <span class="be-brief-label">💸 Biggest Leak:</span>
+            {{ brief.payload.biggest_leak.name }} —
+            {{ brief.payload.biggest_leak.occurrences }} occurrences,
+            {{ brief.payload.biggest_leak.impact | number: '1.0-2' }} USD impact
+          </div>
+        }
+        @if (brief.payload.strongest_behavior) {
+          <div class="be-brief-item">
+            <span class="be-brief-label">🟢 Strongest:</span>
+            {{ brief.payload.strongest_behavior.name }} —
+            {{ brief.payload.strongest_behavior.occurrences }} occurrences,
+            +{{ brief.payload.strongest_behavior.impact | number: '1.0-2' }} USD impact
+          </div>
+        }
+        @if (brief.payload.focus) {
+          <div class="be-brief-item">
+            <span class="be-brief-label">🎯 Focus:</span> {{ brief.payload.focus }}
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <section class="be-section" *ngIf="engine.alerts().length > 0">
+    <h2>⚠️ Behavior Alerts</h2>
+    <div class="be-card-list">
+      <div class="be-card alert" *ngFor="let a of engine.alerts()">
+        <div class="be-card-head">
+          <span class="be-name">{{ a.message }}</span>
+          <span class="be-badge" [class.critical]="a.severity === 'critical'">{{ a.severity }}</span>
+        </div>
+        <button class="be-evidence-btn" (click)="dismissAlert(a)">
+          <mat-icon>close</mat-icon> Dismiss
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="be-empty" *ngIf="!engine.brief() && engine.alerts().length === 0">
+    <mat-icon>event_note</mat-icon>
+    <p>No weekly brief or alerts for this week yet.</p>
+    <span>They are generated automatically as you trade.</span>
+  </div>
+</ng-template>
+
+<!-- Evidence drill-down modal -->
+@if (detailOpen()) {
+  <div class="be-modal-overlay" (click)="closeDetail()">
+    <div class="be-modal" (click)="$event.stopPropagation()">
+      <header class="be-modal-head">
+        <h3>{{ detailBehavior()?.name }}</h3>
+        <button mat-icon-button (click)="closeDetail()"><mat-icon>close</mat-icon></button>
+      </header>
+      <p class="be-modal-desc">{{ detailBehavior()?.description }}</p>
+      <div class="be-metrics be-modal-metrics">
+        <span>{{ detailBehavior()?.occurrence_count }} occurrences</span>
+        <span>Impact: {{ detailBehavior()?.estimated_impact_pnl | number: '1.0-2' }} USD</span>
+        <span class="confidence">
+          AI Confidence: {{ (detailBehavior()?.confidence ?? 0) * 100 | number: '1.0-0' }}%
+        </span>
+      </div>
+      <h4>Evidence</h4>
+      <div class="be-evidence-list">
+        @for (e of detailEvidence(); track e.id) {
+          <div class="be-evidence-item">
+            <div class="be-evidence-head">
+              @if (e.trade_ticket) { <span class="be-ticket">Trade #{{ e.trade_ticket }}</span> }
+              @if (e.metrics_snapshot?.r_multiple !== null && e.metrics_snapshot?.r_multiple !== undefined) {
+                <span
+                  class="be-r"
+                  [class.pos]="(e.metrics_snapshot?.r_multiple ?? 0) > 0"
+                  [class.neg]="(e.metrics_snapshot?.r_multiple ?? 0) < 0">
+                  {{ e.metrics_snapshot?.r_multiple | number: '1.0-2' }}R
+                </span>
+              }
+            </div>
+            @if (e.reflection_excerpt) {
+              <blockquote class="be-reflection">"{{ e.reflection_excerpt }}"</blockquote>
+            }
+            <p class="be-reason">{{ e.reason }}</p>
+          </div>
+        } @empty {
+          <p class="be-note">No evidence recorded yet.</p>
+        }
+      </div>
+    </div>
+  </div>
+}

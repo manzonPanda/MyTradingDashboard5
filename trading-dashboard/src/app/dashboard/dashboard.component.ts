@@ -42,6 +42,7 @@ import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
 import { environment } from '../../../src/environments/environment';
 import { TradeService } from '../services/trade.service';
+import { AccountContextService } from '../services/account-context.service';
 
 
 declare var $: any;
@@ -743,6 +744,8 @@ export class DashboardComponent implements AfterViewInit {
         if (userId) {
           await this.supabaseService.updateUserSettings(userId, { default_account_id: this.selectedAccount?.id ?? null });
         }
+        // Reflect the new active account in the shared AI context too.
+        this.accountContext.setAccountContext(this.selectedAccount?.id ?? null);
         if (this.selectedAccount) {
           this.selectedFirm = this.getFirmName(this.selectedAccount);
         } else {
@@ -796,6 +799,8 @@ export class DashboardComponent implements AfterViewInit {
         const createdAccount = await this.supabaseService.createAccount(accountData);
         this.accounts = [createdAccount, ...this.accounts];
         this.selectedAccount = createdAccount;
+        // New account becomes active in every AI surface as well.
+        this.accountContext.setAccountContext(createdAccount.id);
         const userId = this.auth.user()?.id;
         if (userId) {
           await this.supabaseService.updateUserSettings(userId, { default_account_id: createdAccount.id });
@@ -1410,6 +1415,7 @@ get drawdownIsBalanceTrailingMode(): boolean {
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef,
     private newsReminder: NewsReminderService, private confetti: ConfettiService, private renderer: Renderer2, private snackBar: MatSnackBar,
     private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService, private tradeService: TradeService,
+    private accountContext: AccountContextService,
     public drawdownService: DrawdownService, @Inject(DOCUMENT) private document: Document) {
     this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
     this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
@@ -2500,6 +2506,10 @@ get drawdownIsBalanceTrailingMode(): boolean {
       this.profileAvatarUrl = profile?.avatar_url?.trim() || user?.user_metadata?.['avatar_url'] || '';
       const savedAccountId = savedSettings?.default_account_id;
       this.selectedAccount = this.accounts.find(account => account.id === savedAccountId) ?? this.accounts[0] ?? null;
+      // The dashboard header is the single source of truth for the active
+      // account — keep the shared AI (AURA chat + Behavior Engine) context in
+      // sync immediately so it never shows a stale account.
+      this.accountContext.setAccountContext(this.selectedAccount?.id ?? null);
       if (savedSettings) this.applyPersistedUserSettings(savedSettings);
       this.mt5SyncAccountId = this.selectedAccount?.id ?? '';
       this.selectedFirm = this.selectedAccount ? this.getFirmName(this.selectedAccount) : null;
@@ -2624,6 +2634,8 @@ get drawdownIsBalanceTrailingMode(): boolean {
 
     await this.supabaseService.updateUserSettings(userId, { default_account_id: account.id });
     this.selectedAccount = account;
+    // Keep the shared AI account context in sync with the dashboard header.
+    this.accountContext.setAccountContext(account.id);
     this.mt5LiveTrades = [];
     this.recentlyAddedTrades = [];
     this.isMt5LiveSnapshotAvailable = false;
