@@ -58,6 +58,7 @@ export class GroqClient {
     maxTokens = 1500,
     reasoningEffort = REASONING_LEVEL.NONE,
     includeReasoning = false,
+    json = false,
   }) {
     if (!this.apiKey) throw new Error('GROQ_API_KEY is not configured.');
 
@@ -67,6 +68,12 @@ export class GroqClient {
       temperature,
       max_tokens: maxTokens,
     };
+
+    // Strict-JSON output mode (used by structured consumers, e.g. memory
+    // extraction and future Behavior Engine analysis).
+    if (json) {
+      body.response_format = { type: 'json_object' };
+    }
 
     // Reasoning control — only send what the active model supports.
     const effort = this.resolveEffort(reasoningEffort);

@@ -22,6 +22,13 @@ import { MemoryManager } from './src/memory.js';
 import { ContextBuilder } from './src/context-builder.js';
 import { ConversationManager } from './src/conversation.js';
 import { ProactiveEngine } from './src/proactive.js';
+import { createLLMProvider, LLMConfigurationError } from './src/ai/provider.js';
+import { TradingDataAccess, AccountAccessError } from './src/data/trading-data.js';
+import { BehaviorStore } from './src/data/behavior-store.js';
+import { AnalysisJobStore } from './src/data/analysis-job-store.js';
+import { AnalysisService } from './src/behavior/analysis-service.js';
+import { BriefService } from './src/behavior/brief-service.js';
+import { AlertsService } from './src/behavior/alerts-service.js';
 
 dotenv.config();
 
@@ -73,10 +80,15 @@ async function authMiddleware(req, res, next) {
 // ─── Initialize orchestration components ───────────────────────
 const tokenManager = new TokenManager();
 const memoryManager = new MemoryManager(supabase);
-const toolRouter = new ToolRouter(supabase);
+// SECURITY layer: all trade queries are scoped through this module.
+const tradingData = new TradingDataAccess(supabase);
+const toolRouter = new ToolRouter(supabase, tradingData);
 const contextBuilder = new ContextBuilder(tokenManager);
 const conversationManager = new ConversationManager(supabase);
-const proactiveEngine = new ProactiveEngine(supabase);
+const proactiveEngine = new ProactiveEngine(supabase, tradingData);
+
+// LLM provider — selected by AI_PROVIDER env ('groq' default | 'ollama').
+const provider = createLLMProvider();
 
 const agent = new AuraAgent({
   tokenManager,
@@ -84,15 +96,41 @@ const agent = new AuraAgent({
   toolRouter,
   contextBuilder,
   conversationManager,
+  provider,
+});
+
+// ─── Behavior Engine ─────────────────────────────────────────────
+// Hybrid architecture: backend computes objective facts, LLM interprets.
+const behaviorStore = new BehaviorStore(supabase, tradingData);
+const analysisJobs = new AnalysisJobStore(supabase);
+const behaviorBriefs = new BriefService(supabase, tradingData);
+const behaviorAlerts = new AlertsService(supabase, tradingData);
+
+const analysisService = new AnalysisService({
+  supabase,
+  provider,
+  tradingData,
+  logger: console,
 });
 
 // ─── Health check ──────────────────────────────────────────────
-app.get('/api/aura/health', (_req, res) => {
+app.get('/api/aura/health', async (_req, res) => {
+  // Provider reachability is reported but does NOT fail the health check:
+  // the API service can be healthy while Ollama/Groq is temporarily down.
+  let providerHealth = { ok: false, detail: 'not checked' };
+  try {
+    providerHealth = await provider.checkHealth();
+  } catch (err) {
+    providerHealth = { ok: false, detail: err?.message || 'provider check failed' };
+  }
+
   res.json({
     status: 'healthy',
     service: 'AURA AI Backend',
-    model: tokenManager.getModel(),
+    provider: provider.name,
+    model: provider.model,
     limits: tokenManager.getLimits(),
+    providerHealth,
     timestamp: new Date().toISOString(),
   });
 });
@@ -141,10 +179,26 @@ app.get('/api/aura/conversations/:id/messages', authMiddleware, async (req, res)
 
 // ─── Chat (SSE streaming) ──────────────────────────────────────
 app.post('/api/aura/chat', authMiddleware, async (req, res) => {
-  const { conversationId, message } = req.body;
+  const { conversationId, message, accountId } = req.body;
 
   if (!message?.trim()) {
     return res.status(400).json({ error: 'Message is required.' });
+  }
+
+  // SECURITY: the requested account MUST belong to the authenticated JWT
+  // user before any query runs. All trade tools scope their queries to this
+  // account (or, when absent, to all accounts owned by the user).
+  let accountInfo = null;
+  if (accountId) {
+    try {
+      accountInfo = await tradingData.assertAccountOwnership(req.userId, accountId);
+    } catch (err) {
+      if (err instanceof AccountAccessError) {
+        return res.status(403).json({ error: 'The requested trading account does not belong to you.' });
+      }
+      console.error('[AURA] Account validation error:', err.message);
+      return res.status(500).json({ error: 'Failed to validate trading account.' });
+    }
   }
 
   // SSE headers
@@ -179,6 +233,10 @@ app.post('/api/aura/chat', authMiddleware, async (req, res) => {
       userId: req.userId,
       conversationId: convId,
       userMessage: message,
+      accountId: accountInfo?.id ?? null,
+      accountInfo: accountInfo
+        ? { name: accountInfo.name, platform: accountInfo.platform, phase: accountInfo.phase }
+        : null,
       onToolCall: (tool) => send('tool_call', tool),
       onToolResult: (result) => send('tool_result', result),
       onToken: (token) => send('token', { token }),
@@ -324,8 +382,212 @@ app.post('/api/aura/proactive/check', authMiddleware, async (req, res) => {
   }
 });
 
+// ─── Trading Behavior Engine API ────────────────────────────────
+// All endpoints authenticate via authMiddleware and ownership-check
+// accountId through TradingDataAccess. Account isolation is structural.
+//
+// Design: domain-organized (not table-exposed), all routes prefixed
+// /api/behavior-engine/.
+
+/**
+ * Helper: validate + resolve accountId for every Behavior Engine route.
+ * Throws AccountAccessError (403) if the account doesn't belong to the
+ * authenticated user. Returns the resolved account id.
+ */
+async function requireAccount(req, res, next) {
+  const accountId = req.body?.accountId ?? req.query?.accountId ?? req.params?.accountId;
+  if (!accountId) return res.status(400).json({ error: 'accountId is required.' });
+  try {
+    const resolved = await tradingData.assertAccountOwnership(req.userId, accountId);
+    req.accountId = resolved.id;
+    next();
+  } catch (err) {
+    if (err instanceof AccountAccessError) {
+      return res.status(403).json({ error: err.message });
+    }
+    console.error('[Behavior] Account validation error:', err.message);
+    res.status(500).json({ error: 'Failed to validate trading account.' });
+  }
+}
+
+// ── Behaviors overview ──
+app.get('/api/behavior-engine/behaviors', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const status = req.query.status || null;
+    const { data, error } = await behaviorStore.listBehaviors(req.userId, req.accountId, { status });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('[Behavior] List behaviors error:', err);
+    res.status(500).json({ error: 'Failed to list behaviors.' });
+  }
+});
+
+// ── Single behavior detail (with evidence) ──
+app.get('/api/behavior-engine/behaviors/:id', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const behavior = await behaviorStore.getBehavior(req.userId, req.accountId, req.params.id);
+    if (!behavior) return res.status(404).json({ error: 'Behavior not found.' });
+    res.json(behavior);
+  } catch (err) {
+    console.error('[Behavior] Get behavior error:', err);
+    res.status(500).json({ error: 'Failed to fetch behavior.' });
+  }
+});
+
+// ── Evidence for a behavior (or all) ──
+app.get('/api/behavior-engine/evidence', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const { behaviorId, limit = 100, weekStart } = req.query;
+    const evidence = await behaviorStore.listEvidence(req.userId, req.accountId, {
+      behaviorId: behaviorId || null,
+      limit: Number(limit),
+      weekStart: weekStart || null,
+    });
+    res.json(evidence || []);
+  } catch (err) {
+    console.error('[Behavior] List evidence error:', err);
+    res.status(500).json({ error: 'Failed to list evidence.' });
+  }
+});
+
+// ── Trading rules ──
+app.get('/api/behavior-engine/rules', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('trading_rules')
+      .select('*')
+      .eq('user_id', req.userId)
+      .eq('account_id', req.accountId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('[Behavior] List rules error:', err);
+    res.status(500).json({ error: 'Failed to list trading rules.' });
+  }
+});
+
+// ── Behavior alerts ──
+app.get('/api/behavior-engine/alerts', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const { status = 'new', limit = 20 } = req.query;
+    const alerts = await behaviorAlerts.listAlerts(req.userId, req.accountId, {
+      status, limit: Number(limit),
+    });
+    res.json(alerts || []);
+  } catch (err) {
+    console.error('[Behavior] List alerts error:', err);
+    res.status(500).json({ error: 'Failed to list alerts.' });
+  }
+});
+
+// ── Dismiss an alert ──
+app.patch('/api/behavior-engine/alerts/:id/dismiss', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const alert = await behaviorAlerts.updateStatus(req.userId, req.accountId, req.params.id, 'dismissed');
+    res.json(alert);
+  } catch (err) {
+    console.error('[Behavior] Dismiss alert error:', err);
+    res.status(500).json({ error: 'Failed to dismiss alert.' });
+  }
+});
+
+// ── Weekly trading brief (cached) ──
+app.get('/api/behavior-engine/brief', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const { weekStart, force = 'false' } = req.query;
+    const brief = await behaviorBriefs.getBrief(req.userId, req.accountId, weekStart || null, {
+      force: force === 'true',
+    });
+    res.json(brief);
+  } catch (err) {
+    console.error('[Behavior] Get brief error:', err);
+    res.status(500).json({ error: 'Failed to fetch trading brief.' });
+  }
+});
+
+// ── Enqueue analysis (manual trigger) ──
+app.post('/api/behavior-engine/analyze', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const { tradeId, trigger = 'manual' } = req.body;
+    const job = await analysisService.enqueue(req.userId, req.accountId, {
+      trigger, tradeId: tradeId || null,
+    });
+    const result = await analysisService.processJob(job);
+    res.json(result);
+  } catch (err) {
+    if (err instanceof AccountAccessError) return res.status(403).json({ error: err.message });
+    console.error('[Behavior] Analyze error:', err);
+    res.status(500).json({ error: 'Failed to start analysis.' });
+  }
+});
+
+// ── Trade save webhook: enqueue analysis ──
+app.post('/api/behavior-engine/webhook/trade-saved', authMiddleware, async (req, res) => {
+  try {
+    const { accountId, tradeId } = req.body;
+    await tradingData.assertAccountOwnership(req.userId, accountId);
+    const job = await analysisService.enqueueForTrade(req.userId, accountId, tradeId);
+    analysisService.processNext({ batchSize: 1 }).catch((err) => {
+      console.error('[Behavior] Worker error (async):', err?.message || err);
+    });
+    res.json({ jobId: job.id, status: job.status });
+  } catch (err) {
+    if (err instanceof AccountAccessError) return res.status(403).json({ error: err.message });
+    console.error('[Behavior] Trade-saved webhook error:', err);
+    res.status(500).json({ error: 'Failed to enqueue analysis.' });
+  }
+});
+
+// ── Analysis job status ──
+app.get('/api/behavior-engine/analysis/:id', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const job = await analysisJobs.getStatus(req.userId, req.accountId, req.params.id);
+    if (!job) return res.status(404).json({ error: 'Analysis job not found.' });
+    res.json(job);
+  } catch (err) {
+    console.error('[Behavior] Get analysis status error:', err);
+    res.status(500).json({ error: 'Failed to fetch analysis status.' });
+  }
+});
+
+// ── Worker loop (non-blocking, concurrency-safe) ──
+let workerRunning = true;
+let workerBackoffMs = 1000;
+const WORKER_ERROR_BACKOFF_MS = 30_000; // e.g. schema not applied yet → back off
+async function behaviorWorker() {
+  if (!workerRunning) return;
+  try {
+    await analysisService.processNext({ batchSize: 1 });
+    workerBackoffMs = 1000; // healthy cycle → normal cadence
+  } catch (err) {
+    const msg = err?.message || String(err);
+    // Graceful degradation: when the Behavior Engine schema hasn't been
+    // applied yet (PGRST205), back off instead of spamming every second.
+    if (/Could not find the table|PGRST205|schema cache/i.test(msg)) {
+      if (workerBackoffMs < WORKER_ERROR_BACKOFF_MS) {
+        console.warn('[Behavior] Schema not applied yet (ai_analyses missing). Worker idling; apply supabase/*.sql to activate.');
+      }
+      workerBackoffMs = WORKER_ERROR_BACKOFF_MS;
+    } else {
+      console.error('[Behavior] Worker cycle error:', msg);
+      workerBackoffMs = WORKER_ERROR_BACKOFF_MS;
+    }
+  }
+  if (workerRunning) setTimeout(behaviorWorker, workerBackoffMs);
+}
+behaviorWorker();
+
+// Graceful shutdown: stop the worker loop before exiting.
+function shutdownWorker() {
+  workerRunning = false;
+}
+process.on('SIGINT', shutdownWorker);
+process.on('SIGTERM', shutdownWorker);
+
 app.listen(PORT, () => {
   console.log(`✅ AURA AI Backend running at http://localhost:${PORT}`);
-  console.log(`   Model: ${tokenManager.getModel()}`);
+  console.log(`   Provider: ${provider.name} | Model: ${provider.model}`);
   console.log(`   Limits: ${JSON.stringify(tokenManager.getLimits())}`);
 });

@@ -71,6 +71,8 @@ export class AuraAiService {
   readonly activeToolCalls = signal<AuraToolCall[]>([]);
   readonly isThinking = signal(false);
   readonly thinkingInfo = signal<string>('');
+  /** Last chat failure, surfaced in the UI. Never silently swallowed. */
+  readonly lastError = signal<string | null>(null);
   readonly lastTokenInfo = signal<{ inputTokens: number; outputTokens: number; totalTokens: number } | null>(null);
   readonly conversationTokens = signal<{ inputTokens: number; outputTokens: number; totalTokens: number }>({ inputTokens: 0, outputTokens: 0, totalTokens: 0 });
 
@@ -170,26 +172,37 @@ export class AuraAiService {
 
   // ─── Chat (SSE streaming) ────────────────────────────────────
 
-  async sendMessage(
-    message: string,
-    conversationId?: string,
-    onEvent?: (event: AuraChatEvent) => void
-  ): Promise<void> {
+  async sendMessage(options: {
+    message: string;
+    conversationId?: string | null;
+    accountId?: string | null;
+    onEvent?: (event: AuraChatEvent) => void;
+  }): Promise<void> {
+    const { message, conversationId, accountId, onEvent } = options;
     this.isStreaming.set(true);
     this.streamingContent.set('');
     this.activeToolCalls.set([]);
     this.isThinking.set(true);
+    this.lastError.set(null); // clear any previous failure banner
 
     try {
       const headers = await this.getAuthHeaders();
       const response = await fetch(`${this.getApiBase()}/chat`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ conversationId, message }),
+        body: JSON.stringify({ conversationId, message, accountId }),
       });
 
       if (!response.ok) {
-        throw new Error(`Chat request failed: ${response.status}`);
+        // Surface backend validation errors (e.g. 403 account-not-owned).
+        let detail = `Chat request failed: ${response.status}`;
+        try {
+          const body = await response.json();
+          if (body?.error) detail = body.error;
+        } catch {
+          // keep the generic detail
+        }
+        throw new Error(detail);
       }
 
       const reader = response.body?.getReader();
@@ -224,7 +237,10 @@ export class AuraAiService {
       }
     } catch (err) {
       console.error('[AURA] Chat failed:', err);
-      onEvent?.({ type: 'error', data: { message: err instanceof Error ? err.message : 'Unknown error' } });
+      const messageText = err instanceof Error ? err.message : 'Unknown error';
+      // Errors are surfaced in the UI via lastError — never silently dropped.
+      this.lastError.set(messageText);
+      onEvent?.({ type: 'error', data: { message: messageText } });
     } finally {
       this.isStreaming.set(false);
       this.isThinking.set(false);
@@ -298,6 +314,8 @@ export class AuraAiService {
 
       case 'error':
         this.isThinking.set(false);
+        // Errors are surfaced in the UI via lastError — never silently dropped.
+        this.lastError.set(data?.message || 'AURA request failed.');
         onEvent?.({ type: 'error', data });
         break;
     }
@@ -418,12 +436,23 @@ export class AuraAiService {
 
   // ─── Health check ────────────────────────────────────────────
 
-  async checkHealth(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.getApiBase()}/health`);
-      return response.ok;
-    } catch {
-      return false;
+  /**
+   * Health check with small retry budget — serverless hosts (e.g. Render free
+   * tier) cold-start slowly, and a single immediate request would wrongly
+   * report the backend as offline.
+   */
+  async checkHealth(attempts = 3): Promise<boolean> {
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        const response = await fetch(`${this.getApiBase()}/health`);
+        if (response.ok) return true;
+      } catch {
+        // fall through to retry
+      }
+      if (attempt < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+      }
     }
+    return false;
   }
 }

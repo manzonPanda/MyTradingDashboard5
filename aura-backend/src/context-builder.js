@@ -44,16 +44,25 @@ export class ContextBuilder {
    * Build the system prompt for AURA.
    * Defines the AI's persona, capabilities, and constraints.
    */
-  buildSystemPrompt(userPreferences = {}) {
+  buildSystemPrompt(userPreferences = {}, accountContext = null) {
     const concisenessHint = userPreferences.prefersConcise
       ? 'The user prefers concise, direct responses.'
       : 'Be thorough but clear in your responses.';
+
+    // Account context — when the user has selected a specific trading account,
+    // every data tool is scoped to it. The model must treat that account as
+    // the exclusive subject of the conversation and never mix accounts.
+    const accountSection = accountContext?.name
+      ? `\n## Active Account\nThe user is currently analyzing the trading account "${accountContext.name}"${
+          accountContext.platform ? ` (${accountContext.platform})` : ''
+        }. ALL trading data you retrieve is scoped to THIS account only. Never reference or mix data from the user's other accounts.`
+      : '';
 
     return `You are AURA (Agentic Unified Retail Assistant), a personal agentic trading assistant.
 
 ## Your Role
 You are an analysis, coaching, and information assistant. You help traders understand their performance, identify patterns, and improve their decision-making.
-
+${accountSection}
 ## Capabilities
 - You can retrieve and analyze the user's trading data using tools
 - You can search the user's long-term memories for context

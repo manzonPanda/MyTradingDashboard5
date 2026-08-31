@@ -18,8 +18,11 @@
  */
 
 export class ProactiveEngine {
-  constructor(supabase) {
+  constructor(supabase, tradingData = null) {
     this.supabase = supabase;
+    // SECURITY: trade queries must be scoped to the authenticated user's
+    // accounts (trades has no user_id column — see data/trading-data.js).
+    this.tradingData = tradingData;
   }
 
   /**
@@ -30,8 +33,12 @@ export class ProactiveEngine {
     const events = [];
 
     try {
+      // SECURITY: resolve the user's account scope BEFORE any trade query.
+      const accountIds = this.tradingData ? await this.tradingData.getUserAccountIds(userId) : [];
+      if (accountIds.length === 0) return events;
+
       const [trades, settings, accounts] = await Promise.all([
-        this.getTodayTrades(userId),
+        this.getTodayTrades(userId, accountIds),
         this.getUserSettings(userId),
         this.getUserAccounts(userId),
       ]);
@@ -142,13 +149,18 @@ export class ProactiveEngine {
     return events;
   }
 
-  async getTodayTrades(userId) {
+  async getTodayTrades(userId, accountIds = null) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
+
+    // SECURITY: scope to the authenticated user's accounts.
+    const scope = accountIds ?? (this.tradingData ? await this.tradingData.getUserAccountIds(userId) : []);
+    if (scope.length === 0) return [];
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, time_open, time_close, rules_violated, instrument, buy_sell')
+      .in('account_id', scope)
       .gte('time_open', todayStart.toISOString())
       .order('time_open', { ascending: false })
       .limit(100);
@@ -157,14 +169,19 @@ export class ProactiveEngine {
     return data || [];
   }
 
-  async getThisWeekTrades(userId) {
+  async getThisWeekTrades(userId, accountIds = null) {
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     weekStart.setHours(0, 0, 0, 0);
 
+    // SECURITY: scope to the authenticated user's accounts.
+    const scope = accountIds ?? (this.tradingData ? await this.tradingData.getUserAccountIds(userId) : []);
+    if (scope.length === 0) return [];
+
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, time_open, time_close')
+      .in('account_id', scope)
       .gte('time_open', weekStart.toISOString())
       .order('time_open', { ascending: false })
       .limit(200);

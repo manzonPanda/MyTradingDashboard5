@@ -43,6 +43,11 @@
       </div>
     </div>
 
+    <button class="aura-memory-toggle" (click)="toggleBehaviorEngine()" [class.active]="showBehaviorEngine">
+      <mat-icon>psychology_alt</mat-icon>
+      <span>Trading Behavior Engine</span>
+    </button>
+
     <button class="aura-memory-toggle" (click)="toggleMemoryPanel()" [class.active]="showMemoryPanel">
       <mat-icon>psychology</mat-icon>
       <span>Memories ({{ memories.length }})</span>
@@ -104,6 +109,18 @@
         <mat-icon class="aura-chat-title-icon">auto_awesome</mat-icon>
         <span>A.U.R.A AI</span>
       </div>
+      <!-- Account selector — the selected account scopes every data query.
+           Ownership is verified server-side against the JWT user. -->
+      <select
+        class="aura-account-select"
+        [value]="selectedAccountId ?? ''"
+        (change)="onAccountChange($any($event.target).value)"
+        [disabled]="isStreaming"
+        [matTooltip]="selectedAccountId ? 'All trading data is scoped to this account' : 'No trading account selected'"
+        aria-label="Trading account context">
+        <option *ngFor="let account of accounts" [value]="account.id">{{ account.name }}</option>
+        <option *ngIf="accounts.length === 0" [value]="''" disabled>No accounts</option>
+      </select>
       <div class="aura-chat-status">
         <span *ngIf="conversationTokens.totalTokens > 0" class="aura-conversation-tokens" matTooltip="Total tokens used in this conversation">
           <mat-icon>bolt</mat-icon>
@@ -114,8 +131,26 @@
       </div>
     </header>
 
-    <!-- Messages -->
-    <div class="aura-messages-container" #messageContainer>
+    <!-- Backend offline banner (chat-only) -->
+    <div *ngIf="!isBackendHealthy && !showBehaviorEngine" class="aura-offline-banner" role="alert">
+      <mat-icon>cloud_off</mat-icon>
+      <div class="aura-offline-banner-text">
+        <strong>AURA backend is offline.</strong>
+        <span>Start it locally (<code>cd aura-backend && npm run dev</code>) or check the deployment. Your trading data is unaffected.</span>
+      </div>
+    </div>
+
+    <!-- Request error banner (chat-only) -->
+    <div *ngIf="lastError && !showBehaviorEngine" class="aura-error-banner" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span class="aura-error-banner-text">{{ lastError }}</span>
+    </div>
+
+    <!-- 🧠 Trading Behavior Engine view -->
+    <app-behavior-engine *ngIf="showBehaviorEngine" class="aura-engine-host"></app-behavior-engine>
+
+    <!-- Messages (chat view, hidden when engine is shown) -->
+    <div class="aura-messages-container" #messageContainer *ngIf="!showBehaviorEngine">
       <!-- Empty State -->
       <div *ngIf="messages.length === 0 && !isStreaming" class="aura-welcome">
         <div class="aura-welcome-icon">
@@ -169,7 +204,7 @@
               <mat-icon>content_copy</mat-icon>
             </button>
           </div>
-          <div class="aura-message-content" [innerHTML]="msg.content"></div>
+          <div class="aura-message-content" [innerHTML]="renderMessage(msg.content)"></div>
           <div *ngIf="msg.role === 'assistant' && msg.token_count" class="aura-message-tokens">
             ⚡ {{ msg.token_count }} tokens
           </div>
@@ -207,13 +242,13 @@
             <span class="aura-message-author">AURA</span>
             <span class="aura-message-time">now</span>
           </div>
-          <div class="aura-message-content" [innerHTML]="streamingContent"></div>
+          <div class="aura-message-content" [innerHTML]="renderMessage(streamingContent)"></div>
         </div>
       </div>
     </div>
 
-    <!-- Input Area -->
-    <div class="aura-input-area">
+    <!-- Input Area (chat view only) -->
+    <div class="aura-input-area" *ngIf="!showBehaviorEngine">
       <div class="aura-input-wrapper">
         <textarea
           #chatInput

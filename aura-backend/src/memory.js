@@ -21,11 +21,10 @@ export class MemoryManager {
   }
 
   /**
-   * Save a durable memory with embedding.
+   * Save a durable memory. Embeddings are no longer generated (the previous
+   * hash-based pseudo-embedding was removed — see searchMemories).
    */
   async saveMemory(userId, { memory, memoryType, importance, source, expiresAt }) {
-    const embedding = await this.generateEmbedding(memory);
-
     const { data, error } = await this.supabase
       .from('ai_memories')
       .insert({
@@ -34,7 +33,6 @@ export class MemoryManager {
         memory_type: memoryType,
         importance: importance || 5,
         source: source || 'conversation',
-        embedding,
         expires_at: expiresAt || null,
       })
       .select('id, memory, memory_type, importance, source, is_active, expires_at, created_at')
@@ -71,11 +69,6 @@ export class MemoryManager {
       }
     }
 
-    // Regenerate embedding if memory text changed
-    if (cleanUpdates.memory) {
-      cleanUpdates.embedding = await this.generateEmbedding(cleanUpdates.memory);
-    }
-
     const { data, error } = await this.supabase
       .from('ai_memories')
       .update(cleanUpdates)
@@ -102,128 +95,101 @@ export class MemoryManager {
   }
 
   /**
-   * Semantic search of memories using pgvector.
-   * Returns the most relevant memories for a query.
+   * Search memories using structured SQL retrieval with recency weighting.
+   *
+   * NOTE: the previous implementation generated hash-based pseudo-embeddings
+   * ("semantic" search that was not actually semantic). Embeddings have been
+   * REMOVED. Retrieval is now deterministic SQL: term match, then importance,
+   * then recency. A real embedding backend can be reintroduced later behind
+   * this same method without touching callers.
    */
   async searchMemories(userId, query, limit = 5) {
-    const queryEmbedding = await this.generateEmbedding(query);
-
-    // Use Supabase RPC for vector similarity search
-    const { data, error } = await this.supabase.rpc('match_memories', {
-      query_embedding: queryEmbedding,
-      query_user_id: userId,
-      match_count: limit,
-    });
-
-    if (error) {
-      // Fallback: if the RPC function doesn't exist, use text search
-      console.warn('[Memory] Vector search failed, falling back to text search:', error.message);
-      return this.textSearchMemories(userId, query, limit);
+    const terms = this.extractSearchTerms(query);
+    if (terms.length === 0) {
+      // No usable terms — return the most important recent memories instead.
+      return this.listTopMemories(userId, limit);
     }
 
-    return data || [];
-  }
+    const filter = terms
+      .map((term) => `memory.ilike.%${term}%`)
+      .join(',');
 
-  /**
-   * Fallback text search (used if pgvector RPC is not set up).
-   */
-  async textSearchMemories(userId, query, limit = 5) {
     const { data, error } = await this.supabase
       .from('ai_memories')
       .select('id, memory, memory_type, importance, source, created_at')
       .eq('user_id', userId)
       .eq('is_active', true)
-      .or(`memory.ilike.%${query}%`)
+      .or(filter)
       .order('importance', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(limit);
 
-    if (error) throw new Error(`Text search memories failed: ${error.message}`);
+    if (error) throw new Error(`Search memories failed: ${error.message}`);
+
+    const results = data || [];
+    if (results.length === 0) {
+      // Recency-weighted fallback so the model always has useful context.
+      return this.listTopMemories(userId, limit);
+    }
+    return results;
+  }
+
+  /** Extract safe LIKE terms from a query (escapes %, _, commas). */
+  extractSearchTerms(query) {
+    if (!query) return [];
+    return query
+      .toLowerCase()
+      .split(/[\s,.;:!?()"'`]+/)
+      .map((term) => term.replace(/[%_,]/g, '').trim())
+      .filter((term) => term.length >= 3)
+      .slice(0, 4);
+  }
+
+  /** Most important, most recent active memories (recency-weighted fallback). */
+  async listTopMemories(userId, limit = 5) {
+    const { data, error } = await this.supabase
+      .from('ai_memories')
+      .select('id, memory, memory_type, importance, source, created_at')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .order('importance', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw new Error(`List memories failed: ${error.message}`);
     return data || [];
   }
 
   /**
-   * Search past conversations semantically.
+   * Search past conversations (title/summary text match).
+   * The pgvector match_conversations() RPC has been retired from the code
+   * path — it referenced an embedding column that does not exist.
    */
   async searchConversations(userId, query, limit = 3) {
-    const queryEmbedding = await this.generateEmbedding(query);
+    const term = this.extractSearchTerms(query)[0];
+    if (!term) return [];
 
-    const { data, error } = await this.supabase.rpc('match_conversations', {
-      query_embedding: queryEmbedding,
-      query_user_id: userId,
-      match_count: limit,
-    });
+    const { data, error } = await this.supabase
+      .from('ai_conversations')
+      .select('id, title, summary, updated_at')
+      .eq('user_id', userId)
+      .or(`title.ilike.%${term}%,summary.ilike.%${term}%`)
+      .order('updated_at', { ascending: false })
+      .limit(limit);
 
-    if (error) {
-      // Fallback: search conversation summaries and titles
-      const { data: fallbackData, error: fallbackError } = await this.supabase
-        .from('ai_conversations')
-        .select('id, title, summary')
-        .eq('user_id', userId)
-        .or(`title.ilike.%${query}%,summary.ilike.%${query}%`)
-        .limit(limit);
-
-      if (fallbackError) throw new Error(`Search conversations failed: ${fallbackError.message}`);
-      return fallbackData || [];
-    }
-
+    if (error) throw new Error(`Search conversations failed: ${error.message}`);
     return data || [];
-  }
-
-  /**
-   * Generate embedding using Supabase's built-in embedding function
-   * via the OpenAI-compatible gateway, or a simple hash-based fallback.
-   *
-   * NOTE: In production, use Supabase's pgvector with the OpenAI
-   * embedding model via an edge function or the Supabase AI gateway.
-   * For now, we use a deterministic hash-based pseudo-embedding so the
-   * system works even without an OpenAI key.
-   */
-  async generateEmbedding(text) {
-    if (!text) return null;
-
-    // Generate a 1536-dimensional pseudo-embedding using a hash-based approach.
-    // This is a PLACEHOLDER. Replace with a real embedding model:
-    //   const response = await fetch('https://api.openai.com/v1/embeddings', {
-    //     method: 'POST',
-    //     headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ input: text, model: 'text-embedding-3-small' }),
-    //   });
-    //   const json = await response.json();
-    //   return json.data[0].embedding;
-
-    const dimension = 1536;
-    const embedding = new Array(dimension).fill(0);
-
-    // Simple hash-based pseudo-embedding for development
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-      hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
-    }
-
-    for (let i = 0; i < dimension; i++) {
-      const charCode = text.charCodeAt(i % text.length) || 0;
-      const seed = (hash + i * 31 + charCode * 7) % 1000;
-      embedding[i] = (seed / 500) - 1; // Normalize to [-1, 1]
-    }
-
-    // Normalize the vector
-    const magnitude = Math.sqrt(embedding.reduce((sum, v) => sum + v * v, 0));
-    if (magnitude > 0) {
-      for (let i = 0; i < dimension; i++) {
-        embedding[i] /= magnitude;
-      }
-    }
-
-    return embedding;
   }
 
   /**
    * Extract durable memories from a conversation turn.
    * Uses the LLM to determine if useful information was revealed.
    *
-   * Called by the agent after each response.
+   * Called by the agent after each response. The LLM provider is injected
+   * (any provider — Ollama, Groq, future). Output is validated before insert
+   * so a malformed LLM response can never corrupt memory rows.
    */
-  async extractMemoriesFromConversation(userId, userMessage, assistantResponse, groqClient) {
+  async extractMemoriesFromConversation(userId, userMessage, assistantResponse, llmProvider) {
     const extractionPrompt = `Analyze this conversation turn and determine if any durable, long-term useful information was revealed that should be remembered.
 
 User said: "${userMessage}"
@@ -257,32 +223,46 @@ Respond in JSON format:
 If no durable information was revealed, return: {"memories": []}`;
 
     try {
-      const response = await groqClient.chat({
+      const response = await llmProvider.chat({
         messages: [
           { role: 'system', content: 'You are a memory extraction system. Respond only in valid JSON.' },
           { role: 'user', content: extractionPrompt },
         ],
         temperature: 0.1,
         maxTokens: 500,
+        json: true,
         // Memory extraction is a simple structured task — no reasoning needed.
         reasoningEffort: 'none',
         includeReasoning: false,
       });
 
-      const content = response.choices?.[0]?.message?.content || '{}';
-      const parsed = JSON.parse(content.replace(/```json\n?/g, '').replace(/```/g, '').trim());
+      const content = response.content || '{}';
+      const cleaned = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      const candidates = Array.isArray(parsed?.memories) ? parsed.memories : [];
+
+      // VALIDATION: only well-formed memories with a whitelisted type are
+      // persisted — a malformed LLM response can never corrupt memory rows.
+      const allowedTypes = new Set([
+        'preference', 'trading_rule', 'behavior', 'goal', 'fact', 'strategy', 'conversation', 'insight',
+      ]);
+      const clampImportance = (value) =>
+        Math.max(1, Math.min(10, Number.isFinite(Number(value)) ? Number(value) : 5));
 
       const saved = [];
-      for (const mem of parsed.memories || []) {
-        if (mem.memory && mem.memory_type) {
-          const savedMem = await this.saveMemory(userId, {
-            memory: mem.memory,
-            memoryType: mem.memory_type,
-            importance: mem.importance || 5,
-            source: 'conversation',
-          });
-          saved.push(savedMem);
-        }
+      for (const mem of candidates) {
+        const text = typeof mem?.memory === 'string' ? mem.memory.trim() : '';
+        const type = typeof mem?.memory_type === 'string' ? mem.memory_type.trim() : '';
+        if (!text || !allowedTypes.has(type)) continue;
+        if (text.length > 500) continue; // guard against runaway output
+
+        const savedMem = await this.saveMemory(userId, {
+          memory: text,
+          memoryType: type,
+          importance: clampImportance(mem.importance),
+          source: 'conversation',
+        });
+        saved.push(savedMem);
       }
 
       return saved;

@@ -16,9 +16,16 @@
  *         No trade placement, modification, or withdrawal.
  */
 
+import { TradingDataAccess, AccountAccessError } from './data/trading-data.js';
+
 export class ToolRouter {
-  constructor(supabase) {
+  constructor(supabase, tradingData = null) {
     this.supabase = supabase;
+    // SECURITY: every trade query is scoped through TradingDataAccess.
+    // `trades` has no user_id column — ownership is trades.account_id →
+    // accounts.user_id, so queries must be filtered by the authenticated
+    // user's account ids. Unscoped trade queries are a cross-user data leak.
+    this.tradingData = tradingData || new TradingDataAccess(supabase);
 
     // Tool definitions exposed to the LLM
     this.toolDefinitions = [
@@ -215,16 +222,28 @@ export class ToolRouter {
   }
 
   /**
-   * Execute a tool call. All tools verify user_id.
+   * Execute a tool call. All tools verify user_id. When a specific trading
+   * account is requested, its ownership is verified BEFORE any query runs.
    */
-  async executeTool(toolName, args, userId, memoryManager) {
+  async executeTool(toolName, args, userId, memoryManager, { accountId = null } = {}) {
     const handler = this[`tool_${toolName}`];
     if (!handler) {
       return { error: `Unknown tool: ${toolName}` };
     }
 
+    if (accountId) {
+      try {
+        await this.tradingData.assertAccountOwnership(userId, accountId);
+      } catch (err) {
+        if (err instanceof AccountAccessError) {
+          return { error: 'The requested trading account does not belong to you.' };
+        }
+        throw err;
+      }
+    }
+
     try {
-      return await handler.call(this, args, userId, memoryManager);
+      return await handler.call(this, args, userId, memoryManager, { accountId });
     } catch (err) {
       console.error(`[Tool] ${toolName} failed:`, err.message);
       return { error: `Tool ${toolName} failed: ${err.message}` };
@@ -232,13 +251,17 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_recent_trades ──────────────────────────────────
-  async tool_get_recent_trades(args, userId) {
+  async tool_get_recent_trades(args, userId, _memoryManager, { accountId = null } = {}) {
     const { limit = 10, symbol } = args;
     const maxLimit = Math.min(limit, 20);
+
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { trades: [], count: 0 };
 
     let query = this.supabase
       .from('trades')
       .select('ticket, instrument, buy_sell, lots, pnl, commission, swap, time_open, time_close, rrr, risk_per_trade, daily_reflection, rules_violated')
+      .in('account_id', accountIds)
       .order('time_open', { ascending: false })
       .limit(maxLimit);
 
@@ -253,10 +276,14 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_open_trades ────────────────────────────────────
-  async tool_get_open_trades(_args, userId) {
+  async tool_get_open_trades(_args, userId, _memoryManager, { accountId = null } = {}) {
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { openTrades: [], count: 0 };
+
     const { data, error } = await this.supabase
       .from('trades')
       .select('ticket, instrument, buy_sell, lots, pnl, time_open, price_open, sl, tp')
+      .in('account_id', accountIds)
       .is('time_close', null)
       .order('time_open', { ascending: false })
       .limit(20);
@@ -267,14 +294,21 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_trade ──────────────────────────────────────────
-  async tool_get_trade(args, userId) {
+  async tool_get_trade(args, userId, _memoryManager, { accountId = null } = {}) {
     const { ticket } = args;
     if (!ticket) return { error: 'Ticket is required' };
+
+    // SECURITY: ticket is globally unique, so it MUST be scoped to the
+    // authenticated user's accounts — otherwise any user could read any
+    // other user's trade by guessing tickets.
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { error: `Trade with ticket ${ticket} not found` };
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('*')
       .eq('ticket', ticket)
+      .in('account_id', accountIds)
       .maybeSingle();
 
     if (error) throw new Error(error.message);
@@ -284,13 +318,17 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_performance_summary ────────────────────────────
-  async tool_get_performance_summary(args, userId) {
+  async tool_get_performance_summary(args, userId, _memoryManager, { accountId = null } = {}) {
     const { days = 30 } = args;
     const since = new Date(Date.now() - days * 86400000).toISOString();
+
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { summary: { message: 'No trading accounts available.' } };
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, commission, swap, rrr, risk_per_trade, buy_sell, time_open, time_close')
+      .in('account_id', accountIds)
       .gte('time_open', since)
       .not('time_close', 'is', null)
       .order('time_open', { ascending: false })
@@ -344,13 +382,17 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_strategy_statistics ────────────────────────────
-  async tool_get_strategy_statistics(args, userId) {
+  async tool_get_strategy_statistics(args, userId, _memoryManager, { accountId = null } = {}) {
     const { days = 30 } = args;
     const since = new Date(Date.now() - days * 86400000).toISOString();
+
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { strategies: [] };
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, rrr, time_open')
+      .in('account_id', accountIds)
       .gte('time_open', since)
       .not('time_close', 'is', null)
       .not('rrr', 'is', null)
@@ -386,13 +428,17 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_risk_metrics ────────────────────────────────────
-  async tool_get_risk_metrics(args, userId) {
+  async tool_get_risk_metrics(args, userId, _memoryManager, { accountId = null } = {}) {
     const { days = 30 } = args;
     const since = new Date(Date.now() - days * 86400000).toISOString();
+
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { riskMetrics: { message: 'No trading accounts available.' } };
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, risk_per_trade, rrr, time_open, time_close')
+      .in('account_id', accountIds)
       .gte('time_open', since)
       .not('time_close', 'is', null)
       .order('time_open', { ascending: false })
@@ -437,13 +483,17 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_session_statistics ──────────────────────────────
-  async tool_get_session_statistics(args, userId) {
+  async tool_get_session_statistics(args, userId, _memoryManager, { accountId = null } = {}) {
     const { days = 30 } = args;
     const since = new Date(Date.now() - days * 86400000).toISOString();
+
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { sessions: [] };
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, time_open, instrument')
+      .in('account_id', accountIds)
       .gte('time_open', since)
       .not('time_close', 'is', null)
       .order('time_open', { ascending: false })
@@ -487,15 +537,19 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_symbol_statistics ───────────────────────────────
-  async tool_get_symbol_statistics(args, userId) {
+  async tool_get_symbol_statistics(args, userId, _memoryManager, { accountId = null } = {}) {
     const { symbol, days = 30 } = args;
     if (!symbol) return { error: 'Symbol is required' };
 
     const since = new Date(Date.now() - days * 86400000).toISOString();
 
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { symbolStats: { message: `No trades found for ${symbol} in the last ${days} days.` } };
+
     const { data, error } = await this.supabase
       .from('trades')
       .select('pnl, commission, swap, buy_sell, lots, time_open, time_close, rrr, risk_per_trade, rules_violated')
+      .in('account_id', accountIds)
       .ilike('instrument', `%${symbol}%`)
       .gte('time_open', since)
       .not('time_close', 'is', null)
@@ -568,13 +622,17 @@ export class ToolRouter {
   }
 
   // ─── Tool: get_journal_entries ─────────────────────────────────
-  async tool_get_journal_entries(args, userId) {
+  async tool_get_journal_entries(args, userId, _memoryManager, { accountId = null } = {}) {
     const { limit = 10 } = args;
     const maxLimit = Math.min(limit, 20);
+
+    const accountIds = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (accountIds.length === 0) return { journalEntries: [], count: 0 };
 
     const { data, error } = await this.supabase
       .from('trades')
       .select('ticket, instrument, time_open, daily_reflection, weekly_retrospective, pnl, rules_violated')
+      .in('account_id', accountIds)
       .not('daily_reflection', 'eq', '')
       .order('time_open', { ascending: false })
       .limit(maxLimit);

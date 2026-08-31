@@ -1,9 +1,10 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxImageZoomModule } from 'ngx-image-zoom';
 import { SupabaseService } from '../services/supabase.service';
+import { BehaviorEngineService } from '../services/behavior-engine.service';
 
 interface Table {
   openDate: string;
@@ -342,6 +343,8 @@ interface WeekSummary {
   styleUrls: ['./trading-calendar.component.scss']
 })
 export class TradingCalendarComponent implements OnInit, OnChanges {
+  private readonly behaviorEngine = inject(BehaviorEngineService);
+
   @Input() tableData: Table[] = [];
   @Input() viewDate: Date = new Date();
   @Input() accountId: string | null = null;
@@ -657,6 +660,12 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       trade.dailyReflection = dailyReflection;
       this.savedReflectionTickets.add(ticket);
       this.selectedDay = this.selectedDay ? { ...this.selectedDay, trades: [...this.selectedDay.trades] } : this.selectedDay;
+
+      // Fire-and-forget: enqueue AI behavior analysis for this trade +
+      // reflection. NEVER blocks or fails the reflection save UX.
+      if (savedTrade.id) {
+        this.behaviorEngine.notifyTradeSaved(this.accountId, savedTrade.id);
+      }
     } catch (error) {
       this.reflectionErrors.set(ticket, error instanceof Error ? error.message : 'Unable to save your reflection.');
     } finally {

@@ -5,19 +5,21 @@
  * now handles the error gracefully instead of throwing ReferenceError.
  */
 import { AuraAgent } from '../src/agent.js';
-import { GroqRateLimitError } from '../src/groq-client.js';
+import { LLMRateLimitError } from '../src/ai/provider.js';
 
 // ─── Mocks ─────────────────────────────────────────────────────
-const failingGroq = {
-  model: 'qwen/qwen3.6-27b',
-  resolveEffort: () => 'none',
+const failingProvider = {
+  name: 'mock',
+  model: 'mock-model',
+  resolveEffort: () => null,
   // Iteration 1 (non-final, tool path): throw a REAL rate-limit error so the
   // catch block executes exactly the code that crashed before.
   chat: async () => {
-    // Use the real error class (instanceof GroqRateLimitError → retry path)
-    throw new GroqRateLimitError(1);
+    // Use the real error class (instanceof LLMRateLimitError → retry path)
+    throw new LLMRateLimitError(1);
   },
-  chatStream: async () => ({ content: 'should not reach here', toolCalls: null }),
+  chatStream: async () => ({ content: 'should not reach here', reasoning: null, toolCalls: null }),
+  checkHealth: async () => ({ ok: false, detail: 'mock' }),
 };
 
 const tokenManager = {
@@ -59,9 +61,10 @@ const agent = new AuraAgent({
   toolRouter,
   contextBuilder,
   conversationManager,
+  provider: failingProvider,
 });
-// Override with the failing client to exercise the catch path
-agent.groq = failingGroq;
+// Override with the failing provider to exercise the catch path
+agent.provider = failingProvider;
 
 const thinking = [];
 const result = await agent.run({

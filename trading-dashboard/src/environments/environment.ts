@@ -2,7 +2,9 @@ export const environment = {
   production: false,
   backendUrlNews: 'https://forexnewsapi.onrender.com',
   backendUrlMt5: 'https://mt5-api.jakemt5.host',
-  backendUrlAura: 'https://aura-ai-u5yj.onrender.com',
+  // Dev builds talk to the LOCAL AURA backend (npm run dev in aura-backend).
+  // Production builds use environment.prod.ts (the hosted deployment).
+  backendUrlAura: 'http://localhost:5000',
   // === Supabase config (replaces Notion) ===
   supabase: {
     url: 'https://jpkvxlzyswookygwcsog.supabase.co',        // TODO: replace with your Project URL

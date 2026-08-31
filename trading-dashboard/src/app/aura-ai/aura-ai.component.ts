@@ -6,6 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuraAiService, AuraMessage } from '../services/aura-ai.service';
+import { AccountContextService } from '../services/account-context.service';
+import { renderMarkdown } from './markdown';
+import { TradingBehaviorEngineComponent } from './behavior-engine.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 interface ChatMessage {
@@ -21,7 +24,7 @@ interface ChatMessage {
   selector: 'app-aura-ai',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatTooltipModule, TradingBehaviorEngineComponent],
   templateUrl: './aura-ai.component.html',
   styleUrl: './aura-ai.component.scss',
   animations: [
@@ -35,6 +38,7 @@ interface ChatMessage {
 })
 export class AuraAiComponent implements OnInit, OnDestroy, AfterViewChecked {
   private readonly auraService = inject(AuraAiService);
+  private readonly accountContext = inject(AccountContextService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChild('messageContainer') messageContainer?: ElementRef;
@@ -43,8 +47,40 @@ export class AuraAiComponent implements OnInit, OnDestroy, AfterViewChecked {
   inputMessage = '';
   showSidebar = true;
   showMemoryPanel = false;
+  /** When true, the main area shows the Trading Behavior Engine instead of chat. */
+  showBehaviorEngine = false;
   isBackendHealthy = false;
   private shouldScrollToBottom = false;
+
+  // ─── Account context ─────────────────────────────────────────
+  // The selected account is sent with every chat request; the backend
+  // verifies ownership and scopes all trade queries to it.
+  get accounts() {
+    return this.accountContext.accounts();
+  }
+
+  get selectedAccountId() {
+    return this.accountContext.selectedAccountId();
+  }
+
+  get isAccountLoading() {
+    return this.accountContext.isLoading();
+  }
+
+  async onAccountChange(accountId: string): Promise<void> {
+    await this.accountContext.selectAccount(accountId);
+    this.cdr.markForCheck();
+  }
+
+  // ─── Error surface ───────────────────────────────────────────
+  get lastError() {
+    return this.auraService.lastError();
+  }
+
+  // ─── Markdown rendering ──────────────────────────────────────
+  renderMessage(content: string): string {
+    return renderMarkdown(content);
+  }
 
   get messages() {
     return this.auraService.messages();
@@ -102,6 +138,9 @@ export class AuraAiComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private async loadInitialData(): Promise<void> {
+    // Load account context in parallel with the backend health check — the
+    // account selector must work even when the backend is briefly offline.
+    void this.accountContext.ensureLoaded();
     this.isBackendHealthy = await this.auraService.checkHealth();
     if (this.isBackendHealthy) {
       await this.auraService.loadConversations();
@@ -126,7 +165,11 @@ export class AuraAiComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.inputMessage = '';
     this.shouldScrollToBottom = true;
 
-    await this.auraService.sendMessage(message, this.currentConversationId || undefined);
+    await this.auraService.sendMessage({
+      message,
+      conversationId: this.currentConversationId || undefined,
+      accountId: this.accountContext.selectedAccountId(),
+    });
     this.shouldScrollToBottom = true;
     this.cdr.markForCheck();
 
@@ -173,6 +216,13 @@ export class AuraAiComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.showMemoryPanel) {
       this.auraService.loadMemories();
     }
+  }
+
+  /** Switch between the AURA chat and the Trading Behavior Engine. */
+  toggleBehaviorEngine(): void {
+    this.showBehaviorEngine = !this.showBehaviorEngine;
+    this.showMemoryPanel = false;
+    this.cdr.markForCheck();
   }
 
   async deleteMemory(id: string, event: Event): Promise<void> {

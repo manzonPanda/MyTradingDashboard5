@@ -26,7 +26,7 @@
  *   - input + max_output NEVER exceeds TPM_LIMIT
  */
 
-import { GroqClient, GroqRateLimitError } from './groq-client.js';
+import { LLMRateLimitError } from './ai/provider.js';
 import { classifyReasoning, shouldEscalateReasoning } from './reasoning-router.js';
 import {
   isReasoningEnabled as isReasoningOn,
@@ -73,16 +73,18 @@ function makeReasoningBuffer(onThinking, { intervalMs = 1000, maxLen = 200 } = {
 }
 
 export class AuraAgent {
-  constructor({ tokenManager, memoryManager, toolRouter, contextBuilder, conversationManager }) {
+  constructor({ tokenManager, memoryManager, toolRouter, contextBuilder, conversationManager, provider }) {
     this.tokenManager = tokenManager;
     this.memoryManager = memoryManager;
     this.toolRouter = toolRouter;
     this.contextBuilder = contextBuilder;
     this.conversationManager = conversationManager;
-    this.groq = new GroqClient();
+    // Provider abstraction — the agent never talks to a specific LLM vendor.
+    // See ai/provider.js (Ollama / Groq / future providers).
+    this.provider = provider;
   }
 
-  async run({ userId, conversationId, userMessage, onToolCall, onToolResult, onToken, onThinking, onReasoning }) {
+  async run({ userId, conversationId, userMessage, accountId = null, accountInfo = null, onToolCall, onToolResult, onToken, onThinking, onReasoning }) {
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
     const allToolCalls = [];
@@ -135,8 +137,8 @@ export class AuraAgent {
       this.retrieveRelevantMemories(userId, userMessage, intent),
     ]);
 
-    // 3. Build system prompt
-    const systemPrompt = this.contextBuilder.buildSystemPrompt();
+    // 3. Build system prompt (includes selected-account context when provided)
+    const systemPrompt = this.contextBuilder.buildSystemPrompt({}, accountInfo);
 
     // 4. Get tool definitions — FILTERED by intent + complexity level to
     // reduce input tokens. For a simple "what was my last trade?" we send only
@@ -223,7 +225,7 @@ export class AuraAgent {
           // When reasoning is OFF (effort "none"), the model emits no reasoning
           // deltas, so onReasoning never fires — no reasoning SSE events.
           const rb = reasoningEnabled ? makeReasoningBuffer(onThinking) : null;
-          response = await this.groq.chatStream({
+          response = await this.provider.chatStream({
             messages,
             tools: null,
             temperature: 0.7,
@@ -258,7 +260,7 @@ export class AuraAgent {
             await this.tokenManager.acquireRequest(retryBudget.maxOutput);
             try {
               const rbRetry = reasoningEnabled ? makeReasoningBuffer(onThinking) : null;
-              const retry = await this.groq.chatStream({
+              const retry = await this.provider.chatStream({
                 messages: compressedMessages,
                 tools: null,
                 temperature: 0.5,
@@ -289,7 +291,10 @@ export class AuraAgent {
           // Non-final iteration: use non-streaming to check for tool calls.
           // Tool-calling iterations use the same reasoning mode as the turn.
           // For simple lookups reasoning is OFF → cheaper/faster tool decisions.
-          response = await this.groq.chat({
+          // NOTE: the provider returns the NORMALIZED shape
+          // { content, reasoning, toolCalls } — vendor response structures
+          // never leak into the agent (see ai/provider.js).
+          response = await this.provider.chat({
             messages,
             tools: toolDefs,
             temperature: 0.7,
@@ -298,32 +303,27 @@ export class AuraAgent {
             includeReasoning: reasoningEnabled,
           });
 
-          const choice = response.choices?.[0];
-          const message = choice?.message;
-
-          if (!message) break;
-
           // If no tool calls, we're done
-          if (!message.tool_calls || message.tool_calls.length === 0) {
+          if (!response.toolCalls || response.toolCalls.length === 0) {
             // Stream the content we already have
-            if (message.content) {
-              onToken?.(message.content);
+            if (response.content) {
+              onToken?.(response.content);
             }
-            response = { content: message.content || '', toolCalls: null };
+            response = { content: response.content || '', toolCalls: null };
             break;
           }
 
           // Handle tool calls
           response = {
-            content: message.content || '',
-            toolCalls: message.tool_calls,
+            content: response.content || '',
+            toolCalls: response.toolCalls,
           };
         }
       } catch (err) {
         this.tokenManager.releaseRequest();
         metrics.modelLatencyMs += Date.now() - modelStart;
 
-        if (err instanceof GroqRateLimitError) {
+        if (err instanceof LLMRateLimitError) {
           // A 429 is a transient transport error, not a reasoning step.
           // Decrement iteration so the retry repeats the SAME iteration
           // instead of burning the next one (which would exit the loop on
@@ -353,7 +353,7 @@ export class AuraAgent {
           // Retry this iteration without tools
           try {
             const rbFallback = reasoningEnabled ? makeReasoningBuffer(onThinking) : null;
-            response = await this.groq.chatStream({
+            response = await this.provider.chatStream({
               messages,
               tools: null,
               temperature: 0.7,
@@ -409,7 +409,7 @@ export class AuraAgent {
         await this.tokenManager.acquireRequest(finalBudget.maxOutput);
         const finalModelStart = Date.now();
         const rbMax = reasoningEnabled ? makeReasoningBuffer(onThinking) : null;
-        const finalResponse = await this.groq.chatStream({
+        const finalResponse = await this.provider.chatStream({
           messages,
           tools: null,
           temperature: 0.7,
@@ -432,7 +432,8 @@ export class AuraAgent {
         response.toolCalls,
         userId,
         onToolCall,
-        onToolResult
+        onToolResult,
+        accountId
       );
       metrics.toolLatencyMs += Date.now() - toolStart;
       allToolCalls.push(...toolResult);
@@ -504,7 +505,7 @@ export class AuraAgent {
         userId,
         userMessage,
         finalContent,
-        this.groq
+        this.provider
       );
       memoriesExtracted = extracted.length;
     } catch (err) {
@@ -586,8 +587,10 @@ export class AuraAgent {
 
   /**
    * Handle tool calls from the LLM.
+   * accountId (validated upstream) threads through so every tool query is
+   * scoped to the selected trading account.
    */
-  async handleToolCalls(toolCalls, userId, onToolCall, onToolResult) {
+  async handleToolCalls(toolCalls, userId, onToolCall, onToolResult, accountId = null) {
     const results = [];
 
     for (const tc of toolCalls) {
@@ -602,7 +605,7 @@ export class AuraAgent {
 
       onToolCall?.({ name: toolName, args });
 
-      const result = await this.toolRouter.executeTool(toolName, args, userId, this.memoryManager);
+      const result = await this.toolRouter.executeTool(toolName, args, userId, this.memoryManager, { accountId });
 
       onToolResult?.({ name: toolName, result });
 
@@ -644,14 +647,14 @@ export class AuraAgent {
       const budget = this.tokenManager.calculateMaxOutputTokens(summaryMessages);
 
       await this.tokenManager.acquireRequest();
-      const response = await this.groq.chat({
+      const response = await this.provider.chat({
         messages: summaryMessages,
         temperature: 0.3,
         maxTokens: Math.min(300, budget.maxOutput),
       });
       this.tokenManager.releaseRequest(300);
 
-      const summary = response.choices?.[0]?.message?.content;
+      const summary = response.content;
       if (summary) {
         await this.conversationManager.updateSummary(conversationId, userId, summary);
       }
