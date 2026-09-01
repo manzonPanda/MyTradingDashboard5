@@ -178,8 +178,8 @@ interface WeekSummary {
             <div class="day-trades-summary-item">
               <span class="summary-item-label">Day P&amp;L</span>
               <strong class="day-trades-pnl-value" [ngClass]="getDayPnLClass(selectedDay.pnl)">
-                <span>{{ formatCurrency(selectedDay.pnl) }}</span>
                 <span class="day-trades-pnl-percentage">{{ formatPercentage(selectedDay.dailyPercentage) }}</span>
+                <span class="day-trades-pnl-amount">{{ formatCurrency(selectedDay.pnl) }}</span>
               </strong>
             </div>
             <div class="day-trades-summary-item">
@@ -201,8 +201,8 @@ interface WeekSummary {
                     <span class="day-trade-direction" [ngClass]="(trade.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell'">{{ trade.type || 'Trade' }}</span>
                   </div>
                   <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">
-                    <span>{{ formatCurrency(getTradePnL(trade)) }}</span>
                     <span class="day-trade-result-percentage">{{ formatPercentage(getPnLPercentage(getTradePnL(trade))) }}</span>
+                    <span class="day-trade-result-amount">{{ formatCurrency(getTradePnL(trade)) }}</span>
                   </strong>
                 </div>
                 <div class="day-trade-info-grid">

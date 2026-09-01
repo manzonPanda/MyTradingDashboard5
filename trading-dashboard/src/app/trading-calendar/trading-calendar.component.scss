@@ -908,7 +908,12 @@
   }
 
   .day-trades-pnl-percentage {
-    font-size: 0.8rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .day-trades-pnl-amount {
+    font-size: 0.9rem;
     font-weight: 600;
   }
 
@@ -994,6 +999,11 @@
   white-space: nowrap;
 
   .day-trade-result-percentage {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .day-trade-result-amount {
     font-size: 0.78rem;
     font-weight: 600;
   }
