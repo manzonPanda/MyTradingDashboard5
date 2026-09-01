@@ -654,7 +654,8 @@
         <app-trading-calendar
           [tableData]="tableData"
           [viewDate]="viewDate"
-          [accountId]="selectedAccount?.id ?? null">
+          [accountId]="selectedAccount?.id ?? null"
+          [accountSize]="mt5AccountInfo.startingBalance">
         </app-trading-calendar>
       </div>
     </div>

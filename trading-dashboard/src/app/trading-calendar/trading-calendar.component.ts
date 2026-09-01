@@ -177,7 +177,10 @@ interface WeekSummary {
           <div class="day-trades-summary-strip">
             <div class="day-trades-summary-item">
               <span class="summary-item-label">Day P&amp;L</span>
-              <strong [ngClass]="getDayPnLClass(selectedDay.pnl)">{{ formatCurrency(selectedDay.pnl) }}</strong>
+              <strong class="day-trades-pnl-value" [ngClass]="getDayPnLClass(selectedDay.pnl)">
+                <span>{{ formatCurrency(selectedDay.pnl) }}</span>
+                <span class="day-trades-pnl-percentage">{{ formatPercentage(selectedDay.dailyPercentage) }}</span>
+              </strong>
             </div>
             <div class="day-trades-summary-item">
               <span class="summary-item-label">Win rate</span>
@@ -197,7 +200,10 @@ interface WeekSummary {
                     <span class="day-trade-symbol">{{ trade.symbol || 'Unnamed trade' }}</span>
                     <span class="day-trade-direction" [ngClass]="(trade.type || '').toLowerCase() === 'buy' ? 'buy' : 'sell'">{{ trade.type || 'Trade' }}</span>
                   </div>
-                  <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">{{ formatCurrency(getTradePnL(trade)) }}</strong>
+                  <strong class="day-trade-result" [ngClass]="getDayPnLClass(getTradePnL(trade))">
+                    <span>{{ formatCurrency(getTradePnL(trade)) }}</span>
+                    <span class="day-trade-result-percentage">{{ formatPercentage(getPnLPercentage(getTradePnL(trade))) }}</span>
+                  </strong>
                 </div>
                 <div class="day-trade-info-grid">
                   <div class="day-trade-info-item day-trade-info-time" aria-label="Time range">
@@ -354,9 +360,11 @@ interface WeekSummary {
 export class TradingCalendarComponent implements OnInit, OnChanges {
   private readonly behaviorEngine = inject(BehaviorEngineService);
 
+  readonly PROP_FIRM_ACCOUNT_VALUE = 2500;
   @Input() tableData: Table[] = [];
   @Input() viewDate: Date = new Date();
   @Input() accountId: string | null = null;
+  @Input() accountSize = this.PROP_FIRM_ACCOUNT_VALUE;
 
   currentDate: Date = new Date();
   calendarDays: CalendarDay[] = [];
@@ -377,7 +385,6 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   private readonly savedReflectionTickets = new Set<string>();
   private readonly reflectionErrors = new Map<string, string>();
 
-  readonly PROP_FIRM_ACCOUNT_VALUE = 2500; // $5k prop firm account
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   constructor(private readonly supabaseService: SupabaseService) {}
@@ -393,7 +400,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     // changes. Watching accountId guarantees the calendar always refreshes when
     // the user switches/previews a different prop-firm account in the UI, even if
     // tableData's reference doesn't change (e.g. two accounts with no trades).
-    if (changes['tableData'] || changes['viewDate'] || changes['accountId']) {
+    if (changes['tableData'] || changes['viewDate'] || changes['accountId'] || changes['accountSize']) {
       if (changes['viewDate'] && changes['viewDate'].currentValue) {
         this.currentDate = new Date(changes['viewDate'].currentValue);
       }
@@ -429,7 +436,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const dayPnL = this.calculateDayPnL(dayTrades);
       const winCount = dayTrades.filter(trade => parseFloat(trade.netProfit) > 0).length;
       const lossCount = dayTrades.filter(trade => parseFloat(trade.netProfit) < 0).length;
-      const dailyPercentage = (dayPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+      const dailyPercentage = this.getPnLPercentage(dayPnL);
 
       this.calendarDays.push({
         date: currentDay,
@@ -464,7 +471,7 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
       const weekWinCount = currentMonthDays.reduce((sum, day) => sum + day.winCount, 0);
       const weekLossCount = currentMonthDays.reduce((sum, day) => sum + day.lossCount, 0);
       const activeDays = currentMonthDays.filter(day => day.tradeCount > 0).length;
-      const weeklyPercentageGained = (weekPnL / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+      const weeklyPercentageGained = this.getPnLPercentage(weekPnL);
 
       const weekSummary: WeekSummary = {
         weekNumber: weekIndex + 1,
@@ -809,12 +816,16 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
     return Math.min(0, this.getNumericValue(trade.mae));
   }
 
+  getPnLPercentage(pnl: number): number {
+    return this.accountSize > 0 ? (pnl / this.accountSize) * 100 : 0;
+  }
+
   getMfePercentage(trade: Table): number {
-    return (this.getMfeValue(trade) / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+    return this.getPnLPercentage(this.getMfeValue(trade));
   }
 
   getMaePercentage(trade: Table): number {
-    return (this.getMaeValue(trade) / this.PROP_FIRM_ACCOUNT_VALUE) * 100;
+    return this.getPnLPercentage(this.getMaeValue(trade));
   }
 
   formatTradeTime(value: string): string {

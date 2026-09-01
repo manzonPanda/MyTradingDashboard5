@@ -900,6 +900,18 @@
     font-size: 1.05rem;
   }
 
+  .day-trades-pnl-value {
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .day-trades-pnl-percentage {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
   .positive {
     color: var(--tf-positive);
   }
@@ -976,7 +988,15 @@
 }
 
 .day-trade-result {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
   white-space: nowrap;
+
+  .day-trade-result-percentage {
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
 
   &.positive {
     color: var(--tf-positive);
