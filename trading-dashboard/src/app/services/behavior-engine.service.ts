@@ -48,6 +48,7 @@ export interface Behavior {
   created_at: string;
   updated_at: string;
   evidence?: BehaviorEvidence[];
+  evidence_count?: number;
 }
 
 export interface TradingRule {
@@ -96,7 +97,127 @@ export interface TradingBrief {
   generated_at: string;
 }
 
-export type EngineTab = 'overall' | 'week';
+export interface BehaviorPatternEvidence {
+  previous_pnl?: number;
+  delay_min?: number;
+  result_pnl?: number;
+  result_r?: number;
+  ticket?: number | null;
+  time_open?: string | null;
+  instrument?: string | null;
+  lot?: number;
+  prior_ticket?: number | null;
+  prior_time_close?: string | null;
+  pnl?: number;
+  r?: number;
+  risk?: number;
+  lots?: number;
+}
+
+export interface BehaviorPatternEvidenceGroup {
+  ticket?: number | null;
+  time_open?: string | null;
+  pnl?: number;
+  r?: number;
+  instrument?: string | null;
+  lots?: number;
+}
+
+export interface BehaviorPattern {
+  id: string;
+  title: string;
+  direction: 'negative' | 'positive' | 'neutral';
+  occurrences: number;
+  description: string;
+  detail: {
+    window_min?: number;
+    avg_delay_min?: number;
+    normal_delay_min?: number | null;
+    avg_result_pnl?: number;
+    avg_result_r?: number;
+    count?: number;
+    max_streak?: number;
+    total_pnl?: number;
+    avg_r?: number;
+    avg_risk?: number;
+    sessions?: Array<{ session: string; label: string; trades: number; pnl: number }>;
+  };
+  evidence: BehaviorPatternEvidence[];
+}
+
+export interface WeekStats {
+  trade_count: number;
+  win_rate: number;
+  avg_pnl: number;
+  avg_r_per_trade: number;
+  avg_risk_per_trade: number;
+  max_loss_streak: number;
+  total_pnl: number;
+  avg_hold_seconds: number;
+  avg_entry_delay_min: number;
+  risk_after_2_wins: number;
+  risk_after_2_wins_n: number;
+  risk_normal: number;
+  risk_normal_n: number;
+}
+
+export interface WeekView {
+  week_start: string;
+  week_end: string;
+  current: WeekStats;
+  previous: WeekStats;
+  changes: Record<string, { current: number; previous: number; delta: number }>;
+  extra_changes: {
+    avg_hold_seconds: { current: number; previous: number; delta: number };
+    avg_entry_delay_min: { current: number; previous: number; delta: number };
+    risk_after_2_wins: { current: number; previous: number; delta: number };
+    risk_normal: { current: number; previous: number };
+  };
+  has_week_trades: boolean;
+  has_previous_trades: boolean;
+}
+
+export interface BehaviorScore {
+  score: number | null;
+  available: boolean;
+  reason: string;
+  occurrences?: number;
+  recent_occurrences?: number;
+  delta?: number | null;
+}
+
+export interface DataSummary {
+  trade_count: number;
+  closed_trades: number;
+  winning_trades: number;
+  losing_trades: number;
+  reflection_count: number;
+  first_trade_at: string | null;
+  last_trade_at: string | null;
+  behavior_count: number;
+  evidence_count: number;
+  analysis_count_done: number;
+  analysis_count_total: number;
+  last_analysis_at: string | null;
+  last_analysis_status: string | null;
+  last_analysis_error: string | null;
+}
+
+export type EngineStatus = 'learning' | 'analyzing' | 'up_to_date' | 'needs_more_data' | 'analysis_unavailable';
+
+export interface BehaviorDashboard {
+  account_id: string;
+  generated_at: string;
+  engine_status: EngineStatus;
+  data_summary: DataSummary;
+  score: BehaviorScore;
+  behaviors: Array<Behavior & { evidence_count?: number }>;
+  week: WeekView;
+  patterns: BehaviorPattern[];
+  brief: TradingBrief | null;
+}
+
+export type EngineTab = 'overall' | 'week' | 'insights';
 
 @Injectable({ providedIn: 'root' })
 export class BehaviorEngineService {
@@ -107,6 +228,7 @@ export class BehaviorEngineService {
   readonly rules = signal<TradingRule[]>([]);
   readonly alerts = signal<BehaviorAlert[]>([]);
   readonly brief = signal<TradingBrief | null>(null);
+  readonly dashboard = signal<BehaviorDashboard | null>(null);
   readonly isLoading = signal(false);
   readonly lastError = signal<string | null>(null);
   readonly activeTab = signal<EngineTab>('overall');
@@ -163,7 +285,8 @@ export class BehaviorEngineService {
     // render the loader immediately; the response below is only applied if a
     // newer load (different account) hasn't replaced it.
     try {
-      const [behaviors, rules, alerts, brief] = await Promise.allSettled([
+      const [dashboardRes, behaviors, rules, alerts, brief] = await Promise.allSettled([
+        this.fetchJson<BehaviorDashboard>(`/dashboard?accountId=${accountId}`),
         this.fetchJson<Behavior[]>(`/behaviors?accountId=${accountId}`),
         this.fetchJson<TradingRule[]>(`/rules?accountId=${accountId}`),
         this.fetchJson<BehaviorAlert[]>(`/alerts?accountId=${accountId}`),
@@ -174,7 +297,8 @@ export class BehaviorEngineService {
       this.rules.set(rules.status === 'fulfilled' ? rules.value : []);
       this.alerts.set(alerts.status === 'fulfilled' ? alerts.value : []);
       this.brief.set(brief.status === 'fulfilled' ? brief.value : null);
-      const failed = [behaviors, rules, alerts, brief].find((r) => r.status === 'rejected');
+      this.dashboard.set(dashboardRes.status === 'fulfilled' ? dashboardRes.value : null);
+      const failed = [dashboardRes, behaviors, rules, alerts, brief].find((r) => r.status === 'rejected');
       if (failed) throw (failed as PromiseRejectedResult).reason;
     } catch (err) {
       if (token !== this.loadToken) return; // superseded — ignore the error too

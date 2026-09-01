@@ -174,6 +174,116 @@ export class AnalysisService {
     return this.jobs.enqueue(userId, resolvedId, { trigger: 'trade_saved', tradeId });
   }
 
+  /**
+   * Backfill analysis jobs for trades that were never analyzed (pre-existing
+   * history). Idempotent — trades that already have ANY ai_analyses row are
+   * skipped, so re-running converges instead of duplicating jobs.
+   *
+   * Only trades WITH a Daily Reflection are queued (the LLM interprets a trade
+   * + its reflection; trades without one are by design "nothing to interpret").
+   * Bounded per run (limit) so a large history is drained over many worker
+   * cycles instead of flooding the queue.
+   *
+   * @returns {{ candidates:number, enqueued:number, alreadyAnalyzed:number,
+   *            noReflection:number, trigger:string }}
+   */
+  async backfillAccount(userId, accountId, { limit = 40, maxPending = 30 } = {}) {
+    const [resolvedId] = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (!resolvedId) throw new AccountAccessError(accountId);
+
+    const deal = (res) => (res.error ? { data: null, error: res.error } : res);
+
+    // Backlog guard: never enqueue while the queue is already deep — the
+    // worker drains at a fixed (rate-limit-respecting) pace, so flooding the
+    // queue only starves NEW trade analyses behind hundreds of old ones.
+    const { count: pending } = await this.supabase
+      .from('ai_analyses')
+      .select('id', { count: 'exact', head: true })
+      .eq('account_id', resolvedId)
+      .in('status', ['queued', 'running']);
+    if (Number(pending || 0) >= maxPending) {
+      return {
+        candidates: 0, enqueued: 0, alreadyAnalyzed: 0, noReflection: 0,
+        pending: Number(pending || 0), skipped: 'pending-threshold',
+      };
+    }
+
+    // All trades for this account (id + reflection presence is enough to plan).
+    const tradesRes = await this.supabase
+      .from('trades')
+      .select('id, ticket, daily_reflection')
+      .eq('account_id', resolvedId);
+    const { data: trades, error: tErr } = deal(tradesRes);
+    if (tErr) throw new Error(`backfill trades lookup failed: ${tErr.message}`);
+    const rows = trades || [];
+
+    // Trade ids that already have an analysis job of any status — never re-queue.
+    const jobsRes = await this.supabase
+      .from('ai_analyses')
+      .select('trade_id')
+      .eq('account_id', resolvedId)
+      .not('trade_id', 'is', null);
+    const { data: jobs, error: jErr } = deal(jobsRes);
+    if (jErr) throw new Error(`backfill analyses lookup failed: ${jErr.message}`);
+    const analyzed = new Set((jobs || []).map((r) => r.trade_id));
+
+    const candidates = rows.filter((t) => !analyzed.has(t.id));
+    const headroom = Math.max(0, maxPending - Number(pending || 0));
+    const budget = Math.min(limit, headroom);
+    let enqueued = 0;
+    let noReflection = 0;
+    for (const trade of candidates.slice(0, budget)) {
+      if (!(trade.daily_reflection || '').trim()) {
+        noReflection += 1;
+        continue;
+      }
+      await this.jobs.enqueue(userId, resolvedId, { trigger: 'manual', tradeId: trade.id });
+      enqueued += 1;
+    }
+
+    return {
+      candidates: candidates.length,
+      enqueued,
+      alreadyAnalyzed: analyzed.size,
+      noReflection,
+      pending: Number(pending || 0),
+      trigger: 'manual',
+    };
+  }
+
+  /**
+   * Recover jobs that failed purely from provider rate limits (transient by
+   * definition): requeue them so the slower-paced worker can retry. Only
+   * rate-limit failures are recovered — schema/validation failures stay failed
+   * (retrying them can never succeed). Bounded to jobs idle for
+   * `olderThanMs` so a recently-failed job isn't hot-looped.
+   */
+  async requeueRateLimitFailures(userId, accountId, { olderThanMs = 15 * 60 * 1000, limit = 25 } = {}) {
+    const [resolvedId] = await this.tradingData.resolveAccountScope(userId, accountId);
+    if (!resolvedId) throw new AccountAccessError(accountId);
+    const cutoff = new Date(Date.now() - olderThanMs).toISOString();
+    const { data: failed, error } = await this.supabase
+      .from('ai_analyses')
+      .select('id, last_error, updated_at')
+      .eq('account_id', resolvedId)
+      .eq('status', 'failed')
+      .lt('updated_at', cutoff)
+      .order('updated_at', { ascending: true })
+      .limit(limit);
+    if (error) throw new Error(`rate-limit recovery lookup failed: ${error.message}`);
+    let requeued = 0;
+    for (const job of failed || []) {
+      if (!/rate.?limit/i.test(String(job.last_error || ''))) continue;
+      const { error: upErr } = await this.supabase
+        .from('ai_analyses')
+        .update({ status: 'queued', attempts: 0, last_error: null, finished_at: null })
+        .eq('id', job.id)
+        .eq('status', 'failed'); // re-check: never clobber a job another worker touched
+      if (!upErr) requeued += 1;
+    }
+    return { requeued };
+  }
+
   /** Enqueue an analysis job for any trigger (weekly/manual). */
   async enqueue(userId, accountId, payload) {
     const [resolvedId] = await this.tradingData.resolveAccountScope(userId, accountId);

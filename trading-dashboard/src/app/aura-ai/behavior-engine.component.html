@@ -7,21 +7,47 @@
         <p class="be-subtitle">A.U.R.A. learns from your trades &amp; reflections</p>
       </div>
     </div>
-    <div class="be-account-context">
-      <mat-icon>account_balance</mat-icon>
-      <span>Analyzing: <strong>{{ selectedAccountName || '—' }}</strong></span>
-    </div>
+
+    <!-- ENGINE STATUS + real data summary (numbers from the backend only) -->
+    @if (summary(); as s) {
+      <div class="be-stats">
+        <span class="be-stat">
+          <span class="be-stat-label">ENGINE STATUS</span>
+          <span class="be-engine-status {{ engineStatus().tone }}">
+            <span class="be-pulse"></span>{{ engineStatus().label }}
+          </span>
+        </span>
+        <span class="be-stat">
+          <span class="be-stat-label">ANALYZING</span>
+          <span class="be-stat-value">
+            🧠 {{ fmtNumber(s.trade_count) }} trades · {{ fmtNumber(s.reflection_count) }} reflections
+          </span>
+        </span>
+        <span class="be-stat" *ngIf="s.last_analysis_at">
+          <span class="be-stat-label">LAST ANALYSIS</span>
+          <span class="be-stat-value">{{ fmtDate(s.last_analysis_at) }}</span>
+        </span>
+      </div>
+    }
   </header>
 
   <nav class="be-tabs">
     <button [class.active]="engine.activeTab() === 'overall'" (click)="engine.setTab('overall')">OVERALL</button>
     <button [class.active]="engine.activeTab() === 'week'" (click)="engine.setTab('week')">THIS WEEK</button>
+    <button [class.active]="engine.activeTab() === 'insights'" (click)="engine.setTab('insights')">INSIGHTS</button>
   </nav>
 
-  @if (engine.isLoading()) {
+@if (engine.isLoading()) {
     <div class="be-loading">
       <mat-spinner diameter="36"></mat-spinner>
-      <p>Analyzing behaviors{{ selectedAccountName ? ' for ' + selectedAccountName : '' }}…</p>
+      <p>Analyzing your trading behavior…</p>
+      <span class="be-note">
+        @if (summary(); as s) {
+          Processing {{ fmtNumber(s.trade_count) }} trades…
+        } @else {
+          Fetching trade data…
+        }
+      </span>
     </div>
   } @else if (engine.lastError()) {
     <div class="be-error">
@@ -34,166 +60,390 @@
       <mat-icon>swap_horiz</mat-icon>
       <p>Select a trading account to view its behaviors.</p>
     </div>
-  } @else if (engine.activeTab() === 'overall') {
-    @if (hasOverallData) {
-      <ng-container *ngTemplateOutlet="overallTpl"></ng-container>
-      <ng-container *ngTemplateOutlet="overallMoreTpl"></ng-container>
-    } @else {
-      <div class="be-empty">
-        <mat-icon>psychology_alt</mat-icon>
-        <p>No behaviors detected yet</p>
-        <span>A.U.R.A needs more trades and reflections to identify recurring patterns.</span>
-      </div>
-    }
+  } @else if (!dashboard()) {
+    <div class="be-empty">
+      <mat-icon>psychology_alt</mat-icon>
+      <p>Behavior dashboard unavailable</p>
+      <span>No data was returned for this account.</span>
+      <button mat-stroked-button (click)="reload()">Retry</button>
+    </div>
   } @else {
-    <ng-container *ngTemplateOutlet="weekTpl"></ng-container>
+    <div class="be-body">
+      @if (engine.activeTab() === 'overall') {
+        @if (summary(); as s) {
+          @if (s.trade_count === 0) {
+            <div class="be-learning">
+              <mat-icon>psychology_alt</mat-icon>
+              <h3>🧠 A.U.R.A IS STILL LEARNING</h3>
+              <p>No trades have been recorded for {{ selectedAccountName || 'this account' }} yet.</p>
+              <span>Add trades with reflections and A.U.R.A. will start identifying your behavioral patterns.</span>
+            </div>
+          } @else if (hasNoBehaviors() && score()?.available !== true) {
+            <div class="be-learning">
+              <mat-icon>psychology_alt</mat-icon>
+              <h3>🧠 A.U.R.A IS STILL LEARNING</h3>
+              <p>Your behavioral model needs more trading history before it can confidently identify recurring patterns.</p>
+              <div class="be-learning-counts">
+                <span>{{ fmtNumber(s.trade_count) }} trades analyzed</span>
+                <span>{{ fmtNumber(s.reflection_count) }} reflections analyzed</span>
+                <span>Detection threshold: {{ s.behavior_count === 0 ? '3+ recurring occurrences' : 'still confirming' }}</span>
+              </div>
+              <span class="be-note">As patterns become statistically meaningful, they will appear here automatically.</span>
+            </div>
+          } @else {
+            <ng-container *ngTemplateOutlet="overallTpl"></ng-container>
+          }
+        }
+      } @else if (engine.activeTab() === 'week') {
+        <ng-container *ngTemplateOutlet="weekTpl"></ng-container>
+      } @else {
+        <ng-container *ngTemplateOutlet="insightsTpl"></ng-container>
+      }
+    </div>
   }
 </div>
-
-<!-- OVERALL tab -->
+<!-- ═══ OVERALL tab ═══ -->
 <ng-template #overallTpl>
-  <section class="be-section" *ngIf="engine.leaks().length > 0">
-    <h2>💸 Your Biggest Leaks</h2>
-    <div class="be-card-list">
-      <div class="be-card negative" *ngFor="let b of engine.leaks().slice(0, 5)">
-        <div class="be-card-head">
-          <span class="be-name">{{ b.name }}</span>
-          <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
-        </div>
-        <p class="be-desc">{{ b.description }}</p>
-        <div class="be-metrics">
-          <span>{{ b.occurrence_count }} occurrences</span>
-          @if (b.estimated_impact_pnl !== null) {
-            <span class="impact-neg">{{ b.estimated_impact_pnl | number: '1.0-2' }} USD impact</span>
+  <!-- Behavior Score -->
+  @if (score(); as sc) {
+    <section class="be-section be-score-section">
+      <div class="be-score-card">
+        <div class="be-score-meta">
+          <h2>BEHAVIOR SCORE</h2>
+          @if (sc.available && sc.score !== null) {
+            <div class="be-score-value">
+              {{ sc.score }} <span>/ 100</span>
+              @if (sc.delta !== null && sc.delta !== undefined) {
+                <span class="be-score-delta" [class.neg]="sc.delta < 0">
+                  {{ sc.delta > 0 ? '↑' : '↓' }} {{ Math.abs(sc.delta) }}
+                </span>
+              }
+            </div>
+            <span class="be-note">{{ sc.reason }}</span>
+          } @else {
+            <div class="be-score-none">Not enough data</div>
+            <span class="be-note">The score requires at least two recurring behavior observations.</span>
           }
-          <span class="confidence">AI Confidence: {{ (b.confidence * 100) | number: '1.0-0' }}%</span>
         </div>
-        <button class="be-evidence-btn" (click)="openDetail(b)">
-          <mat-icon>search</mat-icon> Evidence
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <section class="be-section" *ngIf="engine.edge().length > 0">
-    <h2>🟢 Your Edge</h2>
-    <div class="be-card-list">
-      <div class="be-card positive" *ngFor="let b of engine.edge().slice(0, 5)">
-        <div class="be-card-head">
-          <span class="be-name">{{ b.name }}</span>
-          <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
-        </div>
-        <p class="be-desc">{{ b.description }}</p>
-        <div class="be-metrics">
-          <span>{{ b.occurrence_count }} occurrences</span>
-          @if (b.estimated_impact_pnl !== null) {
-            <span class="impact-pos">+{{ b.estimated_impact_pnl | number: '1.0-2' }} USD impact</span>
-          }
-          <span class="confidence">AI Confidence: {{ (b.confidence * 100) | number: '1.0-0' }}%</span>
-        </div>
-        <button class="be-evidence-btn" (click)="openDetail(b)">
-          <mat-icon>search</mat-icon> Evidence
-        </button>
-      </div>
-    </div>
-  </section>
-</ng-template>
-
-<!-- Emerging Behaviors + Rules (overall continued) -->
-<ng-template #overallMoreTpl>
-  <section class="be-section" *ngIf="engine.emerging().length > 0">
-    <h2>👀 Emerging Behaviors</h2>
-    <p class="be-note">Still gathering evidence — AURA noticed these only recently.</p>
-    <div class="be-card-list">
-      <div class="be-card emerging" *ngFor="let b of engine.emerging().slice(0, 5)">
-        <div class="be-card-head">
-          <span class="be-name">{{ b.name }}</span>
-          <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
-        </div>
-        <p class="be-desc">{{ b.description }}</p>
-        <div class="be-metrics">
-          <span>{{ b.occurrence_count }} occurrences</span>
-          <span class="confidence">AI Confidence: {{ (b.confidence * 100) | number: '1.0-0' }}%</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="be-section" *ngIf="engine.activeRules().length > 0">
-    <h2>📜 Trading Rules</h2>
-    <div class="be-card-list">
-      <div class="be-card rule" *ngFor="let r of engine.activeRules()">
-        <div class="be-card-head">
-          <span class="be-name">{{ r.rule }}</span>
-          <span class="be-badge">{{ r.status }}</span>
-        </div>
-        <p class="be-desc" *ngIf="r.rationale">{{ r.rationale }}</p>
-        <div class="be-metrics">
-          @if (r.evidence_summary?.occurrences) {
-            <span>{{ r.evidence_summary!.occurrences }} evidence points</span>
-          }
-          <span class="confidence">Confidence: {{ (r.confidence * 100) | number: '1.0-0' }}%</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</ng-template>
-
-<!-- THIS WEEK tab -->
-<ng-template #weekTpl>
-  @if (engine.brief(); as brief) {
-    <section class="be-section">
-      <h2>🔥 Trading Brief</h2>
-      <div class="be-card brief">
-        <p class="be-brief-summary">{{ brief.payload.summary }}</p>
-        @if (brief.payload.biggest_leak) {
-          <div class="be-brief-item">
-            <span class="be-brief-label">💸 Biggest Leak:</span>
-            {{ brief.payload.biggest_leak.name }} —
-            {{ brief.payload.biggest_leak.occurrences }} occurrences,
-            {{ brief.payload.biggest_leak.impact | number: '1.0-2' }} USD impact
-          </div>
-        }
-        @if (brief.payload.strongest_behavior) {
-          <div class="be-brief-item">
-            <span class="be-brief-label">🟢 Strongest:</span>
-            {{ brief.payload.strongest_behavior.name }} —
-            {{ brief.payload.strongest_behavior.occurrences }} occurrences,
-            +{{ brief.payload.strongest_behavior.impact | number: '1.0-2' }} USD impact
-          </div>
-        }
-        @if (brief.payload.focus) {
-          <div class="be-brief-item">
-            <span class="be-brief-label">🎯 Focus:</span> {{ brief.payload.focus }}
+        @if (summary(); as s) {
+          <div class="be-score-facts">
+            <span>{{ fmtNumber(s.winning_trades) }} wins</span>
+            <span>{{ fmtNumber(s.losing_trades) }} losses</span>
+            <span>{{ fmtNumber(s.behavior_count) }} behaviors</span>
+            <span>{{ fmtNumber(s.evidence_count) }} evidence records</span>
           </div>
         }
       </div>
     </section>
   }
 
-  <section class="be-section" *ngIf="engine.alerts().length > 0">
-    <h2>⚠️ Behavior Alerts</h2>
+  <!-- TOP BEHAVIORS (behavior cards with evidence trail) -->
+  <section class="be-section">
+    <h2>TOP BEHAVIORS</h2>
+    <p class="be-note">Only behaviors the engine actually detected are shown — each has an evidence trail.</p>
     <div class="be-card-list">
-      <div class="be-card alert" *ngFor="let a of engine.alerts()">
-        <div class="be-card-head">
-          <span class="be-name">{{ a.message }}</span>
-          <span class="be-badge" [class.critical]="a.severity === 'critical'">{{ a.severity }}</span>
+      @for (b of behaviorCards(); track b.id) {
+        <div class="be-card" [class.negative]="b.behavior_type === 'negative'" [class.positive]="b.behavior_type === 'positive'">
+          <div class="be-card-head">
+            <span class="be-name">{{ b.name }}</span>
+            <span class="be-badge">{{ statusEmoji(b.status) }} {{ b.status }}</span>
+          </div>
+          @if (b.description) {
+            <p class="be-desc">{{ b.description }}</p>
+          }
+          <div class="be-metrics">
+            <span>{{ fmtNumber(b.occurrence_count) }} occurrences</span>
+            @if (b.estimated_impact_pnl !== null && b.estimated_impact_pnl !== undefined) {
+              <span [class.impact-neg]="b.estimated_impact_pnl! < 0" [class.impact-pos]="b.estimated_impact_pnl! > 0">
+                {{ b.estimated_impact_pnl! < 0 ? 'Estimated impact ' : 'Estimated impact +' }}{{ fmtNumber(b.estimated_impact_pnl) }}
+              </span>
+            }
+            <span class="confidence">Confidence {{ fmtPct(b.confidence) }}</span>
+            @if (b.evidence_count) {
+              <span>{{ fmtNumber(b.evidence_count) }} evidence record{{ b.evidence_count === 1 ? '' : 's' }}</span>
+            }
+          </div>
+
+          <button class="be-evidence-btn" (click)="toggleBehavior(b.id)">
+            <mat-icon>{{ isBehaviorExpanded(b.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+            {{ isBehaviorExpanded(b.id) ? 'Hide evidence' : 'View evidence' }}
+          </button>
+          @if (isBehaviorExpanded(b.id)) {
+            <div class="be-inline-evidence">
+              <p class="be-note">Evidence rows linked to this behavior by the engine:</p>
+              @for (ev of behaviorEvidence(b.id); track ev.id) {
+                <div class="be-evidence-item">
+                  <div class="be-evidence-head">
+                    @if (ev.trade_ticket) { <span class="be-ticket">Trade #{{ ev.trade_ticket }}</span> }
+                    <span class="be-ticket">{{ fmtDate(ev.trade_time_open) }}</span>
+                    @if (ev.metrics_snapshot?.r_multiple !== null && ev.metrics_snapshot?.r_multiple !== undefined) {
+                      <span class="be-r" [class.pos]="(ev.metrics_snapshot?.r_multiple ?? 0) > 0" [class.neg]="(ev.metrics_snapshot?.r_multiple ?? 0) < 0">
+                        {{ (ev.metrics_snapshot?.r_multiple ?? 0) | number: '1.0-2' }}R
+                      </span>
+                    }
+                  </div>
+                  @if (ev.reason) { <p class="be-evidence-item-reason">{{ ev.reason }}</p> }
+                  @if (ev.reflection_excerpt) {
+                    <blockquote class="be-reflection">"{{ ev.reflection_excerpt }}"</blockquote>
+                  }
+                </div>
+              } @empty {
+                <p class="be-note">Detailed evidence rows are loading…</p>
+              }
+            </div>
+          }
         </div>
-        <button class="be-evidence-btn" (click)="dismissAlert(a)">
-          <mat-icon>close</mat-icon> Dismiss
-        </button>
-      </div>
+      }
     </div>
   </section>
 
-  <div class="be-empty" *ngIf="!engine.brief() && engine.alerts().length === 0">
-    <mat-icon>event_note</mat-icon>
-    <p>No weekly brief or alerts for this week yet.</p>
-    <span>They are generated automatically as you trade.</span>
-  </div>
+  <ng-container *ngTemplateOutlet="patternsTpl"></ng-container>
 </ng-template>
 
+<!-- PATTERNS A.U.R.A DISCOVERED -->
+<ng-template #patternsTpl>
+  @if (visiblePatterns().length > 0) {
+    <section class="be-section">
+      <h2>PATTERNS A.U.R.A DISCOVERED</h2>
+      <p class="be-note">Relationships found in your chronological trade history.</p>
+      <div class="be-card-list">
+        @for (p of visiblePatterns(); track p.id) {
+          <div class="be-card pattern" [class.negative]="p.direction === 'negative'" [class.positive]="p.direction === 'positive'">
+            <div class="be-card-head">
+              <span class="be-name">{{ p.title }}</span>
+              <span class="be-badge">{{ fmtNumber(p.occurrences) }}×</span>
+            </div>
+            <p class="be-desc">{{ p.description }}</p>
+            @if (p.detail.sessions; as sessions) {
+              <div class="be-pattern-sessions">
+                @for (s of sessions; track s.session) {
+                  <span class="be-pattern-session">
+                    {{ s.label }}: {{ s.trades }} trades · {{ fmtPnl(s.pnl) }}
+                  </span>
+                }
+              </div>
+            }
+            <button class="be-evidence-btn" (click)="togglePattern(p.id)">
+              <mat-icon>{{ isPatternExpanded(p.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+              {{ isPatternExpanded(p.id) ? 'Hide evidence' : 'View evidence' }}
+            </button>
+            @if (isPatternExpanded(p.id)) {
+              <div class="be-inline-evidence be-pattern-evidence">
+                @if (p.id === 'sessions') {
+                  <table class="be-ev-table">
+                    <thead><tr><th>Session</th><th>Trades</th><th>P&amp;L</th></tr></thead>
+                    <tbody>
+                      @for (s of p.detail.sessions ?? []; track s.session) {
+                        <tr>
+                          <td>{{ s.label }}</td>
+                          <td>{{ s.trades }}</td>
+                          <td [class.pos]="s.pnl > 0" [class.neg]="s.pnl < 0">{{ fmtPnl(s.pnl) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                } @else if (p.id === 'post_loss_reentry') {
+                  <table class="be-ev-table">
+                    <thead><tr><th>Date</th><th>Previous trade</th><th>Re-entry delay</th><th>Result</th></tr></thead>
+                    <tbody>
+                      @for (row of p.evidence; track $index) {
+                        <tr>
+                          <td>{{ fmtDate(row.time_open) }}</td>
+                          <td [class.neg]="(row.previous_pnl ?? 0) < 0">{{ fmtPnl(row.previous_pnl) }}</td>
+                          <td>{{ fmtNumber(row.delay_min) }}m</td>
+                          <td [class.pos]="(row.result_pnl ?? 0) > 0" [class.neg]="(row.result_pnl ?? 0) < 0">{{ fmtPnl(row.result_pnl) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                } @else {
+                  <p class="be-note">{{ p.description }}</p>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+</ng-template>
+<!-- ═══ THIS WEEK tab ═══ -->
+<ng-template #weekTpl>
+  @if (week(); as w) {
+    @if (w.has_week_trades || w.has_previous_trades) {
+      <section class="be-section">
+        <h2>THIS WEEK · WHAT CHANGED?</h2>
+        <p class="be-note">
+          Current week ({{ fmtDate(w.week_start) }} – {{ fmtDate(w.week_end) }}) vs the previous 7 days.
+        </p>
+
+        <!-- Week overview numbers -->
+        <div class="be-week-overview">
+          <div class="be-week-stat">
+            <span class="be-stat-label">THIS WEEK TRADES</span>
+            <span class="be-stat-value">{{ fmtNumber(w.current.trade_count) }}</span>
+          </div>
+          <div class="be-week-stat">
+            <span class="be-stat-label">THIS WEEK P&amp;L</span>
+            <span class="be-stat-value" [class.pos]="w.current.total_pnl > 0" [class.neg]="w.current.total_pnl < 0">
+              {{ fmtPnl(w.current.total_pnl) }}
+            </span>
+          </div>
+          <div class="be-week-stat">
+            <span class="be-stat-label">WIN RATE</span>
+            <span class="be-stat-value">{{ fmtPct(w.current.win_rate) }}</span>
+          </div>
+          <div class="be-week-stat">
+            <span class="be-stat-label">PREVIOUS P&amp;L</span>
+            <span class="be-stat-value" [class.pos]="w.previous.total_pnl > 0" [class.neg]="w.previous.total_pnl < 0">
+              {{ fmtPnl(w.previous.total_pnl) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Behavior changes -->
+        @if (weekChanges().length > 0) {
+          <div class="be-card-list be-change-list">
+            @for (c of weekChanges(); track c.key) {
+              <div class="be-card">
+                <div class="be-card-head">
+                  <span class="be-name">{{ c.label }}</span>
+                  <span class="be-badge" [class.tone-bad]="c.negative && c.delta > 0" [class.tone-good]="!c.negative || c.delta <= 0">
+                    {{ c.delta > 0 ? '🟢' : '🔴' }} {{ fmtPnl(c.delta) }} {{ c.unit }}
+                  </span>
+                </div>
+                <div class="be-delta-row">
+                  <span>Previous period: <strong>{{ fmtNumber(c.previous) }} {{ c.unit }}</strong></span>
+                  <span>This week: <strong>{{ fmtNumber(c.current) }} {{ c.unit }}</strong></span>
+                  <span class="be-delta">Δ {{ c.delta > 0 ? '+' : '' }}{{ fmtNumber(c.delta) }} {{ c.unit }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="be-empty be-small">
+            <mat-icon>insights</mat-icon>
+            <p>No measurable week-over-week change yet.</p>
+            <span>Keep trading — changes appear once this week's stats diverge from last week's.</span>
+          </div>
+        }
+      </section>
+
+      @if (!w.has_week_trades) {
+        <div class="be-empty be-small">
+          <mat-icon>schedule</mat-icon>
+          <p>No trades closed this week yet.</p>
+          <span>This week's view will fill in as trades are recorded.</span>
+        </div>
+      }
+    } @else {
+      <div class="be-learning">
+        <mat-icon>event_note</mat-icon>
+        <h3>THIS WEEK</h3>
+        <p>Not enough trade history for a week-over-week comparison yet.</p>
+        <span>The engine compares the current ISO week against the previous 7 days.</span>
+      </div>
+    }
+  }
+</ng-template>
+<!-- ═══ INSIGHTS tab (AI interpretation of the structured evidence) ═══ -->
+<ng-template #insightsTpl>
+  <section class="be-section">
+    <h2>A.U.R.A INSIGHTS</h2>
+    <p class="be-note">
+      AI observations generated from the structured behavior statistics below — A.U.R.A interprets the
+      evidence, it never invents it.
+    </p>
+
+    <div class="be-card-list">
+      <!-- Insight 1: biggest negative behavior -->
+      @if (negativeBehavior(); as top) {
+        @if (top.occurrence_count >= 2) {
+          <div class="be-card insights-card">
+            <div class="be-card-head">
+              <span class="be-name">Your biggest behavioral leak this period is {{ top.name.toLowerCase() }}.</span>
+            </div>
+            <p class="be-desc">
+              It occurred {{ fmtNumber(top.occurrence_count) }} times and produced an estimated
+              {{ fmtPnl(top.estimated_impact_pnl ?? 0) }} impact.
+            </p>
+            @if (top.evidence_count) {
+              <p class="be-desc">Backed by {{ fmtNumber(top.evidence_count) }} evidence records in this account.</p>
+            }
+            <p class="be-note">Recommended rule: after {{ top.name.toLowerCase() }}, wait for your next valid setup before re-entering.</p>
+          </div>
+        }
+      }
+
+      <!-- Insight 2: strongest positive behavior -->
+      @if (positiveBehavior(); as best) {
+        <div class="be-card insights-card positive">
+          <div class="be-card-head">
+            <span class="be-name">🟢 {{ best.name }} is your strongest edge.</span>
+          </div>
+          <p class="be-desc">
+            {{ fmtNumber(best.occurrence_count) }} occurrences with an estimated
+            +{{ fmtNumber(best.estimated_impact_pnl ?? 0) }} impact — keep doing this.
+          </p>
+        </div>
+      }
+
+      <!-- Insight 3: post-loss re-entry pattern -->
+      @if (findPattern('post_loss_reentry'); as reentry) {
+        <div class="be-card insights-card">
+          <div class="be-card-head">
+            <span class="be-name">Rapid re-entry after losses</span>
+          </div>
+          <p class="be-desc">
+            You re-entered within {{ fmtNumber(reentry.detail.avg_delay_min) }}m of a losing trade closing
+            {{ fmtNumber(reentry.occurrences) }} times. The average next-trade result was
+            {{ fmtPnl(reentry.detail.avg_result_pnl) }}.
+          </p>
+          @if (reentry.detail.normal_delay_min !== null && reentry.detail.normal_delay_min !== undefined) {
+            <p class="be-desc">
+              Normal re-entry interval is ~{{ fmtNumber(reentry.detail.normal_delay_min) }}m — your detected
+              interval is ~{{ fmtNumber(reentry.detail.avg_delay_min) }}m.
+            </p>
+          }
+        </div>
+      }
+
+      <!-- Insight 4: loss streak pattern -->
+      @if (findPattern('loss_streaks'); as streak) {
+        <div class="be-card insights-card">
+          <div class="be-card-head">
+            <span class="be-name">Consecutive losing streaks</span>
+          </div>
+          <p class="be-desc">
+            {{ fmtNumber(streak.occurrences) }} losing streak(s) of 2+ trades (longest
+            {{ fmtNumber(streak.detail.max_streak) }}), combined {{ fmtPnl(streak.detail.total_pnl) }}.
+          </p>
+        </div>
+      }
+
+      <!-- Insight 5: brief summary (AI generated from the evidence) -->
+      @if (brief()?.payload?.summary; as bs) {
+        <div class="be-card insights-card brief">
+          <div class="be-card-head">
+            <span class="be-name">📋 Latest weekly brief</span>
+          </div>
+          <p class="be-desc">{{ bs }}</p>
+          @if (brief()?.payload?.focus) {
+            <p class="be-note">🎯 Focus: {{ brief()?.payload?.focus }}</p>
+          }
+        </div>
+      }
+    </div>
+
+    @if (visiblePatterns().length === 0 && behaviorCards().length === 0) {
+      <div class="be-empty be-small">
+        <mat-icon>lightbulb</mat-icon>
+        <p>Not enough evidence for AI insights yet.</p>
+        <span>A.U.R.A needs a few recurring behaviors or patterns before it can interpret them.</span>
+      </div>
+    }
+  </section>
+</ng-template>
 <!-- Evidence drill-down modal -->
 @if (detailOpen()) {
   <div class="be-modal-overlay" (click)="closeDetail()">
@@ -204,10 +454,10 @@
       </header>
       <p class="be-modal-desc">{{ detailBehavior()?.description }}</p>
       <div class="be-metrics be-modal-metrics">
-        <span>{{ detailBehavior()?.occurrence_count }} occurrences</span>
-        <span>Impact: {{ detailBehavior()?.estimated_impact_pnl | number: '1.0-2' }} USD</span>
+        <span>{{ fmtNumber(detailBehavior()?.occurrence_count) }} occurrences</span>
+        <span>Impact: {{ fmtPnl(detailBehavior()?.estimated_impact_pnl) }} USD</span>
         <span class="confidence">
-          AI Confidence: {{ (detailBehavior()?.confidence ?? 0) * 100 | number: '1.0-0' }}%
+          Confidence: {{ fmtPct(detailBehavior()?.confidence) }}
         </span>
       </div>
       <h4>Evidence</h4>
@@ -221,7 +471,7 @@
                   class="be-r"
                   [class.pos]="(e.metrics_snapshot?.r_multiple ?? 0) > 0"
                   [class.neg]="(e.metrics_snapshot?.r_multiple ?? 0) < 0">
-                  {{ e.metrics_snapshot?.r_multiple | number: '1.0-2' }}R
+                  {{ (e.metrics_snapshot?.r_multiple ?? 0) | number: '1.0-2' }}R
                 </span>
               }
             </div>

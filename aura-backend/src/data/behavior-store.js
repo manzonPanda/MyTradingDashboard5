@@ -44,7 +44,7 @@ export class BehaviorStore {
     const resolved = await this.resolveAccountId(userId, accountId);
     let q = this.supabase
       .from('behaviors')
-      .select('*, evidence:behavior_evidence(id, trade_id, created_at, metrics_snapshot)')
+      .select('*, evidence:behavior_evidence(*)')
       .eq('user_id', userId)
       .eq('account_id', resolved)
       .order('occurrence_count', { ascending: false });

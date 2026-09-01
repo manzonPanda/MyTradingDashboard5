@@ -29,6 +29,7 @@ import { AnalysisJobStore } from './src/data/analysis-job-store.js';
 import { AnalysisService } from './src/behavior/analysis-service.js';
 import { BriefService } from './src/behavior/brief-service.js';
 import { AlertsService } from './src/behavior/alerts-service.js';
+import { computeScoreDelta, computeWeekView, computePatterns } from './src/behavior/dashboard-stats.js';
 
 dotenv.config();
 
@@ -410,6 +411,105 @@ async function requireAccount(req, res, next) {
   }
 }
 
+// ── Dashboard aggregate (single account-scoped payload for the UI) ──
+// Everything the Trading Behavior Engine dashboard renders is computed here
+// from real data: trade/reflection counts, engine status, behavior score,
+// week-over-week statistics and deterministic patterns. No hardcoded numbers.
+app.get('/api/behavior-engine/dashboard', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const [tradesRes, behaviors, evidence, analysesRes] = await Promise.all([
+      supabase
+        .from('trades')
+        .select('id, ticket, instrument, pnl, risk_per_trade, time_open, time_close, lots, daily_reflection, created_at')
+        .eq('account_id', req.accountId)
+        .order('time_open', { ascending: true }),
+      behaviorStore.listBehaviors(req.userId, req.accountId, {}),
+      behaviorStore.listEvidence(req.userId, req.accountId, { limit: 500 }),
+      supabase
+        .from('ai_analyses')
+        .select('id, status, trigger, model, last_error, created_at, finished_at')
+        .eq('account_id', req.accountId)
+        .order('created_at', { ascending: false })
+        .limit(25),
+    ]);
+    if (tradesRes.error) throw tradesRes.error;
+
+    const trades = tradesRes.data || [];
+    const analyses = analysesRes.error ? [] : (analysesRes.data || []);
+
+    // Evidence counts per behavior (objective occurrence backing).
+    const evidenceByBehavior = {};
+    for (const ev of evidence) {
+      if (!ev.behavior_id) continue;
+      evidenceByBehavior[ev.behavior_id] = (evidenceByBehavior[ev.behavior_id] || 0) + 1;
+    }
+
+    // Data summary — real counts only.
+    const closed = trades.filter((t) => t.time_close);
+    const wins = closed.filter((t) => Number(t.pnl) > 0).length;
+    const losses = closed.filter((t) => Number(t.pnl) < 0).length;
+    const reflectionCount = trades.filter((t) => (t.daily_reflection || '').trim().length > 0).length;
+    const firstTradeAt = trades.length ? (trades[0].time_open || trades[0].created_at) : null;
+    const lastTradeAt = trades.length ? (trades[trades.length - 1].time_open || trades[trades.length - 1].created_at) : null;
+    const lastAnalysis = analyses[0] || null;
+    const doneAnalyses = analyses.filter((a) => a.status === 'done').length;
+
+    // Engine status (deterministic, derived — see PHASE 5 of the dashboard spec).
+    const hasQueued = analyses.some((a) => a.status === 'queued' || a.status === 'running');
+    let engineStatus;
+    if (hasQueued) engineStatus = 'analyzing';
+    else if (trades.length === 0) engineStatus = 'needs_more_data';
+    else if (closed.length < 3 && reflectionCount === 0) engineStatus = 'needs_more_data';
+    else if (doneAnalyses === 0) engineStatus = 'analysis_unavailable';
+    else if (lastAnalysis && lastAnalysis.status === 'failed') engineStatus = 'analysis_unavailable';
+    else engineStatus = 'up_to_date';
+
+    const score = computeScoreDelta(behaviors);
+    const week = computeWeekView(trades);
+    const patterns = computePatterns(trades);
+
+    // Insights: AI interpretations that were themselves generated FROM the
+    // structured evidence (ai_analyses / weekly brief) — never free invention.
+    const briefRes = await supabase
+      .from('trading_briefs')
+      .select('id, week_start, week_end, payload, generated_at')
+      .eq('account_id', req.accountId)
+      .order('week_start', { ascending: false })
+      .limit(1);
+    const latestBrief = briefRes.error ? null : (briefRes.data?.[0] || null);
+
+    res.json({
+      account_id: req.accountId,
+      generated_at: new Date().toISOString(),
+      engine_status: engineStatus,
+      data_summary: {
+        trade_count: trades.length,
+        closed_trades: closed.length,
+        winning_trades: wins,
+        losing_trades: losses,
+        reflection_count: reflectionCount,
+        first_trade_at: firstTradeAt,
+        last_trade_at: lastTradeAt,
+        behavior_count: behaviors.length,
+        evidence_count: evidence.length,
+        analysis_count_done: doneAnalyses,
+        analysis_count_total: analyses.length,
+        last_analysis_at: lastAnalysis?.finished_at || lastAnalysis?.created_at || null,
+        last_analysis_status: lastAnalysis?.status || null,
+        last_analysis_error: lastAnalysis?.status === 'failed' ? (lastAnalysis.last_error || null) : null,
+      },
+      score,
+      behaviors: behaviors.map((b) => ({ ...b, evidence_count: evidenceByBehavior[b.id] || 0 })),
+      week,
+      patterns,
+      brief: latestBrief,
+    });
+  } catch (err) {
+    console.error('[Behavior] Dashboard error:', err?.message || err);
+    res.status(500).json({ error: 'Failed to build behavior dashboard.' });
+  }
+});
+
 // ── Behaviors overview ──
 app.get('/api/behavior-engine/behaviors', authMiddleware, requireAccount, async (req, res) => {
   try {
@@ -552,36 +652,94 @@ app.get('/api/behavior-engine/analysis/:id', authMiddleware, requireAccount, asy
   }
 });
 
+// ── Backfill: enqueue analysis for historical trades never analyzed ──
+// The engine self-heals on startup + periodically (below), but this manual
+// trigger lets the frontend/tests drain an account's history immediately.
+app.post('/api/behavior-engine/backfill', authMiddleware, requireAccount, async (req, res) => {
+  try {
+    const result = await analysisService.backfillAccount(req.userId, req.accountId, {
+      limit: Number(req.body?.limit || req.query?.limit || 100),
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[Behavior] Backfill error:', err?.message || err);
+    res.status(500).json({ error: 'Failed to backfill analysis jobs.' });
+  }
+});
+
 // ── Worker loop (non-blocking, concurrency-safe) ──
 let workerRunning = true;
-let workerBackoffMs = 1000;
+const WORKER_IDLE_MS = 1000;        // no jobs → quick re-poll
+const WORKER_JOB_PACE_MS = 6000;    // after a job → respect provider rate limits
 const WORKER_ERROR_BACKOFF_MS = 30_000; // e.g. schema not applied yet → back off
+
+/**
+ * Self-healing backfill: enqueue analysis jobs for pre-existing trades that
+ * were never analyzed (the engine cannot "see" history that predates the
+ * worker). Runs on its OWN interval — never inside the hot claim loop, so a
+ * slow backfill cycle can't starve job processing. The service caps enqueues
+ * while the queue is deep (pending-threshold) and skips trades that already
+ * have a job, so repeated cycles converge instead of flooding.
+ */
+async function runBackfillCycle() {
+  try {
+    const { data: accounts, error } = await supabase
+      .from('accounts')
+      .select('id, user_id');
+    if (error || !accounts?.length) return;
+    for (const account of accounts) {
+      await analysisService.requeueRateLimitFailures(account.user_id, account.id, { limit: 25 });
+      await analysisService.backfillAccount(account.user_id, account.id, {
+        limit: 10, maxPending: 30,
+      });
+    }
+  } catch (err) {
+    // Non-fatal: the worker continues; next cycle retries.
+    console.error('[Behavior] Backfill cycle error:', err?.message || err);
+  }
+}
+
+let lastWorkerError = '';
 async function behaviorWorker() {
   if (!workerRunning) return;
+  let paceMs = WORKER_IDLE_MS;
   try {
-    await analysisService.processNext({ batchSize: 1 });
-    workerBackoffMs = 1000; // healthy cycle → normal cadence
+    const result = await analysisService.processNext({ batchSize: 1 });
+    // A job was just processed (an LLM call) → pace the next claim so the
+    // provider's rate limits are respected; idle → re-poll quickly.
+    paceMs = result?.processed > 0 ? WORKER_JOB_PACE_MS : WORKER_IDLE_MS;
+    lastWorkerError = '';
   } catch (err) {
     const msg = err?.message || String(err);
     // Graceful degradation: when the Behavior Engine schema hasn't been
     // applied yet (PGRST205), back off instead of spamming every second.
     if (/Could not find the table|PGRST205|schema cache/i.test(msg)) {
-      if (workerBackoffMs < WORKER_ERROR_BACKOFF_MS) {
+      if (lastWorkerError !== msg) {
         console.warn('[Behavior] Schema not applied yet (ai_analyses missing). Worker idling; apply supabase/*.sql to activate.');
       }
-      workerBackoffMs = WORKER_ERROR_BACKOFF_MS;
+      paceMs = WORKER_ERROR_BACKOFF_MS;
     } else {
       console.error('[Behavior] Worker cycle error:', msg);
-      workerBackoffMs = WORKER_ERROR_BACKOFF_MS;
+      paceMs = WORKER_ERROR_BACKOFF_MS;
     }
+    lastWorkerError = msg;
   }
-  if (workerRunning) setTimeout(behaviorWorker, workerBackoffMs);
+  if (workerRunning) setTimeout(behaviorWorker, paceMs);
 }
 behaviorWorker();
+
+// Independent backfill cadence (60s) — decoupled from job claiming.
+let backfillTimer = null;
+function startBackfill() {
+  if (backfillTimer) return;
+  backfillTimer = setInterval(() => { if (workerRunning) void runBackfillCycle(); }, 60_000);
+}
+startBackfill();
 
 // Graceful shutdown: stop the worker loop before exiting.
 function shutdownWorker() {
   workerRunning = false;
+  if (backfillTimer) clearInterval(backfillTimer);
 }
 process.on('SIGINT', shutdownWorker);
 process.on('SIGTERM', shutdownWorker);
