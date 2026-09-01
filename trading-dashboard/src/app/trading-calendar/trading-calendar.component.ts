@@ -211,6 +211,15 @@ interface WeekSummary {
                   <div class="day-trade-info-item day-trade-info-risk">
                     <span class="day-trade-info-label">Risk:</span>
                     <strong>{{ trade.riskPerTrade ? formatCurrency(getNumericValue(trade.riskPerTrade)) : '—' }}</strong>
+                    @if (getNumericValue(trade.swap) !== 0) {
+                      <span
+                        class="day-trade-swap"
+                        [class.is-positive]="getNumericValue(trade.swap) > 0"
+                        [class.is-negative]="getNumericValue(trade.swap) < 0">
+                        <span class="day-trade-swap-label">Swap</span>
+                        <span class="day-trade-swap-value">{{ formatCurrency(getNumericValue(trade.swap)) }}</span>
+                      </span>
+                    }
                   </div>
                   <div class="day-trade-info-item day-trade-info-rrr">
                     <span class="day-trade-info-label">R:R:</span>
