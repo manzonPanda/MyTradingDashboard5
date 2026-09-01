@@ -483,21 +483,23 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
   }
 
   getTradesForDate(date: Date): Table[] {
-    return this.tableData.filter(trade => {
-      const tradeDate = this.parseTradeDate(trade.openDate);
-      if (!tradeDate) return false;
+    return this.tableData
+      .filter(trade => {
+        const tradeDate = this.parseTradeDate(trade.openDate);
+        if (!tradeDate) return false;
 
-      const tradeDateForComparison = new Date(tradeDate);
+        const tradeDateForComparison = new Date(tradeDate);
 
-      // Keep trades before the 5 AM PHT reset grouped with the prior trading day.
-      if (tradeDate.getHours() < 5) {
-        tradeDateForComparison.setDate(tradeDateForComparison.getDate() - 1);
-      }
+        // Keep trades before the 5 AM PHT reset grouped with the prior trading day.
+        if (tradeDate.getHours() < 5) {
+          tradeDateForComparison.setDate(tradeDateForComparison.getDate() - 1);
+        }
 
-      return tradeDateForComparison.getFullYear() === date.getFullYear() &&
-             tradeDateForComparison.getMonth() === date.getMonth() &&
-             tradeDateForComparison.getDate() === date.getDate();
-    });
+        return tradeDateForComparison.getFullYear() === date.getFullYear() &&
+               tradeDateForComparison.getMonth() === date.getMonth() &&
+               tradeDateForComparison.getDate() === date.getDate();
+      })
+      .sort((a, b) => this.parseTradeDate(a.openDate)!.getTime() - this.parseTradeDate(b.openDate)!.getTime());
   }
 
   parseTradeDate(dateStr: string): Date | null {
