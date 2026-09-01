@@ -489,8 +489,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
       const tradeDateForComparison = new Date(tradeDate);
 
-      // Keep overnight trades grouped with the prior trading day.
-      if (tradeDate.getHours() < 3) {
+      // Keep trades before the 5 AM PHT reset grouped with the prior trading day.
+      if (tradeDate.getHours() < 5) {
         tradeDateForComparison.setDate(tradeDateForComparison.getDate() - 1);
       }
 
