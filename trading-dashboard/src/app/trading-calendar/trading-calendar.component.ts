@@ -179,7 +179,7 @@ interface WeekSummary {
               <span class="summary-item-label">Day P&amp;L</span>
               <strong class="day-trades-pnl-value" [ngClass]="getDayPnLClass(selectedDay.pnl)">
                 <span class="day-trades-pnl-percentage">{{ formatPercentage(selectedDay.dailyPercentage) }}</span>
-                <span>{{ formatCurrency(selectedDay.pnl) }}</span>
+                <span class="day-trades-pnl-amount">{{ formatCurrency(selectedDay.pnl) }}</span>
               </strong>
             </div>
             <div class="day-trades-summary-item">
