@@ -211,6 +211,15 @@ interface WeekSummary {
                   <div class="day-trade-info-item day-trade-info-risk">
                     <span class="day-trade-info-label">Risk:</span>
                     <strong>{{ trade.riskPerTrade ? formatCurrency(getNumericValue(trade.riskPerTrade)) : '—' }}</strong>
+                    @if (getNumericValue(trade.swap) !== 0) {
+                      <span
+                        class="day-trade-swap"
+                        [class.is-positive]="getNumericValue(trade.swap) > 0"
+                        [class.is-negative]="getNumericValue(trade.swap) < 0">
+                        <span class="day-trade-swap-label">Swap</span>
+                        <span class="day-trade-swap-value">{{ formatCurrency(getNumericValue(trade.swap)) }}</span>
+                      </span>
+                    }
                   </div>
                   <div class="day-trade-info-item day-trade-info-rrr">
                     <span class="day-trade-info-label">R:R:</span>
@@ -480,8 +489,8 @@ export class TradingCalendarComponent implements OnInit, OnChanges {
 
       const tradeDateForComparison = new Date(tradeDate);
 
-      // Keep overnight trades grouped with the prior trading day.
-      if (tradeDate.getHours() < 3) {
+      // Keep trades before the 5 AM PHT reset grouped with the prior trading day.
+      if (tradeDate.getHours() < 5) {
         tradeDateForComparison.setDate(tradeDateForComparison.getDate() - 1);
       }
 
