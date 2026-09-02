@@ -53,7 +53,10 @@ export class TradingBehaviorEngineComponent implements OnInit, OnDestroy {
     // data from the previous account is never displayed.
     effect(() => {
       const accountId = this.accountContext.selectedAccountId();
-      if (accountId && accountId !== this.loadedAccountId) {
+      if (!accountId) {
+        this.loadedAccountId = null;
+        this.engine.stopRealtime();
+      } else if (accountId !== this.loadedAccountId) {
         this.loadedAccountId = accountId;
         this.detailOpen.set(false);
         this.detailEvidence.set([]);
@@ -93,6 +96,26 @@ export class TradingBehaviorEngineComponent implements OnInit, OnDestroy {
       analysis_unavailable: { label: 'Analysis unavailable', tone: 'muted' },
     };
     return map[status] ?? { label: 'Learning', tone: 'info' };
+  });
+
+  /** AI-layer insight status — reported SEPARATELY from the deterministic engine. */
+  readonly aiStatusText = computed(() => {
+    const dash = this.dashboard();
+    if (!dash) return null;
+    const status = dash.ai_status ?? 'not_requested';
+    const lastAt = dash.data_summary?.last_analysis_at ?? null;
+    if (status === 'analyzing') return { text: '🧠 AI insight analyzing…', tone: 'busy' };
+    if (status === 'available')
+      return { text: lastAt ? `🧠 AI insight updated ${this.timeAgo(lastAt)} ago` : '🧠 AI insight available', tone: 'ok' };
+    if (status === 'unavailable') return { text: '🧠 AI interpretation temporarily unavailable', tone: 'muted' };
+    return { text: '🧠 AI insight pending — more trades/reflections needed', tone: 'idle' };
+  });
+
+  /** Deterministic freshness — from the backend-generated_at (never local invention). */
+  readonly behaviorFreshness = computed(() => {
+    const dash = this.dashboard();
+    if (!dash?.generated_at) return null;
+    return `🟢 Behavior analysis updated ${this.timeAgo(dash.generated_at)} ago`;
   });
 
   /** True when there are genuinely no behaviors to show yet. */
@@ -175,6 +198,7 @@ async ngOnInit(): Promise<void> {
   }
 
   ngOnDestroy(): void {
+    this.engine.stopRealtime();
     this.detailOpen.set(false);
   }
 
@@ -283,5 +307,18 @@ async ngOnInit(): Promise<void> {
     if (s < 60) return `${s}s`;
     if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`;
     return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+  }
+
+  /** Human-relative time for freshness indicators (requirement #10). */
+  timeAgo(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const then = new Date(iso).getTime();
+    if (!Number.isFinite(then)) return '';
+    const s = Math.max(0, Math.round((Date.now() - then) / 1000));
+    if (s < 10) return 'just now';
+    if (s < 60) return `${s}s`;
+    if (s < 3600) return `${Math.floor(s / 60)}m`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h`;
+    return `${Math.floor(s / 86400)}d`;
   }
 }

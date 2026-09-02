@@ -215,6 +215,7 @@ export interface BehaviorDashboard {
   week: WeekView;
   patterns: BehaviorPattern[];
   brief: TradingBrief | null;
+  ai_status?: 'analyzing' | 'available' | 'unavailable' | 'not_requested';
 }
 
 export type EngineTab = 'overall' | 'week' | 'insights';
@@ -235,6 +236,8 @@ export class BehaviorEngineService {
 
   /** Guards against a stale account response overwriting the active account. */
   private loadToken = 0;
+  private realtimeChannel: any | null = null;
+  private realtimeReloadTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Derived views — leak/edge rankings are backend-computed; frontend only sorts.
   readonly leaks = computed(() =>
@@ -279,6 +282,12 @@ export class BehaviorEngineService {
 
   async loadAll(accountId: string): Promise<void> {
     const token = ++this.loadToken;
+    this.stopRealtime();
+    this.behaviors.set([]);
+    this.rules.set([]);
+    this.alerts.set([]);
+    this.brief.set(null);
+    this.dashboard.set(null);
     this.isLoading.set(true);
     this.lastError.set(null);
     // Enter the loading state BEFORE touching the data signals so the UI can
@@ -298,6 +307,7 @@ export class BehaviorEngineService {
       this.alerts.set(alerts.status === 'fulfilled' ? alerts.value : []);
       this.brief.set(brief.status === 'fulfilled' ? brief.value : null);
       this.dashboard.set(dashboardRes.status === 'fulfilled' ? dashboardRes.value : null);
+      if (dashboardRes.status === 'fulfilled') this.startRealtime(accountId);
       const failed = [dashboardRes, behaviors, rules, alerts, brief].find((r) => r.status === 'rejected');
       if (failed) throw (failed as PromiseRejectedResult).reason;
     } catch (err) {
@@ -310,6 +320,33 @@ export class BehaviorEngineService {
     }
   }
 
+  /** Replace account-scoped subscriptions atomically on every switch. */
+  stopRealtime(): void {
+    if (this.realtimeReloadTimer) clearTimeout(this.realtimeReloadTimer);
+    this.realtimeReloadTimer = null;
+    if (this.realtimeChannel) {
+      void this.supabaseService.client.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+  }
+
+  private startRealtime(accountId: string): void {
+    this.stopRealtime();
+    const onChange = () => {
+      if (this.dashboard()?.account_id !== accountId) return;
+      if (this.realtimeReloadTimer) clearTimeout(this.realtimeReloadTimer);
+      this.realtimeReloadTimer = setTimeout(() => {
+        if (this.dashboard()?.account_id === accountId) void this.loadAll(accountId);
+      }, 120);
+    };
+    this.realtimeChannel = this.supabaseService.client
+      .channel(`behavior-engine:${accountId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `account_id=eq.${accountId}` }, onChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'behaviors', filter: `account_id=eq.${accountId}` }, onChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'behavior_evidence', filter: `account_id=eq.${accountId}` }, onChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ai_analyses', filter: `account_id=eq.${accountId}` }, onChange)
+      .subscribe();
+  }
   async getBehaviorDetail(accountId: string, behaviorId: string): Promise<Behavior | null> {
     try {
       return await this.fetchJson<Behavior>(`/behaviors/${behaviorId}?accountId=${accountId}`);

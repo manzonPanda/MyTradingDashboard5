@@ -52,6 +52,13 @@ $border: rgba(255, 255, 255, 0.08);
 .be-engine-status.muted   { color: rgba(255,255,255,0.45); }
 .be-engine-status.busy .be-pulse { animation: be-pulse 1.2s ease-in-out infinite; }
 
+/* Live freshness indicators — deterministic vs AI latencies, shown separately */
+.be-live-ok    { color: $pos; }
+.be-live-busy   { color: $pc-soft; }
+.be-live-muted  { color: rgba(255,255,255,0.45); }
+.be-live-idle   { color: rgba(255,255,255,0.5); }
+.be-stat-wide   { min-width: 200px; }
+
 @keyframes be-pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }

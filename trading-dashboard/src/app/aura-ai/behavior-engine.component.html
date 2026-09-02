@@ -23,10 +23,18 @@
             🧠 {{ fmtNumber(s.trade_count) }} trades · {{ fmtNumber(s.reflection_count) }} reflections
           </span>
         </span>
-        <span class="be-stat" *ngIf="s.last_analysis_at">
-          <span class="be-stat-label">LAST ANALYSIS</span>
-          <span class="be-stat-value">{{ fmtDate(s.last_analysis_at) }}</span>
-        </span>
+        @if (behaviorFreshness(); as fresh) {
+          <span class="be-stat">
+            <span class="be-stat-label">BEHAVIOR ANALYSIS</span>
+            <span class="be-stat-value be-live-ok">{{ fresh }}</span>
+          </span>
+        }
+        @if (aiStatusText(); as ai) {
+          <span class="be-stat be-stat-wide">
+            <span class="be-stat-label">AI INSIGHT</span>
+            <span class="be-stat-value be-live-{{ ai.tone }}">{{ ai.text }}</span>
+          </span>
+        }
       </div>
     }
   </header>
@@ -78,7 +86,7 @@
               <p>No trades have been recorded for {{ selectedAccountName || 'this account' }} yet.</p>
               <span>Add trades with reflections and A.U.R.A. will start identifying your behavioral patterns.</span>
             </div>
-          } @else if (hasNoBehaviors() && score()?.available !== true) {
+          } @else if (hasNoBehaviors() && visiblePatterns().length === 0 && score()?.available !== true) {
             <div class="be-learning">
               <mat-icon>psychology_alt</mat-icon>
               <h3>🧠 A.U.R.A IS STILL LEARNING</h3>
@@ -89,6 +97,7 @@
                 <span>Detection threshold: {{ s.behavior_count === 0 ? '3+ recurring occurrences' : 'still confirming' }}</span>
               </div>
               <span class="be-note">As patterns become statistically meaningful, they will appear here automatically.</span>
+              @if (s.reflection_count === 0) { <span class="be-note">Add trade reflections to give A.U.R.A more context about why you made each decision.</span> }
             </div>
           } @else {
             <ng-container *ngTemplateOutlet="overallTpl"></ng-container>
@@ -435,7 +444,11 @@
       }
     </div>
 
-    @if (visiblePatterns().length === 0 && behaviorCards().length === 0) {
+    @if (dashboard()?.ai_status === 'unavailable') {
+      <div class="be-empty be-small"><mat-icon>cloud_off</mat-icon><p>AI interpretation temporarily unavailable.</p><span>Your trade-based behaviors and statistics are still current.</span></div>
+    } @else if (summary()?.reflection_count === 0) {
+      <div class="be-empty be-small"><mat-icon>edit_note</mat-icon><p>Add trade reflections for more context.</p><span>A.U.R.A can already analyze trade data, and reflections help explain the decisions behind it.</span></div>
+    } @else if (visiblePatterns().length === 0 && behaviorCards().length === 0) {
       <div class="be-empty be-small">
         <mat-icon>lightbulb</mat-icon>
         <p>Not enough evidence for AI insights yet.</p>

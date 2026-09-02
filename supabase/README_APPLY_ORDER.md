@@ -27,6 +27,7 @@ in the order documented below. Every file is idempotent
 | 7 | `table_behavior_config.sql` | per-account thresholds as data (not UI-hardcoded) |
 | 8 | `ai_analyses_rls.sql` | RLS for `ai_analyses` |
 | 9 | `behavior_engine_rls.sql` | RLS for the 6 behavior-engine tables |
+| 10 | `realtime_behavior_engine.sql` | Realtime publication membership for `behaviors`, `behavior_evidence`, `ai_analyses` (dashboard live updates) |
 
 > Pre-existing project tables (`trades`, `accounts`, `ai_*`, `user_settings`, …)
 > are untouched. `set_updated_at()` is re-created with identical behavior so the

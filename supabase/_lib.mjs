@@ -41,6 +41,7 @@ export const APPLY_ORDER = [
   'table_behavior_config.sql',
   'ai_analyses_rls.sql',
   'behavior_engine_rls.sql',
+  'realtime_behavior_engine.sql',
 ];
 
 export function parseEnvFile(filePath) {

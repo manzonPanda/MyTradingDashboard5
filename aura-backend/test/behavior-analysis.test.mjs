@@ -175,7 +175,7 @@ function makeProvider({ scenarios = [] } = {}) {
   ok('re-processing the same trade never duplicates behavior/evidence');
 }
 
-// ─── 6. Skipped: no reflection / no trade ──────────────────────
+// ─── 6. Skip conditions: trade-only is VALID, missing trade is skipped ─────
 {
   console.log('skip conditions');
   const db = makeMemoryDb();
@@ -184,15 +184,19 @@ function makeProvider({ scenarios = [] } = {}) {
   const provider = makeProvider({});
   const svc = new AnalysisService({ supabase: db, provider, tradingData: new TradingDataAccess(db) });
 
+  // Reflections are CONTEXT, not a prerequisite: a trade with an empty
+  // reflection is still interpretable from its backend-computed facts.
   const emptyJob = await svc.enqueueForTrade(userA, acctA1, 'trade-empty');
   const r1 = await svc.processJob(emptyJob);
-  assert.equal(r1.status, 'skipped');
-  assert.ok(r1.reason.includes('empty daily reflection'));
+  assert.equal(r1.status, 'done', 'trade-only analysis is valid (not skipped)');
+  assert.equal(provider.callCount(), 1, 'LLM called to interpret trade facts');
+  ok('empty reflection is NOT a skip — trade-only analysis is valid');
 
+  const callsBeforeMissing = provider.callCount();
   const noTrade = await svc.processJob({ id: 'fake-job', user_id: userA, account_id: acctA1, trigger: 'trade_saved', trade_id: 'no-such-trade', attempts: 0, max_attempts: 3 });
   assert.equal(noTrade.status, 'skipped');
-  assert.equal(provider.callCount(), 0, 'LLM never called for skipped jobs');
-  ok('empty reflection / missing trade → skipped, LLM never called');
+  assert.equal(provider.callCount(), callsBeforeMissing, 'LLM never called for missing trade');
+  ok('missing trade → skipped, LLM never called');
 }
 
 // ─── 7. Emerging lifecycle after 2nd occurrence ────────────────

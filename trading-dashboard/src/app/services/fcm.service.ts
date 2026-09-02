@@ -22,8 +22,11 @@ export class FcmService {
         return null;
       }
 
-      const token = await getToken(this.messaging, {
-        vapidKey: environment.firebaseConfig.vapidKey // must be in env
+            const token = await getToken(this.messaging, {
+        // firebaseConfig may be absent in non-Firebase environments (e.g. local
+        // dev / CI). Guard so a missing config yields vapidKey=undefined instead
+        // of a TypeError, and satisfies strict typing.
+        vapidKey: (environment as { firebaseConfig?: { vapidKey?: string } | undefined }).firebaseConfig?.vapidKey ?? '',
       });
 
       if (token) {

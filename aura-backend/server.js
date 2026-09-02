@@ -27,9 +27,10 @@ import { TradingDataAccess, AccountAccessError } from './src/data/trading-data.j
 import { BehaviorStore } from './src/data/behavior-store.js';
 import { AnalysisJobStore } from './src/data/analysis-job-store.js';
 import { AnalysisService } from './src/behavior/analysis-service.js';
+import { DeterministicBehaviorService } from './src/behavior/deterministic-service.js';
 import { BriefService } from './src/behavior/brief-service.js';
 import { AlertsService } from './src/behavior/alerts-service.js';
-import { computeScoreDelta, computeWeekView, computePatterns } from './src/behavior/dashboard-stats.js';
+import { computeScoreDelta, computeWeekView, computePatterns, computeEngineStates } from './src/behavior/dashboard-stats.js';
 
 dotenv.config();
 
@@ -113,6 +114,7 @@ const analysisService = new AnalysisService({
   tradingData,
   logger: console,
 });
+const deterministicBehaviorService = new DeterministicBehaviorService({ supabase, store: behaviorStore, tradingData });
 
 // ─── Health check ──────────────────────────────────────────────
 app.get('/api/aura/health', async (_req, res) => {
@@ -417,7 +419,7 @@ async function requireAccount(req, res, next) {
 // week-over-week statistics and deterministic patterns. No hardcoded numbers.
 app.get('/api/behavior-engine/dashboard', authMiddleware, requireAccount, async (req, res) => {
   try {
-    const [tradesRes, behaviors, evidence, analysesRes] = await Promise.all([
+    const [tradesRes, initialBehaviors, initialEvidence, analysesRes] = await Promise.all([
       supabase
         .from('trades')
         .select('id, ticket, instrument, pnl, risk_per_trade, time_open, time_close, lots, daily_reflection, created_at')
@@ -436,6 +438,30 @@ app.get('/api/behavior-engine/dashboard', authMiddleware, requireAccount, async 
 
     const trades = tradesRes.data || [];
     const analyses = analysesRes.error ? [] : (analysesRes.data || []);
+    let behaviors = initialBehaviors;
+    let evidence = initialEvidence;
+
+    // TRUE DATA STATE: an account with enough trades but no behaviors yet must
+    // still get deterministic analytics on FIRST load — switching to an account
+    // that was never analyzed must NOT show an empty dashboard. Deterministic
+    // analysis is near-instant, LLM-independent, and idempotent, so it is safe
+    // to run lazily here (subsequent loads hit the persisted rows).
+    const closedCount = trades.filter((t) => t.time_close).length;
+    if (closedCount >= 3 && behaviors.length === 0) {
+      try {
+        await deterministicBehaviorService.analyzeAccount(req.userId, req.accountId);
+        const [b2, e2] = await Promise.all([
+          behaviorStore.listBehaviors(req.userId, req.accountId, {}),
+          behaviorStore.listEvidence(req.userId, req.accountId, { limit: 500 }),
+        ]);
+        behaviors = b2;
+        evidence = e2;
+      } catch (lazyErr) {
+        // Non-fatal: the read-only dashboard still renders with whatever
+        // deterministic rows exist (possibly none yet).
+        console.error('[Behavior] Lazy deterministic analysis error:', lazyErr?.message || lazyErr);
+      }
+    }
 
     // Evidence counts per behavior (objective occurrence backing).
     const evidenceByBehavior = {};
@@ -454,15 +480,9 @@ app.get('/api/behavior-engine/dashboard', authMiddleware, requireAccount, async 
     const lastAnalysis = analyses[0] || null;
     const doneAnalyses = analyses.filter((a) => a.status === 'done').length;
 
-    // Engine status (deterministic, derived — see PHASE 5 of the dashboard spec).
-    const hasQueued = analyses.some((a) => a.status === 'queued' || a.status === 'running');
-    let engineStatus;
-    if (hasQueued) engineStatus = 'analyzing';
-    else if (trades.length === 0) engineStatus = 'needs_more_data';
-    else if (closed.length < 3 && reflectionCount === 0) engineStatus = 'needs_more_data';
-    else if (doneAnalyses === 0) engineStatus = 'analysis_unavailable';
-    else if (lastAnalysis && lastAnalysis.status === 'failed') engineStatus = 'analysis_unavailable';
-    else engineStatus = 'up_to_date';
+    // Engine status (deterministic) + AI status reported SEPARATELY — the
+    // deterministic layer never depends on the LLM being available.
+    const { engine_status: engineStatus, ai_status: aiStatus } = computeEngineStates({ trades, analyses });
 
     const score = computeScoreDelta(behaviors);
     const week = computeWeekView(trades);
@@ -482,6 +502,7 @@ app.get('/api/behavior-engine/dashboard', authMiddleware, requireAccount, async 
       account_id: req.accountId,
       generated_at: new Date().toISOString(),
       engine_status: engineStatus,
+      ai_status: aiStatus,
       data_summary: {
         trade_count: trades.length,
         closed_trades: closed.length,
@@ -623,20 +644,40 @@ app.post('/api/behavior-engine/analyze', authMiddleware, requireAccount, async (
   }
 });
 
-// ── Trade save webhook: enqueue analysis ──
+// ── Trade save webhook: deterministic analysis immediately + AI when useful ──
+// Event-driven flow: trade-saved → deterministic analysis (persisted NOW) →
+// AI interpretation queued only when there is something new to interpret
+// (a reflection for context OR new deterministic evidence = behavioral change).
+// The response never blocks on the LLM; the frontend updates via realtime.
 app.post('/api/behavior-engine/webhook/trade-saved', authMiddleware, async (req, res) => {
   try {
     const { accountId, tradeId } = req.body;
+    if (!accountId || !tradeId) return res.status(400).json({ error: 'accountId and tradeId are required.' });
     await tradingData.assertAccountOwnership(req.userId, accountId);
-    const job = await analysisService.enqueueForTrade(req.userId, accountId, tradeId);
-    analysisService.processNext({ batchSize: 1 }).catch((err) => {
-      console.error('[Behavior] Worker error (async):', err?.message || err);
-    });
-    res.json({ jobId: job.id, status: job.status });
+    // 1) Deterministic pass — near-instant, LLM-independent, persisted here.
+    const deterministic = await deterministicBehaviorService.analyzeAccount(req.userId, accountId);
+    // 2) AI pass — queued when useful (never on every tiny event).
+    const trade = await behaviorStore.getTrade(req.userId, accountId, tradeId);
+    const hasReflection = Boolean((trade?.daily_reflection || '').trim());
+    const hasNewEvidence = (deterministic.evidenceWritten ?? 0) > 0 || (deterministic.behaviorCount ?? 0) > 0;
+    let ai;
+    if (!trade) {
+      ai = { status: 'skipped', reason: 'trade not found' };
+    } else if (!hasReflection && !hasNewEvidence) {
+      // Nothing new for the LLM: no reflection context and no behavioral change.
+      ai = { status: 'not_requested', reason: 'no reflection and no new evidence' };
+    } else {
+      const job = await analysisService.enqueueForTrade(req.userId, accountId, tradeId);
+      analysisService.processNext({ batchSize: 1 }).catch((err) => {
+        console.error('[Behavior] Worker error (async):', err?.message || err);
+      });
+      ai = { jobId: job.id, status: job.status };
+    }
+    res.json({ deterministic, ai });
   } catch (err) {
     if (err instanceof AccountAccessError) return res.status(403).json({ error: err.message });
     console.error('[Behavior] Trade-saved webhook error:', err);
-    res.status(500).json({ error: 'Failed to enqueue analysis.' });
+    res.status(500).json({ error: 'Failed to process trade-saved event.' });
   }
 });
 
@@ -657,10 +698,11 @@ app.get('/api/behavior-engine/analysis/:id', authMiddleware, requireAccount, asy
 // trigger lets the frontend/tests drain an account's history immediately.
 app.post('/api/behavior-engine/backfill', authMiddleware, requireAccount, async (req, res) => {
   try {
+    const deterministic = await deterministicBehaviorService.analyzeAccount(req.userId, req.accountId);
     const result = await analysisService.backfillAccount(req.userId, req.accountId, {
       limit: Number(req.body?.limit || req.query?.limit || 100),
     });
-    res.json(result);
+    res.json({ deterministic, ai: result });
   } catch (err) {
     console.error('[Behavior] Backfill error:', err?.message || err);
     res.status(500).json({ error: 'Failed to backfill analysis jobs.' });

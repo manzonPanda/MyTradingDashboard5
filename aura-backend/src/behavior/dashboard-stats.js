@@ -400,3 +400,47 @@ export function computePatterns(trades = [], { reentryWindowMin = 30 } = {}) {
 
   return patterns;
 }
+
+/**
+ * TRUE DATA STATES — deterministic engine status and AI-layer status, reported
+ * SEPARATELY so deterministic analytics are never hidden behind LLM
+ * availability.
+ *
+ *   engine_status (from actual trade data only):
+ *     needs_more_data  ← NO TRADES / NOT ENOUGH TRADES (< 3 closed)
+ *     analyzing        ← a backend job is in-flight (deterministic or AI)
+ *     learning         ← trades available; engine deriving behaviors
+ *   ai_status (interpretation layer, asynchronous):
+ *     not_requested  ← no interpretation queued yet
+ *     analyzing      ← interpretation job queued/running
+ *     available      ← at least one interpretation completed
+ *     unavailable    ← the most recent interpretation failed
+ *
+ * Pure + unit-testable; nothing here calls the provider.
+ */
+export function computeEngineStates({ trades = [], analyses = [] } = {}) {
+  const rows = Array.isArray(trades) ? trades : [];
+  const closed = rows.filter((t) => t.time_close);
+  const analysisRows = Array.isArray(analyses) ? analyses : [];
+  const hasQueued = analysisRows.some((a) => a.status === 'queued' || a.status === 'running');
+  const doneAnalyses = analysisRows.filter((a) => a.status === 'done').length;
+  const lastAnalysis = analysisRows[0] || null;
+
+  let engine_status;
+  if (rows.length === 0 || closed.length < 3) engine_status = 'needs_more_data';
+  else if (hasQueued) engine_status = 'analyzing';
+  else engine_status = 'learning';
+
+  const ai_status = hasQueued ? 'analyzing'
+    : lastAnalysis?.status === 'failed' ? 'unavailable'
+    : doneAnalyses > 0 ? 'available'
+    : 'not_requested';
+
+  return {
+    engine_status,
+    ai_status,
+    closed_trades: closed.length,
+    analysis_count_done: doneAnalyses,
+    has_queued: hasQueued,
+  };
+}

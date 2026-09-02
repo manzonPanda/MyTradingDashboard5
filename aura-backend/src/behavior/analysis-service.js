@@ -74,7 +74,7 @@ export function buildAnalysisPrompt({ trade, behaviorSummaries, recentEvidence }
   };
 
   const system = [
-    'You are A.U.R.A., a trading behavior analyst. Interpret ONE trade and its Daily Reflection and identify any behavioral patterns it demonstrates.',
+    'You are A.U.R.A., a trading behavior analyst. Interpret ONE trade and, when present, its Daily Reflection to identify behavioral patterns it demonstrates.',
     '',
     'RULES',
     '- Trade facts below are backend-computed and authoritative. NEVER invent or restate objective statistics (occurrence counts, totals, P&L beyond what is given).',
@@ -308,10 +308,11 @@ export class AnalysisService {
     const trade = await this.store.getTrade(userId, accountId, tradeId);
     if (!trade) return this.finishSkip(jobId, 'linked trade no longer exists');
 
+    // Reflections are CONTEXT, not a prerequisite: a trade-only analysis
+    // (empty reflection) is still valid — the LLM interprets the backend-
+    // computed trade facts plus the deterministic behaviors/evidence, and is
+    // forbidden from inventing objective numbers regardless.
     const reflection = (trade.daily_reflection || '').trim();
-    if (trigger !== 'weekly' && reflection.length === 0) {
-      return this.finishSkip(jobId, 'empty daily reflection; nothing to interpret');
-    }
 
     // Incremental context — summaries, not full history.
     const behaviorSummaries = await this.store.listBehaviors(userId, accountId, {});
@@ -337,7 +338,7 @@ export class AnalysisService {
       firstResult = await this.provider.chat({
         messages: [
           prompt,
-          { role: 'user', content: 'Analyze the trade and its Daily Reflection from the context above. Respond ONLY with the JSON observations object.' },
+          { role: 'user', content: 'Analyze the trade (and its Daily Reflection when present) from the context above. Respond ONLY with the JSON observations object.' },
         ],
         json: true,
         temperature: 0.2,
