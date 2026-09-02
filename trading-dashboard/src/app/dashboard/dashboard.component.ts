@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgxImageZoomModule } from 'ngx-image-zoom';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule, DOCUMENT, Location } from "@angular/common";
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CalendarModule, CalendarEvent,CalendarMonthViewDay   } from 'angular-calendar';
 import * as XLSX from 'xlsx';
 import { Subject } from 'rxjs'
@@ -40,6 +40,7 @@ import { DrawdownService, DEFAULT_DRAWDOWN_CONFIG, DrawdownBasis, DrawdownConfig
 import { Mt5TimeService } from '../services/mt5-time.service';
 import { AuthService } from '../services/auth.service';
 import { LiveTradeDisplayPreferences, ProfileSettingsComponent } from '../settings/profile-settings.component';
+import { TradingBehaviorEngineComponent } from '../aura-ai/behavior-engine.component';
 import { environment } from '../../../src/environments/environment';
 import { TradeService } from '../services/trade.service';
 import { AccountContextService } from '../services/account-context.service';
@@ -158,6 +159,7 @@ interface NotionPerformanceData {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ConnectionStatusComponent,
+    TradingBehaviorEngineComponent,
     TradingCalendarComponent,
     DreamTimelineComponent,
     LiveRRTrackerComponent,
@@ -183,8 +185,7 @@ interface NotionPerformanceData {
     MatProgressSpinnerModule,
     MatSnackBarModule,
     BaseChartDirective,
-    ProfileSettingsComponent,
-    RouterLink
+    ProfileSettingsComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss', './insights-additional.scss', './notion-performance.scss', './column-selector.scss', './trading-settings.scss', '../dream-timeline/dream-timeline-integration.scss', '../dream-timeline/dream-timeline-header.scss']
@@ -339,11 +340,14 @@ export class DashboardComponent implements AfterViewInit {
     return this.currentWorkspace === 'dashboard';
   }
 
-  navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates'): void {
+  navigateToWorkspace(workspace: 'dashboard' | 'accounts' | 'active-account' | 'notion-update' | 'trading-history' | 'roi' | 'payouts' | 'certificates' | 'trading-behavior'): void {
     this.closeProfileSettings();
     this.closeAccountRiskCalculator();
     this.activeWorkspace = workspace;
-    this.location.go(workspace === 'dashboard' ? '/' : `/${workspace}`);
+    // Trading Behavior lives at /aura-ai (route kept for deep links); it has no
+    // dedicated chat UI — the engine renders inside this shell instead.
+    this.isTradingBehaviorOpen = workspace === 'trading-behavior';
+    this.location.go(workspace === 'dashboard' ? '/' : workspace === 'trading-behavior' ? '/aura-ai' : `/${workspace}`);
     if (workspace === 'roi' && !this.roiTransactions.length && !this.isLoadingRoi) {
       void this.loadRoiTransactions();
     }
@@ -1405,6 +1409,8 @@ get drawdownIsBalanceTrailingMode(): boolean {
 
   isDarkTheme = false;
   isProfileSettingsOpen = false;
+  /** /aura-ai route → Trading Behavior Engine workspace (normal shell, no chat UI). */
+  isTradingBehaviorOpen = false;
   profileDisplayName = 'Trader';
   profileAvatarUrl = '';
 
@@ -1417,8 +1423,12 @@ get drawdownIsBalanceTrailingMode(): boolean {
     private supabaseService: SupabaseService, private auth: AuthService, private router: Router, private location: Location, private auraEnergy: AuraEnergyService, private mt5Time: Mt5TimeService, private tradeService: TradeService,
     private accountContext: AccountContextService,
     public drawdownService: DrawdownService, @Inject(DOCUMENT) private document: Document) {
-    this.activeWorkspace = this.router.url.split('?')[0].replace('/', '') || 'dashboard';
-    this.isProfileSettingsOpen = this.router.url.split('?')[0] === '/settings';
+    const initialRoute = this.router.url.split('?')[0];
+    // /aura-ai hosts the Trading Behavior Engine workspace inside this shell.
+    this.isTradingBehaviorOpen = initialRoute === '/aura-ai';
+    this.activeWorkspace = initialRoute.replace('/', '') || 'dashboard';
+    if (this.isTradingBehaviorOpen) this.activeWorkspace = 'trading-behavior';
+    this.isProfileSettingsOpen = initialRoute === '/settings';
     if ((this.document.defaultView?.innerWidth ?? 0) <= 768) {
       this.isDashboardNavigationOpen = false;
       this.navigationDisplayMode = 'collapsed';

@@ -48,7 +48,7 @@ export class TradingBehaviorEngineComponent implements OnInit, OnDestroy {
 
   constructor() {
     // Single reactive reload path: whenever the shared account context changes
-    // (dashboard header / AURA header switch), reload the ENTIRE engine for the
+    // (main dashboard account selection), reload the ENTIRE engine for the
     // newly active account. The loading state is set before any await so stale
     // data from the previous account is never displayed.
     effect(() => {

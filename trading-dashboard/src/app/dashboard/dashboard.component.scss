@@ -14221,3 +14221,19 @@ table.simple-table {
     font-size: 0.85rem;
   }
 }
+
+/* Trading Behavior Engine workspace host (route /aura-ai). The engine brings
+   its own complete layout; we only make it fill the shell like other
+   workspace views. */
+app-behavior-engine.trading-behavior-host {
+  display: block;
+  min-height: calc(100vh - 2rem);
+}
+
+/* Trading Behavior Engine workspace host (route /aura-ai). The engine brings
+   its own complete layout; we only make it fill the shell like other
+   workspace views. */
+app-behavior-engine.trading-behavior-host {
+  display: block;
+  min-height: calc(100vh - 2rem);
+}
