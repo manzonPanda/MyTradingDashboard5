@@ -137,7 +137,7 @@ export function aggregateTrades(trades = []) {
     }
     const open = parseDate(t.time_open);
     const close = parseDate(t.time_close);
-    if (open && close) { holdSum += Math.max(0, close - open); holdCount += 1; }
+    if (open && close) { holdSum += Math.max(0, close - open) / 1000; holdCount += 1; } // ms → s
     if (open && prevCloseMs !== null) { delaySum += Math.max(0, open - prevCloseMs); delayCount += 1; }
     if (close !== null) prevCloseMs = close;
   }
@@ -363,9 +363,12 @@ export function computePatterns(trades = [], { reentryWindowMin = 30 } = {}) {
     });
   }
 
-  // 4. Risk ramp after consecutive wins.
+  // 4. Risk after quick winning re-entries (re-entered a new trade within the
+  //    window after a winning trade closed). Compared against the typical risk
+  //    of ALL winning trades so the delta is meaningful.
   let winRun = 0;
   let postWinRisk = [];
+  let allWinRisk = [];
   let priorCloseMs = null;
   for (const t of sorted) {
     const open = parseDate(t.time_open);
@@ -375,7 +378,7 @@ export function computePatterns(trades = [], { reentryWindowMin = 30 } = {}) {
         postWinRisk.push({ risk: risk(t), r: computeRMultiple(t), delay_min: round(delayMin, 1), instrument: t.instrument ?? null });
       }
     }
-    if (isWin(t)) winRun += 1;
+    if (isWin(t)) { winRun += 1; allWinRisk.push(risk(t)); }
     else winRun = 0;
     const close = parseDate(t.time_close);
     if (close !== null) priorCloseMs = close;
@@ -383,13 +386,14 @@ export function computePatterns(trades = [], { reentryWindowMin = 30 } = {}) {
   if (postWinRisk.length > 0) {
     const avgRisk = postWinRisk.reduce((s, x) => s + x.risk, 0) / postWinRisk.length;
     const avgR = postWinRisk.reduce((s, x) => s + x.r, 0) / postWinRisk.length;
+    const typicalRisk = allWinRisk.length ? allWinRisk.reduce((a, b) => a + b, 0) / allWinRisk.length : avgRisk;
     patterns.push({
       id: 'risk_after_win',
-      title: 'Risk change after quick winning re-entries',
+      title: 'Risk after quick winning re-entries',
       direction: 'neutral',
       occurrences: postWinRisk.length,
-      description: `Quick re-entries after a win averaged ${round(avgRisk, 2)}R risk vs a typical ${round(postWinRisk.reduce((s, x) => s + x.risk, 0) / postWinRisk.length, 2)}R; average result ${round(avgR, 3)}R.`,
-      detail: { avg_risk: round(avgRisk, 2), avg_r: round(avgR, 3) },
+      description: `Quick re-entries after a win averaged ${round(avgRisk, 2)}R risk vs a typical ${round(typicalRisk, 2)}R; average result ${round(avgR, 3)}R.`,
+      detail: { avg_risk: round(avgRisk, 2), avg_r: round(avgR, 3), typical_risk: round(typicalRisk, 2) },
       evidence: postWinRisk.slice(0, 8),
     });
   }

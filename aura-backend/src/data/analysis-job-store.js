@@ -58,6 +58,28 @@ export class AnalysisJobStore {
   }
 
   /**
+   * Find an existing ACTIVE (queued or running) analysis job for a trade.
+   * If one exists, the caller should reuse it instead of creating a duplicate.
+   * Completed/failed jobs are NOT returned — they represent past attempts,
+   * and a new job may reasonably be enqueued for a re-analysis.
+   */
+  async findExisting(accountId, tradeId) {
+    const { data, error } = await this.supabase
+      .from('ai_analyses')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('trade_id', tradeId)
+      .in('status', ['queued', 'running'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`analysis lookup failed: ${error.message}`);
+    }
+    return data ?? null;
+  }
+
+  /**
    * Atomically claim the next batch of jobs.
    * With accountIds, only those accounts' jobs are claimable; with null it
    * claims globally across all users/accounts (the standard worker mode).

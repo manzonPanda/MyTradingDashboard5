@@ -165,14 +165,20 @@ export class AnalysisService {
     this._processing = false;
   }
 
-  /** Enqueue an analysis job for a newly saved trade (ownership-verified). */
+  /** Enqueue an analysis job for a newly saved trade (ownership-verified).
+   *  Idempotent: if an active job (queued/running) already exists for this
+   *  trade, returns the existing job instead of creating a duplicate.
+   */
   async enqueueForTrade(userId, accountId, tradeId) {
     const [resolvedId] = await this.tradingData.resolveAccountScope(userId, accountId);
     if (!resolvedId) throw new AccountAccessError(accountId);
     const trade = await this.store.getTrade(userId, resolvedId, tradeId);
     if (!trade) throw new AccountAccessError(tradeId);
+    const existing = await this.jobs.findExisting(resolvedId, tradeId);
+    if (existing) return existing;
     return this.jobs.enqueue(userId, resolvedId, { trigger: 'trade_saved', tradeId });
   }
+
 
   /**
    * Backfill analysis jobs for trades that were never analyzed (pre-existing

@@ -60,6 +60,11 @@ const ok = (name) => { passed += 1; console.log('  ✓', name); };
   assert.equal(agg.total_pnl, 81);
   assert.equal(agg.risk_after_2_wins, 0); // never 3 consecutive wins
   assert.equal(agg.risk_normal, 100);
+  // Hold times: 20min(1200s) + 11m48s(708s) + 2h(7200s) → avg 3036s.
+  assert.equal(agg.avg_hold_seconds, 3036); // ms→s conversion (regression guard)
+  // Entry delays: T2 opens 3m12s AFTER T1 opens but 17m BEFORE T1 closes → clamped to 0;
+  // T3 opens 22h45m (1365m) after T2 closes → avg = 682.5min.
+  assert.equal(agg.avg_entry_delay_min, 682.5);
   ok('aggregateTrades computes streaks, win rate, total P&L, risk');
 }
 
