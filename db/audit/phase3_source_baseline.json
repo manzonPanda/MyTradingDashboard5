@@ -1,0 +1,420 @@
+{
+  "capturedAt": "2026-09-18T05:25:19.203Z",
+  "source": {
+    "host": "aws-0-ap-southeast-1.pooler.supabase.com",
+    "port": 5432,
+    "database": "postgres",
+    "projectRef": "jpkvxlzyswookygwcsog",
+    "region": "ap-southeast-1",
+    "mechanism": "pooler (verified, IPv4)",
+    "readOnly": true
+  },
+  "tables": {
+    "prop_firms": {
+      "sourceCount": 7,
+      "localCount": 0,
+      "sourceMd5": "7be1c6ab9c0bfeb12de598a7cf6a78e9",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 7
+    },
+    "profiles": {
+      "sourceCount": 12,
+      "localCount": 0,
+      "sourceMd5": "084b5b3e6c1c73e2a35ec411c24ec4c6",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 12
+    },
+    "accounts": {
+      "sourceCount": 53,
+      "localCount": 0,
+      "sourceMd5": "2adb6dd03150360dba57d84e60944de1",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 53
+    },
+    "user_settings": {
+      "sourceCount": 12,
+      "localCount": 0,
+      "sourceMd5": "e92a29d3c6d318eab494166bb74e86ba",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 12
+    },
+    "trades": {
+      "sourceCount": 2057,
+      "localCount": 0,
+      "sourceMd5": "d6cf25a32767d037f38e3ff1f2238707",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 2057
+    },
+    "ai_analyses": {
+      "sourceCount": 921,
+      "localCount": 0,
+      "sourceMd5": "42717e0567b78b0c5b48143dada55594",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 921
+    },
+    "ai_conversations": {
+      "sourceCount": 3,
+      "localCount": 0,
+      "sourceMd5": "c746ef9af6564a4e0a7845f711ad9c7d",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 3
+    },
+    "ai_messages": {
+      "sourceCount": 33,
+      "localCount": 0,
+      "sourceMd5": "bd1b4e82c713c600b861e49841dc3e3e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 33
+    },
+    "ai_memories": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "ai_insights": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "behaviors": {
+      "sourceCount": 91,
+      "localCount": 0,
+      "sourceMd5": "f91f9ee183ab73f0c1bfa87a43092cb8",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 91
+    },
+    "behavior_evidence": {
+      "sourceCount": 950,
+      "localCount": 0,
+      "sourceMd5": "c77b3ee68c8ea5beb2d6385165f70bc1",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 950
+    },
+    "behavior_alerts": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "behavior_config": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "trading_rules": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "trading_briefs": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "certificates": {
+      "sourceCount": 4,
+      "localCount": 0,
+      "sourceMd5": "6f18db63be9cad3daf9b5e7c36a14d26",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 4
+    },
+    "payouts": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "roi_transactions": {
+      "sourceCount": 27,
+      "localCount": 0,
+      "sourceMd5": "6f9bc09e45229d3f7da0c4bbfd06e26f",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 27
+    },
+    "trade_screenshots": {
+      "sourceCount": 203,
+      "localCount": 0,
+      "sourceMd5": "f14b8a69ed20114c714fac87cd8b774e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 203
+    }
+  },
+  "deep": {
+    "trades": {
+      "min_time_open": "2023-10-27 14:20:00",
+      "max_time_open": "2026-09-17 13:35:03",
+      "min_time_open_ph": "2023-10-27 19:20:00",
+      "max_time_open_ph": "2026-09-17 18:35:03",
+      "distinct_instruments": 15,
+      "distinct_accounts": 52,
+      "distinct_buy_sell": 2,
+      "null_ticket": "955",
+      "null_account": "0",
+      "open_trades": "255",
+      "sum_pnl": "7322.7199999999999690",
+      "sum_lots": "1514.8100000000000007",
+      "min_created": "2026-07-31 18:35:56.028475+00",
+      "max_created": "2026-09-17 10:35:05.89999+00"
+    },
+    "accounts": {
+      "distinct_platform": 2,
+      "distinct_phase": 3,
+      "distinct_status": 2,
+      "distinct_drawdown_mode": 2,
+      "distinct_prop_firms": 7,
+      "distinct_users": 12,
+      "sum_initial_balance": "292500"
+    },
+    "behavior_evidence": {
+      "distinct_behaviors": 91,
+      "distinct_trades": 904,
+      "duplicate_pairs": "0",
+      "min_created": "2026-08-31 09:28:27.823982+00",
+      "max_created": "2026-09-14 08:07:22.073482+00"
+    },
+    "ai_analyses": {
+      "distinct_status": 2,
+      "distinct_trigger": 2,
+      "min_created": "2026-08-31 09:28:24.447857+00",
+      "max_created": "2026-09-03 13:39:30.466646+00"
+    },
+    "trade_screenshots": {
+      "distinct_tickets": 154,
+      "distinct_symbols": 4,
+      "min_captured": "2026-08-04 12:35:14.13701+00",
+      "max_captured": "2026-09-17 10:35:07.234718+00"
+    },
+    "roi_transactions": {
+      "distinct_types": 1,
+      "sum_amount": "59278",
+      "distinct_users": 1,
+      "min_date": "2023-10-27",
+      "max_date": "2026-09-07"
+    },
+    "certificates": {
+      "distinct_status": 2,
+      "distinct_users": 1
+    },
+    "user_settings": {
+      "distinct_users": 12,
+      "min_created": "2026-08-04 04:20:30.300603+00",
+      "max_updated": "2026-09-15 09:19:14.260552+00"
+    }
+  },
+  "discovery": {
+    "instruments": [
+      {
+        "instrument": null,
+        "n": 719,
+        "first_seen": "2023-10-27 21:59:00",
+        "last_seen": "2026-07-27 00:00:00"
+      },
+      {
+        "instrument": "GBPUSD",
+        "n": 629,
+        "first_seen": "2023-10-27 22:21:00",
+        "last_seen": "2026-08-26 13:04:15"
+      },
+      {
+        "instrument": "EUR/USD",
+        "n": 163,
+        "first_seen": "2023-11-01 00:00:00",
+        "last_seen": "2024-04-04 12:26:00"
+      },
+      {
+        "instrument": "DAX40",
+        "n": 161,
+        "first_seen": "2026-05-21 21:49:00",
+        "last_seen": "2026-09-03 20:24:19"
+      },
+      {
+        "instrument": "EURUSD",
+        "n": 111,
+        "first_seen": "2025-05-14 12:58:00",
+        "last_seen": "2026-09-02 11:46:08.706"
+      },
+      {
+        "instrument": "NAS100",
+        "n": 91,
+        "first_seen": "2023-10-27 15:09:00",
+        "last_seen": "2026-07-24 14:55:00"
+      },
+      {
+        "instrument": "NZDUSD",
+        "n": 87,
+        "first_seen": "2026-03-23 17:06:00",
+        "last_seen": "2026-05-20 23:59:00"
+      },
+      {
+        "instrument": "XAUUSD",
+        "n": 61,
+        "first_seen": "2023-10-27 14:20:00",
+        "last_seen": "2026-09-17 13:35:03"
+      },
+      {
+        "instrument": "USDCHF",
+        "n": 17,
+        "first_seen": "2026-08-04 11:36:00",
+        "last_seen": "2026-08-04 16:54:58"
+      },
+      {
+        "instrument": "AUDCHF",
+        "n": 6,
+        "first_seen": "2023-10-30 16:42:00",
+        "last_seen": "2023-10-31 08:06:00"
+      },
+      {
+        "instrument": "US100",
+        "n": 5,
+        "first_seen": "2026-08-25 16:31:00",
+        "last_seen": "2026-08-26 16:30:45"
+      },
+      {
+        "instrument": "AUDCAD",
+        "n": 2,
+        "first_seen": "2023-10-27 15:56:00",
+        "last_seen": "2023-11-08 00:00:00"
+      },
+      {
+        "instrument": "XAU/USD (Gold)",
+        "n": 2,
+        "first_seen": "2023-11-01 15:00:00",
+        "last_seen": "2023-11-07 15:52:00"
+      },
+      {
+        "instrument": "GBPCAD",
+        "n": 1,
+        "first_seen": "2023-10-31 17:51:00",
+        "last_seen": "2023-10-31 17:51:00"
+      },
+      {
+        "instrument": "NZDJPY",
+        "n": 1,
+        "first_seen": "2023-10-30 00:00:00",
+        "last_seen": "2023-10-30 00:00:00"
+      },
+      {
+        "instrument": "USDCAD",
+        "n": 1,
+        "first_seen": "2023-11-07 21:53:00",
+        "last_seen": "2023-11-07 21:53:00"
+      }
+    ],
+    "duplicate_tickets": [],
+    "analysis_status_values": [
+      {
+        "status": "done",
+        "n": 903
+      },
+      {
+        "status": "failed",
+        "n": 18
+      }
+    ],
+    "analysis_trigger_values": [
+      {
+        "trigger": "manual",
+        "n": 897
+      },
+      {
+        "trigger": "trade_saved",
+        "n": 24
+      }
+    ],
+    "buy_sell_values": [
+      {
+        "buy_sell": "(null)",
+        "n": 867
+      },
+      {
+        "buy_sell": "Buy",
+        "n": 624
+      },
+      {
+        "buy_sell": "Sell",
+        "n": 566
+      }
+    ],
+    "account_status_values": [
+      {
+        "status": "active",
+        "n": 44
+      },
+      {
+        "status": "closed",
+        "n": 9
+      }
+    ],
+    "instrument_aliases": [
+      {
+        "norm": "EURUSD",
+        "variants": 2,
+        "names": "EUR/USD | EURUSD"
+      },
+      {
+        "norm": "XAUUSD",
+        "variants": 2,
+        "names": "XAU/USD (Gold) | XAUUSD"
+      }
+    ],
+    "fk_orphans_trades_account": [
+      {
+        "n": "0"
+      }
+    ],
+    "fk_orphans_evidence": [
+      {
+        "n": "0"
+      }
+    ],
+    "fk_orphans_children_vs_users": [
+      {
+        "accounts_orphans": "0",
+        "profiles_orphans": "0",
+        "user_settings_orphans": "0"
+      }
+    ],
+    "composite_unique_behaviors": [
+      {
+        "duplicates": "0"
+      }
+    ]
+  },
+  "authUsers": {
+    "count": 12,
+    "minCreatedAt": "2026-08-04 04:20:30.302692+00",
+    "maxCreatedAt": "2026-09-02 11:46:38.074435+00",
+    "withoutEmail": 0,
+    "ids": [
+      "552ba898-34d6-4688-a90f-fb784eb4747e",
+      "ef25d112-f110-456c-9ef2-f3c4e85cd5d9",
+      "259e7c3e-f560-4571-ae14-b70c24f4ceac",
+      "4b251cfe-977c-40d4-8197-3a3908e89942",
+      "ac32fe29-840a-4cf3-9866-44b8b0bd149c",
+      "7c1303e0-45ad-4c0e-90c0-1eb91c196cf7",
+      "7f11643d-c75d-4a2e-8738-38f2a47a711d",
+      "8c97464a-412b-4de5-ac4b-1ef03127d764",
+      "256dae0e-e341-4bf5-9ca6-01c90db171d5",
+      "9decde1a-54cd-4b61-b2eb-993a75c725a1",
+      "db333965-17b0-4557-8810-d8941554f907",
+      "5dabd22c-e99b-42b3-a963-6a289288000c"
+    ]
+  },
+  "discrepancies": [],
+  "storageObjects": {
+    "count": 217,
+    "buckets": 2
+  }
+}

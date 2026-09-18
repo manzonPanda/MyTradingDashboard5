@@ -1,0 +1,1076 @@
+{
+  "verifiedAt": "2026-09-18T08:06:30.125Z",
+  "checks": [
+    {
+      "check": "source session is read-only",
+      "ok": true,
+      "detail": "transaction_read_only=on"
+    },
+    {
+      "check": "prop_firms: row count 7",
+      "ok": true,
+      "detail": "source=7 local=7 baseline=7"
+    },
+    {
+      "check": "prop_firms: content checksum md5",
+      "ok": true,
+      "detail": "source=7be1c6ab9c0bfeb12de598a7cf6a78e9 local=7be1c6ab9c0bfeb12de598a7cf6a78e9"
+    },
+    {
+      "check": "profiles: row count 12",
+      "ok": true,
+      "detail": "source=12 local=12 baseline=12"
+    },
+    {
+      "check": "profiles: content checksum md5",
+      "ok": true,
+      "detail": "source=084b5b3e6c1c73e2a35ec411c24ec4c6 local=084b5b3e6c1c73e2a35ec411c24ec4c6"
+    },
+    {
+      "check": "accounts: row count 53",
+      "ok": true,
+      "detail": "source=53 local=53 baseline=53"
+    },
+    {
+      "check": "accounts: content checksum md5",
+      "ok": true,
+      "detail": "source=2adb6dd03150360dba57d84e60944de1 local=2adb6dd03150360dba57d84e60944de1"
+    },
+    {
+      "check": "user_settings: row count 12",
+      "ok": true,
+      "detail": "source=12 local=12 baseline=12"
+    },
+    {
+      "check": "user_settings: content checksum md5",
+      "ok": true,
+      "detail": "source=e92a29d3c6d318eab494166bb74e86ba local=e92a29d3c6d318eab494166bb74e86ba"
+    },
+    {
+      "check": "trades: row count 2057",
+      "ok": true,
+      "detail": "source=2057 local=2057 baseline=2057"
+    },
+    {
+      "check": "trades: content checksum md5",
+      "ok": true,
+      "detail": "source=d6cf25a32767d037f38e3ff1f2238707 local=d6cf25a32767d037f38e3ff1f2238707"
+    },
+    {
+      "check": "ai_analyses: row count 921",
+      "ok": true,
+      "detail": "source=921 local=921 baseline=921"
+    },
+    {
+      "check": "ai_analyses: content checksum md5",
+      "ok": true,
+      "detail": "source=42717e0567b78b0c5b48143dada55594 local=42717e0567b78b0c5b48143dada55594"
+    },
+    {
+      "check": "ai_conversations: row count 3",
+      "ok": true,
+      "detail": "source=3 local=3 baseline=3"
+    },
+    {
+      "check": "ai_conversations: content checksum md5",
+      "ok": true,
+      "detail": "source=c746ef9af6564a4e0a7845f711ad9c7d local=c746ef9af6564a4e0a7845f711ad9c7d"
+    },
+    {
+      "check": "ai_messages: row count 33",
+      "ok": true,
+      "detail": "source=33 local=33 baseline=33"
+    },
+    {
+      "check": "ai_messages: content checksum md5",
+      "ok": true,
+      "detail": "source=bd1b4e82c713c600b861e49841dc3e3e local=bd1b4e82c713c600b861e49841dc3e3e"
+    },
+    {
+      "check": "ai_memories: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "ai_memories: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "ai_insights: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "ai_insights: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "behaviors: row count 91",
+      "ok": true,
+      "detail": "source=91 local=91 baseline=91"
+    },
+    {
+      "check": "behaviors: content checksum md5",
+      "ok": true,
+      "detail": "source=f91f9ee183ab73f0c1bfa87a43092cb8 local=f91f9ee183ab73f0c1bfa87a43092cb8"
+    },
+    {
+      "check": "behavior_evidence: row count 950",
+      "ok": true,
+      "detail": "source=950 local=950 baseline=950"
+    },
+    {
+      "check": "behavior_evidence: content checksum md5",
+      "ok": true,
+      "detail": "source=c77b3ee68c8ea5beb2d6385165f70bc1 local=c77b3ee68c8ea5beb2d6385165f70bc1"
+    },
+    {
+      "check": "behavior_alerts: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "behavior_alerts: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "behavior_config: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "behavior_config: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "trading_rules: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "trading_rules: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "trading_briefs: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "trading_briefs: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "certificates: row count 4",
+      "ok": true,
+      "detail": "source=4 local=4 baseline=4"
+    },
+    {
+      "check": "certificates: content checksum md5",
+      "ok": true,
+      "detail": "source=6f18db63be9cad3daf9b5e7c36a14d26 local=6f18db63be9cad3daf9b5e7c36a14d26"
+    },
+    {
+      "check": "payouts: row count 0",
+      "ok": true,
+      "detail": "source=0 local=0 baseline=0"
+    },
+    {
+      "check": "payouts: content checksum md5",
+      "ok": true,
+      "detail": "source=d41d8cd98f00b204e9800998ecf8427e local=d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "check": "roi_transactions: row count 27",
+      "ok": true,
+      "detail": "source=27 local=27 baseline=27"
+    },
+    {
+      "check": "roi_transactions: content checksum md5",
+      "ok": true,
+      "detail": "source=6f9bc09e45229d3f7da0c4bbfd06e26f local=6f9bc09e45229d3f7da0c4bbfd06e26f"
+    },
+    {
+      "check": "trade_screenshots: row count 203",
+      "ok": true,
+      "detail": "source=203 local=203 baseline=203"
+    },
+    {
+      "check": "trade_screenshots: content checksum md5",
+      "ok": true,
+      "detail": "source=f14b8a69ed20114c714fac87cd8b774e local=f14b8a69ed20114c714fac87cd8b774e"
+    },
+    {
+      "check": "trades: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "accounts: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "behavior_evidence: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "ai_analyses: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "trade_screenshots: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "roi_transactions: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "certificates: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "user_settings: deep metrics identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "instruments: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "duplicate_tickets: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "analysis_status_values: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "analysis_trigger_values: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "buy_sell_values: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "account_status_values: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "instrument_aliases: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "fk_orphans_trades_account: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "fk_orphans_evidence: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "fk_orphans_children_vs_users: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "composite_unique_behaviors: identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "aura_users row count == auth.users",
+      "ok": true,
+      "detail": "auth.users=12 aura_users=12"
+    },
+    {
+      "check": "aura_users UUID set identical",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "aura_users emails present",
+      "ok": true,
+      "detail": "rows without email: 0"
+    },
+    {
+      "check": "accounts.user_id -> aura_users resolves",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "profiles.id -> aura_users resolves",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "user_settings.user_id -> aura_users resolves",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "behaviors.user_id -> aura_users resolves",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "ai_analyses.user_id -> aura_users resolves",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "certificates.user_id -> aura_users resolves",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "no NULL primary keys",
+      "ok": true,
+      "detail": "{\"trades_null_id\":0,\"accounts_null_id\":0}"
+    },
+    {
+      "check": "no duplicate trade tickets",
+      "ok": true,
+      "detail": "0 duplicate ticket(s)"
+    },
+    {
+      "check": "behaviors composite unique holds",
+      "ok": true,
+      "detail": "0 duplicate(s)"
+    },
+    {
+      "check": "behavior_evidence (behavior_id, trade_id) unique holds",
+      "ok": true,
+      "detail": "0 duplicate pair(s)"
+    },
+    {
+      "check": "idx_trades_ticket_unique still PARTIAL UNIQUE",
+      "ok": true,
+      "detail": "CREATE UNIQUE INDEX idx_trades_ticket_unique ON public.trades USING btree (ticket) WHERE (ticket IS NOT NULL)"
+    },
+    {
+      "check": "FK integrity: trades -> accounts",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "FK integrity: behavior_evidence -> behaviors",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "FK integrity: behavior_evidence -> trades",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "FK integrity: ai_analyses -> accounts",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "FK integrity: ai_messages -> conversations",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "FK integrity: user_settings -> accounts",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    },
+    {
+      "check": "FK integrity: certificates -> accounts",
+      "ok": true,
+      "detail": "0 orphan(s)"
+    }
+  ],
+  "summary": {
+    "pass": 81,
+    "fail": 0
+  },
+  "tables": {
+    "prop_firms": {
+      "sourceCount": 7,
+      "localCount": 7,
+      "sourceMd5": "7be1c6ab9c0bfeb12de598a7cf6a78e9",
+      "localMd5": "7be1c6ab9c0bfeb12de598a7cf6a78e9",
+      "expected": 7
+    },
+    "profiles": {
+      "sourceCount": 12,
+      "localCount": 12,
+      "sourceMd5": "084b5b3e6c1c73e2a35ec411c24ec4c6",
+      "localMd5": "084b5b3e6c1c73e2a35ec411c24ec4c6",
+      "expected": 12
+    },
+    "accounts": {
+      "sourceCount": 53,
+      "localCount": 53,
+      "sourceMd5": "2adb6dd03150360dba57d84e60944de1",
+      "localMd5": "2adb6dd03150360dba57d84e60944de1",
+      "expected": 53
+    },
+    "user_settings": {
+      "sourceCount": 12,
+      "localCount": 12,
+      "sourceMd5": "e92a29d3c6d318eab494166bb74e86ba",
+      "localMd5": "e92a29d3c6d318eab494166bb74e86ba",
+      "expected": 12
+    },
+    "trades": {
+      "sourceCount": 2057,
+      "localCount": 2057,
+      "sourceMd5": "d6cf25a32767d037f38e3ff1f2238707",
+      "localMd5": "d6cf25a32767d037f38e3ff1f2238707",
+      "expected": 2057
+    },
+    "ai_analyses": {
+      "sourceCount": 921,
+      "localCount": 921,
+      "sourceMd5": "42717e0567b78b0c5b48143dada55594",
+      "localMd5": "42717e0567b78b0c5b48143dada55594",
+      "expected": 921
+    },
+    "ai_conversations": {
+      "sourceCount": 3,
+      "localCount": 3,
+      "sourceMd5": "c746ef9af6564a4e0a7845f711ad9c7d",
+      "localMd5": "c746ef9af6564a4e0a7845f711ad9c7d",
+      "expected": 3
+    },
+    "ai_messages": {
+      "sourceCount": 33,
+      "localCount": 33,
+      "sourceMd5": "bd1b4e82c713c600b861e49841dc3e3e",
+      "localMd5": "bd1b4e82c713c600b861e49841dc3e3e",
+      "expected": 33
+    },
+    "ai_memories": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "ai_insights": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "behaviors": {
+      "sourceCount": 91,
+      "localCount": 91,
+      "sourceMd5": "f91f9ee183ab73f0c1bfa87a43092cb8",
+      "localMd5": "f91f9ee183ab73f0c1bfa87a43092cb8",
+      "expected": 91
+    },
+    "behavior_evidence": {
+      "sourceCount": 950,
+      "localCount": 950,
+      "sourceMd5": "c77b3ee68c8ea5beb2d6385165f70bc1",
+      "localMd5": "c77b3ee68c8ea5beb2d6385165f70bc1",
+      "expected": 950
+    },
+    "behavior_alerts": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "behavior_config": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "trading_rules": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "trading_briefs": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "certificates": {
+      "sourceCount": 4,
+      "localCount": 4,
+      "sourceMd5": "6f18db63be9cad3daf9b5e7c36a14d26",
+      "localMd5": "6f18db63be9cad3daf9b5e7c36a14d26",
+      "expected": 4
+    },
+    "payouts": {
+      "sourceCount": 0,
+      "localCount": 0,
+      "sourceMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "localMd5": "d41d8cd98f00b204e9800998ecf8427e",
+      "expected": 0
+    },
+    "roi_transactions": {
+      "sourceCount": 27,
+      "localCount": 27,
+      "sourceMd5": "6f9bc09e45229d3f7da0c4bbfd06e26f",
+      "localMd5": "6f9bc09e45229d3f7da0c4bbfd06e26f",
+      "expected": 27
+    },
+    "trade_screenshots": {
+      "sourceCount": 203,
+      "localCount": 203,
+      "sourceMd5": "f14b8a69ed20114c714fac87cd8b774e",
+      "localMd5": "f14b8a69ed20114c714fac87cd8b774e",
+      "expected": 203
+    }
+  },
+  "deep": {
+    "trades": {
+      "source": {
+        "min_time_open": "2023-10-27 14:20:00",
+        "max_time_open": "2026-09-17 13:35:03",
+        "min_time_open_ph": "2023-10-27 19:20:00",
+        "max_time_open_ph": "2026-09-17 18:35:03",
+        "distinct_instruments": 15,
+        "distinct_accounts": 52,
+        "distinct_buy_sell": 2,
+        "null_ticket": "955",
+        "null_account": "0",
+        "open_trades": "255",
+        "sum_pnl": "7322.7199999999999690",
+        "sum_lots": "1514.8100000000000007",
+        "min_created": "2026-07-31 18:35:56.028475+00",
+        "max_created": "2026-09-17 10:35:05.89999+00"
+      },
+      "local": {
+        "min_time_open": "2023-10-27 14:20:00",
+        "max_time_open": "2026-09-17 13:35:03",
+        "min_time_open_ph": "2023-10-27 19:20:00",
+        "max_time_open_ph": "2026-09-17 18:35:03",
+        "distinct_instruments": 15,
+        "distinct_accounts": 52,
+        "distinct_buy_sell": 2,
+        "null_ticket": "955",
+        "null_account": "0",
+        "open_trades": "255",
+        "sum_pnl": "7322.7199999999999690",
+        "sum_lots": "1514.8100000000000007",
+        "min_created": "2026-07-31 18:35:56.028475+00",
+        "max_created": "2026-09-17 10:35:05.89999+00"
+      }
+    },
+    "accounts": {
+      "source": {
+        "distinct_platform": 2,
+        "distinct_phase": 3,
+        "distinct_status": 2,
+        "distinct_drawdown_mode": 2,
+        "distinct_prop_firms": 7,
+        "distinct_users": 12,
+        "sum_initial_balance": "292500"
+      },
+      "local": {
+        "distinct_platform": 2,
+        "distinct_phase": 3,
+        "distinct_status": 2,
+        "distinct_drawdown_mode": 2,
+        "distinct_prop_firms": 7,
+        "distinct_users": 12,
+        "sum_initial_balance": "292500"
+      }
+    },
+    "behavior_evidence": {
+      "source": {
+        "distinct_behaviors": 91,
+        "distinct_trades": 904,
+        "duplicate_pairs": "0",
+        "min_created": "2026-08-31 09:28:27.823982+00",
+        "max_created": "2026-09-14 08:07:22.073482+00"
+      },
+      "local": {
+        "distinct_behaviors": 91,
+        "distinct_trades": 904,
+        "duplicate_pairs": "0",
+        "min_created": "2026-08-31 09:28:27.823982+00",
+        "max_created": "2026-09-14 08:07:22.073482+00"
+      }
+    },
+    "ai_analyses": {
+      "source": {
+        "distinct_status": 2,
+        "distinct_trigger": 2,
+        "min_created": "2026-08-31 09:28:24.447857+00",
+        "max_created": "2026-09-03 13:39:30.466646+00"
+      },
+      "local": {
+        "distinct_status": 2,
+        "distinct_trigger": 2,
+        "min_created": "2026-08-31 09:28:24.447857+00",
+        "max_created": "2026-09-03 13:39:30.466646+00"
+      }
+    },
+    "trade_screenshots": {
+      "source": {
+        "distinct_tickets": 154,
+        "distinct_symbols": 4,
+        "min_captured": "2026-08-04 12:35:14.13701+00",
+        "max_captured": "2026-09-17 10:35:07.234718+00"
+      },
+      "local": {
+        "distinct_tickets": 154,
+        "distinct_symbols": 4,
+        "min_captured": "2026-08-04 12:35:14.13701+00",
+        "max_captured": "2026-09-17 10:35:07.234718+00"
+      }
+    },
+    "roi_transactions": {
+      "source": {
+        "distinct_types": 1,
+        "sum_amount": "59278",
+        "distinct_users": 1,
+        "min_date": "2023-10-27",
+        "max_date": "2026-09-07"
+      },
+      "local": {
+        "distinct_types": 1,
+        "sum_amount": "59278",
+        "distinct_users": 1,
+        "min_date": "2023-10-27",
+        "max_date": "2026-09-07"
+      }
+    },
+    "certificates": {
+      "source": {
+        "distinct_status": 2,
+        "distinct_users": 1
+      },
+      "local": {
+        "distinct_status": 2,
+        "distinct_users": 1
+      }
+    },
+    "user_settings": {
+      "source": {
+        "distinct_users": 12,
+        "min_created": "2026-08-04 04:20:30.300603+00",
+        "max_updated": "2026-09-15 09:19:14.260552+00"
+      },
+      "local": {
+        "distinct_users": 12,
+        "min_created": "2026-08-04 04:20:30.300603+00",
+        "max_updated": "2026-09-15 09:19:14.260552+00"
+      }
+    }
+  },
+  "discovery": {
+    "instruments": {
+      "source": [
+        {
+          "instrument": null,
+          "n": 719,
+          "first_seen": "2023-10-27 21:59:00",
+          "last_seen": "2026-07-27 00:00:00"
+        },
+        {
+          "instrument": "GBPUSD",
+          "n": 629,
+          "first_seen": "2023-10-27 22:21:00",
+          "last_seen": "2026-08-26 13:04:15"
+        },
+        {
+          "instrument": "EUR/USD",
+          "n": 163,
+          "first_seen": "2023-11-01 00:00:00",
+          "last_seen": "2024-04-04 12:26:00"
+        },
+        {
+          "instrument": "DAX40",
+          "n": 161,
+          "first_seen": "2026-05-21 21:49:00",
+          "last_seen": "2026-09-03 20:24:19"
+        },
+        {
+          "instrument": "EURUSD",
+          "n": 111,
+          "first_seen": "2025-05-14 12:58:00",
+          "last_seen": "2026-09-02 11:46:08.706"
+        },
+        {
+          "instrument": "NAS100",
+          "n": 91,
+          "first_seen": "2023-10-27 15:09:00",
+          "last_seen": "2026-07-24 14:55:00"
+        },
+        {
+          "instrument": "NZDUSD",
+          "n": 87,
+          "first_seen": "2026-03-23 17:06:00",
+          "last_seen": "2026-05-20 23:59:00"
+        },
+        {
+          "instrument": "XAUUSD",
+          "n": 61,
+          "first_seen": "2023-10-27 14:20:00",
+          "last_seen": "2026-09-17 13:35:03"
+        },
+        {
+          "instrument": "USDCHF",
+          "n": 17,
+          "first_seen": "2026-08-04 11:36:00",
+          "last_seen": "2026-08-04 16:54:58"
+        },
+        {
+          "instrument": "AUDCHF",
+          "n": 6,
+          "first_seen": "2023-10-30 16:42:00",
+          "last_seen": "2023-10-31 08:06:00"
+        },
+        {
+          "instrument": "US100",
+          "n": 5,
+          "first_seen": "2026-08-25 16:31:00",
+          "last_seen": "2026-08-26 16:30:45"
+        },
+        {
+          "instrument": "AUDCAD",
+          "n": 2,
+          "first_seen": "2023-10-27 15:56:00",
+          "last_seen": "2023-11-08 00:00:00"
+        },
+        {
+          "instrument": "XAU/USD (Gold)",
+          "n": 2,
+          "first_seen": "2023-11-01 15:00:00",
+          "last_seen": "2023-11-07 15:52:00"
+        },
+        {
+          "instrument": "GBPCAD",
+          "n": 1,
+          "first_seen": "2023-10-31 17:51:00",
+          "last_seen": "2023-10-31 17:51:00"
+        },
+        {
+          "instrument": "NZDJPY",
+          "n": 1,
+          "first_seen": "2023-10-30 00:00:00",
+          "last_seen": "2023-10-30 00:00:00"
+        },
+        {
+          "instrument": "USDCAD",
+          "n": 1,
+          "first_seen": "2023-11-07 21:53:00",
+          "last_seen": "2023-11-07 21:53:00"
+        }
+      ],
+      "local": [
+        {
+          "instrument": null,
+          "n": 719,
+          "first_seen": "2023-10-27 21:59:00",
+          "last_seen": "2026-07-27 00:00:00"
+        },
+        {
+          "instrument": "GBPUSD",
+          "n": 629,
+          "first_seen": "2023-10-27 22:21:00",
+          "last_seen": "2026-08-26 13:04:15"
+        },
+        {
+          "instrument": "EUR/USD",
+          "n": 163,
+          "first_seen": "2023-11-01 00:00:00",
+          "last_seen": "2024-04-04 12:26:00"
+        },
+        {
+          "instrument": "DAX40",
+          "n": 161,
+          "first_seen": "2026-05-21 21:49:00",
+          "last_seen": "2026-09-03 20:24:19"
+        },
+        {
+          "instrument": "EURUSD",
+          "n": 111,
+          "first_seen": "2025-05-14 12:58:00",
+          "last_seen": "2026-09-02 11:46:08.706"
+        },
+        {
+          "instrument": "NAS100",
+          "n": 91,
+          "first_seen": "2023-10-27 15:09:00",
+          "last_seen": "2026-07-24 14:55:00"
+        },
+        {
+          "instrument": "NZDUSD",
+          "n": 87,
+          "first_seen": "2026-03-23 17:06:00",
+          "last_seen": "2026-05-20 23:59:00"
+        },
+        {
+          "instrument": "XAUUSD",
+          "n": 61,
+          "first_seen": "2023-10-27 14:20:00",
+          "last_seen": "2026-09-17 13:35:03"
+        },
+        {
+          "instrument": "USDCHF",
+          "n": 17,
+          "first_seen": "2026-08-04 11:36:00",
+          "last_seen": "2026-08-04 16:54:58"
+        },
+        {
+          "instrument": "AUDCHF",
+          "n": 6,
+          "first_seen": "2023-10-30 16:42:00",
+          "last_seen": "2023-10-31 08:06:00"
+        },
+        {
+          "instrument": "US100",
+          "n": 5,
+          "first_seen": "2026-08-25 16:31:00",
+          "last_seen": "2026-08-26 16:30:45"
+        },
+        {
+          "instrument": "AUDCAD",
+          "n": 2,
+          "first_seen": "2023-10-27 15:56:00",
+          "last_seen": "2023-11-08 00:00:00"
+        },
+        {
+          "instrument": "XAU/USD (Gold)",
+          "n": 2,
+          "first_seen": "2023-11-01 15:00:00",
+          "last_seen": "2023-11-07 15:52:00"
+        },
+        {
+          "instrument": "GBPCAD",
+          "n": 1,
+          "first_seen": "2023-10-31 17:51:00",
+          "last_seen": "2023-10-31 17:51:00"
+        },
+        {
+          "instrument": "NZDJPY",
+          "n": 1,
+          "first_seen": "2023-10-30 00:00:00",
+          "last_seen": "2023-10-30 00:00:00"
+        },
+        {
+          "instrument": "USDCAD",
+          "n": 1,
+          "first_seen": "2023-11-07 21:53:00",
+          "last_seen": "2023-11-07 21:53:00"
+        }
+      ]
+    },
+    "duplicate_tickets": {
+      "source": [],
+      "local": []
+    },
+    "analysis_status_values": {
+      "source": [
+        {
+          "status": "done",
+          "n": 903
+        },
+        {
+          "status": "failed",
+          "n": 18
+        }
+      ],
+      "local": [
+        {
+          "status": "done",
+          "n": 903
+        },
+        {
+          "status": "failed",
+          "n": 18
+        }
+      ]
+    },
+    "analysis_trigger_values": {
+      "source": [
+        {
+          "trigger": "manual",
+          "n": 897
+        },
+        {
+          "trigger": "trade_saved",
+          "n": 24
+        }
+      ],
+      "local": [
+        {
+          "trigger": "manual",
+          "n": 897
+        },
+        {
+          "trigger": "trade_saved",
+          "n": 24
+        }
+      ]
+    },
+    "buy_sell_values": {
+      "source": [
+        {
+          "buy_sell": "(null)",
+          "n": 867
+        },
+        {
+          "buy_sell": "Buy",
+          "n": 624
+        },
+        {
+          "buy_sell": "Sell",
+          "n": 566
+        }
+      ],
+      "local": [
+        {
+          "buy_sell": "(null)",
+          "n": 867
+        },
+        {
+          "buy_sell": "Buy",
+          "n": 624
+        },
+        {
+          "buy_sell": "Sell",
+          "n": 566
+        }
+      ]
+    },
+    "account_status_values": {
+      "source": [
+        {
+          "status": "active",
+          "n": 44
+        },
+        {
+          "status": "closed",
+          "n": 9
+        }
+      ],
+      "local": [
+        {
+          "status": "active",
+          "n": 44
+        },
+        {
+          "status": "closed",
+          "n": 9
+        }
+      ]
+    },
+    "instrument_aliases": {
+      "source": [
+        {
+          "norm": "EURUSD",
+          "variants": 2,
+          "names": "EUR/USD | EURUSD"
+        },
+        {
+          "norm": "XAUUSD",
+          "variants": 2,
+          "names": "XAU/USD (Gold) | XAUUSD"
+        }
+      ],
+      "local": [
+        {
+          "norm": "EURUSD",
+          "variants": 2,
+          "names": "EUR/USD | EURUSD"
+        },
+        {
+          "norm": "XAUUSD",
+          "variants": 2,
+          "names": "XAU/USD (Gold) | XAUUSD"
+        }
+      ]
+    },
+    "fk_orphans_trades_account": {
+      "source": [
+        {
+          "n": "0"
+        }
+      ],
+      "local": [
+        {
+          "n": "0"
+        }
+      ]
+    },
+    "fk_orphans_evidence": {
+      "source": [
+        {
+          "n": "0"
+        }
+      ],
+      "local": [
+        {
+          "n": "0"
+        }
+      ]
+    },
+    "fk_orphans_children_vs_users": {
+      "source": [
+        {
+          "accounts_orphans": "0",
+          "profiles_orphans": "0",
+          "user_settings_orphans": "0"
+        }
+      ],
+      "local": [
+        {
+          "accounts_orphans": "0",
+          "profiles_orphans": "0",
+          "user_settings_orphans": "0"
+        }
+      ]
+    },
+    "composite_unique_behaviors": {
+      "source": [
+        {
+          "duplicates": "0"
+        }
+      ],
+      "local": [
+        {
+          "duplicates": "0"
+        }
+      ]
+    }
+  },
+  "authUsers": {
+    "sourceCount": 12,
+    "localCount": 12
+  }
+}

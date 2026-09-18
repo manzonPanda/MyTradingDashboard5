@@ -1,0 +1,208 @@
+{
+  "startedAt": "2026-09-18T05:30:07.762Z",
+  "source": {
+    "host": "aws-0-ap-southeast-1.pooler.supabase.com",
+    "port": 5432,
+    "database": "postgres",
+    "projectRef": "jpkvxlzyswookygwcsog",
+    "region": "ap-southeast-1",
+    "mechanism": "pooler (verified, IPv4)",
+    "readOnly": true
+  },
+  "target": "postgres@127.0.0.1:5432/aura_dashboard",
+  "steps": {
+    "aura_users": {
+      "sourceRows": 12,
+      "inserted": 12,
+      "projection": [
+        "id",
+        "email",
+        "created_at",
+        "updated_at"
+      ],
+      "note": "explicit projection; other auth.* metadata intentionally not migrated"
+    },
+    "prop_firms": {
+      "sourceRows": 7,
+      "imported": 7,
+      "baseline": 7,
+      "match": true
+    },
+    "profiles": {
+      "sourceRows": 12,
+      "imported": 12,
+      "baseline": 12,
+      "match": true
+    },
+    "accounts": {
+      "sourceRows": 53,
+      "imported": 53,
+      "baseline": 53,
+      "match": true
+    },
+    "user_settings": {
+      "sourceRows": 12,
+      "imported": 12,
+      "baseline": 12,
+      "match": true
+    },
+    "trades": {
+      "sourceRows": 2057,
+      "imported": 2057,
+      "baseline": 2057,
+      "match": true
+    },
+    "ai_analyses": {
+      "sourceRows": 921,
+      "imported": 921,
+      "baseline": 921,
+      "match": true
+    },
+    "ai_conversations": {
+      "sourceRows": 3,
+      "imported": 3,
+      "baseline": 3,
+      "match": true
+    },
+    "ai_messages": {
+      "sourceRows": 33,
+      "imported": 33,
+      "baseline": 33,
+      "match": true
+    },
+    "ai_memories": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "ai_insights": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "behaviors": {
+      "sourceRows": 91,
+      "imported": 91,
+      "baseline": 91,
+      "match": true
+    },
+    "behavior_evidence": {
+      "sourceRows": 950,
+      "imported": 950,
+      "baseline": 950,
+      "match": true
+    },
+    "behavior_alerts": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "behavior_config": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "trading_rules": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "trading_briefs": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "certificates": {
+      "sourceRows": 4,
+      "imported": 4,
+      "baseline": 4,
+      "match": true
+    },
+    "payouts": {
+      "sourceRows": 0,
+      "imported": 0,
+      "skipped": "zero rows in source"
+    },
+    "roi_transactions": {
+      "sourceRows": 27,
+      "imported": 27,
+      "baseline": 27,
+      "match": true
+    },
+    "trade_screenshots": {
+      "sourceRows": 203,
+      "imported": 203,
+      "baseline": 203,
+      "match": true
+    }
+  },
+  "dumps": {
+    "prop_firms": {
+      "file": "db/audit/phase3_dumps/prop_firms.sql",
+      "bytes": 1373,
+      "sha256": "2e52aacd914c69a2278f15a819894b7d7433661d5d97eed4d94d6748a44a2302"
+    },
+    "profiles": {
+      "file": "db/audit/phase3_dumps/profiles.sql",
+      "bytes": 2131,
+      "sha256": "f1b62cd5ab658753ba40b948f0c6ed877daf923562fda72a0baa330019ccae14"
+    },
+    "accounts": {
+      "file": "db/audit/phase3_dumps/accounts.sql",
+      "bytes": 15033,
+      "sha256": "1deaf6e2370f1470a839be8f159876f4b915b04e5d4a6e49ac2378b4c6a76295"
+    },
+    "user_settings": {
+      "file": "db/audit/phase3_dumps/user_settings.sql",
+      "bytes": 4669,
+      "sha256": "4446dfe0573cc17a4b5f3065782f29c0019d4db043872fbf8e277237076c6d63"
+    },
+    "trades": {
+      "file": "db/audit/phase3_dumps/trades.sql",
+      "bytes": 745879,
+      "sha256": "2ec02b3cd4d9a9af30baa5c2f787bd99b8bd7f03402c839ed9485686bf1025e0"
+    },
+    "ai_analyses": {
+      "file": "db/audit/phase3_dumps/ai_analyses.sql",
+      "bytes": 1201297,
+      "sha256": "0f7ceb818a3399a009a565cddf862befb62ad7fbb3586adc428e6cccb5ea3d7e"
+    },
+    "ai_conversations": {
+      "file": "db/audit/phase3_dumps/ai_conversations.sql",
+      "bytes": 1347,
+      "sha256": "d51fa365a10d1f280ef2275e7dea190cc1efd20db731fb1ecc6f07a6f5d6f608"
+    },
+    "ai_messages": {
+      "file": "db/audit/phase3_dumps/ai_messages.sql",
+      "bytes": 31582,
+      "sha256": "e9293de360dd7d8067f3cfac5a74dfd19c358da7d3292956946d8402856c8d46"
+    },
+    "behaviors": {
+      "file": "db/audit/phase3_dumps/behaviors.sql",
+      "bytes": 51889,
+      "sha256": "f5b23f28c26e5fb67b2c72ec1f34496eb72079917dd2c923c74de4fe1d29771c"
+    },
+    "behavior_evidence": {
+      "file": "db/audit/phase3_dumps/behavior_evidence.sql",
+      "bytes": 786878,
+      "sha256": "0264e93acb178f87596c05625d6d5d2e90ea2ab97512d4d04dc9ca2471ee91ae"
+    },
+    "certificates": {
+      "file": "db/audit/phase3_dumps/certificates.sql",
+      "bytes": 2062,
+      "sha256": "e89ab9fe04fcb30e258ef730e5404b213b155fe618290ec59c8d937ec113d37f"
+    },
+    "roi_transactions": {
+      "file": "db/audit/phase3_dumps/roi_transactions.sql",
+      "bytes": 7130,
+      "sha256": "3cdd11533268c8f549c3c6ba959cd99e73f2f6b97e0423993888eb2e0943da38"
+    },
+    "trade_screenshots": {
+      "file": "db/audit/phase3_dumps/trade_screenshots.sql",
+      "bytes": 30157,
+      "sha256": "02d9d77509ed56543b90fb13b17fdbe790b914dbe3795f0fbc1e6ed1b4d70788"
+    }
+  },
+  "discrepancies": [],
+  "finishedAt": "2026-09-18T05:31:07.105Z"
+}

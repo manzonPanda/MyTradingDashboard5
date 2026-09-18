@@ -1,0 +1,10 @@
+# Local-only credential files and migration artifacts — NEVER commit.
+.env.local
+*.dump
+*.sql.gz
+*.log
+
+# Phase 3 data dumps hold REAL PRODUCTION DATA (trades, profile e-mails,
+# messages). They must stay on disk for audit/recovery and must never be
+# committed to Git.
+audit/phase3_dumps/

@@ -1,0 +1,209 @@
+#!/usr/bin/env node
+/**
+ * AURA Dashboard — PHASE 3 step 3: parity verification.
+ *
+ * Proves the migrated local database is identical to the live Supabase source
+ * for all application data, using independent checks:
+ *   1. per-table row count + deterministic content checksum (md5 of canonical jsonb)
+ *   2. deep metrics (min/max timestamps, distinct values, NULL counts, sums)
+ *   3. value discovery (instrument strings, status/source/buy-sell distributions,
+ *      duplicate tickets, composite-key duplicates, FK orphans)
+ *   4. aura_users must carry exactly the 12 auth.users UUIDs
+ *   5. local integrity: PK/NULL checks, partial unique ticket index, FK orphans
+ *
+ * Supabase is read-only (enforced server-side). Output:
+ *   db/audit/phase3_verification.json
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+  resolveSource, connectSourceReadOnly, SUPABASE_TABLES, EXPECTED_COUNTS,
+  AUDIT_DIR, localConfigs, localColumns, supabaseColumns,
+} from './_source.mjs';
+import { connectOrExplain, targetLabel } from './_lib.mjs';
+import { checksumSql, DEEP, DISCOVERY } from './phase3_baseline.mjs';
+
+const LOG_FILE = path.join(AUDIT_DIR, 'phase3_verify.log');
+fs.mkdirSync(AUDIT_DIR, { recursive: true });
+
+const results = [];
+let pass = 0, fail = 0;
+function check(name, ok, detail) {
+  results.push({ check: name, ok: !!ok, detail: detail ?? null });
+  if (ok) pass++; else fail++;
+  console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${name}${detail && !ok ? ' -> ' + detail : ''}`);
+}
+
+const canon = v => JSON.stringify(v ?? null);
+
+function sameRows(a, b) {
+  return canon(a) === canon(b);
+}
+
+async function main() {
+  const src = await resolveSource();
+  const { superuser: su } = localConfigs();
+  console.log(`[verify] source: ${src.host}:${src.port}/${src.database} (${src.via})`);
+  console.log(`[verify] target: ${targetLabel(su)}`);
+
+  const srcDb = await connectSourceReadOnly(src);
+  const locDb = await connectOrExplain(su, 'superuser (verification)');
+
+  const out = { verifiedAt: new Date().toISOString(), checks: [], summary: {},
+    tables: {}, deep: {}, discovery: {}, authUsers: {} };
+
+  try {
+    const ro = (await srcDb.query('show transaction_read_only')).rows[0].transaction_read_only;
+    check('source session is read-only', ro === 'on', `transaction_read_only=${ro}`);
+
+    const locCols = await localColumns(locDb);
+    const srcCols = await supabaseColumns(srcDb);
+
+    // Build intersection of local + Supabase columns per table.
+    // The local DB may have extra columns (Phase 2 defaults) that the source
+    // does not have — those must be excluded from the checksum so the same
+    // column list works on both databases.
+    const chkCols = {};
+    for (const t of SUPABASE_TABLES) {
+      const local = locCols.get(t) || [];
+      const source = srcCols.get(t) || [];
+      chkCols[t] = local.filter(c => source.includes(c));
+    }
+
+    // ---- 1. counts + content checksums ----------------------------------
+    console.log('\n[verify] 1. row counts + content checksums (source vs migrated local)');
+    for (const t of SUPABASE_TABLES) {
+      const columns = chkCols[t];
+      const sql = checksumSql(t, columns);
+      const s = (await srcDb.query(sql)).rows[0];
+      const l = (await locDb.query(sql)).rows[0];
+      out.tables[t] = { sourceCount: Number(s.n), localCount: Number(l.n),
+        sourceMd5: s.content_md5, localMd5: l.content_md5, expected: EXPECTED_COUNTS[t] ?? null };
+      check(`${t}: row count ${s.n}`,
+        Number(s.n) === Number(l.n) && Number(s.n) === (EXPECTED_COUNTS[t] ?? Number(s.n)),
+        `source=${s.n} local=${l.n} baseline=${EXPECTED_COUNTS[t] ?? 'n/a'}`);
+      check(`${t}: content checksum md5`, s.content_md5 === l.content_md5,
+        `source=${s.content_md5} local=${l.content_md5}`);
+    }
+
+    // ---- 2. deep metrics (source vs migrated local) ----------------------
+    console.log('\n[verify] 2. deep metrics (source vs migrated local)');
+    for (const [t, sql] of Object.entries(DEEP)) {
+      const s = (await srcDb.query(sql)).rows[0];
+      // Phase 3 local target: auth.users does not exist locally;
+      // public.aura_users carries the same 12 UUIDs, so user-scoped metrics map.
+      const localSql = sql.replace(/auth\.users/g, 'aura_users');
+      const l = (await locDb.query(localSql)).rows[0];
+      out.deep[t] = { source: s, local: l };
+      const ok = canon(s) === canon(l);
+      check(`${t}: deep metrics identical`, ok, ok ? null : `source=${canon(s)} local=${canon(l)}`);
+    }
+
+    // ---- 3. value discovery (source vs migrated local) -------------------
+    console.log('\n[verify] 3. value discovery (source vs migrated local)');
+    for (const [k, sql] of Object.entries(DISCOVERY)) {
+      const s = (await srcDb.query(sql)).rows;
+      const localSql = sql.replace(/auth\.users/g, 'aura_users');
+      const l = (await locDb.query(localSql)).rows;
+      out.discovery[k] = { source: s, local: l };
+      const ok = sameRows(s, l);
+      check(`${k}: identical`, ok, ok ? null : `source=${canon(s)} local=${canon(l)}`);
+    }
+
+    // ---- 4. aura_users vs auth.users -------------------------------------
+    console.log('\n[verify] 4. aura_users');
+    const srcIds = (await srcDb.query('select id::text as id from auth.users order by id')).rows.map(r => r.id);
+    const locIds = (await locDb.query('select id::text as id from public.aura_users order by id')).rows.map(r => r.id);
+    out.authUsers = { sourceCount: srcIds.length, localCount: locIds.length };
+    check('aura_users row count == auth.users', srcIds.length === locIds.length,
+      `auth.users=${srcIds.length} aura_users=${locIds.length}`);
+    check('aura_users UUID set identical', canon(srcIds) === canon(locIds));
+    const nullEmail = (await locDb.query(
+      `select count(*)::int as n from public.aura_users where email is null or email = ''`)).rows[0].n;
+    check('aura_users emails present', nullEmail === 0, `rows without email: ${nullEmail}`);
+
+    for (const [t, col] of [['accounts', 'user_id'], ['profiles', 'id'], ['user_settings', 'user_id'],
+      ['behaviors', 'user_id'], ['ai_analyses', 'user_id'], ['certificates', 'user_id']]) {
+      const n = (await locDb.query(
+        `select count(*)::int as n from public.${t} x
+          where x.${col} is not null
+            and not exists (select 1 from public.aura_users u where u.id = x.${col})`)).rows[0].n;
+      check(`${t}.${col} -> aura_users resolves`, n === 0, `${n} orphan(s)`);
+    }
+
+    // ---- 5. local integrity ---------------------------------------------
+    console.log('\n[verify] 5. local integrity');
+    const pkNulls = (await locDb.query(
+      `select
+        (select count(*) from public.trades where id is null)::int as trades_null_id,
+        (select count(*) from public.accounts where id is null)::int as accounts_null_id`)).rows[0];
+    check('no NULL primary keys', pkNulls.trades_null_id === 0 && pkNulls.accounts_null_id === 0,
+      canon(pkNulls));
+
+    const dupTickets = (await locDb.query(
+      `select count(*)::int as n from (
+         select ticket from public.trades where ticket is not null
+          group by ticket having count(*) > 1) s`)).rows[0].n;
+    check('no duplicate trade tickets', dupTickets === 0, `${dupTickets} duplicate ticket(s)`);
+
+    const dupBehaviors = (await locDb.query(
+      `select count(*)::int as n from (
+         select account_id, name_key, behavior_type from public.behaviors
+          group by 1,2,3 having count(*) > 1) s`)).rows[0].n;
+    check('behaviors composite unique holds', dupBehaviors === 0, `${dupBehaviors} duplicate(s)`);
+
+    const dupEvidence = (await locDb.query(
+      `select count(*)::int as n from (
+         select behavior_id, trade_id from public.behavior_evidence
+          group by 1,2 having count(*) > 1) s`)).rows[0].n;
+    check('behavior_evidence (behavior_id, trade_id) unique holds', dupEvidence === 0,
+      `${dupEvidence} duplicate pair(s)`);
+
+    const idx = (await locDb.query(
+      `select indexdef from pg_indexes
+        where schemaname='public' and indexname='idx_trades_ticket_unique'`)).rows[0];
+    check('idx_trades_ticket_unique still PARTIAL UNIQUE',
+      !!idx && /CREATE UNIQUE INDEX/i.test(idx.indexdef) && /WHERE/i.test(idx.indexdef),
+      idx ? idx.indexdef : 'missing');
+
+    const orphanQueries = {
+      'trades -> accounts': `select count(*)::int as n from public.trades t
+        where t.account_id is not null and not exists (select 1 from public.accounts a where a.id=t.account_id)`,
+      'behavior_evidence -> behaviors': `select count(*)::int as n from public.behavior_evidence e
+        where not exists (select 1 from public.behaviors b where b.id=e.behavior_id)`,
+      'behavior_evidence -> trades': `select count(*)::int as n from public.behavior_evidence e
+        where e.trade_id is not null and not exists (select 1 from public.trades t where t.id=e.trade_id)`,
+      'ai_analyses -> accounts': `select count(*)::int as n from public.ai_analyses a
+        where not exists (select 1 from public.accounts x where x.id=a.account_id)`,
+      'ai_messages -> conversations': `select count(*)::int as n from public.ai_messages m
+        where not exists (select 1 from public.ai_conversations c where c.id=m.conversation_id)`,
+      'user_settings -> accounts': `select count(*)::int as n from public.user_settings s
+        where s.default_account_id is not null
+          and not exists (select 1 from public.accounts a where a.id=s.default_account_id)`,
+      'certificates -> accounts': `select count(*)::int as n from public.certificates c
+        where not exists (select 1 from public.accounts a where a.id=c.account_id)`,
+    };
+    for (const [label, sql] of Object.entries(orphanQueries)) {
+      const n = (await locDb.query(sql)).rows[0].n;
+      check(`FK integrity: ${label}`, n === 0, `${n} orphan(s)`);
+    }
+
+    out.summary = { pass, fail };
+    out.checks = results;
+    fs.writeFileSync(path.join(AUDIT_DIR, 'phase3_verification.json'),
+      JSON.stringify(out, null, 2) + '\n', 'utf8');
+
+    console.log('\n[verify] ==========================================');
+    console.log(`[verify] pass=${pass} fail=${fail}`);
+    console.log('[verify] report: db/audit/phase3_verification.json');
+    if (fail === 0) console.log('[verify] RESULT: PASS - local PostgreSQL is a faithful copy of Supabase');
+    else console.log('[verify] RESULT: FAIL - see checks above');
+    if (fail) process.exitCode = 1;
+  } finally {
+    await srcDb.end().catch(() => {});
+    await locDb.end().catch(() => {});
+  }
+}
+
+main().catch(err => { console.error(err.message); process.exit(1); });
+// end of file

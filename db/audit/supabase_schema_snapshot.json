@@ -1,0 +1,1373 @@
+{
+  "capturedAt": "2026-09-18T05:01:46.561Z",
+  "source": "supabase PostgREST OpenAPI (read-only)",
+  "host": "jpkvxlzyswookygwcsog.supabase.co:443",
+  "tables": {
+    "payouts": {
+      "columnCount": 9,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "certificate_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "firm_name": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "amount": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "payout_date": {
+          "type": "string",
+          "format": "date",
+          "notNull": true
+        },
+        "notes": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "proof_url": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        }
+      }
+    },
+    "ai_messages": {
+      "columnCount": 9,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "conversation_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "role": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "content": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "tool_calls": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": false
+        },
+        "tool_name": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "token_count": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "accounts": {
+      "columnCount": 20,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "name": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "account_number": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "initial_balance": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "profit_target_percent": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "max_total_drawdown_percent": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "daily_loss_limit_percent": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "start_date": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "notes": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "phase": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "prop_firm_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "platform": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "drawdown_mode": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "drawdown_basis": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "drawdown_stop_at_initial_balance": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "drawdown_eod_timezone": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        }
+      }
+    },
+    "ai_insights": {
+      "columnCount": 10,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "insight_type": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "title": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "content": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "severity": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "related_data": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": false
+        },
+        "is_read": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "is_dismissed": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "certificates": {
+      "columnCount": 9,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "program_name": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "passed_date": {
+          "type": "string",
+          "format": "date",
+          "notNull": true
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "file_path": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "notes": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        }
+      }
+    },
+    "trades": {
+      "columnCount": 28,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "buy_sell": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "commission": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "daily_reflection": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "time_open": {
+          "type": "string",
+          "format": "timestamp without time zone",
+          "notNull": false
+        },
+        "time_close": {
+          "type": "string",
+          "format": "timestamp without time zone",
+          "notNull": false
+        },
+        "instrument": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "lots": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "pips": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "pnl": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "rules_violated": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "weekly_retrospective": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "mfe": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "price_close": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "price_open": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "risk_per_trade": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "rrr": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "sl": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "swap": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "ticket": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "tp": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "held": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "mae": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "time_open_ph": {
+          "type": "string",
+          "format": "timestamp without time zone",
+          "notNull": false
+        },
+        "time_close_ph": {
+          "type": "string",
+          "format": "timestamp without time zone",
+          "notNull": false
+        }
+      }
+    },
+    "trading_briefs": {
+      "columnCount": 11,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "week_start": {
+          "type": "string",
+          "format": "date",
+          "notNull": true
+        },
+        "week_end": {
+          "type": "string",
+          "format": "date",
+          "notNull": true
+        },
+        "payload": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": true
+        },
+        "model": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "prompt_version": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "roi_transactions": {
+      "columnCount": 10,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "transaction_date": {
+          "type": "string",
+          "format": "date",
+          "notNull": true
+        },
+        "transaction_type": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "amount": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "note": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "image_url": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        }
+      }
+    },
+    "ai_conversations": {
+      "columnCount": 6,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "title": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "summary": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "behavior_evidence": {
+      "columnCount": 14,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "behavior_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "analysis_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "trade_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "trade_ticket": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "trade_time_open": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "week_start": {
+          "type": "string",
+          "format": "date",
+          "notNull": false
+        },
+        "reflection_excerpt": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "reason": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "metrics_snapshot": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": false
+        },
+        "evidence_confidence": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "trading_rules": {
+      "columnCount": 11,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "source_behavior_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "rule": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "rationale": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "confidence": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "evidence_summary": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": false
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "user_settings": {
+      "columnCount": 35,
+      "columns": {
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "daily_target_percent": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "weekly_r_target": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "default_chart_mode": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "trading_day_reset_time": {
+          "type": "string",
+          "format": "time without time zone",
+          "notNull": true
+        },
+        "default_account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "show_account_balance": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "show_pnl": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "show_trading_activity": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "show_news_calendar": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "aura_enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "aura_travel_duration_ms": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "aura_min_delay_ms": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "aura_max_delay_ms": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "aura_trail_length_percent": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "aura_stroke_width": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "aura_head_radius": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "aura_bloom_intensity": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "aura_fade_duration_ms": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "aura_color_start": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "aura_color_mid": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "aura_color_peak": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "aura_color_head": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "aura_min_targets": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "aura_max_targets": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "notifications_enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "daily_goal_notification": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "goal_notification_sound": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "notification_volume": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "live_trade_sound_threshold": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "live_trade_high_priority_sound_threshold": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "positive_gauge_percent_max": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "per_trade_gauge_auto_close_enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        }
+      }
+    },
+    "profiles": {
+      "columnCount": 6,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "display_name": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "avatar_url": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "started_trading_date": {
+          "type": "string",
+          "format": "date",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "ai_memories": {
+      "columnCount": 11,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "memory": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "memory_type": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "importance": {
+          "type": "integer",
+          "format": "smallint",
+          "notNull": true
+        },
+        "source": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "embedding": {
+          "type": "string",
+          "format": "extensions.vector(1536)",
+          "notNull": false
+        },
+        "is_active": {
+          "type": "boolean",
+          "format": "boolean",
+          "notNull": true
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "behavior_alerts": {
+      "columnCount": 12,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "alert_type": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "severity": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "message": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "behavior_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "trade_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "analysis_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "dedupe_key": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "behaviors": {
+      "columnCount": 18,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "name": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "name_key": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "behavior_type": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "description": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "occurrence_count": {
+          "type": "integer",
+          "format": "integer",
+          "notNull": true
+        },
+        "confidence": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": true
+        },
+        "estimated_impact_pnl": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "estimated_impact_r": {
+          "type": "number",
+          "format": "numeric",
+          "notNull": false
+        },
+        "first_detected_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "last_detected_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "last_confirmed_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "model": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "ai_analyses": {
+      "columnCount": 17,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "trigger": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "trade_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": false
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "attempts": {
+          "type": "integer",
+          "format": "smallint",
+          "notNull": true
+        },
+        "max_attempts": {
+          "type": "integer",
+          "format": "smallint",
+          "notNull": true
+        },
+        "last_error": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "model": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "prompt_version": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "input_summary": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": false
+        },
+        "raw_response": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": false
+        },
+        "started_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "trade_screenshots": {
+      "columnCount": 6,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "ticket": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "symbol": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "storage_path": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "behavior_config": {
+      "columnCount": 6,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "thresholds": {
+          "type": null,
+          "format": "jsonb",
+          "notNull": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": true
+        }
+      }
+    },
+    "prop_firms": {
+      "columnCount": 5,
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "notNull": true
+        },
+        "name": {
+          "type": "string",
+          "format": "text",
+          "notNull": true
+        },
+        "logo_url": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "website_url": {
+          "type": "string",
+          "format": "text",
+          "notNull": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "notNull": false
+        }
+      }
+    }
+  },
+  "tableCount": 20
+}
